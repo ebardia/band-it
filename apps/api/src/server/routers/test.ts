@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { router, publicProcedure } from '../trpc'
+import { prisma } from '../../lib/prisma'
 
-// Test router with sample endpoints
 export const testRouter = router({
   // Simple hello endpoint
   hello: publicProcedure
@@ -19,6 +19,29 @@ export const testRouter = router({
       status: 'ok',
       message: 'Backend API is running',
       timestamp: new Date().toISOString(),
+    }
+  }),
+
+  // Database connection test - NEW!
+  dbTest: publicProcedure.query(async () => {
+    try {
+      // Try to count users (should be 0)
+      const userCount = await prisma.user.count()
+      const bandCount = await prisma.band.count()
+
+      return {
+        status: 'connected',
+        message: 'Database connection successful!',
+        users: userCount,
+        bands: bandCount,
+        timestamp: new Date().toISOString(),
+      }
+    } catch (error) {
+      return {
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Database connection failed',
+        timestamp: new Date().toISOString(),
+      }
     }
   }),
 })
