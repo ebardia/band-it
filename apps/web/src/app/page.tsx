@@ -1,6 +1,7 @@
 'use client'
 
 import Image from "next/image"
+import Link from "next/link"
 import { trpc } from "@/lib/trpc"
 
 export default function HomePage() {
@@ -63,9 +64,11 @@ export default function HomePage() {
         
         {/* Buttons */}
         <div className="flex gap-4 justify-center">
-          <button className="px-8 py-4 bg-blue-600 text-white text-lg rounded-lg hover:bg-blue-700 transition shadow-lg">
-            Get Started
-          </button>
+          <Link href="/register">
+            <button className="px-8 py-4 bg-blue-600 text-white text-lg rounded-lg hover:bg-blue-700 transition shadow-lg">
+              Get Started
+            </button>
+          </Link>
           <button className="px-8 py-4 bg-white text-blue-600 border-2 border-blue-600 text-lg rounded-lg hover:bg-blue-50 transition shadow-lg">
             Learn More
           </button>
