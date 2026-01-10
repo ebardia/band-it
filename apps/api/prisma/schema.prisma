@@ -16,12 +16,44 @@ model User {
   email     String   @unique
   password  String
   name      String
+  
+  // Location
+  zipcode   String?
+  
+  // Profile - Development & Skills
+  strengths        String[] // Array of strengths
+  weaknesses       String[] // Array of weaknesses
+  passions         String[] // Array of passions
+  developmentPath  String[] // Array of development goals
+  
+  // Email Verification
+  emailVerified    Boolean  @default(false)
+  emailVerifiedAt  DateTime?
+  verificationToken String?  @unique
+  
+  // Payment
+  stripeCustomerId      String?  @unique
+  stripeSubscriptionId  String?  @unique
+  subscriptionStatus    SubscriptionStatus @default(INCOMPLETE)
+  subscriptionStartedAt DateTime?
+  
+  // Profile Completion
+  profileCompleted Boolean @default(false)
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   memberships Member[]
   sessions    Session[]
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE      // Just registered, no payment yet
+  ACTIVE          // Paying and verified
+  PAST_DUE        // Payment failed
+  CANCELED        // Subscription canceled
+  TRIALING        // On trial (if we add trials later)
 }
 
 model Session {
@@ -72,8 +104,8 @@ model Member {
 enum MemberRole {
   FOUNDER
   GOVERNOR
-  STEWARD
-  MEMBER
+  MODERATOR
+  CONDUCTOR
+  VOTING_MEMBER
   OBSERVER
-  GUEST
 }

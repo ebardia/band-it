@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { TRPCError } from '@trpc/server'
+import { emailService } from './email.service'
 
 // JWT secret (in production, use environment variable)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
@@ -46,6 +47,9 @@ export const authService = {
     // Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user.id)
 
+    // Send verification email
+    await emailService.sendVerificationEmail(user.id, user.email, user.name)
+
     return {
       user,
       accessToken,
@@ -88,6 +92,7 @@ export const authService = {
         email: user.email,
         name: user.name,
         createdAt: user.createdAt,
+        emailVerified: user.emailVerified,
       },
       accessToken,
       refreshToken,

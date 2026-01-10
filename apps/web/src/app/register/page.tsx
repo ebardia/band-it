@@ -16,13 +16,13 @@ export default function RegisterPage() {
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
       console.log('Registration successful:', data)
-      // Save tokens (we'll improve this later)
+      // Save tokens
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
+      localStorage.setItem('userEmail', formData.email)
       
-      // Redirect to home or dashboard
-      alert(`Welcome ${data.user.name}! Account created successfully.`)
-      router.push('/')
+      // Redirect to email verification (NEW FLOW)
+      router.push('/verify-email')
     },
     onError: (error) => {
       alert(`Error: ${error.message}`)
@@ -47,6 +47,33 @@ export default function RegisterPage() {
             <p className="text-gray-600">
               Join Band IT to start managing your band
             </p>
+          </div>
+
+          {/* Progress */}
+          <div className="mb-8">
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                1
+              </div>
+              <div className="w-16 h-1 bg-gray-300"></div>
+              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-bold">
+                2
+              </div>
+              <div className="w-16 h-1 bg-gray-300"></div>
+              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-bold">
+                3
+              </div>
+              <div className="w-16 h-1 bg-gray-300"></div>
+              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-bold">
+                4
+              </div>
+            </div>
+            <div className="flex justify-between mt-2 text-xs text-gray-600">
+              <span className="font-bold text-blue-600">Register</span>
+              <span>Verify</span>
+              <span>Profile</span>
+              <span>Payment</span>
+            </div>
           </div>
 
           {/* Form */}
