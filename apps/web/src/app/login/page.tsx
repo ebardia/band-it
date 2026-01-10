@@ -2,11 +2,25 @@
 
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { 
+  Button, 
+  Input, 
+  Card, 
+  PageLayout, 
+  Container, 
+  Heading, 
+  Text, 
+  useToast,
+  Stack,
+  Center,
+  Link,
+  Box
+} from '@/components/ui'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { showToast } = useToast()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -14,24 +28,20 @@ export default function LoginPage() {
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
-      console.log('Login successful:', data)
-      // Save tokens
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
       
-      // Check if email is verified
       if (!data.user.emailVerified) {
-        alert('Please verify your email before continuing.')
+        showToast('Please verify your email before continuing.', 'warning')
         router.push('/verify-email')
         return
       }
       
-      // Redirect to homepage
-      alert(`Welcome back, ${data.user.name}!`)
+      showToast(`Welcome back, ${data.user.name}!`, 'success')
       router.push('/')
     },
     onError: (error) => {
-      alert(`Error: ${error.message}`)
+      showToast(error.message, 'error')
     },
   })
 
@@ -41,92 +51,61 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-gray-600">
-              Sign in to your Band IT account
-            </p>
-          </div>
+    <PageLayout>
+      <Container size="sm">
+        <Card>
+          <Stack spacing="lg">
+            <Center>
+              <Heading level={1}>Welcome Back</Heading>
+              <Text variant="muted">Sign in to your Band IT account</Text>
+            </Center>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                placeholder="john@example.com"
-              />
-            </div>
+            <form onSubmit={handleSubmit}>
+              <Stack spacing="lg">
+                <Input
+                  label="Email Address"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="john@example.com"
+                />
 
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                placeholder="Enter your password"
-              />
-            </div>
+                <Input
+                  label="Password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Enter your password"
+                />
 
-            {/* Forgot Password Link */}
-            <div className="text-right">
-              <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
-                Forgot password?
-              </Link>
-            </div>
+                <Box align="right">
+                  <Link href="/forgot-password" variant="primary" size="sm">
+                    Forgot password?
+                  </Link>
+                </Box>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loginMutation.isPending}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  disabled={loginMutation.isPending}
+                  className="w-full"
+                >
+                  {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
+                </Button>
+              </Stack>
+            </form>
 
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/register" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Create one
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
-    </main>
+            <Center>
+              <Text variant="small">
+                Don't have an account? <Link href="/register">Create one</Link>
+              </Text>
+            </Center>
+          </Stack>
+        </Card>
+      </Container>
+    </PageLayout>
   )
 }

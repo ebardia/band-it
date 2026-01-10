@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import { TRPCProvider } from "@/lib/trpc-provider"
+import { ToastProvider } from "@/components/ui"
 
 export const metadata: Metadata = {
   title: "Band IT - Decentralized Governance",
@@ -16,7 +17,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <TRPCProvider>
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </TRPCProvider>
       </body>
     </html>
