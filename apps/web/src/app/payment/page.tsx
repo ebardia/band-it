@@ -4,12 +4,28 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
+import {
+  Card,
+  PageLayout,
+  Container,
+  Heading,
+  Text,
+  Button,
+  useToast,
+  Stack,
+  Center,
+  Progress,
+  Alert,
+  List,
+  ListItem,
+  Spacer
+} from '@/components/ui'
 
 export default function PaymentPage() {
   const router = useRouter()
+  const { showToast } = useToast()
   const [userId, setUserId] = useState<string | null>(null)
 
-  // Get userId from token
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
@@ -27,19 +43,18 @@ export default function PaymentPage() {
 
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation({
     onSuccess: (data) => {
-      // Redirect to Stripe checkout
       if (data.url) {
         window.location.href = data.url
       }
     },
     onError: (error) => {
-      alert(`Error: ${error.message}`)
+      showToast(error.message, 'error')
     },
   })
 
   const handlePayment = () => {
     if (!userId) {
-      alert('User not found. Please register again.')
+      showToast('User not found. Please register again.', 'error')
       router.push('/register')
       return
     }
@@ -48,114 +63,69 @@ export default function PaymentPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Subscribe to Band IT
-            </h1>
-            <p className="text-gray-600">
-              Complete your registration with a monthly membership
-            </p>
-          </div>
+    <PageLayout>
+      <Container size="sm">
+        <Card>
+          <Stack spacing="lg">
+            <Center>
+              <Heading level={1}>Subscribe to Band IT</Heading>
+              <Text variant="muted">Complete your registration with a monthly membership</Text>
+            </Center>
 
-          {/* Progress */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                ✓
-              </div>
-              <div className="w-16 h-1 bg-green-500"></div>
-              <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                ✓
-              </div>
-              <div className="w-16 h-1 bg-green-500"></div>
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                3
-              </div>
-              <div className="w-16 h-1 bg-gray-300"></div>
-              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-bold">
-                4
-              </div>
-            </div>
-            <div className="flex justify-between mt-2 text-xs text-gray-600">
-              <span>Register</span>
-              <span>Profile</span>
-              <span className="font-bold text-blue-600">Payment</span>
-              <span>Verify</span>
-            </div>
-          </div>
+            <Progress
+              steps={[
+                { label: 'Register', status: 'complete' },
+                { label: 'Verify', status: 'complete' },
+                { label: 'Profile', status: 'complete' },
+                { label: 'Payment', status: 'active' },
+              ]}
+            />
 
-          {/* Pricing */}
-          <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl">
-            <div className="text-center">
-              <div className="text-5xl font-bold text-gray-900 mb-2">
-                $5
-                <span className="text-2xl text-gray-600">/month</span>
-              </div>
-              <p className="text-gray-600 mb-6">
-                Band IT Membership
-              </p>
-              
-              {/* Features */}
-              <ul className="text-left space-y-3">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 text-lg">✓</span>
-                  <span className="text-sm text-gray-700">Create and join unlimited bands</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 text-lg">✓</span>
-                  <span className="text-sm text-gray-700">Participate in band governance</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 text-lg">✓</span>
-                  <span className="text-sm text-gray-700">Task management and tracking</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 text-lg">✓</span>
-                  <span className="text-sm text-gray-700">Proposal voting system</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 text-lg">✓</span>
-                  <span className="text-sm text-gray-700">Community support</span>
-                </li>
-              </ul>
-            </div>
-          </div>
+            <Alert variant="info">
+              <Center>
+                <Heading level={2}>$5</Heading>
+                <Text variant="small" weight="semibold">/month</Text>
+                <Spacer size="sm" />
+                <Text variant="muted">Band IT Membership</Text>
+                <Spacer size="md" />
+                
+                <List>
+                  <ListItem>Create and join unlimited bands</ListItem>
+                  <ListItem>Participate in band governance</ListItem>
+                  <ListItem>Task management and tracking</ListItem>
+                  <ListItem>Proposal voting system</ListItem>
+                  <ListItem>Community support</ListItem>
+                </List>
+              </Center>
+            </Alert>
 
-          {/* Payment Button */}
-          <button
-            onClick={handlePayment}
-            disabled={createCheckoutMutation.isPending || !userId}
-            className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-          >
-            {createCheckoutMutation.isPending ? 'Loading...' : 'Subscribe Now'}
-          </button>
-
-          {/* Secure Payment */}
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              🔒 Secure payment powered by Stripe
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Cancel anytime
-            </p>
-          </div>
-
-          {/* Skip Link */}
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => router.push('/')}
-              className="text-sm text-gray-500 hover:text-gray-700"
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handlePayment}
+              disabled={createCheckoutMutation.isPending || !userId}
+              className="w-full"
             >
-              Skip for now
-            </button>
-          </div>
-        </div>
-      </div>
-    </main>
+              {createCheckoutMutation.isPending ? 'Loading...' : 'Subscribe Now'}
+            </Button>
+
+            <Center>
+              <Text variant="small" variant="muted">🔒 Secure payment powered by Stripe</Text>
+              <Text variant="small" variant="muted">Cancel anytime</Text>
+            </Center>
+
+            <Center>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/')}
+              >
+                Skip for now
+              </Button>
+            </Center>
+          </Stack>
+        </Card>
+      </Container>
+    </PageLayout>
   )
 }

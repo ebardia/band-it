@@ -38,6 +38,7 @@ interface FlexProps {
   children: React.ReactNode
   justify?: 'start' | 'end' | 'center' | 'between'
   align?: 'start' | 'end' | 'center'
+  gap?: 'sm' | 'md' | 'lg'
   className?: string
 }
 
@@ -54,9 +55,15 @@ const alignClasses = {
   center: 'items-center',
 }
 
-export function Flex({ children, justify = 'start', align = 'center', className }: FlexProps) {
+const gapClasses = {
+  sm: 'gap-2',
+  md: 'gap-4',
+  lg: 'gap-6',
+}
+
+export function Flex({ children, justify = 'start', align = 'center', gap = 'md', className }: FlexProps) {
   return (
-    <div className={cn('flex', justifyClasses[justify], alignClasses[align], className)}>
+    <div className={cn('flex', justifyClasses[justify], alignClasses[align], gapClasses[gap], className)}>
       {children}
     </div>
   )

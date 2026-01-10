@@ -21,15 +21,32 @@ export function Heading({ children, level = 1, className }: HeadingProps) {
 interface TextProps {
   children: React.ReactNode
   variant?: 'body' | 'small' | 'muted'
+  weight?: 'normal' | 'semibold' | 'bold'
+  color?: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'danger'
   className?: string
 }
 
-export function Text({ children, variant = 'body', className }: TextProps) {
+export function Text({ children, variant = 'body', weight = 'normal', color = 'default', className }: TextProps) {
   const variants = {
-    body: 'text-base text-gray-900',
-    small: 'text-sm text-gray-600',
+    body: 'text-base',
+    small: 'text-sm',
     muted: 'text-gray-600',
   }
   
-  return <p className={cn(variants[variant], className)}>{children}</p>
+  const weights = {
+    normal: 'font-normal',
+    semibold: 'font-semibold',
+    bold: 'font-bold',
+  }
+  
+  const colors = {
+    default: 'text-gray-900',
+    muted: 'text-gray-600',
+    primary: 'text-blue-600',
+    success: 'text-green-800',
+    warning: 'text-yellow-800',
+    danger: 'text-red-800',
+  }
+  
+  return <p className={cn(variants[variant], weights[weight], colors[color], className)}>{children}</p>
 }

@@ -2,11 +2,25 @@
 
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { 
+  Button, 
+  Input, 
+  Card, 
+  PageLayout, 
+  Container, 
+  Heading, 
+  Text, 
+  useToast,
+  Stack,
+  Center,
+  Link,
+  Progress
+} from '@/components/ui'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { showToast } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,17 +29,15 @@ export default function RegisterPage() {
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
-      console.log('Registration successful:', data)
-      // Save tokens
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
       localStorage.setItem('userEmail', formData.email)
       
-      // Redirect to email verification (NEW FLOW)
+      showToast('Account created! Please check your email.', 'success')
       router.push('/verify-email')
     },
     onError: (error) => {
-      alert(`Error: ${error.message}`)
+      showToast(error.message, 'error')
     },
   })
 
@@ -35,137 +47,75 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Create Account
-            </h1>
-            <p className="text-gray-600">
-              Join Band IT to start managing your band
-            </p>
-          </div>
+    <PageLayout>
+      <Container size="sm">
+        <Card>
+          <Stack spacing="lg">
+            <Center>
+              <Heading level={1}>Create Account</Heading>
+              <Text variant="muted">Join Band IT to start managing your band</Text>
+            </Center>
 
-          {/* Progress */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                1
-              </div>
-              <div className="w-16 h-1 bg-gray-300"></div>
-              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-bold">
-                2
-              </div>
-              <div className="w-16 h-1 bg-gray-300"></div>
-              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-bold">
-                3
-              </div>
-              <div className="w-16 h-1 bg-gray-300"></div>
-              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-bold">
-                4
-              </div>
-            </div>
-            <div className="flex justify-between mt-2 text-xs text-gray-600">
-              <span className="font-bold text-blue-600">Register</span>
-              <span>Verify</span>
-              <span>Profile</span>
-              <span>Payment</span>
-            </div>
-          </div>
+            <Progress
+              steps={[
+                { label: 'Register', status: 'active' },
+                { label: 'Verify', status: 'inactive' },
+                { label: 'Profile', status: 'inactive' },
+                { label: 'Payment', status: 'inactive' },
+              ]}
+            />
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                placeholder="John Doe"
-              />
-            </div>
+            <form onSubmit={handleSubmit}>
+              <Stack spacing="lg">
+                <Input
+                  label="Full Name"
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="John Doe"
+                />
 
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                placeholder="john@example.com"
-              />
-            </div>
+                <Input
+                  label="Email Address"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="john@example.com"
+                />
 
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                placeholder="At least 8 characters"
-                minLength={8}
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Must be at least 8 characters
-              </p>
-            </div>
+                <Input
+                  label="Password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="At least 8 characters"
+                  minLength={8}
+                  helperText="Must be at least 8 characters"
+                />
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={registerMutation.isPending}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  disabled={registerMutation.isPending}
+                  className="w-full"
+                >
+                  {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
+                </Button>
+              </Stack>
+            </form>
 
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Sign in
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
-    </main>
+            <Center>
+              <Text variant="small">
+                Already have an account? <Link href="/login">Sign in</Link>
+              </Text>
+            </Center>
+          </Stack>
+        </Card>
+      </Container>
+    </PageLayout>
   )
 }
