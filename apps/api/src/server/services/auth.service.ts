@@ -108,12 +108,17 @@ export const authService = {
       expiresIn: JWT_EXPIRES_IN,
     })
 
-    // Generate refresh token (long-lived)
-    const refreshToken = jwt.sign({ userId }, JWT_SECRET, {
+    // Generate refresh token (long-lived) with timestamp to ensure uniqueness
+    const refreshToken = jwt.sign({ userId, timestamp: Date.now() }, JWT_SECRET, {
       expiresIn: '30d',
     })
 
-    // Save refresh token to database
+    // Delete old sessions for this user
+    await prisma.session.deleteMany({
+      where: { userId },
+    })
+
+    // Save new refresh token to database
     const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRES_IN)
     await prisma.session.create({
       data: {

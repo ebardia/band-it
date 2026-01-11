@@ -38,7 +38,7 @@ export default function LoginPage() {
       }
       
       showToast(`Welcome back, ${data.user.name}!`, 'success')
-      router.push('/')
+      router.push('/user-dashboard')
     },
     onError: (error) => {
       showToast(error.message, 'error')

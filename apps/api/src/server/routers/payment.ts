@@ -81,4 +81,22 @@ export const paymentRouter = router({
         startedAt: user?.subscriptionStartedAt,
       }
     }),
+
+  /**
+   * Cancel subscription
+   */
+  cancelSubscription: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const result = await stripeService.cancelSubscription(input.userId)
+
+      return {
+        success: result.success,
+        message: result.message || 'Subscription canceled successfully',
+      }
+    }),
 })
