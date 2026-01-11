@@ -46,6 +46,7 @@ model User {
   // Relations
   memberships Member[]
   sessions    Session[]
+  bandsCreated Band[] @relation("BandCreator")
 }
 
 enum SubscriptionStatus {
@@ -77,11 +78,46 @@ model Band {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  
+  // Core Information
+  description String @db.Text
+  mission     String @db.Text
+  values      String[] // Array of band values
+  
+  // Location
+  zipcode     String?
+  
+  // Matching
+  skillsLookingFor     String[] // Skills the band is looking for
+  whatMembersWillLearn String[] // What members will learn
+  
+  // Visual
+  imageUrl    String?
+  
+  // Status
+  status      BandStatus @default(PENDING)
+  
+  // Membership Configuration
+  membershipRequirements String @db.Text // Description of requirements
+  whoCanApprove         MemberRole[] // Array of roles that can approve members
+  
+  // Metadata
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  members Member[]
+  createdBy User @relation("BandCreator", fields: [createdById], references: [id])
+  members   Member[]
+
+  @@index([createdById])
+  @@index([status])
+}
+
+enum BandStatus {
+  PENDING   // Less than 3 active members
+  ACTIVE    // 3+ active members
+  INACTIVE  // Manually deactivated or members dropped below 3
 }
 
 model Member {
@@ -89,6 +125,12 @@ model Member {
   userId    String
   bandId    String
   role      MemberRole
+  status    MemberStatus @default(PENDING)
+  
+  // Invitation/Application
+  invitedBy String? // userId of who invited them
+  notes     String? @db.Text // Application notes or invite message
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -99,6 +141,7 @@ model Member {
   @@unique([userId, bandId])
   @@index([bandId])
   @@index([userId])
+  @@index([status])
 }
 
 enum MemberRole {
@@ -108,4 +151,11 @@ enum MemberRole {
   CONDUCTOR
   VOTING_MEMBER
   OBSERVER
+}
+
+enum MemberStatus {
+  INVITED   // Invited but not yet accepted
+  PENDING   // Applied, waiting for approval
+  ACTIVE    // Active member
+  REJECTED  // Application rejected
 }

@@ -51,14 +51,14 @@ export const theme = {
       900: '#111827',
     },
   },
-  
+
   // Typography
   fonts: {
     body: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     heading: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     mono: 'JetBrains Mono, monospace',
   },
-  
+
   fontSize: {
     xs: '0.75rem',    // 12px
     sm: '0.875rem',   // 14px
@@ -69,7 +69,7 @@ export const theme = {
     '3xl': '1.875rem', // 30px
     '4xl': '2.25rem', // 36px
   },
-  
+
   // Spacing
   spacing: {
     xs: '0.25rem',   // 4px
@@ -79,7 +79,7 @@ export const theme = {
     xl: '2rem',      // 32px
     '2xl': '3rem',   // 48px
   },
-  
+
   // Border radius
   radius: {
     sm: '0.25rem',   // 4px
@@ -89,7 +89,7 @@ export const theme = {
     '2xl': '1.5rem', // 24px
     full: '9999px',
   },
-  
+
   // Shadows
   shadows: {
     sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
@@ -97,7 +97,7 @@ export const theme = {
     lg: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
     xl: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
   },
-  
+
   // Component styles
   components: {
     // Button variants
@@ -143,7 +143,7 @@ export const theme = {
         }
       }
     },
-    
+
     // Form inputs
     input: {
       base: 'w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition',
@@ -151,20 +151,20 @@ export const theme = {
       error: 'border-red-500 focus:ring-red-500',
       disabled: 'disabled:bg-gray-100 disabled:cursor-not-allowed',
     },
-    
+
     // Cards
     card: {
       base: 'bg-white rounded-2xl shadow-xl p-8',
       hover: 'hover:shadow-2xl transition',
     },
-    
+
     // Navigation
     nav: {
       container: 'bg-white border-b border-gray-200 px-4 py-3',
       link: 'text-gray-700 hover:text-blue-600 font-medium transition',
       activeLink: 'text-blue-600 font-semibold',
     },
-    
+
     // Breadcrumb
     breadcrumb: {
       container: 'flex items-center gap-2 text-sm',
@@ -172,7 +172,7 @@ export const theme = {
       separator: 'text-gray-400',
       current: 'text-gray-900 font-medium',
     },
-    
+
     // Badge/Status
     badge: {
       success: 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold',
@@ -181,7 +181,7 @@ export const theme = {
       info: 'bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold',
       neutral: 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold',
     },
-    
+
     // Progress indicator
     progress: {
       container: 'flex items-center justify-center gap-2',
@@ -191,13 +191,21 @@ export const theme = {
       lineComplete: 'w-16 h-1 bg-green-500',
       lineIncomplete: 'w-16 h-1 bg-gray-300',
     },
-    
+
     // Alert/Notice boxes
     alert: {
       info: 'p-4 bg-blue-50 border border-blue-200 rounded-lg',
       success: 'p-4 bg-green-50 border border-green-200 rounded-lg',
       warning: 'p-4 bg-yellow-50 border border-yellow-200 rounded-lg',
       danger: 'p-4 bg-red-50 border border-red-200 rounded-lg',
+    },
+
+    // Dropdown (NEW)
+    dropdown: {
+      wrapper: 'relative',
+      trigger: 'flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition',
+      menu: 'absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50',
+      item: 'w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition',
     }
   }
 }
