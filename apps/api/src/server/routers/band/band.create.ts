@@ -1,0 +1,84 @@
+import { z } from 'zod'
+import { router, publicProcedure } from '../../trpc'
+import { prisma } from '../../../lib/prisma'
+
+export const bandCreateRouter = router({
+  /**
+   * Create a new band
+   */
+  create: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        name: z.string().min(2, 'Band name must be at least 2 characters'),
+        description: z.string().min(10, 'Description must be at least 10 characters'),
+        mission: z.string().min(10, 'Mission must be at least 10 characters'),
+        values: z.string().min(1, 'Please enter at least one value'),
+        skillsLookingFor: z.string().min(1, 'Please enter skills you are looking for'),
+        whatMembersWillLearn: z.string().min(1, 'Please enter what members will learn'),
+        membershipRequirements: z.string().min(10, 'Please describe membership requirements'),
+        whoCanApprove: z.array(z.enum(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'])),
+        zipcode: z.preprocess(
+          (val) => (val === '' ? undefined : val),
+          z.string().length(5, 'Zipcode must be 5 digits').optional()
+        ),
+        imageUrl: z.preprocess(
+          (val) => (val === '' ? undefined : val),
+          z.string().url('Must be a valid URL').optional()
+        ),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Convert comma-separated strings to arrays
+      const valuesArray = input.values.split(',').map(v => v.trim()).filter(Boolean)
+      const skillsArray = input.skillsLookingFor.split(',').map(s => s.trim()).filter(Boolean)
+      const learnArray = input.whatMembersWillLearn.split(',').map(l => l.trim()).filter(Boolean)
+
+      // Generate slug from band name
+      const slug = input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+      // Check if slug already exists
+      const existingBand = await prisma.band.findUnique({
+        where: { slug },
+      })
+
+      if (existingBand) {
+        throw new Error('A band with this name already exists')
+      }
+
+      // Create band
+      const band = await prisma.band.create({
+        data: {
+          name: input.name,
+          slug,
+          description: input.description,
+          mission: input.mission,
+          values: valuesArray,
+          skillsLookingFor: skillsArray,
+          whatMembersWillLearn: learnArray,
+          membershipRequirements: input.membershipRequirements,
+          whoCanApprove: input.whoCanApprove,
+          zipcode: input.zipcode,
+          imageUrl: input.imageUrl,
+          createdById: input.userId,
+          status: 'PENDING', // Starts as pending (only 1 member)
+        },
+      })
+
+      // Add founder as first member with ACTIVE status
+      await prisma.member.create({
+        data: {
+          userId: input.userId,
+          bandId: band.id,
+          role: 'FOUNDER',
+          status: 'ACTIVE',
+        },
+      })
+
+      return {
+        success: true,
+        message: 'Band created successfully',
+        band,
+      }
+    }),
+})

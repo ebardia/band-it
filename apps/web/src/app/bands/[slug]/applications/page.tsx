@@ -11,7 +11,6 @@ import {
   Button,
   useToast,
   PageWrapper,
-  TopNav,
   DashboardContainer,
   Flex,
   Card,
@@ -19,9 +18,10 @@ import {
   Loading,
   Badge,
   List,
-  ListItem
+  ListItem,
+  BandSidebar
 } from '@/components/ui'
-import Image from 'next/image'
+import { AppNav } from '@/components/AppNav'
 
 export default function BandApplicationsPage() {
   const router = useRouter()
@@ -85,23 +85,15 @@ export default function BandApplicationsPage() {
     rejectMutation.mutate({ membershipId, approverId: userId })
   }
 
+  // Check permissions
+  const currentMember = bandData?.band?.members.find((m: any) => m.user.id === userId)
+  const canApprove = currentMember && bandData?.band?.whoCanApprove.includes(currentMember.role)
+  const isMember = !!currentMember
+
   if (isLoading) {
     return (
       <PageWrapper variant="dashboard">
-        <TopNav>
-          <Flex justify="between">
-            <Image 
-              src="/logo.png" 
-              alt="Band IT Logo" 
-              width={200} 
-              height={200}
-              priority
-            />
-            <Button variant="ghost" size="sm" onClick={() => router.push(`/bands/${slug}`)}>
-              Back to Band
-            </Button>
-          </Flex>
-        </TopNav>
+        <AppNav />
         <DashboardContainer>
           <Loading message="Loading applications..." />
         </DashboardContainer>
@@ -111,102 +103,101 @@ export default function BandApplicationsPage() {
 
   return (
     <PageWrapper variant="dashboard">
-      <TopNav>
-        <Flex justify="between">
-          <Image 
-            src="/logo.png" 
-            alt="Band IT Logo" 
-            width={200} 
-            height={200}
-            priority
-          />
-          <Button variant="ghost" size="sm" onClick={() => router.push(`/bands/${slug}`)}>
-            Back to Band
-          </Button>
-        </Flex>
-      </TopNav>
+      <AppNav />
 
       <DashboardContainer>
-        <Stack spacing="xl">
-          <Heading level={1}>Pending Applications</Heading>
-          <Text variant="muted">Review and manage membership applications for {bandData?.band?.name}</Text>
+        <Flex gap="md" align="start">
+          {/* Left Sidebar */}
+          <BandSidebar 
+            bandSlug={slug} 
+            canApprove={canApprove} 
+            isMember={isMember}
+          />
 
-          {applicationsData?.applications && applicationsData.applications.length > 0 ? (
-            <Stack spacing="md">
-              {applicationsData.applications.map((application: any) => (
-                <Card key={application.id}>
-                  <Stack spacing="md">
-                    <Flex justify="between">
-                      <Heading level={3}>{application.user.name}</Heading>
-                      <Badge variant="warning">Pending</Badge>
-                    </Flex>
+          {/* Main Content */}
+          <div className="flex-1 bg-white rounded-lg shadow p-8">
+            <Stack spacing="xl">
+              <Heading level={1}>Pending Applications</Heading>
+              <Text variant="muted">Review and manage membership applications for {bandData?.band?.name}</Text>
 
-                    <Stack spacing="sm">
-                      <Text variant="small" weight="semibold">Why they want to join:</Text>
-                      <Text variant="small">{application.notes}</Text>
-                    </Stack>
+              {applicationsData?.applications && applicationsData.applications.length > 0 ? (
+                <Stack spacing="md">
+                  {applicationsData.applications.map((application: any) => (
+                    <Card key={application.id}>
+                      <Stack spacing="md">
+                        <Flex justify="between">
+                          <Heading level={3}>{application.user.name}</Heading>
+                          <Badge variant="warning">Pending</Badge>
+                        </Flex>
 
-                    {application.user.strengths && application.user.strengths.length > 0 && (
-                      <Stack spacing="sm">
-                        <Text variant="small" weight="semibold">Strengths:</Text>
-                        <List>
-                          {application.user.strengths.map((strength: string, idx: number) => (
-                            <ListItem key={idx}>{strength}</ListItem>
-                          ))}
-                        </List>
+                        <Stack spacing="sm">
+                          <Text variant="small" weight="semibold">Why they want to join:</Text>
+                          <Text variant="small">{application.notes}</Text>
+                        </Stack>
+
+                        {application.user.strengths && application.user.strengths.length > 0 && (
+                          <Stack spacing="sm">
+                            <Text variant="small" weight="semibold">Strengths:</Text>
+                            <List>
+                              {application.user.strengths.map((strength: string, idx: number) => (
+                                <ListItem key={idx}>{strength}</ListItem>
+                              ))}
+                            </List>
+                          </Stack>
+                        )}
+
+                        {application.user.passions && application.user.passions.length > 0 && (
+                          <Stack spacing="sm">
+                            <Text variant="small" weight="semibold">Passions:</Text>
+                            <List>
+                              {application.user.passions.map((passion: string, idx: number) => (
+                                <ListItem key={idx}>{passion}</ListItem>
+                              ))}
+                            </List>
+                          </Stack>
+                        )}
+
+                        {application.user.developmentPath && application.user.developmentPath.length > 0 && (
+                          <Stack spacing="sm">
+                            <Text variant="small" weight="semibold">What they want to learn:</Text>
+                            <List>
+                              {application.user.developmentPath.map((goal: string, idx: number) => (
+                                <ListItem key={idx}>{goal}</ListItem>
+                              ))}
+                            </List>
+                          </Stack>
+                        )}
+
+                        <Flex gap="md">
+                          <Button
+                            variant="primary"
+                            size="md"
+                            onClick={() => handleApprove(application.id)}
+                            disabled={approveMutation.isPending || rejectMutation.isPending}
+                          >
+                            {approveMutation.isPending ? 'Approving...' : 'Approve'}
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="md"
+                            onClick={() => handleReject(application.id)}
+                            disabled={approveMutation.isPending || rejectMutation.isPending}
+                          >
+                            {rejectMutation.isPending ? 'Rejecting...' : 'Reject'}
+                          </Button>
+                        </Flex>
                       </Stack>
-                    )}
-
-                    {application.user.passions && application.user.passions.length > 0 && (
-                      <Stack spacing="sm">
-                        <Text variant="small" weight="semibold">Passions:</Text>
-                        <List>
-                          {application.user.passions.map((passion: string, idx: number) => (
-                            <ListItem key={idx}>{passion}</ListItem>
-                          ))}
-                        </List>
-                      </Stack>
-                    )}
-
-                    {application.user.developmentPath && application.user.developmentPath.length > 0 && (
-                      <Stack spacing="sm">
-                        <Text variant="small" weight="semibold">What they want to learn:</Text>
-                        <List>
-                          {application.user.developmentPath.map((goal: string, idx: number) => (
-                            <ListItem key={idx}>{goal}</ListItem>
-                          ))}
-                        </List>
-                      </Stack>
-                    )}
-
-                    <Flex gap="md">
-                      <Button
-                        variant="primary"
-                        size="md"
-                        onClick={() => handleApprove(application.id)}
-                        disabled={approveMutation.isPending || rejectMutation.isPending}
-                      >
-                        {approveMutation.isPending ? 'Approving...' : 'Approve'}
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="md"
-                        onClick={() => handleReject(application.id)}
-                        disabled={approveMutation.isPending || rejectMutation.isPending}
-                      >
-                        {rejectMutation.isPending ? 'Rejecting...' : 'Reject'}
-                      </Button>
-                    </Flex>
-                  </Stack>
-                </Card>
-              ))}
+                    </Card>
+                  ))}
+                </Stack>
+              ) : (
+                <Alert variant="info">
+                  <Text>No pending applications at this time.</Text>
+                </Alert>
+              )}
             </Stack>
-          ) : (
-            <Alert variant="info">
-              <Text>No pending applications at this time.</Text>
-            </Alert>
-          )}
-        </Stack>
+          </div>
+        </Flex>
       </DashboardContainer>
     </PageWrapper>
   )
