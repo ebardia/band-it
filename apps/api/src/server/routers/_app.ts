@@ -3,6 +3,7 @@ import { testRouter } from './test'
 import { authRouter } from './auth'
 import { paymentRouter } from './payment'
 import { bandRouter } from './band'
+import { notificationRouter } from './notification'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -10,6 +11,7 @@ export const appRouter = router({
   auth: authRouter,
   payment: paymentRouter,
   band: bandRouter,
+  notification: notificationRouter,
 })
 
 // Export type definition of API

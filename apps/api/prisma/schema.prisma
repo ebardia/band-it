@@ -40,13 +40,18 @@ model User {
   // Profile Completion
   profileCompleted Boolean @default(false)
   
+  // Notification Settings
+  emailNotificationFrequency EmailFrequency @default(DAILY)
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  memberships Member[]
-  sessions    Session[]
-  bandsCreated Band[] @relation("BandCreator")
+  memberships             Member[]
+  sessions                Session[]
+  bandsCreated            Band[] @relation("BandCreator")
+  notifications           Notification[]
+  notificationPreferences NotificationPreference[]
 }
 
 enum SubscriptionStatus {
@@ -55,6 +60,14 @@ enum SubscriptionStatus {
   PAST_DUE        // Payment failed
   CANCELED        // Subscription canceled
   TRIALING        // On trial (if we add trials later)
+}
+
+enum EmailFrequency {
+  REAL_TIME   // Send immediately (for urgent only)
+  HOURLY      // Every hour
+  DAILY       // Once per day (morning)
+  WEEKLY      // Once per week (Monday morning)
+  NEVER       // No emails
 }
 
 model Session {
@@ -67,6 +80,95 @@ model Session {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id              String   @id @default(cuid())
+  userId          String
+  type            NotificationType
+  title           String
+  message         String?
+  actionUrl       String?
+  priority        NotificationPriority @default(MEDIUM)
+  isRead          Boolean  @default(false)
+  isArchived      Boolean  @default(false)
+  emailedAt       DateTime? // When it was included in email digest
+  readAt          DateTime?
+  archivedAt      DateTime?
+  
+  // Flexible metadata
+  metadata        Json?
+  
+  // Related entities
+  relatedId       String?
+  relatedType     String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([userId, type])
+  @@index([emailedAt])
+}
+
+enum NotificationType {
+  // Band invitations
+  BAND_INVITE_RECEIVED
+  BAND_INVITE_ACCEPTED
+  BAND_INVITE_DECLINED
+  
+  // Band applications
+  BAND_APPLICATION_RECEIVED
+  BAND_APPLICATION_APPROVED
+  BAND_APPLICATION_REJECTED
+  
+  // Band membership
+  BAND_MEMBER_JOINED
+  BAND_MEMBER_LEFT
+  BAND_STATUS_CHANGED
+  
+  // Band updates
+  BAND_DETAILS_UPDATED
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model NotificationTemplate {
+  id              String @id @default(cuid())
+  type            NotificationType @unique
+  title           String
+  message         String
+  emailSubject    String
+  emailBody       String
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model NotificationPreference {
+  id              String @id @default(cuid())
+  userId          String
+  type            NotificationType
+  inApp           Boolean @default(true)   // Show in app
+  email           Boolean @default(true)   // Include in email digest
+  
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, type])
   @@index([userId])
 }
 

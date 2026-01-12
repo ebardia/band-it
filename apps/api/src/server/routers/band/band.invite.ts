@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
+import { notificationService } from '../../../services/notification.service'
 
 export const bandInviteRouter = router({
   /**
@@ -71,7 +72,10 @@ export const bandInviteRouter = router({
             bandId: input.bandId,
           },
         },
-        include: { band: true },
+        include: { 
+          band: true,
+          user: true,
+        },
       })
 
       if (!inviterMembership) {
@@ -100,6 +104,12 @@ export const bandInviteRouter = router({
         }
       }
 
+      // Get invitee details
+      const invitee = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { name: true },
+      })
+
       // Create invitation
       const membership = await prisma.member.create({
         data: {
@@ -119,6 +129,22 @@ export const bandInviteRouter = router({
             },
           },
         },
+      })
+
+      // Create notification for invitee
+      await notificationService.create({
+        userId: input.userId,
+        type: 'BAND_INVITE_RECEIVED',
+        actionUrl: `/invitations`,
+        priority: 'HIGH',
+        metadata: {
+          inviterName: inviterMembership.user.name,
+          bandName: inviterMembership.band.name,
+          bandSlug: inviterMembership.band.slug,
+          membershipId: membership.id,
+        },
+        relatedId: input.bandId,
+        relatedType: 'BAND',
       })
 
       return {
@@ -177,7 +203,10 @@ export const bandInviteRouter = router({
     .mutation(async ({ input }) => {
       const membership = await prisma.member.findUnique({
         where: { id: input.membershipId },
-        include: { band: true },
+        include: { 
+          band: true,
+          user: true,
+        },
       })
 
       if (!membership || membership.userId !== input.userId) {
@@ -188,11 +217,60 @@ export const bandInviteRouter = router({
         throw new Error('This invitation is no longer valid')
       }
 
+      // Get inviter details
+      const inviter = membership.invitedBy ? await prisma.user.findUnique({
+        where: { id: membership.invitedBy },
+        select: { id: true, name: true },
+      }) : null
+
       // Accept the invitation
       const updatedMembership = await prisma.member.update({
         where: { id: input.membershipId },
         data: { status: 'ACTIVE' },
       })
+
+      // Notify inviter
+      if (inviter) {
+        await notificationService.create({
+          userId: inviter.id,
+          type: 'BAND_INVITE_ACCEPTED',
+          actionUrl: `/bands/${membership.band.slug}`,
+          priority: 'MEDIUM',
+          metadata: {
+            userName: membership.user.name,
+            bandName: membership.band.name,
+            bandSlug: membership.band.slug,
+          },
+          relatedId: membership.bandId,
+          relatedType: 'BAND',
+        })
+      }
+
+      // Notify all band members
+      const allMembers = await prisma.member.findMany({
+        where: {
+          bandId: membership.bandId,
+          status: 'ACTIVE',
+          userId: { not: input.userId }, // Don't notify the new member
+        },
+        select: { userId: true },
+      })
+
+      for (const member of allMembers) {
+        await notificationService.create({
+          userId: member.userId,
+          type: 'BAND_MEMBER_JOINED',
+          actionUrl: `/bands/${membership.band.slug}`,
+          priority: 'LOW',
+          metadata: {
+            userName: membership.user.name,
+            bandName: membership.band.name,
+            bandSlug: membership.band.slug,
+          },
+          relatedId: membership.bandId,
+          relatedType: 'BAND',
+        })
+      }
 
       // Check if band should become active (3+ members)
       const activeMembers = await prisma.member.count({
@@ -207,6 +285,31 @@ export const bandInviteRouter = router({
           where: { id: membership.bandId },
           data: { status: 'ACTIVE' },
         })
+
+        // Notify all members that band is now active
+        const allActiveMem = await prisma.member.findMany({
+          where: {
+            bandId: membership.bandId,
+            status: 'ACTIVE',
+          },
+          select: { userId: true },
+        })
+
+        for (const member of allActiveMem) {
+          await notificationService.create({
+            userId: member.userId,
+            type: 'BAND_STATUS_CHANGED',
+            actionUrl: `/bands/${membership.band.slug}`,
+            priority: 'HIGH',
+            metadata: {
+              bandName: membership.band.name,
+              bandSlug: membership.band.slug,
+              status: 'ACTIVE',
+            },
+            relatedId: membership.bandId,
+            relatedType: 'BAND',
+          })
+        }
       }
 
       return {
@@ -229,6 +332,10 @@ export const bandInviteRouter = router({
     .mutation(async ({ input }) => {
       const membership = await prisma.member.findUnique({
         where: { id: input.membershipId },
+        include: {
+          band: true,
+          user: true,
+        },
       })
 
       if (!membership || membership.userId !== input.userId) {
@@ -239,17 +346,41 @@ export const bandInviteRouter = router({
         throw new Error('This invitation is no longer valid')
       }
 
+      // Get inviter details
+      const inviter = membership.invitedBy ? await prisma.user.findUnique({
+        where: { id: membership.invitedBy },
+        select: { id: true },
+      }) : null
+
       // Delete the invitation
       await prisma.member.delete({
         where: { id: input.membershipId },
       })
+
+      // Notify inviter
+      if (inviter) {
+        await notificationService.create({
+          userId: inviter.id,
+          type: 'BAND_INVITE_DECLINED',
+          actionUrl: `/bands/${membership.band.slug}`,
+          priority: 'LOW',
+          metadata: {
+            userName: membership.user.name,
+            bandName: membership.band.name,
+            bandSlug: membership.band.slug,
+          },
+          relatedId: membership.bandId,
+          relatedType: 'BAND',
+        })
+      }
 
       return {
         success: true,
         message: 'Invitation declined',
       }
     }),
-    /**
+
+  /**
    * Leave a band
    */
   leaveBand: publicProcedure
@@ -268,7 +399,10 @@ export const bandInviteRouter = router({
             bandId: input.bandId,
           },
         },
-        include: { band: true },
+        include: { 
+          band: true,
+          user: true,
+        },
       })
 
       if (!membership) {
@@ -285,6 +419,31 @@ export const bandInviteRouter = router({
         where: { id: membership.id },
       })
 
+      // Notify all remaining members
+      const remainingMembers = await prisma.member.findMany({
+        where: {
+          bandId: input.bandId,
+          status: 'ACTIVE',
+        },
+        select: { userId: true },
+      })
+
+      for (const member of remainingMembers) {
+        await notificationService.create({
+          userId: member.userId,
+          type: 'BAND_MEMBER_LEFT',
+          actionUrl: `/bands/${membership.band.slug}`,
+          priority: 'LOW',
+          metadata: {
+            userName: membership.user.name,
+            bandName: membership.band.name,
+            bandSlug: membership.band.slug,
+          },
+          relatedId: input.bandId,
+          relatedType: 'BAND',
+        })
+      }
+
       // Check if band should go back to PENDING (less than 3 active members)
       const activeMembers = await prisma.member.count({
         where: {
@@ -298,6 +457,23 @@ export const bandInviteRouter = router({
           where: { id: input.bandId },
           data: { status: 'PENDING' },
         })
+
+        // Notify remaining members
+        for (const member of remainingMembers) {
+          await notificationService.create({
+            userId: member.userId,
+            type: 'BAND_STATUS_CHANGED',
+            actionUrl: `/bands/${membership.band.slug}`,
+            priority: 'HIGH',
+            metadata: {
+              bandName: membership.band.name,
+              bandSlug: membership.band.slug,
+              status: 'PENDING',
+            },
+            relatedId: input.bandId,
+            relatedType: 'BAND',
+          })
+        }
       }
 
       return {

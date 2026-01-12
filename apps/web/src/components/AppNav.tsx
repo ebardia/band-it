@@ -1,14 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
-import { Dropdown, DropdownItem, useToast } from '@/components/ui'
+import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown } from '@/components/ui'
 import { theme } from '@band-it/shared'
 
 export function AppNav() {
   const router = useRouter()
   const pathname = usePathname()
   const { showToast } = useToast()
+  const [showNotifications, setShowNotifications] = useState(false)
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken')
@@ -53,21 +55,33 @@ export function AppNav() {
           ))}
         </div>
 
-        {/* Account Dropdown */}
-        <Dropdown trigger={<span>Account ▼</span>}>
-          <DropdownItem onClick={() => router.push('/user-dashboard/profile')}>
-            Profile
-          </DropdownItem>
-          <DropdownItem onClick={() => router.push('/user-dashboard/subscription')}>
-            Subscription
-          </DropdownItem>
-          <DropdownItem onClick={() => router.push('/user-dashboard/settings')}>
-            Settings
-          </DropdownItem>
-          <DropdownItem onClick={handleLogout}>
-            Logout
-          </DropdownItem>
-        </Dropdown>
+        {/* Right Side: Bell + Account Dropdown */}
+        <div className="flex items-center gap-4">
+          {/* Notification Bell with Dropdown */}
+          <div className="relative">
+            <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
+            <NotificationsDropdown 
+              isOpen={showNotifications} 
+              onClose={() => setShowNotifications(false)} 
+            />
+          </div>
+
+          {/* Account Dropdown */}
+          <Dropdown trigger={<span>Account ▼</span>}>
+            <DropdownItem onClick={() => router.push('/user-dashboard/profile')}>
+              Profile
+            </DropdownItem>
+            <DropdownItem onClick={() => router.push('/user-dashboard/subscription')}>
+              Subscription
+            </DropdownItem>
+            <DropdownItem onClick={() => router.push('/user-dashboard/settings')}>
+              Settings
+            </DropdownItem>
+            <DropdownItem onClick={handleLogout}>
+              Logout
+            </DropdownItem>
+          </Dropdown>
+        </div>
       </div>
     </nav>
   )

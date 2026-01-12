@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
+import { notificationService } from '../../../services/notification.service'
 
 export const bandApplicationRouter = router({
   /**
@@ -37,6 +38,21 @@ export const bandApplicationRouter = router({
         }
       }
 
+      // Get band and applicant details
+      const band = await prisma.band.findUnique({
+        where: { id: input.bandId },
+        select: { name: true, slug: true, whoCanApprove: true },
+      })
+
+      const applicant = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { name: true },
+      })
+
+      if (!band || !applicant) {
+        throw new Error('Band or user not found')
+      }
+
       // Create membership application
       const membership = await prisma.member.create({
         data: {
@@ -47,6 +63,33 @@ export const bandApplicationRouter = router({
           notes: input.notes,
         },
       })
+
+      // Notify members who can approve
+      const approvers = await prisma.member.findMany({
+        where: {
+          bandId: input.bandId,
+          status: 'ACTIVE',
+          role: { in: band.whoCanApprove },
+        },
+        select: { userId: true },
+      })
+
+      for (const approver of approvers) {
+        await notificationService.create({
+          userId: approver.userId,
+          type: 'BAND_APPLICATION_RECEIVED',
+          actionUrl: `/bands/${band.slug}/applications`,
+          priority: 'MEDIUM',
+          metadata: {
+            userName: applicant.name,
+            bandName: band.name,
+            bandSlug: band.slug,
+            membershipId: membership.id,
+          },
+          relatedId: input.bandId,
+          relatedType: 'BAND',
+        })
+      }
 
       return {
         success: true,
@@ -107,7 +150,10 @@ export const bandApplicationRouter = router({
       // Get the membership
       const membership = await prisma.member.findUnique({
         where: { id: input.membershipId },
-        include: { band: true },
+        include: { 
+          band: true,
+          user: true,
+        },
       })
 
       if (!membership) {
@@ -134,6 +180,46 @@ export const bandApplicationRouter = router({
         data: { status: 'ACTIVE' },
       })
 
+      // Notify applicant
+      await notificationService.create({
+        userId: membership.userId,
+        type: 'BAND_APPLICATION_APPROVED',
+        actionUrl: `/bands/${membership.band.slug}`,
+        priority: 'HIGH',
+        metadata: {
+          bandName: membership.band.name,
+          bandSlug: membership.band.slug,
+        },
+        relatedId: membership.bandId,
+        relatedType: 'BAND',
+      })
+
+      // Notify all other band members
+      const allMembers = await prisma.member.findMany({
+        where: {
+          bandId: membership.bandId,
+          status: 'ACTIVE',
+          userId: { not: membership.userId }, // Don't notify the new member again
+        },
+        select: { userId: true },
+      })
+
+      for (const member of allMembers) {
+        await notificationService.create({
+          userId: member.userId,
+          type: 'BAND_MEMBER_JOINED',
+          actionUrl: `/bands/${membership.band.slug}`,
+          priority: 'LOW',
+          metadata: {
+            userName: membership.user.name,
+            bandName: membership.band.name,
+            bandSlug: membership.band.slug,
+          },
+          relatedId: membership.bandId,
+          relatedType: 'BAND',
+        })
+      }
+
       // Check if band should become active (3+ members)
       const activeMembers = await prisma.member.count({
         where: {
@@ -147,6 +233,31 @@ export const bandApplicationRouter = router({
           where: { id: membership.bandId },
           data: { status: 'ACTIVE' },
         })
+
+        // Notify all members that band is now active
+        const allActiveMem = await prisma.member.findMany({
+          where: {
+            bandId: membership.bandId,
+            status: 'ACTIVE',
+          },
+          select: { userId: true },
+        })
+
+        for (const member of allActiveMem) {
+          await notificationService.create({
+            userId: member.userId,
+            type: 'BAND_STATUS_CHANGED',
+            actionUrl: `/bands/${membership.band.slug}`,
+            priority: 'HIGH',
+            metadata: {
+              bandName: membership.band.name,
+              bandSlug: membership.band.slug,
+              status: 'ACTIVE',
+            },
+            relatedId: membership.bandId,
+            relatedType: 'BAND',
+          })
+        }
       }
 
       return {
@@ -170,7 +281,10 @@ export const bandApplicationRouter = router({
       // Get the membership
       const membership = await prisma.member.findUnique({
         where: { id: input.membershipId },
-        include: { band: true },
+        include: { 
+          band: true,
+          user: true,
+        },
       })
 
       if (!membership) {
@@ -195,6 +309,20 @@ export const bandApplicationRouter = router({
       const updatedMembership = await prisma.member.update({
         where: { id: input.membershipId },
         data: { status: 'REJECTED' },
+      })
+
+      // Notify applicant
+      await notificationService.create({
+        userId: membership.userId,
+        type: 'BAND_APPLICATION_REJECTED',
+        actionUrl: `/bands`,
+        priority: 'LOW',
+        metadata: {
+          bandName: membership.band.name,
+          bandSlug: membership.band.slug,
+        },
+        relatedId: membership.bandId,
+        relatedType: 'BAND',
       })
 
       return {
