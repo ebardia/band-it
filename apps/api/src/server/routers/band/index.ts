@@ -17,6 +17,7 @@ export const bandRouter = router({
   // Applications
   applyToJoin: bandApplicationRouter.applyToJoin,
   getPendingApplications: bandApplicationRouter.getPendingApplications,
+  getMyApplicationsToReview: bandApplicationRouter.getMyApplicationsToReview,
   approveApplication: bandApplicationRouter.approveApplication,
   rejectApplication: bandApplicationRouter.rejectApplication,
   

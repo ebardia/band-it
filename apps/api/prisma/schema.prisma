@@ -21,10 +21,10 @@ model User {
   zipcode   String?
   
   // Profile - Development & Skills
-  strengths        String[] // Array of strengths
-  weaknesses       String[] // Array of weaknesses
-  passions         String[] // Array of passions
-  developmentPath  String[] // Array of development goals
+  strengths        String[]
+  weaknesses       String[]
+  passions         String[]
+  developmentPath  String[]
   
   // Email Verification
   emailVerified    Boolean  @default(false)
@@ -52,22 +52,24 @@ model User {
   bandsCreated            Band[] @relation("BandCreator")
   notifications           Notification[]
   notificationPreferences NotificationPreference[]
+  proposalsCreated        Proposal[] @relation("ProposalCreator")
+  votes                   Vote[]
 }
 
 enum SubscriptionStatus {
-  INCOMPLETE      // Just registered, no payment yet
-  ACTIVE          // Paying and verified
-  PAST_DUE        // Payment failed
-  CANCELED        // Subscription canceled
-  TRIALING        // On trial (if we add trials later)
+  INCOMPLETE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
 }
 
 enum EmailFrequency {
-  REAL_TIME   // Send immediately (for urgent only)
-  HOURLY      // Every hour
-  DAILY       // Once per day (morning)
-  WEEKLY      // Once per week (Monday morning)
-  NEVER       // No emails
+  REAL_TIME
+  HOURLY
+  DAILY
+  WEEKLY
+  NEVER
 }
 
 model Session {
@@ -77,7 +79,6 @@ model Session {
   expiresAt    DateTime
   createdAt    DateTime @default(now())
 
-  // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -97,21 +98,18 @@ model Notification {
   priority        NotificationPriority @default(MEDIUM)
   isRead          Boolean  @default(false)
   isArchived      Boolean  @default(false)
-  emailedAt       DateTime? // When it was included in email digest
+  emailedAt       DateTime?
   readAt          DateTime?
   archivedAt      DateTime?
   
-  // Flexible metadata
   metadata        Json?
   
-  // Related entities
   relatedId       String?
   relatedType     String?
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  // Relations
   user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId, isRead])
@@ -138,6 +136,13 @@ enum NotificationType {
   
   // Band updates
   BAND_DETAILS_UPDATED
+  
+  // Proposals
+  PROPOSAL_CREATED
+  PROPOSAL_VOTE_NEEDED
+  PROPOSAL_APPROVED
+  PROPOSAL_REJECTED
+  PROPOSAL_CLOSED
 }
 
 enum NotificationPriority {
@@ -163,8 +168,8 @@ model NotificationPreference {
   id              String @id @default(cuid())
   userId          String
   type            NotificationType
-  inApp           Boolean @default(true)   // Show in app
-  email           Boolean @default(true)   // Include in email digest
+  inApp           Boolean @default(true)
+  email           Boolean @default(true)
   
   user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
@@ -184,14 +189,14 @@ model Band {
   // Core Information
   description String @db.Text
   mission     String @db.Text
-  values      String[] // Array of band values
+  values      String[]
   
   // Location
   zipcode     String?
   
   // Matching
-  skillsLookingFor     String[] // Skills the band is looking for
-  whatMembersWillLearn String[] // What members will learn
+  skillsLookingFor     String[]
+  whatMembersWillLearn String[]
   
   // Visual
   imageUrl    String?
@@ -200,8 +205,13 @@ model Band {
   status      BandStatus @default(PENDING)
   
   // Membership Configuration
-  membershipRequirements String @db.Text // Description of requirements
-  whoCanApprove         MemberRole[] // Array of roles that can approve members
+  membershipRequirements String @db.Text
+  whoCanApprove         MemberRole[]
+  
+  // Voting Configuration
+  votingMethod          VotingMethod @default(SIMPLE_MAJORITY)
+  votingPeriodDays      Int @default(7)
+  whoCanCreateProposals MemberRole[] @default([FOUNDER, GOVERNOR, MODERATOR, CONDUCTOR])
   
   // Metadata
   createdById String
@@ -211,15 +221,23 @@ model Band {
   // Relations
   createdBy User @relation("BandCreator", fields: [createdById], references: [id])
   members   Member[]
+  proposals Proposal[]
 
   @@index([createdById])
   @@index([status])
 }
 
 enum BandStatus {
-  PENDING   // Less than 3 active members
-  ACTIVE    // 3+ active members
-  INACTIVE  // Manually deactivated or members dropped below 3
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+enum VotingMethod {
+  SIMPLE_MAJORITY      // >50%
+  SUPERMAJORITY_66     // >66%
+  SUPERMAJORITY_75     // >75%
+  UNANIMOUS            // 100%
 }
 
 model Member {
@@ -229,14 +247,12 @@ model Member {
   role      MemberRole
   status    MemberStatus @default(PENDING)
   
-  // Invitation/Application
-  invitedBy String? // userId of who invited them
-  notes     String? @db.Text // Application notes or invite message
+  invitedBy String?
+  notes     String? @db.Text
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   band Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
 
@@ -256,8 +272,112 @@ enum MemberRole {
 }
 
 enum MemberStatus {
-  INVITED   // Invited but not yet accepted
-  PENDING   // Applied, waiting for approval
-  ACTIVE    // Active member
-  REJECTED  // Application rejected
+  INVITED
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+// ============================================
+// PROPOSALS
+// ============================================
+
+model Proposal {
+  id            String   @id @default(cuid())
+  bandId        String
+  createdById   String
+  
+  // Core
+  title         String
+  description   String @db.Text
+  
+  // Type & Priority
+  type          ProposalType @default(GENERAL)
+  priority      ProposalPriority @default(MEDIUM)
+  
+  // Problem & Outcome
+  problemStatement    String? @db.Text
+  expectedOutcome     String? @db.Text
+  risksAndConcerns    String? @db.Text
+  
+  // Budget
+  budgetRequested     Decimal? @db.Decimal(12, 2)
+  budgetBreakdown     String? @db.Text
+  fundingSource       String?
+  
+  // Timeline
+  proposedStartDate   DateTime?
+  proposedEndDate     DateTime?
+  milestones          String? @db.Text
+  
+  // Attachments & Links
+  attachmentUrls      String[]
+  externalLinks       String[]
+  
+  // Voting
+  status        ProposalStatus @default(OPEN)
+  votingEndsAt  DateTime
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  closedAt      DateTime?
+
+  // Relations
+  band      Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  createdBy User @relation("ProposalCreator", fields: [createdById], references: [id])
+  votes     Vote[]
+
+  @@index([bandId])
+  @@index([createdById])
+  @@index([status])
+  @@index([votingEndsAt])
+  @@index([type])
+}
+
+enum ProposalType {
+  GENERAL
+  BUDGET
+  PROJECT
+  POLICY
+  MEMBERSHIP
+}
+
+enum ProposalPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ProposalStatus {
+  OPEN
+  CLOSED
+  APPROVED
+  REJECTED
+}
+
+model Vote {
+  id          String   @id @default(cuid())
+  proposalId  String
+  userId      String
+  
+  vote        VoteType
+  comment     String? @db.Text
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, userId])
+  @@index([proposalId])
+  @@index([userId])
+}
+
+enum VoteType {
+  YES
+  NO
+  ABSTAIN
 }

@@ -331,4 +331,77 @@ export const bandApplicationRouter = router({
         membership: updatedMembership,
       }
     }),
+
+    /**
+   * Get all pending applications for bands where user can approve
+   */
+  getMyApplicationsToReview: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      // Get all bands where user is a member
+      const memberships = await prisma.member.findMany({
+        where: {
+          userId: input.userId,
+          status: 'ACTIVE',
+        },
+        include: {
+          band: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              whoCanApprove: true,
+            },
+          },
+        },
+      })
+
+      // Filter to bands where user can approve
+      const bandsWhereCanApprove = memberships.filter(
+        (m) => m.band.whoCanApprove.includes(m.role)
+      )
+
+      if (bandsWhereCanApprove.length === 0) {
+        return { success: true, applications: [] }
+      }
+
+      // Get all pending applications for those bands
+      const applications = await prisma.member.findMany({
+        where: {
+          bandId: { in: bandsWhereCanApprove.map((m) => m.bandId) },
+          status: 'PENDING',
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              strengths: true,
+              passions: true,
+              developmentPath: true,
+            },
+          },
+          band: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      })
+
+      return {
+        success: true,
+        applications,
+      }
+    }),
 })

@@ -79,6 +79,43 @@ const templates = [
     emailSubject: '{bandName} has been updated',
     emailBody: '{bandName} has been updated. Check out the changes:\n{actionUrl}',
   },
+
+  // Proposals
+  {
+    type: NotificationType.PROPOSAL_CREATED,
+    title: 'New Proposal',
+    message: '{creatorName} created "{proposalTitle}" in {bandName}',
+    emailSubject: 'New proposal in {bandName}',
+    emailBody: 'Hi,\n\n{creatorName} has created a new proposal "{proposalTitle}" in {bandName}.\n\nVoting ends: {votingEndsAt}\n\nCast your vote:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.PROPOSAL_VOTE_NEEDED,
+    title: 'Vote Needed',
+    message: 'Your vote is needed on "{proposalTitle}" in {bandName}',
+    emailSubject: 'Your vote is needed in {bandName}',
+    emailBody: 'Hi,\n\nThe proposal "{proposalTitle}" in {bandName} needs your vote.\n\nVoting ends: {votingEndsAt}\n\nCast your vote:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.PROPOSAL_APPROVED,
+    title: 'Proposal Approved',
+    message: '"{proposalTitle}" was approved in {bandName}',
+    emailSubject: 'Proposal approved in {bandName}',
+    emailBody: 'The proposal "{proposalTitle}" in {bandName} has been approved.',
+  },
+  {
+    type: NotificationType.PROPOSAL_REJECTED,
+    title: 'Proposal Rejected',
+    message: '"{proposalTitle}" was rejected in {bandName}',
+    emailSubject: 'Proposal rejected in {bandName}',
+    emailBody: 'The proposal "{proposalTitle}" in {bandName} has been rejected.',
+  },
+  {
+    type: NotificationType.PROPOSAL_CLOSED,
+    title: 'Proposal Closed',
+    message: '"{proposalTitle}" has been closed',
+    emailSubject: 'Proposal closed in {bandName}',
+    emailBody: 'The proposal "{proposalTitle}" in {bandName} has been closed.',
+  },
 ]
 
 export async function seedNotificationTemplates() {
