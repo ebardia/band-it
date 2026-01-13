@@ -54,6 +54,11 @@ model User {
   notificationPreferences NotificationPreference[]
   proposalsCreated        Proposal[] @relation("ProposalCreator")
   votes                   Vote[]
+  projectsCreated         Project[] @relation("ProjectCreator")
+  projectsLed             Project[] @relation("ProjectLead")
+  tasksCreated            Task[] @relation("TaskCreator")
+  tasksAssigned           Task[] @relation("TaskAssignee")
+  tasksVerified           Task[] @relation("TaskVerifier")
 }
 
 enum SubscriptionStatus {
@@ -143,6 +148,19 @@ enum NotificationType {
   PROPOSAL_APPROVED
   PROPOSAL_REJECTED
   PROPOSAL_CLOSED
+  
+  // Projects
+  PROJECT_CREATED
+  PROJECT_STATUS_CHANGED
+  
+  // Tasks
+  TASK_CREATED
+  TASK_ASSIGNED
+  TASK_STATUS_CHANGED
+  TASK_COMPLETED
+  TASK_VERIFICATION_NEEDED
+  TASK_VERIFIED
+  TASK_REJECTED
 }
 
 enum NotificationPriority {
@@ -222,6 +240,8 @@ model Band {
   createdBy User @relation("BandCreator", fields: [createdById], references: [id])
   members   Member[]
   proposals Proposal[]
+  projects  Project[]
+  tasks     Task[]
 
   @@index([createdById])
   @@index([status])
@@ -326,6 +346,7 @@ model Proposal {
   band      Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
   createdBy User @relation("ProposalCreator", fields: [createdById], references: [id])
   votes     Vote[]
+  projects  Project[]
 
   @@index([bandId])
   @@index([createdById])
@@ -380,4 +401,183 @@ enum VoteType {
   YES
   NO
   ABSTAIN
+}
+
+// ============================================
+// PROJECTS
+// ============================================
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  bandId      String
+  proposalId  String
+  
+  // Core
+  name        String
+  description String?  @db.Text
+  status      ProjectStatus @default(PLANNING)
+  priority    ProjectPriority @default(MEDIUM)
+  
+  // Timeline
+  startDate   DateTime?
+  targetDate  DateTime?
+  completedAt DateTime?
+  
+  // Budget & Effort
+  estimatedBudget Decimal? @db.Decimal(12, 2)
+  estimatedHours  Int?
+  
+  // Deliverables & Success
+  deliverables    String?  @db.Text
+  successCriteria String?  @db.Text
+  
+  // Organization
+  tags            String[]
+  orderIndex      Int      @default(0)
+  
+  // Dependencies (stored as comma-separated project IDs for simplicity)
+  dependsOn       String[]
+  
+  // Progress tracking
+  totalTasks      Int @default(0)
+  completedTasks  Int @default(0)
+  
+  // AI
+  aiGenerated     Boolean @default(false)
+  aiValidation    Json?
+  
+  // Assignment
+  leadId          String?
+  
+  // Metadata
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  band      Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  proposal  Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  createdBy User     @relation("ProjectCreator", fields: [createdById], references: [id])
+  lead      User?    @relation("ProjectLead", fields: [leadId], references: [id])
+  tasks     Task[]
+
+  @@index([bandId])
+  @@index([proposalId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+  @@index([leadId])
+}
+
+// ============================================
+// TASKS
+// ============================================
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  COMPLETED
+  BLOCKED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum AssigneeType {
+  MEMBER
+  BANDINO
+  VENDOR
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  projectId   String
+  bandId      String
+  
+  // Core
+  name        String
+  description String?  @db.Text
+  status      TaskStatus @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  
+  // Assignment
+  assigneeId    String?
+  assigneeType  AssigneeType @default(MEMBER)
+  
+  // Timeline
+  dueDate     DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  
+  // Effort
+  estimatedHours Int?
+  actualHours    Int?
+  estimatedCost  Decimal? @db.Decimal(12, 2)
+  actualCost     Decimal? @db.Decimal(12, 2)
+  
+  // Verification
+  requiresVerification Boolean @default(true)
+  verificationStatus   VerificationStatus?
+  verifiedById         String?
+  verifiedAt           DateTime?
+  verificationNotes    String? @db.Text
+  
+  // Proof/Evidence
+  attachments      String[]
+  proofDescription String? @db.Text
+  receiptUrls      String[]
+  
+  // Organization
+  tags        String[]
+  orderIndex  Int @default(0)
+  
+  // AI
+  aiGenerated Boolean @default(false)
+  
+  // Metadata
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  band       Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  createdBy  User     @relation("TaskCreator", fields: [createdById], references: [id])
+  assignee   User?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  verifiedBy User?    @relation("TaskVerifier", fields: [verifiedById], references: [id])
+
+  @@index([projectId])
+  @@index([bandId])
+  @@index([status])
+  @@index([priority])
+  @@index([assigneeId])
+  @@index([createdById])
+  @@index([verifiedById])
+  @@index([dueDate])
 }

@@ -124,26 +124,16 @@ export default function BandDetailsPage() {
             bandSlug={slug} 
             canApprove={canApprove} 
             isMember={isMember}
+            onLeaveBand={canLeave ? () => setShowLeaveModal(true) : undefined}
           />
 
           {/* Main Content */}
           <div className="flex-1 bg-white rounded-lg shadow p-8">
             <Stack spacing="xl">
-              <Flex justify="between">
-                <Stack spacing="sm">
-                  <Heading level={1}>{band.name}</Heading>
-                  {getStatusBadge(band.status)}
-                </Stack>
-                {canLeave && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowLeaveModal(true)}
-                  >
-                    Leave Band
-                  </Button>
-                )}
-              </Flex>
+              <Stack spacing="sm">
+                <Heading level={1}>{band.name}</Heading>
+                {getStatusBadge(band.status)}
+              </Stack>
 
               {band.status === 'PENDING' && (
                 <Alert variant="warning">

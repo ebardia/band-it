@@ -1,42 +1,109 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
-import { Stack, NavButton } from '@/components/ui'
+import { Stack, NavButton, Text } from '@/components/ui'
 
 interface BandSidebarProps {
   bandSlug: string
-  canApprove: boolean
-  isMember: boolean
+  canApprove?: boolean
+  isMember?: boolean
   canCreateProposal?: boolean
+  onLeaveBand?: () => void
 }
 
-export function BandSidebar({ bandSlug, canApprove, isMember, canCreateProposal = false }: BandSidebarProps) {
+export function BandSidebar({ bandSlug, canApprove = false, isMember = false, canCreateProposal = false, onLeaveBand }: BandSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
-  const navItems = [
-    { label: 'Details', path: `/bands/${bandSlug}`, show: true },
-    { label: 'Proposals', path: `/bands/${bandSlug}/proposals`, show: isMember },
-    { label: 'Applications', path: `/bands/${bandSlug}/applications`, show: canApprove },
-    { label: 'Invite Members', path: `/bands/${bandSlug}/invite`, show: isMember },
-    { label: 'Apply to Join', path: `/bands/${bandSlug}/apply`, show: !isMember },
-  ].filter(item => item.show)
-
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
 
+  // Main navigation - always visible
+  const mainNav = [
+    { label: '📋 Details', path: `/bands/${bandSlug}` },
+    { label: '📝 Proposals', path: `/bands/${bandSlug}/proposals` },
+    { label: '📁 Projects', path: `/bands/${bandSlug}/projects` },
+    { label: '✅ Tasks', path: `/bands/${bandSlug}/tasks` },
+  ]
+
+  // Member actions
+  const memberActions = [
+    { label: '👥 Members', path: `/bands/${bandSlug}/members`, disabled: true },
+    { label: '📨 Invite', path: `/bands/${bandSlug}/invite`, show: isMember },
+    { label: '📋 Applications', path: `/bands/${bandSlug}/applications`, show: canApprove },
+  ].filter(item => item.show !== false)
+
+  // Non-member actions
+  const nonMemberActions = [
+    { label: '✋ Apply to Join', path: `/bands/${bandSlug}/apply`, show: !isMember },
+  ].filter(item => item.show)
+
   return (
-    <aside className="w-48 bg-white rounded-lg shadow p-3">
-      <Stack spacing="sm">
-        {navItems.map((item) => (
-          <NavButton
-            key={item.path}
-            active={isActive(item.path)}
-            onClick={() => router.push(item.path)}
-          >
-            {item.label}
-          </NavButton>
-        ))}
+    <aside className="w-52 bg-white rounded-lg shadow p-4 flex flex-col">
+      <Stack spacing="lg" className="flex-1">
+        {/* Main Navigation */}
+        <Stack spacing="sm">
+          {mainNav.map((item) => (
+            <NavButton
+              key={item.path}
+              active={isActive(item.path)}
+              onClick={() => !item.disabled && router.push(item.path)}
+              disabled={item.disabled}
+              className={item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
+            >
+              {item.label}
+              {item.disabled && <span className="text-xs ml-1">(soon)</span>}
+            </NavButton>
+          ))}
+        </Stack>
+
+        {/* Member Actions */}
+        {isMember && memberActions.length > 0 && (
+          <Stack spacing="sm">
+            <Text variant="small" weight="semibold" className="text-gray-500 uppercase text-xs px-2">
+              Manage
+            </Text>
+            {memberActions.map((item) => (
+              <NavButton
+                key={item.path}
+                active={isActive(item.path)}
+                onClick={() => !item.disabled && router.push(item.path)}
+                disabled={item.disabled}
+                className={item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
+              >
+                {item.label}
+                {item.disabled && <span className="text-xs ml-1">(soon)</span>}
+              </NavButton>
+            ))}
+          </Stack>
+        )}
+
+        {/* Non-member Actions */}
+        {nonMemberActions.length > 0 && (
+          <Stack spacing="sm">
+            {nonMemberActions.map((item) => (
+              <NavButton
+                key={item.path}
+                active={isActive(item.path)}
+                onClick={() => router.push(item.path)}
+              >
+                {item.label}
+              </NavButton>
+            ))}
+          </Stack>
+        )}
       </Stack>
+
+      {/* Leave Band - at bottom */}
+      {isMember && onLeaveBand && (
+        <div className="pt-4 mt-4 border-t border-gray-200">
+          <NavButton
+            onClick={onLeaveBand}
+            className="text-red-600 hover:bg-red-50"
+          >
+            🚪 Leave Band
+          </NavButton>
+        </div>
+      )}
     </aside>
   )
 }

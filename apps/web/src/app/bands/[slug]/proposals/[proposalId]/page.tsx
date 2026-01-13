@@ -20,11 +20,13 @@ import {
   BandSidebar,
   Textarea,
   List,
-  ListItem
+  ListItem,
+  ProposalProjects
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
 const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
+const CAN_CREATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 
 const TYPE_LABELS: Record<string, string> = {
   GENERAL: 'General',
@@ -138,6 +140,7 @@ export default function ProposalDetailPage() {
   const canApprove = currentMember && bandData?.band?.whoCanApprove.includes(currentMember.role)
   const isMember = !!currentMember
   const canVote = currentMember && CAN_VOTE.includes(currentMember.role)
+  const canCreateProject = currentMember && CAN_CREATE_PROJECT.includes(currentMember.role)
   const canClose = proposal.createdById === userId || 
                    currentMember?.role === 'FOUNDER' || 
                    currentMember?.role === 'GOVERNOR'
@@ -456,6 +459,14 @@ export default function ProposalDetailPage() {
                   </Stack>
                 </Card>
               )}
+
+              {/* Projects Section - Only shows for approved proposals */}
+              <ProposalProjects
+                proposalId={proposalId}
+                proposalStatus={proposal.status}
+                bandSlug={slug}
+                canCreateProject={!!canCreateProject}
+              />
 
               {/* Vote List */}
               {proposal.votes.length > 0 && (
