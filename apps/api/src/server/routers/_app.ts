@@ -7,6 +7,7 @@ import { notificationRouter } from './notification'
 import { proposalRouter } from './proposal'
 import { projectRouter } from './project'
 import { taskRouter } from './task'
+import { aiRouter } from './ai'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -18,6 +19,7 @@ export const appRouter = router({
   proposal: proposalRouter,
   project: projectRouter,
   task: taskRouter,
+  ai: aiRouter,
 })
 
 // Export type definition of API

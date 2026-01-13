@@ -341,6 +341,9 @@ model Proposal {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   closedAt      DateTime?
+  
+  // AI
+  aiValidation  Json?
 
   // Relations
   band      Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
@@ -558,7 +561,8 @@ model Task {
   orderIndex  Int @default(0)
   
   // AI
-  aiGenerated Boolean @default(false)
+  aiGenerated   Boolean @default(false)
+  aiValidation  Json?
   
   // Metadata
   createdById String
