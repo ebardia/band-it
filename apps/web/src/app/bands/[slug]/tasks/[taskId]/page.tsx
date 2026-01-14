@@ -26,6 +26,7 @@ import { AppNav } from '@/components/AppNav'
 
 const CAN_UPDATE_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 const CAN_VERIFY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
+const CAN_USE_AI = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'COMPLETED' | 'BLOCKED'
 
@@ -38,6 +39,8 @@ export default function TaskDetailPage() {
   
   const [userId, setUserId] = useState<string | null>(null)
   const [newItemText, setNewItemText] = useState('')
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
+  const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -89,6 +92,18 @@ export default function TaskDetailPage() {
     }
   })
 
+  const createManyMutation = trpc.checklist.createMany.useMutation({
+    onSuccess: (data) => {
+      showToast(`Added ${data.items.length} checklist items!`, 'success')
+      setAiSuggestions([])
+      setSelectedSuggestions(new Set())
+      refetchChecklist()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
   const toggleItemMutation = trpc.checklist.toggle.useMutation({
     onSuccess: () => {
       refetchChecklist()
@@ -101,6 +116,18 @@ export default function TaskDetailPage() {
   const deleteItemMutation = trpc.checklist.delete.useMutation({
     onSuccess: () => {
       refetchChecklist()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const suggestItemsMutation = trpc.checklist.suggestItems.useMutation({
+    onSuccess: (data) => {
+      setAiSuggestions(data.suggestions)
+      // Select all by default
+      setSelectedSuggestions(new Set(data.suggestions.map((_, i) => i)))
+      showToast(`Generated ${data.suggestions.length} suggestions!`, 'success')
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -133,6 +160,38 @@ export default function TaskDetailPage() {
   const handleDeleteItem = (itemId: string) => {
     if (!userId) return
     deleteItemMutation.mutate({ itemId, userId })
+  }
+
+  const handleGenerateSuggestions = () => {
+    if (!userId) return
+    suggestItemsMutation.mutate({ taskId, userId })
+  }
+
+  const handleToggleSuggestion = (index: number) => {
+    setSelectedSuggestions(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(index)) {
+        newSet.delete(index)
+      } else {
+        newSet.add(index)
+      }
+      return newSet
+    })
+  }
+
+  const handleAddSelectedSuggestions = () => {
+    if (!userId || selectedSuggestions.size === 0) return
+    const descriptions = aiSuggestions.filter((_, i) => selectedSuggestions.has(i))
+    createManyMutation.mutate({
+      taskId,
+      descriptions,
+      userId,
+    })
+  }
+
+  const handleDismissSuggestions = () => {
+    setAiSuggestions([])
+    setSelectedSuggestions(new Set())
   }
 
   const getStatusBadge = (status: string) => {
@@ -202,6 +261,7 @@ export default function TaskDetailPage() {
   const isMember = !!currentMember
   const canUpdate = currentMember && CAN_UPDATE_TASK.includes(currentMember.role)
   const canVerify = currentMember && CAN_VERIFY_TASK.includes(currentMember.role)
+  const canUseAI = currentMember && CAN_USE_AI.includes(currentMember.role)
   const isAssignee = task.assigneeId === userId
 
   const statusOptions: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED', 'BLOCKED']
@@ -320,16 +380,89 @@ export default function TaskDetailPage() {
               <Stack spacing="md">
                 <Flex justify="between" align="center">
                   <Heading level={3}>Checklist</Heading>
-                  {totalCount > 0 && (
-                    <Badge variant={completedCount === totalCount ? 'success' : 'neutral'}>
-                      {completedCount}/{totalCount} completed
-                    </Badge>
-                  )}
+                  <Flex gap="sm" align="center">
+                    {totalCount > 0 && (
+                      <Badge variant={completedCount === totalCount ? 'success' : 'neutral'}>
+                        {completedCount}/{totalCount} completed
+                      </Badge>
+                    )}
+                    {canUseAI && aiSuggestions.length === 0 && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleGenerateSuggestions}
+                        disabled={suggestItemsMutation.isPending}
+                      >
+                        {suggestItemsMutation.isPending ? '✨ Generating...' : '✨ AI Suggest'}
+                      </Button>
+                    )}
+                  </Flex>
                 </Flex>
 
-                {checklistItems.length === 0 ? (
-                  <Text variant="small" color="muted">No checklist items yet. Add items to track progress.</Text>
-                ) : (
+                {/* AI Suggestions Panel */}
+                {aiSuggestions.length > 0 && (
+                  <Card className="bg-purple-50 border-purple-200">
+                    <Stack spacing="md">
+                      <Flex justify="between" align="center">
+                        <Text weight="semibold" className="text-purple-800">
+                          ✨ AI Suggestions
+                        </Text>
+                        <Text variant="small" color="muted">
+                          {selectedSuggestions.size} of {aiSuggestions.length} selected
+                        </Text>
+                      </Flex>
+                      
+                      <Stack spacing="sm">
+                        {aiSuggestions.map((suggestion, index) => (
+                          <Flex 
+                            key={index} 
+                            gap="sm" 
+                            align="center"
+                            className="cursor-pointer"
+                            onClick={() => handleToggleSuggestion(index)}
+                          >
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleToggleSuggestion(index)
+                              }}
+                            >
+                              {selectedSuggestions.has(index) ? '☑️' : '⬜'}
+                            </Button>
+                            <Text variant="small">{suggestion}</Text>
+                          </Flex>
+                        ))}
+                      </Stack>
+
+                      <Flex gap="sm" justify="end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleDismissSuggestions}
+                        >
+                          Dismiss
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={handleAddSelectedSuggestions}
+                          disabled={selectedSuggestions.size === 0 || createManyMutation.isPending}
+                        >
+                          {createManyMutation.isPending 
+                            ? 'Adding...' 
+                            : `Add ${selectedSuggestions.size} Items`
+                          }
+                        </Button>
+                      </Flex>
+                    </Stack>
+                  </Card>
+                )}
+
+                {checklistItems.length === 0 && aiSuggestions.length === 0 ? (
+                  <Text variant="small" color="muted">No checklist items yet. Add items to track progress or use AI to suggest some.</Text>
+                ) : checklistItems.length > 0 ? (
                   <Stack spacing="sm">
                     {checklistItems.map((item) => (
                       <Flex key={item.id} gap="sm" align="center" justify="between">
@@ -368,7 +501,7 @@ export default function TaskDetailPage() {
                       </Flex>
                     ))}
                   </Stack>
-                )}
+                ) : null}
 
                 <Flex gap="sm" align="end">
                   <Input
