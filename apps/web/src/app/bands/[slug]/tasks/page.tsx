@@ -200,7 +200,7 @@ export default function BandTasksPage() {
                         <div 
                           key={task.id}
                           className="p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100"
-                          onClick={() => router.push(`/bands/${slug}/projects/${task.projectId}?task=${task.id}`)}
+                          onClick={() => router.push(`/bands/${slug}/tasks/${task.id}`)}
                         >
                           <Flex justify="between" align="center">
                             <Stack spacing="xs">
@@ -277,7 +277,7 @@ export default function BandTasksPage() {
                     <Card 
                       key={task.id}
                       className="cursor-pointer hover:shadow-lg transition"
-                      onClick={() => router.push(`/bands/${slug}/projects/${task.projectId}?task=${task.id}`)}
+                      onClick={() => router.push(`/bands/${slug}/tasks/${task.id}`)}
                     >
                       <Flex justify="between" align="start">
                         <Stack spacing="sm">

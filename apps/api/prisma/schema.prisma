@@ -64,6 +64,7 @@ model User {
   commentsAuthored        Comment[] @relation("CommentsAuthored")
   reactionsGiven          Reaction[] @relation("ReactionsGiven")
   mentionsReceived        Mention[] @relation("MentionsReceived")
+  checklistItemsCompleted ChecklistItem[] @relation("ChecklistItemsCompleted")
 }
 
 enum SubscriptionStatus {
@@ -591,6 +592,7 @@ model Task {
   verifiedBy User?    @relation("TaskVerifier", fields: [verifiedById], references: [id])
   files      File[]
   comments  Comment[]
+  checklistItems ChecklistItem[]
 
   @@index([projectId])
   @@index([bandId])
@@ -600,6 +602,36 @@ model Task {
   @@index([createdById])
   @@index([verifiedById])
   @@index([dueDate])
+}
+
+// ============================================
+// CHECKLIST ITEMS
+// ============================================
+
+model ChecklistItem {
+  id          String   @id @default(cuid())
+  taskId      String
+  
+  // Content
+  description String
+  
+  // Status
+  isCompleted   Boolean  @default(false)
+  completedById String?
+  completedAt   DateTime?
+  
+  // Order
+  orderIndex    Int @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  completedBy User?    @relation("ChecklistItemsCompleted", fields: [completedById], references: [id])
+
+  @@index([taskId])
+  @@index([completedById])
 }
 
 // ============================================

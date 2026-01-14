@@ -20,6 +20,7 @@ import {
   List,
   ListItem,
   BandSidebar,
+  DiscussionSidebar,
   Modal
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
@@ -84,7 +85,7 @@ export default function BandDetailsPage() {
     return (
       <PageWrapper variant="dashboard">
         <AppNav />
-        <DashboardContainer>
+        <DashboardContainer wide>
           <Loading message="Loading band..." />
         </DashboardContainer>
       </PageWrapper>
@@ -95,7 +96,7 @@ export default function BandDetailsPage() {
     return (
       <PageWrapper variant="dashboard">
         <AppNav />
-        <DashboardContainer>
+        <DashboardContainer wide>
           <Alert variant="danger">
             <Text>Band not found</Text>
           </Alert>
@@ -106,7 +107,6 @@ export default function BandDetailsPage() {
 
   const band = bandData.band
 
-  // Check if current user is a member and has permission to approve
   const currentMember = band.members.find((m: any) => m.user.id === userId)
   const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
   const isMember = !!currentMember
@@ -117,9 +117,8 @@ export default function BandDetailsPage() {
     <PageWrapper variant="dashboard">
       <AppNav />
 
-      <DashboardContainer>
+      <DashboardContainer wide>
         <Flex gap="md" align="start">
-          {/* Left Sidebar - Band Navigation */}
           <BandSidebar 
             bandSlug={slug} 
             canApprove={canApprove} 
@@ -127,114 +126,120 @@ export default function BandDetailsPage() {
             onLeaveBand={canLeave ? () => setShowLeaveModal(true) : undefined}
           />
 
-          {/* Main Content */}
-          <div className="flex-1 bg-white rounded-lg shadow p-8">
-            <Stack spacing="xl">
-              <Stack spacing="sm">
-                <Heading level={1}>{band.name}</Heading>
-                {getStatusBadge(band.status)}
+          <Stack spacing="lg" className="flex-1 max-w-3xl">
+            <Card className="p-8">
+              <Stack spacing="xl">
+                <Stack spacing="sm">
+                  <Heading level={1}>{band.name}</Heading>
+                  {getStatusBadge(band.status)}
+                </Stack>
+
+                {band.status === 'PENDING' && (
+                  <Alert variant="warning">
+                    <Text variant="small" weight="semibold">Band is Pending</Text>
+                    <Text variant="small">This band needs {3 - band.members.length} more active member(s) to become active.</Text>
+                  </Alert>
+                )}
               </Stack>
+            </Card>
 
-              {band.status === 'PENDING' && (
-                <Alert variant="warning">
-                  <Text variant="small" weight="semibold">Band is Pending</Text>
-                  <Text variant="small">This band needs {3 - band.members.length} more active member(s) to become active.</Text>
-                </Alert>
-              )}
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>About</Heading>
+                <Text>{band.description}</Text>
+              </Stack>
+            </Card>
 
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Mission</Heading>
+                <Text>{band.mission}</Text>
+              </Stack>
+            </Card>
+
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Our Values</Heading>
+                <List>
+                  {band.values.map((value: string, index: number) => (
+                    <ListItem key={index}>{value}</ListItem>
+                  ))}
+                </List>
+              </Stack>
+            </Card>
+
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Skills We're Looking For</Heading>
+                <List>
+                  {band.skillsLookingFor.map((skill: string, index: number) => (
+                    <ListItem key={index}>{skill}</ListItem>
+                  ))}
+                </List>
+              </Stack>
+            </Card>
+
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>What Members Will Learn</Heading>
+                <List>
+                  {band.whatMembersWillLearn.map((item: string, index: number) => (
+                    <ListItem key={index}>{item}</ListItem>
+                  ))}
+                </List>
+              </Stack>
+            </Card>
+
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Membership Requirements</Heading>
+                <Text>{band.membershipRequirements}</Text>
+              </Stack>
+            </Card>
+
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Who Can Approve Members</Heading>
+                <List>
+                  {band.whoCanApprove.map((role: string, index: number) => (
+                    <ListItem key={index}>{role.replace('_', ' ')}</ListItem>
+                  ))}
+                </List>
+              </Stack>
+            </Card>
+
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Members ({band.members.length})</Heading>
+                <Stack spacing="sm">
+                  {band.members.map((member: any) => (
+                    <Flex key={member.id} justify="between">
+                      <Text variant="small">{member.user.name}</Text>
+                      <Badge variant="info">{member.role.replace('_', ' ')}</Badge>
+                    </Flex>
+                  ))}
+                </Stack>
+              </Stack>
+            </Card>
+
+            {band.zipcode && (
               <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>About</Heading>
-                  <Text>{band.description}</Text>
+                <Stack spacing="sm">
+                  <Heading level={3}>Location</Heading>
+                  <Text variant="small">Zipcode: {band.zipcode}</Text>
                 </Stack>
               </Card>
+            )}
+          </Stack>
 
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Mission</Heading>
-                  <Text>{band.mission}</Text>
-                </Stack>
-              </Card>
-
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Our Values</Heading>
-                  <List>
-                    {band.values.map((value: string, index: number) => (
-                      <ListItem key={index}>{value}</ListItem>
-                    ))}
-                  </List>
-                </Stack>
-              </Card>
-
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Skills We're Looking For</Heading>
-                  <List>
-                    {band.skillsLookingFor.map((skill: string, index: number) => (
-                      <ListItem key={index}>{skill}</ListItem>
-                    ))}
-                  </List>
-                </Stack>
-              </Card>
-
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>What Members Will Learn</Heading>
-                  <List>
-                    {band.whatMembersWillLearn.map((item: string, index: number) => (
-                      <ListItem key={index}>{item}</ListItem>
-                    ))}
-                  </List>
-                </Stack>
-              </Card>
-
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Membership Requirements</Heading>
-                  <Text>{band.membershipRequirements}</Text>
-                </Stack>
-              </Card>
-
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Who Can Approve Members</Heading>
-                  <List>
-                    {band.whoCanApprove.map((role: string, index: number) => (
-                      <ListItem key={index}>{role.replace('_', ' ')}</ListItem>
-                    ))}
-                  </List>
-                </Stack>
-              </Card>
-
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Members ({band.members.length})</Heading>
-                  <Stack spacing="sm">
-                    {band.members.map((member: any) => (
-                      <Flex key={member.id} justify="between">
-                        <Text variant="small">{member.user.name}</Text>
-                        <Badge variant="info">{member.role.replace('_', ' ')}</Badge>
-                      </Flex>
-                    ))}
-                  </Stack>
-                </Stack>
-              </Card>
-
-              {band.zipcode && (
-                <Card>
-                  <Stack spacing="sm">
-                    <Heading level={3}>Location</Heading>
-                    <Text variant="small">Zipcode: {band.zipcode}</Text>
-                  </Stack>
-                </Card>
-              )}
-            </Stack>
-          </div>
+          <DiscussionSidebar
+            bandId={band.id}
+            userId={userId}
+            bandMembers={band.members}
+          />
         </Flex>
       </DashboardContainer>
 
-      {/* Leave Band Confirmation Modal */}
       <Modal isOpen={showLeaveModal} onClose={() => setShowLeaveModal(false)}>
         <Stack spacing="lg">
           <Heading level={2}>Leave {band.name}?</Heading>
