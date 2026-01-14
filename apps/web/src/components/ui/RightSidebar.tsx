@@ -4,7 +4,7 @@ interface RightSidebarProps {
 
 export function RightSidebar({ children }: RightSidebarProps) {
   return (
-    <aside className="w-96 bg-white rounded-lg shadow p-4">
+    <aside className="w-[450px] bg-white rounded-lg shadow p-4">
       {children}
     </aside>
   )

@@ -59,6 +59,11 @@ model User {
   tasksCreated            Task[] @relation("TaskCreator")
   tasksAssigned           Task[] @relation("TaskAssignee")
   tasksVerified           Task[] @relation("TaskVerifier")
+  filesUploaded           File[] @relation("FilesUploaded")
+
+  commentsAuthored        Comment[] @relation("CommentsAuthored")
+  reactionsGiven          Reaction[] @relation("ReactionsGiven")
+  mentionsReceived        Mention[] @relation("MentionsReceived")
 }
 
 enum SubscriptionStatus {
@@ -230,6 +235,9 @@ model Band {
   votingMethod          VotingMethod @default(SIMPLE_MAJORITY)
   votingPeriodDays      Int @default(7)
   whoCanCreateProposals MemberRole[] @default([FOUNDER, GOVERNOR, MODERATOR, CONDUCTOR])
+
+  // Role Management Configuration
+  whoCanChangeRoles     MemberRole[] @default([FOUNDER])
   
   // Metadata
   createdById String
@@ -242,6 +250,8 @@ model Band {
   proposals Proposal[]
   projects  Project[]
   tasks     Task[]
+  files     File[]
+  comments  Comment[]
 
   @@index([createdById])
   @@index([status])
@@ -330,7 +340,7 @@ model Proposal {
   proposedEndDate     DateTime?
   milestones          String? @db.Text
   
-  // Attachments & Links
+  // Attachments & Links (legacy - keeping for backwards compatibility)
   attachmentUrls      String[]
   externalLinks       String[]
   
@@ -350,6 +360,8 @@ model Proposal {
   createdBy User @relation("ProposalCreator", fields: [createdById], references: [id])
   votes     Vote[]
   projects  Project[]
+  files     File[]
+  comments  Comment[]
 
   @@index([bandId])
   @@index([createdById])
@@ -478,6 +490,8 @@ model Project {
   createdBy User     @relation("ProjectCreator", fields: [createdById], references: [id])
   lead      User?    @relation("ProjectLead", fields: [leadId], references: [id])
   tasks     Task[]
+  files     File[]
+  comments  Comment[]
 
   @@index([bandId])
   @@index([proposalId])
@@ -551,7 +565,7 @@ model Task {
   verifiedAt           DateTime?
   verificationNotes    String? @db.Text
   
-  // Proof/Evidence
+  // Proof/Evidence (legacy - keeping for backwards compatibility)
   attachments      String[]
   proofDescription String? @db.Text
   receiptUrls      String[]
@@ -575,6 +589,8 @@ model Task {
   createdBy  User     @relation("TaskCreator", fields: [createdById], references: [id])
   assignee   User?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
   verifiedBy User?    @relation("TaskVerifier", fields: [verifiedById], references: [id])
+  files      File[]
+  comments  Comment[]
 
   @@index([projectId])
   @@index([bandId])
@@ -584,4 +600,164 @@ model Task {
   @@index([createdById])
   @@index([verifiedById])
   @@index([dueDate])
+}
+
+// ============================================
+// FILES
+// ============================================
+
+enum FileCategory {
+  IMAGE
+  DOCUMENT
+  RECEIPT
+  OTHER
+}
+
+model File {
+  id            String   @id @default(cuid())
+  
+  // File info
+  filename      String
+  originalName  String
+  mimeType      String
+  size          Int
+  category      FileCategory @default(OTHER)
+  
+  // Storage
+  storageKey    String   @unique
+  url           String
+  
+  // Ownership
+  uploadedById  String
+  
+  // Attachments - which entity this file belongs to (only one should be set)
+  bandId        String?
+  proposalId    String?
+  projectId     String?
+  taskId        String?
+  
+  // Metadata
+  description   String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  // Relations
+  uploadedBy    User     @relation("FilesUploaded", fields: [uploadedById], references: [id])
+  band          Band?    @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  proposal      Proposal? @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  project       Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task          Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([uploadedById])
+  @@index([bandId])
+  @@index([proposalId])
+  @@index([projectId])
+  @@index([taskId])
+  @@index([category])
+}
+
+// ============================================
+// DISCUSSIONS & COMMENTS
+// ============================================
+
+model Comment {
+  id            String   @id @default(cuid())
+  
+  // Content
+  content       String   @db.Text
+  
+  // Author
+  authorId      String
+  
+  // Parent comment for threading (null = top-level comment)
+  parentId      String?
+  
+  // Entity this comment belongs to (only one should be set)
+  bandId        String?
+  proposalId    String?
+  projectId     String?
+  taskId        String?
+  
+  // Metadata
+  isEdited      Boolean  @default(false)
+  editedAt      DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  // Relations
+  author        User     @relation("CommentsAuthored", fields: [authorId], references: [id])
+  parent        Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies       Comment[] @relation("CommentReplies")
+  band          Band?    @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  proposal      Proposal? @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  project       Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task          Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  reactions     Reaction[]
+  mentions      Mention[]
+
+  @@index([authorId])
+  @@index([parentId])
+  @@index([bandId])
+  @@index([proposalId])
+  @@index([projectId])
+  @@index([taskId])
+  @@index([createdAt])
+}
+
+enum ReactionType {
+  THUMBS_UP
+  THUMBS_DOWN
+  HEART
+  CELEBRATE
+  THINKING
+}
+
+model Reaction {
+  id            String   @id @default(cuid())
+  
+  type          ReactionType
+  
+  // Who reacted
+  userId        String
+  
+  // What they reacted to
+  commentId     String
+  
+  createdAt     DateTime @default(now())
+
+  // Relations
+  user          User     @relation("ReactionsGiven", fields: [userId], references: [id], onDelete: Cascade)
+  comment       Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId, type])
+  @@index([commentId])
+  @@index([userId])
+}
+
+model Mention {
+  id            String   @id @default(cuid())
+  
+  // Who was mentioned
+  userId        String
+  
+  // In which comment
+  commentId     String
+  
+  // Has the user seen this mention?
+  isRead        Boolean  @default(false)
+  readAt        DateTime?
+  
+  createdAt     DateTime @default(now())
+
+  // Relations
+  user          User     @relation("MentionsReceived", fields: [userId], references: [id], onDelete: Cascade)
+  comment       Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([userId, isRead])
+  @@index([commentId])
 }

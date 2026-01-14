@@ -4,6 +4,7 @@ import { bandQueryRouter } from './band.query'
 import { bandApplicationRouter } from './band.application'
 import { bandInviteRouter } from './band.invite'
 import { bandMatchingRouter } from './band.matching'
+import { getMembers, getMemberProfile, changeRole, proposeRemoval } from './band.members'
 
 export const bandRouter = router({
   // Create
@@ -31,4 +32,10 @@ export const bandRouter = router({
   
   // Matching
   getRecommendedUsers: bandMatchingRouter.getRecommendedUsers,
+  
+  // Members
+  getMembers: getMembers,
+  getMemberProfile: getMemberProfile,
+  changeRole: changeRole,
+  proposeRemoval: proposeRemoval,
 })

@@ -17,21 +17,31 @@ import {
   Loading,
   Alert,
   BandSidebar,
+  DiscussionSidebar,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { ProjectHeader } from './components/ProjectHeader'
 import { ProjectEditForm } from './components/ProjectEditForm'
 import { ProjectStatusBar } from './components/ProjectStatusBar'
-import { ProjectDetails } from './components/ProjectDetails'
+import { ProjectInfoCard } from './components/ProjectInfoCard'
 import { ProjectTasks } from './components/ProjectTasks'
 import { TaskVerifyModal } from './components/TaskVerifyModal'
-import { ProjectSidebar } from './components/ProjectSidebar'
+import { TaskSubmitModal } from './components/TaskSubmitModal'
 
 const CAN_UPDATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 const CAN_VERIFY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
 
 type ProjectStatus = 'PLANNING' | 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED'
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'COMPLETED' | 'BLOCKED'
+
+interface TaskSuggestion {
+  name: string
+  description: string
+  estimatedHours: number | null
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+  order: number
+  requiresVerification: boolean
+}
 
 export default function ProjectDetailPage() {
   const router = useRouter()
@@ -47,6 +57,11 @@ export default function ProjectDetailPage() {
   const [showCreateTask, setShowCreateTask] = useState(false)
   const [selectedTask, setSelectedTask] = useState<any>(null)
   const [showVerifyModal, setShowVerifyModal] = useState(false)
+  const [showSubmitModal, setShowSubmitModal] = useState(false)
+  
+  // AI Suggestions state
+  const [taskSuggestions, setTaskSuggestions] = useState<TaskSuggestion[] | null>(null)
+  const [suggestionsCreatedCount, setSuggestionsCreatedCount] = useState(0)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -106,6 +121,29 @@ export default function ProjectDetailPage() {
     }
   })
 
+  // Separate mutation for AI-suggested tasks to track count
+  const createSuggestedTaskMutation = trpc.task.create.useMutation({
+    onSuccess: () => {
+      setSuggestionsCreatedCount(prev => prev + 1)
+      refetchTasks()
+      refetchProject()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const suggestTasksMutation = trpc.task.suggestTasks.useMutation({
+    onSuccess: (data) => {
+      setTaskSuggestions(data.suggestions)
+      setSuggestionsCreatedCount(0)
+      showToast(`Generated ${data.suggestions.length} task suggestions`, 'success')
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
   const updateTaskMutation = trpc.task.update.useMutation({
     onSuccess: () => {
       showToast('Task updated!', 'success')
@@ -120,6 +158,8 @@ export default function ProjectDetailPage() {
   const submitForVerificationMutation = trpc.task.submitForVerification.useMutation({
     onSuccess: () => {
       showToast('Task submitted for verification!', 'success')
+      setShowSubmitModal(false)
+      setSelectedTask(null)
       refetchTasks()
     },
     onError: (error) => {
@@ -164,6 +204,52 @@ export default function ProjectDetailPage() {
     })
   }
 
+  const handleSuggestTasks = () => {
+    suggestTasksMutation.mutate({
+      projectId,
+      userId: userId!,
+    })
+  }
+
+  const handleAcceptSuggestion = (suggestion: TaskSuggestion) => {
+    createSuggestedTaskMutation.mutate({
+      projectId,
+      userId: userId!,
+      name: suggestion.name,
+      description: suggestion.description,
+      priority: suggestion.priority,
+      estimatedHours: suggestion.estimatedHours || undefined,
+      requiresVerification: suggestion.requiresVerification,
+      aiGenerated: true,
+    })
+  }
+
+  const handleAcceptAllSuggestions = async () => {
+    if (!taskSuggestions) return
+    
+    for (const suggestion of taskSuggestions) {
+      await createSuggestedTaskMutation.mutateAsync({
+        projectId,
+        userId: userId!,
+        name: suggestion.name,
+        description: suggestion.description,
+        priority: suggestion.priority,
+        estimatedHours: suggestion.estimatedHours || undefined,
+        requiresVerification: suggestion.requiresVerification,
+        aiGenerated: true,
+      })
+    }
+    
+    showToast(`Created ${taskSuggestions.length} tasks!`, 'success')
+    setTaskSuggestions(null)
+    setSuggestionsCreatedCount(0)
+  }
+
+  const handleDismissSuggestions = () => {
+    setTaskSuggestions(null)
+    setSuggestionsCreatedCount(0)
+  }
+
   const handleTaskStatusChange = (taskId: string, newStatus: TaskStatus) => {
     updateTaskMutation.mutate({
       taskId,
@@ -173,9 +259,16 @@ export default function ProjectDetailPage() {
   }
 
   const handleSubmitForVerification = (task: any) => {
+    setSelectedTask(task)
+    setShowSubmitModal(true)
+  }
+
+  const handleSubmitTask = (proofDescription?: string) => {
+    if (!selectedTask) return
     submitForVerificationMutation.mutate({
-      taskId: task.id,
+      taskId: selectedTask.id,
       userId: userId!,
+      proofDescription,
     })
   }
 
@@ -194,22 +287,22 @@ export default function ProjectDetailPage() {
     })
   }
 
-  if (projectLoading || tasksLoading) {
-    return (
-      <PageWrapper variant="dashboard">
-        <AppNav />
-        <DashboardContainer>
-          <Loading message="Loading project..." />
-        </DashboardContainer>
-      </PageWrapper>
-    )
-  }
+ if (projectLoading || tasksLoading) {
+  return (
+    <PageWrapper variant="dashboard">
+      <AppNav />
+      <DashboardContainer wide>          
+        <Loading message="Loading project..." />
+      </DashboardContainer>
+    </PageWrapper>
+  )
+}
 
   if (!projectData?.project) {
     return (
       <PageWrapper variant="dashboard">
         <AppNav />
-        <DashboardContainer>
+        <DashboardContainer wide>
           <Alert variant="danger">
             <Text>Project not found</Text>
           </Alert>
@@ -230,7 +323,7 @@ export default function ProjectDetailPage() {
     <PageWrapper variant="dashboard">
       <AppNav />
 
-      <DashboardContainer>
+      <DashboardContainer wide>
         <Flex gap="md" align="start">
           <BandSidebar 
             bandSlug={slug} 
@@ -238,46 +331,56 @@ export default function ProjectDetailPage() {
             isMember={!!currentMember}
           />
 
-          <div className="flex-1 bg-white rounded-lg shadow p-8">
-            <Stack spacing="xl">
-              <Flex gap="sm" className="text-gray-500 text-sm">
-                <button 
-                  onClick={() => router.push(`/bands/${slug}/projects`)}
-                  className="hover:text-blue-600"
-                >
-                  Projects
-                </button>
-                <span>/</span>
-                <span className="text-gray-700">{project.name}</span>
-              </Flex>
+            <Stack spacing="lg" className="flex-1 max-w-3xl">            
+              <Card className="p-8">
+              <Stack spacing="xl">
+                <Flex gap="sm" align="center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push(`/bands/${slug}/projects`)}
+                  >
+                    ← Projects
+                  </Button>
+                  <Text color="muted">/</Text>
+                  <Text weight="semibold">{project.name}</Text>
+                </Flex>
 
-              {isEditing ? (
-                <ProjectEditForm
-                  project={project}
-                  bandMembers={band.members}
-                  onSave={handleSaveProject}
-                  onCancel={() => setIsEditing(false)}
-                  isSaving={updateProjectMutation.isPending}
-                />
-              ) : (
-                <ProjectHeader
-                  project={project}
-                  proposal={proposal}
-                  canUpdateProject={canUpdateProject || false}
-                  onEdit={() => setIsEditing(true)}
-                  onValidate={() => validateProjectMutation.mutate({ projectId, userId: userId! })}
-                  isValidating={validateProjectMutation.isPending}
-                />
-              )}
+                {isEditing ? (
+                  <ProjectEditForm
+                    project={project}
+                    bandMembers={band.members}
+                    onSave={handleSaveProject}
+                    onCancel={() => setIsEditing(false)}
+                    isSaving={updateProjectMutation.isPending}
+                  />
+                ) : (
+                  <ProjectHeader
+                    project={project}
+                    proposal={proposal}
+                    canUpdateProject={canUpdateProject || false}
+                    onEdit={() => setIsEditing(true)}
+                    onValidate={() => validateProjectMutation.mutate({ projectId, userId: userId! })}
+                    isValidating={validateProjectMutation.isPending}
+                  />
+                )}
 
-              {canUpdateProject && !isEditing && (
-                <ProjectStatusBar
-                  currentStatus={project.status}
-                  onStatusChange={handleStatusChange}
-                  isUpdating={updateProjectMutation.isPending}
-                />
-              )}
+                {canUpdateProject && !isEditing && (
+                  <ProjectStatusBar
+                    currentStatus={project.status}
+                    onStatusChange={handleStatusChange}
+                    isUpdating={updateProjectMutation.isPending}
+                  />
+                )}
+              </Stack>
+            </Card>
 
+            <ProjectInfoCard
+              project={project}
+              bandMembers={band.members}
+            />
+
+            <Card className="p-8">
               <ProjectTasks
                 tasks={tasks}
                 bandMembers={band.members}
@@ -288,37 +391,55 @@ export default function ProjectDetailPage() {
                 showCreateForm={showCreateTask}
                 onShowCreateForm={setShowCreateTask}
                 onCreateTask={handleCreateTask}
-                isCreating={createTaskMutation.isPending}
+                isCreating={createTaskMutation.isPending || createSuggestedTaskMutation.isPending}
                 onStatusChange={handleTaskStatusChange}
                 onSubmitForVerification={handleSubmitForVerification}
                 onReview={handleReviewTask}
                 isUpdating={updateTaskMutation.isPending || submitForVerificationMutation.isPending}
+                suggestions={taskSuggestions}
+                onSuggestTasks={handleSuggestTasks}
+                onAcceptSuggestion={handleAcceptSuggestion}
+                onAcceptAllSuggestions={handleAcceptAllSuggestions}
+                onDismissSuggestions={handleDismissSuggestions}
+                isSuggesting={suggestTasksMutation.isPending}
+                suggestionsCreatedCount={suggestionsCreatedCount}
               />
+            </Card>
 
-              <ProjectDetails project={project} />
+            <Card className="p-8">
+              <Stack spacing="md">
+                <Heading level={2}>Original Proposal</Heading>
+                <Text weight="semibold">{proposal.title}</Text>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
+                >
+                  View Full Proposal →
+                </Button>
+              </Stack>
+            </Card>
+          </Stack>
 
-              <Card>
-                <Stack spacing="lg">
-                  <Heading level={2}>Original Proposal</Heading>
-                  <Text weight="semibold">{proposal.title}</Text>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                  >
-                    View Full Proposal →
-                  </Button>
-                </Stack>
-              </Card>
-            </Stack>
-          </div>
-
-          <ProjectSidebar
-            project={project}
+          <DiscussionSidebar
+            projectId={projectId}
+            userId={userId}
             bandMembers={band.members}
           />
         </Flex>
       </DashboardContainer>
+
+      <TaskSubmitModal
+        isOpen={showSubmitModal}
+        task={selectedTask}
+        userId={userId}
+        onClose={() => {
+          setShowSubmitModal(false)
+          setSelectedTask(null)
+        }}
+        onSubmit={handleSubmitTask}
+        isSubmitting={submitForVerificationMutation.isPending}
+      />
 
       <TaskVerifyModal
         isOpen={showVerifyModal}

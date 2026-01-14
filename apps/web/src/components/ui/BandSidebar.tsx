@@ -27,7 +27,7 @@ export function BandSidebar({ bandSlug, canApprove = false, isMember = false, ca
 
   // Member actions
   const memberActions = [
-    { label: '👥 Members', path: `/bands/${bandSlug}/members`, disabled: true },
+    { label: '👥 Members', path: `/bands/${bandSlug}/members`, show: true },
     { label: '📨 Invite', path: `/bands/${bandSlug}/invite`, show: isMember },
     { label: '📋 Applications', path: `/bands/${bandSlug}/applications`, show: canApprove },
   ].filter(item => item.show !== false)
@@ -46,18 +46,15 @@ export function BandSidebar({ bandSlug, canApprove = false, isMember = false, ca
             <NavButton
               key={item.path}
               active={isActive(item.path)}
-              onClick={() => !item.disabled && router.push(item.path)}
-              disabled={item.disabled}
-              className={item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
+              onClick={() => router.push(item.path)}
             >
               {item.label}
-              {item.disabled && <span className="text-xs ml-1">(soon)</span>}
             </NavButton>
           ))}
         </Stack>
 
         {/* Member Actions */}
-        {isMember && memberActions.length > 0 && (
+        {memberActions.length > 0 && (
           <Stack spacing="sm">
             <Text variant="small" weight="semibold" className="text-gray-500 uppercase text-xs px-2">
               Manage
@@ -66,12 +63,9 @@ export function BandSidebar({ bandSlug, canApprove = false, isMember = false, ca
               <NavButton
                 key={item.path}
                 active={isActive(item.path)}
-                onClick={() => !item.disabled && router.push(item.path)}
-                disabled={item.disabled}
-                className={item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
+                onClick={() => router.push(item.path)}
               >
                 {item.label}
-                {item.disabled && <span className="text-xs ml-1">(soon)</span>}
               </NavButton>
             ))}
           </Stack>

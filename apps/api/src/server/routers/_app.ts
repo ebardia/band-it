@@ -8,6 +8,8 @@ import { proposalRouter } from './proposal'
 import { projectRouter } from './project'
 import { taskRouter } from './task'
 import { aiRouter } from './ai'
+import { fileRouter } from './file'
+import { commentRouter } from './comment'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -20,6 +22,8 @@ export const appRouter = router({
   project: projectRouter,
   task: taskRouter,
   ai: aiRouter,
+  file: fileRouter,
+  comment: commentRouter,
 })
 
 // Export type definition of API

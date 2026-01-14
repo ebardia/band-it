@@ -1,7 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Heading, Text, Stack, Flex, Button, Modal } from '@/components/ui'
+import { trpc } from '@/lib/trpc'
+import { 
+  Heading, 
+  Text, 
+  Stack, 
+  Flex, 
+  Button, 
+  Modal,
+  FileList,
+  Loading,
+} from '@/components/ui'
 
 interface TaskVerifyModalProps {
   isOpen: boolean
@@ -22,6 +32,11 @@ export function TaskVerifyModal({
 }: TaskVerifyModalProps) {
   const [notes, setNotes] = useState('')
 
+  const { data: filesData, isLoading: filesLoading } = trpc.file.getByEntity.useQuery(
+    { taskId: task?.id },
+    { enabled: !!task?.id && isOpen }
+  )
+
   const handleClose = () => {
     setNotes('')
     onClose()
@@ -29,6 +44,7 @@ export function TaskVerifyModal({
 
   if (!task) return null
 
+  const files = filesData?.files || []
   const textareaClassName = "w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 
   return (
@@ -38,15 +54,37 @@ export function TaskVerifyModal({
         
         <Text weight="semibold">{task.name}</Text>
         
-        {task.proofDescription && (
-          <Stack spacing="sm">
-            <Text variant="small" weight="semibold">Proof Description:</Text>
-            <Text variant="small">{task.proofDescription}</Text>
+        {task.description && (
+          <Stack spacing="xs">
+            <Text variant="small" weight="semibold">Task Description</Text>
+            <Text variant="small" color="muted">{task.description}</Text>
           </Stack>
         )}
         
+        {task.proofDescription && (
+          <Stack spacing="xs">
+            <Text variant="small" weight="semibold">Proof Description</Text>
+            <Text variant="small">{task.proofDescription}</Text>
+          </Stack>
+        )}
+
+        <Stack spacing="sm">
+          <Text variant="small" weight="semibold">Uploaded Proof ({files.length})</Text>
+          {filesLoading ? (
+            <Loading message="Loading files..." />
+          ) : files.length > 0 ? (
+            <FileList
+              files={files}
+              canDelete={false}
+              showUploader={true}
+            />
+          ) : (
+            <Text variant="small" color="muted">No files uploaded</Text>
+          )}
+        </Stack>
+        
         <Stack spacing="xs">
-          <Text variant="small" weight="semibold">Notes (optional)</Text>
+          <Text variant="small" weight="semibold">Feedback (optional)</Text>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

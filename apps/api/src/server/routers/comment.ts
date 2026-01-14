@@ -1,0 +1,331 @@
+import { z } from 'zod'
+import { router, publicProcedure } from '../trpc'
+import { prisma } from '../../lib/prisma'
+import { TRPCError } from '@trpc/server'
+import { notificationService } from '../../services/notification.service'
+
+export const commentRouter = router({
+  // Get comments for an entity
+  getByEntity: publicProcedure
+    .input(z.object({
+      bandId: z.string().optional(),
+      proposalId: z.string().optional(),
+      projectId: z.string().optional(),
+      taskId: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      const { bandId, proposalId, projectId, taskId } = input
+
+      const where: any = {
+        deletedAt: null,
+        parentId: null, // Only top-level comments
+      }
+
+      if (bandId) where.bandId = bandId
+      if (proposalId) where.proposalId = proposalId
+      if (projectId) where.projectId = projectId
+      if (taskId) where.taskId = taskId
+
+      const comments = await prisma.comment.findMany({
+        where,
+        include: {
+          author: {
+            select: { id: true, name: true, email: true }
+          },
+          replies: {
+            where: { deletedAt: null },
+            include: {
+              author: {
+                select: { id: true, name: true, email: true }
+              },
+              reactions: {
+                include: {
+                  user: { select: { id: true, name: true } }
+                }
+              },
+              mentions: {
+                include: {
+                  user: { select: { id: true, name: true } }
+                }
+              }
+            },
+            orderBy: { createdAt: 'asc' }
+          },
+          reactions: {
+            include: {
+              user: { select: { id: true, name: true } }
+            }
+          },
+          mentions: {
+            include: {
+              user: { select: { id: true, name: true } }
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+
+      return { comments }
+    }),
+
+  // Create a comment
+  create: publicProcedure
+    .input(z.object({
+      content: z.string().min(1, 'Comment cannot be empty'),
+      authorId: z.string(),
+      parentId: z.string().optional(),
+      bandId: z.string().optional(),
+      proposalId: z.string().optional(),
+      projectId: z.string().optional(),
+      taskId: z.string().optional(),
+      mentionedUserIds: z.array(z.string()).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const { 
+        content, authorId, parentId,
+        bandId, proposalId, projectId, taskId,
+        mentionedUserIds 
+      } = input
+
+      // Verify author exists
+      const author = await prisma.user.findUnique({ where: { id: authorId } })
+      if (!author) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
+      }
+
+      // If reply, verify parent exists
+      if (parentId) {
+        const parent = await prisma.comment.findUnique({ where: { id: parentId } })
+        if (!parent || parent.deletedAt) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Parent comment not found' })
+        }
+      }
+
+      // Create comment
+      const comment = await prisma.comment.create({
+        data: {
+          content,
+          authorId,
+          parentId,
+          bandId,
+          proposalId,
+          projectId,
+          taskId,
+        },
+        include: {
+          author: {
+            select: { id: true, name: true, email: true }
+          },
+          replies: {
+            include: {
+              author: { select: { id: true, name: true, email: true } }
+            }
+          },
+          reactions: true,
+          mentions: true,
+        }
+      })
+
+      // Create mentions and notify users
+      if (mentionedUserIds && mentionedUserIds.length > 0) {
+        const mentionPromises = mentionedUserIds.map(async (userId) => {
+          // Create mention record
+          await prisma.mention.create({
+            data: {
+              userId,
+              commentId: comment.id,
+            }
+          })
+
+          // Get entity info for notification
+          let entityName = 'a discussion'
+          let actionUrl = '/'
+
+          if (bandId) {
+            const band = await prisma.band.findUnique({ where: { id: bandId } })
+            if (band) {
+              entityName = `band "${band.name}"`
+              actionUrl = `/bands/${band.slug}`
+            }
+          } else if (proposalId) {
+            const proposal = await prisma.proposal.findUnique({ 
+              where: { id: proposalId },
+              include: { band: true }
+            })
+            if (proposal) {
+              entityName = `proposal "${proposal.title}"`
+              actionUrl = `/bands/${proposal.band.slug}/proposals/${proposal.id}`
+            }
+          } else if (projectId) {
+            const project = await prisma.project.findUnique({ 
+              where: { id: projectId },
+              include: { band: true }
+            })
+            if (project) {
+              entityName = `project "${project.name}"`
+              actionUrl = `/bands/${project.band.slug}/projects/${project.id}`
+            }
+          } else if (taskId) {
+            const task = await prisma.task.findUnique({ 
+              where: { id: taskId },
+              include: { band: true, project: true }
+            })
+            if (task) {
+              entityName = `task "${task.name}"`
+              actionUrl = `/bands/${task.band.slug}/projects/${task.projectId}?task=${task.id}`
+            }
+          }
+
+          // Send notification
+          if (userId !== authorId) {
+            await notificationService.create({
+              userId,
+              type: 'BAND_DETAILS_UPDATED', // Reusing existing type
+              title: 'You were mentioned',
+              message: `${author.name} mentioned you in ${entityName}`,
+              relatedId: comment.id,
+              relatedType: 'comment',
+              actionUrl,
+            })
+          }
+        })
+
+        await Promise.all(mentionPromises)
+      }
+
+      return { comment }
+    }),
+
+  // Update a comment
+  update: publicProcedure
+    .input(z.object({
+      commentId: z.string(),
+      content: z.string().min(1, 'Comment cannot be empty'),
+      userId: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      const { commentId, content, userId } = input
+
+      const comment = await prisma.comment.findUnique({ where: { id: commentId } })
+      
+      if (!comment || comment.deletedAt) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Comment not found' })
+      }
+
+      if (comment.authorId !== userId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You can only edit your own comments' })
+      }
+
+      const updatedComment = await prisma.comment.update({
+        where: { id: commentId },
+        data: {
+          content,
+          isEdited: true,
+          editedAt: new Date(),
+        },
+        include: {
+          author: { select: { id: true, name: true, email: true } },
+          reactions: true,
+          mentions: true,
+        }
+      })
+
+      return { comment: updatedComment }
+    }),
+
+  // Delete a comment (soft delete)
+  delete: publicProcedure
+    .input(z.object({
+      commentId: z.string(),
+      userId: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      const { commentId, userId } = input
+
+      const comment = await prisma.comment.findUnique({ where: { id: commentId } })
+      
+      if (!comment || comment.deletedAt) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Comment not found' })
+      }
+
+      if (comment.authorId !== userId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You can only delete your own comments' })
+      }
+
+      await prisma.comment.update({
+        where: { id: commentId },
+        data: { deletedAt: new Date() }
+      })
+
+      return { success: true }
+    }),
+
+  // Add reaction (one reaction per user per comment)
+  addReaction: publicProcedure
+    .input(z.object({
+      commentId: z.string(),
+      userId: z.string(),
+      type: z.enum(['THUMBS_UP', 'THUMBS_DOWN', 'HEART', 'CELEBRATE', 'THINKING']),
+    }))
+    .mutation(async ({ input }) => {
+      const { commentId, userId, type } = input
+
+      const comment = await prisma.comment.findUnique({ where: { id: commentId } })
+      if (!comment || comment.deletedAt) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Comment not found' })
+      }
+
+      // Check if user already has this exact reaction (toggle off)
+      const existingSameType = await prisma.reaction.findUnique({
+        where: {
+          userId_commentId_type: { userId, commentId, type }
+        }
+      })
+
+      if (existingSameType) {
+        // Remove reaction (toggle off)
+        await prisma.reaction.delete({ where: { id: existingSameType.id } })
+        return { action: 'removed' }
+      }
+
+      // Remove any other reaction this user has on this comment
+      await prisma.reaction.deleteMany({
+        where: {
+          userId,
+          commentId,
+        }
+      })
+
+      // Add the new reaction
+      await prisma.reaction.create({
+        data: { userId, commentId, type }
+      })
+      
+      return { action: 'added' }
+    }),
+
+  // Get comment count for an entity
+  getCount: publicProcedure
+    .input(z.object({
+      bandId: z.string().optional(),
+      proposalId: z.string().optional(),
+      projectId: z.string().optional(),
+      taskId: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      const { bandId, proposalId, projectId, taskId } = input
+
+      const where: any = {
+        deletedAt: null,
+      }
+
+      if (bandId) where.bandId = bandId
+      if (proposalId) where.proposalId = proposalId
+      if (projectId) where.projectId = projectId
+      if (taskId) where.taskId = taskId
+
+      const count = await prisma.comment.count({ where })
+
+      return { count }
+    }),
+})
