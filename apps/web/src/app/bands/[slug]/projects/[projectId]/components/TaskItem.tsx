@@ -1,11 +1,13 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { Text, Stack, Flex, Badge, Button } from '@/components/ui'
 
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'COMPLETED' | 'BLOCKED'
 
 interface TaskItemProps {
   task: any
+  bandSlug: string
   isHighlighted: boolean
   isAssignee: boolean
   canUpdate: boolean
@@ -18,6 +20,7 @@ interface TaskItemProps {
 
 export function TaskItem({
   task,
+  bandSlug,
   isHighlighted,
   isAssignee,
   canUpdate,
@@ -27,6 +30,8 @@ export function TaskItem({
   onReview,
   isUpdating,
 }: TaskItemProps) {
+  const router = useRouter()
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'TODO':
@@ -59,13 +64,22 @@ export function TaskItem({
     }
   }
 
+  const handleClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on a button
+    if ((e.target as HTMLElement).closest('button')) {
+      return
+    }
+    router.push(`/bands/${bandSlug}/tasks/${task.id}`)
+  }
+
   const canModifyTask = isAssignee || canUpdate
   const isCompleted = task.status === 'COMPLETED'
 
   return (
     <div
-      className={`p-4 border rounded-lg ${
-        isHighlighted ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+      onClick={handleClick}
+      className={`p-4 border rounded-lg cursor-pointer transition hover:shadow-md ${
+        isHighlighted ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
       } ${isCompleted ? 'opacity-60' : ''}`}
     >
       <Flex justify="between" align="start">

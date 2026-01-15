@@ -383,6 +383,7 @@ export default function ProjectDetailPage() {
             <Card className="p-8">
               <ProjectTasks
                 tasks={tasks}
+                bandSlug={slug}
                 bandMembers={band.members}
                 userId={userId}
                 highlightedTaskId={highlightedTaskId}

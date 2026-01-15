@@ -18,6 +18,7 @@ interface TaskSuggestion {
 
 interface ProjectTasksProps {
   tasks: any[]
+  bandSlug: string
   bandMembers: any[]
   userId: string | null
   highlightedTaskId: string | null
@@ -43,6 +44,7 @@ interface ProjectTasksProps {
 
 export function ProjectTasks({
   tasks,
+  bandSlug,
   bandMembers,
   userId,
   highlightedTaskId,
@@ -118,6 +120,7 @@ export function ProjectTasks({
               <TaskItem
                 key={task.id}
                 task={task}
+                bandSlug={bandSlug}
                 isHighlighted={highlightedTaskId === task.id}
                 isAssignee={task.assigneeId === userId}
                 canUpdate={canUpdate}

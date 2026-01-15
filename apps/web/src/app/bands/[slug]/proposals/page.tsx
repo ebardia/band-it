@@ -10,14 +10,12 @@ import {
   Stack,
   Button,
   useToast,
-  PageWrapper,
-  DashboardContainer,
   Flex,
   Card,
   Badge,
   Loading,
   Alert,
-  BandSidebar
+  BandLayout
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -57,25 +55,35 @@ export default function ProposalsPage() {
 
   if (bandLoading || proposalsLoading) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName="Loading..."
+          pageTitle="Band Proposals"
+          isMember={false}
+        >
           <Loading message="Loading proposals..." />
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
   if (!bandData?.band) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName=""
+          pageTitle="Band Proposals"
+          isMember={false}
+        >
           <Alert variant="danger">
             <Text>Band not found</Text>
           </Alert>
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
@@ -104,110 +112,98 @@ export default function ProposalsPage() {
   const closedProposals = proposalsData?.proposals.filter((p: any) => p.status !== 'OPEN') || []
 
   return (
-    <PageWrapper variant="dashboard">
+    <>
       <AppNav />
-
-      <DashboardContainer>
-        <Flex gap="md" align="start">
-          {/* Left Sidebar */}
-          <BandSidebar 
-            bandSlug={slug} 
-            canApprove={canApprove} 
-            isMember={isMember}
-            canCreateProposal={canCreateProposal}
-          />
-
-          {/* Main Content */}
-          <div className="flex-1 bg-white rounded-lg shadow p-8">
-            <Stack spacing="xl">
-              <Flex justify="between">
-                <Stack spacing="sm">
-                  <Heading level={1}>Proposals</Heading>
-                  <Text variant="muted">{band.name}</Text>
-                </Stack>
-                {canCreateProposal && (
-                  <Button
-                    variant="primary"
-                    size="md"
-                    onClick={() => router.push(`/bands/${slug}/proposals/create`)}
-                  >
-                    Create Proposal
-                  </Button>
-                )}
-              </Flex>
-
-              {/* Open Proposals */}
-              <Stack spacing="lg">
-                <Heading level={2}>Open for Voting ({openProposals.length})</Heading>
-                
-                {openProposals.length > 0 ? (
-                  <Stack spacing="md">
-                    {openProposals.map((proposal: any) => (
-                      <Card key={proposal.id}>
-                        <Flex justify="between">
-                          <Stack spacing="sm">
-                            <Heading level={3}>{proposal.title}</Heading>
-                            <Text variant="small" variant="muted">
-                              By {proposal.createdBy.name} • Ends {new Date(proposal.votingEndsAt).toLocaleDateString()}
-                            </Text>
-                            <Flex gap="sm">
-                              {getStatusBadge(proposal.status)}
-                              <Badge variant="neutral">{proposal._count.votes} votes</Badge>
-                            </Flex>
-                          </Stack>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                          >
-                            Vote Now
-                          </Button>
+      <BandLayout
+        bandSlug={slug}
+        bandName={band.name}
+          pageTitle="Band Proposals"
+        canApprove={canApprove}
+        isMember={isMember}
+        canCreateProposal={canCreateProposal}
+        action={
+          canCreateProposal ? (
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => router.push(`/bands/${slug}/proposals/create`)}
+            >
+              Create Proposal
+            </Button>
+          ) : undefined
+        }
+      >
+        <Stack spacing="xl">
+          {/* Open Proposals */}
+          <Stack spacing="lg">
+            <Heading level={2}>Open for Voting ({openProposals.length})</Heading>
+            
+            {openProposals.length > 0 ? (
+              <Stack spacing="md">
+                {openProposals.map((proposal: any) => (
+                  <Card key={proposal.id}>
+                    <Flex justify="between">
+                      <Stack spacing="sm">
+                        <Heading level={3}>{proposal.title}</Heading>
+                        <Text variant="small" color="muted">
+                          By {proposal.createdBy.name} • Ends {new Date(proposal.votingEndsAt).toLocaleDateString()}
+                        </Text>
+                        <Flex gap="sm">
+                          {getStatusBadge(proposal.status)}
+                          <Badge variant="neutral">{proposal._count.votes} votes</Badge>
                         </Flex>
-                      </Card>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Alert variant="info">
-                    <Text>No open proposals at this time.</Text>
-                  </Alert>
-                )}
+                      </Stack>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
+                      >
+                        Vote Now
+                      </Button>
+                    </Flex>
+                  </Card>
+                ))}
               </Stack>
+            ) : (
+              <Alert variant="info">
+                <Text>No open proposals at this time.</Text>
+              </Alert>
+            )}
+          </Stack>
 
-              {/* Closed Proposals */}
-              {closedProposals.length > 0 && (
-                <Stack spacing="lg">
-                  <Heading level={2}>Past Proposals ({closedProposals.length})</Heading>
-                  <Stack spacing="md">
-                    {closedProposals.map((proposal: any) => (
-                      <Card key={proposal.id}>
-                        <Flex justify="between">
-                          <Stack spacing="sm">
-                            <Heading level={3}>{proposal.title}</Heading>
-                            <Text variant="small" variant="muted">
-                              By {proposal.createdBy.name}
-                            </Text>
-                            <Flex gap="sm">
-                              {getStatusBadge(proposal.status)}
-                              <Badge variant="neutral">{proposal._count.votes} votes</Badge>
-                            </Flex>
-                          </Stack>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                          >
-                            View
-                          </Button>
+          {/* Closed Proposals */}
+          {closedProposals.length > 0 && (
+            <Stack spacing="lg">
+              <Heading level={2}>Past Proposals ({closedProposals.length})</Heading>
+              <Stack spacing="md">
+                {closedProposals.map((proposal: any) => (
+                  <Card key={proposal.id}>
+                    <Flex justify="between">
+                      <Stack spacing="sm">
+                        <Heading level={3}>{proposal.title}</Heading>
+                        <Text variant="small" color="muted">
+                          By {proposal.createdBy.name}
+                        </Text>
+                        <Flex gap="sm">
+                          {getStatusBadge(proposal.status)}
+                          <Badge variant="neutral">{proposal._count.votes} votes</Badge>
                         </Flex>
-                      </Card>
-                    ))}
-                  </Stack>
-                </Stack>
-              )}
+                      </Stack>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
+                      >
+                        View
+                      </Button>
+                    </Flex>
+                  </Card>
+                ))}
+              </Stack>
             </Stack>
-          </div>
-        </Flex>
-      </DashboardContainer>
-    </PageWrapper>
+          )}
+        </Stack>
+      </BandLayout>
+    </>
   )
 }
