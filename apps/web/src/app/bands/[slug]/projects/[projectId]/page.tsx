@@ -10,13 +10,11 @@ import {
   Stack,
   Button,
   useToast,
-  PageWrapper,
-  DashboardContainer,
   Flex,
   Card,
   Loading,
   Alert,
-  BandSidebar,
+  BandLayout,
   DiscussionSidebar,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
@@ -287,27 +285,37 @@ export default function ProjectDetailPage() {
     })
   }
 
- if (projectLoading || tasksLoading) {
-  return (
-    <PageWrapper variant="dashboard">
-      <AppNav />
-      <DashboardContainer wide>          
-        <Loading message="Loading project..." />
-      </DashboardContainer>
-    </PageWrapper>
-  )
-}
+  if (projectLoading || tasksLoading) {
+    return (
+      <>
+        <AppNav />
+        <BandLayout
+          bandSlug={slug}
+          bandName="Loading..."
+          pageTitle="Project Details"
+          isMember={false}
+        >
+          <Loading message="Loading project..." />
+        </BandLayout>
+      </>
+    )
+  }
 
   if (!projectData?.project) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer wide>
+        <BandLayout
+          bandSlug={slug}
+          bandName=""
+          pageTitle="Project Details"
+          isMember={false}
+        >
           <Alert variant="danger">
             <Text>Project not found</Text>
           </Alert>
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
@@ -320,139 +328,143 @@ export default function ProjectDetailPage() {
   const canVerifyTasks = currentMember && CAN_VERIFY_TASK.includes(currentMember.role)
 
   return (
-    <PageWrapper variant="dashboard">
+    <>
       <AppNav />
-
-      <DashboardContainer wide>
-        <Flex gap="md" align="start">
-          <BandSidebar 
-            bandSlug={slug} 
-            canApprove={false} 
-            isMember={!!currentMember}
-          />
-
-            <Stack spacing="lg" className="flex-1 max-w-3xl">            
-              <Card className="p-8">
-              <Stack spacing="xl">
-                <Flex gap="sm" align="center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push(`/bands/${slug}/projects`)}
-                  >
-                    ← Projects
-                  </Button>
-                  <Text color="muted">/</Text>
-                  <Text weight="semibold">{project.name}</Text>
-                </Flex>
-
-                {isEditing ? (
-                  <ProjectEditForm
-                    project={project}
-                    bandMembers={band.members}
-                    onSave={handleSaveProject}
-                    onCancel={() => setIsEditing(false)}
-                    isSaving={updateProjectMutation.isPending}
-                  />
-                ) : (
-                  <ProjectHeader
-                    project={project}
-                    proposal={proposal}
-                    canUpdateProject={canUpdateProject || false}
-                    onEdit={() => setIsEditing(true)}
-                    onValidate={() => validateProjectMutation.mutate({ projectId, userId: userId! })}
-                    isValidating={validateProjectMutation.isPending}
-                  />
-                )}
-
-                {canUpdateProject && !isEditing && (
-                  <ProjectStatusBar
-                    currentStatus={project.status}
-                    onStatusChange={handleStatusChange}
-                    isUpdating={updateProjectMutation.isPending}
-                  />
-                )}
-              </Stack>
-            </Card>
-
-            <ProjectInfoCard
-              project={project}
-              bandMembers={band.members}
-            />
-
-            <Card className="p-8">
-              <ProjectTasks
-                tasks={tasks}
-                bandSlug={slug}
-                bandMembers={band.members}
-                userId={userId}
-                highlightedTaskId={highlightedTaskId}
-                canUpdate={canUpdateProject || false}
-                canVerify={canVerifyTasks || false}
-                showCreateForm={showCreateTask}
-                onShowCreateForm={setShowCreateTask}
-                onCreateTask={handleCreateTask}
-                isCreating={createTaskMutation.isPending || createSuggestedTaskMutation.isPending}
-                onStatusChange={handleTaskStatusChange}
-                onSubmitForVerification={handleSubmitForVerification}
-                onReview={handleReviewTask}
-                isUpdating={updateTaskMutation.isPending || submitForVerificationMutation.isPending}
-                suggestions={taskSuggestions}
-                onSuggestTasks={handleSuggestTasks}
-                onAcceptSuggestion={handleAcceptSuggestion}
-                onAcceptAllSuggestions={handleAcceptAllSuggestions}
-                onDismissSuggestions={handleDismissSuggestions}
-                isSuggesting={suggestTasksMutation.isPending}
-                suggestionsCreatedCount={suggestionsCreatedCount}
-              />
-            </Card>
-
-            <Card className="p-8">
-              <Stack spacing="md">
-                <Heading level={2}>Original Proposal</Heading>
-                <Text weight="semibold">{proposal.title}</Text>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                >
-                  View Full Proposal →
-                </Button>
-              </Stack>
-            </Card>
-          </Stack>
-
+      <BandLayout
+        bandSlug={slug}
+        bandName={band.name}
+        pageTitle={project.name}
+        canApprove={false}
+        isMember={!!currentMember}
+        action={
+          canUpdateProject && !isEditing ? (
+            <Button variant="secondary" size="md" onClick={() => setIsEditing(true)}>
+              Edit Project
+            </Button>
+          ) : undefined
+        }
+        rightSidebar={
           <DiscussionSidebar
             projectId={projectId}
             userId={userId}
             bandMembers={band.members}
           />
-        </Flex>
-      </DashboardContainer>
+        }
+      >
+        <Stack spacing="lg">
+          {/* Breadcrumb */}
+          <Flex gap="sm" align="center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/bands/${slug}/projects`)}
+            >
+              ← Projects
+            </Button>
+          </Flex>
 
-      <TaskSubmitModal
-        isOpen={showSubmitModal}
-        task={selectedTask}
-        userId={userId}
-        onClose={() => {
-          setShowSubmitModal(false)
-          setSelectedTask(null)
-        }}
-        onSubmit={handleSubmitTask}
-        isSubmitting={submitForVerificationMutation.isPending}
-      />
+          <Card>
+            <Stack spacing="xl">
+              {isEditing ? (
+                <ProjectEditForm
+                  project={project}
+                  bandMembers={band.members}
+                  onSave={handleSaveProject}
+                  onCancel={() => setIsEditing(false)}
+                  isSaving={updateProjectMutation.isPending}
+                />
+              ) : (
+                <ProjectHeader
+                  project={project}
+                  proposal={proposal}
+                  canUpdateProject={canUpdateProject || false}
+                  onEdit={() => setIsEditing(true)}
+                  onValidate={() => validateProjectMutation.mutate({ projectId, userId: userId! })}
+                  isValidating={validateProjectMutation.isPending}
+                />
+              )}
 
-      <TaskVerifyModal
-        isOpen={showVerifyModal}
-        task={selectedTask}
-        onClose={() => {
-          setShowVerifyModal(false)
-          setSelectedTask(null)
-        }}
-        onApprove={(notes) => handleVerifyTask(true, notes)}
-        onReject={(notes) => handleVerifyTask(false, notes)}
-        isSubmitting={verifyTaskMutation.isPending}
-      />
-    </PageWrapper>
+              {canUpdateProject && !isEditing && (
+                <ProjectStatusBar
+                  currentStatus={project.status}
+                  onStatusChange={handleStatusChange}
+                  isUpdating={updateProjectMutation.isPending}
+                />
+              )}
+            </Stack>
+          </Card>
+
+          <ProjectInfoCard
+            project={project}
+            bandMembers={band.members}
+          />
+
+          <Card>
+            <ProjectTasks
+              tasks={tasks}
+              bandSlug={slug}
+              bandMembers={band.members}
+              userId={userId}
+              highlightedTaskId={highlightedTaskId}
+              canUpdate={canUpdateProject || false}
+              canVerify={canVerifyTasks || false}
+              showCreateForm={showCreateTask}
+              onShowCreateForm={setShowCreateTask}
+              onCreateTask={handleCreateTask}
+              isCreating={createTaskMutation.isPending || createSuggestedTaskMutation.isPending}
+              onStatusChange={handleTaskStatusChange}
+              onSubmitForVerification={handleSubmitForVerification}
+              onReview={handleReviewTask}
+              isUpdating={updateTaskMutation.isPending || submitForVerificationMutation.isPending}
+              suggestions={taskSuggestions}
+              onSuggestTasks={handleSuggestTasks}
+              onAcceptSuggestion={handleAcceptSuggestion}
+              onAcceptAllSuggestions={handleAcceptAllSuggestions}
+              onDismissSuggestions={handleDismissSuggestions}
+              isSuggesting={suggestTasksMutation.isPending}
+              suggestionsCreatedCount={suggestionsCreatedCount}
+            />
+          </Card>
+
+          <Card>
+            <Stack spacing="md">
+              <Heading level={2}>Original Proposal</Heading>
+              <Text weight="semibold">{proposal.title}</Text>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
+              >
+                View Full Proposal →
+              </Button>
+            </Stack>
+          </Card>
+        </Stack>
+
+        <TaskSubmitModal
+          isOpen={showSubmitModal}
+          task={selectedTask}
+          userId={userId}
+          onClose={() => {
+            setShowSubmitModal(false)
+            setSelectedTask(null)
+          }}
+          onSubmit={handleSubmitTask}
+          isSubmitting={submitForVerificationMutation.isPending}
+        />
+
+        <TaskVerifyModal
+          isOpen={showVerifyModal}
+          task={selectedTask}
+          onClose={() => {
+            setShowVerifyModal(false)
+            setSelectedTask(null)
+          }}
+          onApprove={(notes) => handleVerifyTask(true, notes)}
+          onReject={(notes) => handleVerifyTask(false, notes)}
+          isSubmitting={verifyTaskMutation.isPending}
+        />
+      </BandLayout>
+    </>
   )
 }

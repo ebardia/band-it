@@ -10,17 +10,16 @@ import {
   Stack,
   Button,
   useToast,
-  PageWrapper,
-  DashboardContainer,
   Flex,
   Card,
   Badge,
   Loading,
   Alert,
-  BandSidebar,
+  BandLayout,
   DiscussionSidebar,
   Input,
   Textarea,
+  Modal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -29,6 +28,7 @@ const CAN_VERIFY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
 const CAN_USE_AI = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'COMPLETED' | 'BLOCKED'
+type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 
 export default function TaskDetailPage() {
   const router = useRouter()
@@ -41,6 +41,15 @@ export default function TaskDetailPage() {
   const [newItemText, setNewItemText] = useState('')
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(new Set())
+  
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editPriority, setEditPriority] = useState<TaskPriority>('MEDIUM')
+  const [editAssigneeId, setEditAssigneeId] = useState<string | null>(null)
+  const [editDueDate, setEditDueDate] = useState('')
+  const [editEstimatedHours, setEditEstimatedHours] = useState<number | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -76,6 +85,7 @@ export default function TaskDetailPage() {
     onSuccess: () => {
       showToast('Task updated!', 'success')
       refetchTask()
+      setShowEditModal(false)
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -125,7 +135,6 @@ export default function TaskDetailPage() {
   const suggestItemsMutation = trpc.checklist.suggestItems.useMutation({
     onSuccess: (data) => {
       setAiSuggestions(data.suggestions)
-      // Select all by default
       setSelectedSuggestions(new Set(data.suggestions.map((_, i) => i)))
       showToast(`Generated ${data.suggestions.length} suggestions!`, 'success')
     },
@@ -140,6 +149,32 @@ export default function TaskDetailPage() {
       taskId,
       userId,
       status: newStatus,
+    })
+  }
+
+  const handleOpenEditModal = () => {
+    if (!taskData?.task) return
+    const task = taskData.task
+    setEditName(task.name)
+    setEditDescription(task.description || '')
+    setEditPriority(task.priority as TaskPriority)
+    setEditAssigneeId(task.assigneeId || null)
+    setEditDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '')
+    setEditEstimatedHours(task.estimatedHours || null)
+    setShowEditModal(true)
+  }
+
+  const handleSaveEdit = () => {
+    if (!userId || !editName.trim()) return
+    updateTaskMutation.mutate({
+      taskId,
+      userId,
+      name: editName,
+      description: editDescription || undefined,
+      priority: editPriority,
+      assigneeId: editAssigneeId || undefined,
+      dueDate: editDueDate ? new Date(editDueDate) : undefined,
+      estimatedHours: editEstimatedHours || undefined,
     })
   }
 
@@ -228,36 +263,46 @@ export default function TaskDetailPage() {
 
   if (taskLoading) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer wide>
+        <BandLayout
+          bandSlug={slug}
+          bandName="Loading..."
+          pageTitle="Task Details"
+          isMember={false}
+        >
           <Loading message="Loading task..." />
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
   if (!taskData?.task) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer wide>
+        <BandLayout
+          bandSlug={slug}
+          bandName=""
+          pageTitle="Task Details"
+          isMember={false}
+        >
           <Alert variant="danger">
             <Text>Task not found</Text>
           </Alert>
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
   const task = taskData.task
-  const band = bandData?.band
+  const band = task.band
   const checklistItems = checklistData?.items || []
   const completedCount = checklistItems.filter(item => item.isCompleted).length
   const totalCount = checklistItems.length
 
   const currentMember = band?.members.find((m: any) => m.user.id === userId)
-  const canApprove = currentMember && band?.whoCanApprove.includes(currentMember.role)
+  const canApprove = currentMember && band?.whoCanApprove?.includes(currentMember.role)
   const isMember = !!currentMember
   const canUpdate = currentMember && CAN_UPDATE_TASK.includes(currentMember.role)
   const canVerify = currentMember && CAN_VERIFY_TASK.includes(currentMember.role)
@@ -265,322 +310,420 @@ export default function TaskDetailPage() {
   const isAssignee = task.assigneeId === userId
 
   const statusOptions: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED', 'BLOCKED']
+  const priorityOptions: TaskPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 
   return (
-    <PageWrapper variant="dashboard">
+    <>
       <AppNav />
-
-      <DashboardContainer wide>
-        <Flex gap="md" align="start">
-          <BandSidebar 
-            bandSlug={slug} 
-            canApprove={canApprove || false} 
-            isMember={isMember}
-          />
-
-          <Stack spacing="lg" className="flex-1 max-w-3xl">
-            {/* Breadcrumb */}
-            <Card className="p-4">
-              <Flex gap="sm" align="center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push(`/bands/${slug}/tasks`)}
-                >
-                  ← Tasks
-                </Button>
-                <Text color="muted">/</Text>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push(`/bands/${slug}/projects/${task.projectId}`)}
-                >
-                  {task.project.name}
-                </Button>
-                <Text color="muted">/</Text>
-                <Text weight="semibold">{task.name}</Text>
-              </Flex>
-            </Card>
-
-            {/* Task Header */}
-            <Card className="p-8">
-              <Stack spacing="lg">
-                <Stack spacing="sm">
-                  <Heading level={1}>{task.name}</Heading>
-                  <Flex gap="sm" className="flex-wrap">
-                    {getStatusBadge(task.status)}
-                    {getPriorityBadge(task.priority)}
-                    {task.assignee && (
-                      <Badge variant="neutral">Assigned: {task.assignee.name}</Badge>
-                    )}
-                    {!task.assignee && (
-                      <Badge variant="warning">Unassigned</Badge>
-                    )}
-                    {task.requiresVerification && (
-                      <Badge variant="info">Requires Verification</Badge>
-                    )}
-                  </Flex>
-                </Stack>
-
-                {task.description && (
-                  <Text style={{ whiteSpace: 'pre-wrap' }}>{task.description}</Text>
-                )}
-
-                <Flex gap="lg" className="flex-wrap">
-                  {task.dueDate && (
-                    <Stack spacing="xs">
-                      <Text variant="small" weight="semibold">Due Date</Text>
-                      <Text variant="small">{new Date(task.dueDate).toLocaleDateString()}</Text>
-                    </Stack>
-                  )}
-                  {task.estimatedHours && (
-                    <Stack spacing="xs">
-                      <Text variant="small" weight="semibold">Estimated</Text>
-                      <Text variant="small">{task.estimatedHours} hours</Text>
-                    </Stack>
-                  )}
-                  {task.actualHours && (
-                    <Stack spacing="xs">
-                      <Text variant="small" weight="semibold">Actual</Text>
-                      <Text variant="small">{task.actualHours} hours</Text>
-                    </Stack>
-                  )}
-                  <Stack spacing="xs">
-                    <Text variant="small" weight="semibold">Created</Text>
-                    <Text variant="small">{new Date(task.createdAt).toLocaleDateString()}</Text>
-                  </Stack>
-                </Flex>
-              </Stack>
-            </Card>
-
-            {/* Status Update */}
-            {(canUpdate || isAssignee) && (
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Update Status</Heading>
-                  <Flex gap="sm" className="flex-wrap">
-                    {statusOptions.map((status) => (
-                      <Button
-                        key={status}
-                        variant={task.status === status ? 'primary' : 'ghost'}
-                        size="sm"
-                        onClick={() => handleStatusChange(status)}
-                        disabled={updateTaskMutation.isPending}
-                      >
-                        {status.replace('_', ' ')}
-                      </Button>
-                    ))}
-                  </Flex>
-                </Stack>
-              </Card>
-            )}
-
-            {/* Checklist */}
-            <Card>
-              <Stack spacing="md">
-                <Flex justify="between" align="center">
-                  <Heading level={3}>Checklist</Heading>
-                  <Flex gap="sm" align="center">
-                    {totalCount > 0 && (
-                      <Badge variant={completedCount === totalCount ? 'success' : 'neutral'}>
-                        {completedCount}/{totalCount} completed
-                      </Badge>
-                    )}
-                    {canUseAI && aiSuggestions.length === 0 && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleGenerateSuggestions}
-                        disabled={suggestItemsMutation.isPending}
-                      >
-                        {suggestItemsMutation.isPending ? '✨ Generating...' : '✨ AI Suggest'}
-                      </Button>
-                    )}
-                  </Flex>
-                </Flex>
-
-                {/* AI Suggestions Panel */}
-                {aiSuggestions.length > 0 && (
-                  <Card className="bg-purple-50 border-purple-200">
-                    <Stack spacing="md">
-                      <Flex justify="between" align="center">
-                        <Text weight="semibold" className="text-purple-800">
-                          ✨ AI Suggestions
-                        </Text>
-                        <Text variant="small" color="muted">
-                          {selectedSuggestions.size} of {aiSuggestions.length} selected
-                        </Text>
-                      </Flex>
-                      
-                      <Stack spacing="sm">
-                        {aiSuggestions.map((suggestion, index) => (
-                          <Flex 
-                            key={index} 
-                            gap="sm" 
-                            align="center"
-                            className="cursor-pointer"
-                            onClick={() => handleToggleSuggestion(index)}
-                          >
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleToggleSuggestion(index)
-                              }}
-                            >
-                              {selectedSuggestions.has(index) ? '☑️' : '⬜'}
-                            </Button>
-                            <Text variant="small">{suggestion}</Text>
-                          </Flex>
-                        ))}
-                      </Stack>
-
-                      <Flex gap="sm" justify="end">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleDismissSuggestions}
-                        >
-                          Dismiss
-                        </Button>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={handleAddSelectedSuggestions}
-                          disabled={selectedSuggestions.size === 0 || createManyMutation.isPending}
-                        >
-                          {createManyMutation.isPending 
-                            ? 'Adding...' 
-                            : `Add ${selectedSuggestions.size} Items`
-                          }
-                        </Button>
-                      </Flex>
-                    </Stack>
-                  </Card>
-                )}
-
-                {checklistItems.length === 0 && aiSuggestions.length === 0 ? (
-                  <Text variant="small" color="muted">No checklist items yet. Add items to track progress or use AI to suggest some.</Text>
-                ) : checklistItems.length > 0 ? (
-                  <Stack spacing="sm">
-                    {checklistItems.map((item) => (
-                      <Flex key={item.id} gap="sm" align="center" justify="between">
-                        <Flex gap="sm" align="center" className="flex-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleToggleItem(item.id)}
-                            disabled={toggleItemMutation.isPending}
-                          >
-                            {item.isCompleted ? '☑️' : '⬜'}
-                          </Button>
-                          <Text 
-                            variant="small" 
-                            style={{ 
-                              textDecoration: item.isCompleted ? 'line-through' : 'none',
-                              opacity: item.isCompleted ? 0.6 : 1 
-                            }}
-                          >
-                            {item.description}
-                          </Text>
-                          {item.isCompleted && item.completedBy && (
-                            <Text variant="small" color="muted">
-                              — {item.completedBy.name}
-                            </Text>
-                          )}
-                        </Flex>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteItem(item.id)}
-                          disabled={deleteItemMutation.isPending}
-                        >
-                          ✕
-                        </Button>
-                      </Flex>
-                    ))}
-                  </Stack>
-                ) : null}
-
-                <Flex gap="sm" align="end">
-                  <Input
-                    placeholder="Add a checklist item..."
-                    value={newItemText}
-                    onChange={(e) => setNewItemText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        handleAddItem()
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleAddItem}
-                    disabled={createItemMutation.isPending || !newItemText.trim()}
-                  >
-                    Add
-                  </Button>
-                </Flex>
-              </Stack>
-            </Card>
-
-            {/* Verification Status */}
-            {task.requiresVerification && task.verificationStatus && (
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Verification</Heading>
-                  <Flex gap="md" align="center">
-                    <Badge 
-                      variant={
-                        task.verificationStatus === 'APPROVED' ? 'success' : 
-                        task.verificationStatus === 'REJECTED' ? 'danger' : 'warning'
-                      }
-                    >
-                      {task.verificationStatus}
-                    </Badge>
-                    {task.verifiedBy && (
-                      <Text variant="small" color="muted">
-                        by {task.verifiedBy.name} on {new Date(task.verifiedAt).toLocaleDateString()}
-                      </Text>
-                    )}
-                  </Flex>
-                  {task.verificationNotes && (
-                    <Text variant="small">{task.verificationNotes}</Text>
-                  )}
-                </Stack>
-              </Card>
-            )}
-
-            {/* Proof/Evidence */}
-            {task.proofDescription && (
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Proof of Completion</Heading>
-                  <Text>{task.proofDescription}</Text>
-                </Stack>
-              </Card>
-            )}
-
-            {/* Back to Project */}
-            <Button
-              variant="ghost"
-              size="md"
-              onClick={() => router.push(`/bands/${slug}/projects/${task.projectId}`)}
-            >
-              ← Back to Project
+      <BandLayout
+        bandSlug={slug}
+        bandName={band?.name || ''}
+        pageTitle={task.name}
+        canApprove={canApprove || false}
+        isMember={isMember}
+        action={
+          (canUpdate || isAssignee) ? (
+            <Button variant="secondary" size="md" onClick={handleOpenEditModal}>
+              Edit Task
             </Button>
-          </Stack>
-
+          ) : undefined
+        }
+        rightSidebar={
           <DiscussionSidebar
             taskId={taskId}
             userId={userId}
             bandMembers={band?.members || []}
           />
-        </Flex>
-      </DashboardContainer>
-    </PageWrapper>
+        }
+      >
+        <Stack spacing="lg">
+          {/* Breadcrumb */}
+          <Flex gap="sm" align="center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/bands/${slug}/tasks`)}
+            >
+              ← Tasks
+            </Button>
+            <Text color="muted">/</Text>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/bands/${slug}/projects/${task.projectId}`)}
+            >
+              {task.project.name}
+            </Button>
+          </Flex>
+
+          {/* Task Info */}
+          <Card>
+            <Stack spacing="lg">
+              <Flex gap="sm" className="flex-wrap">
+                {getStatusBadge(task.status)}
+                {getPriorityBadge(task.priority)}
+                {task.assignee && (
+                  <Badge variant="neutral">Assigned: {task.assignee.name}</Badge>
+                )}
+                {!task.assignee && (
+                  <Badge variant="warning">Unassigned</Badge>
+                )}
+                {task.requiresVerification && (
+                  <Badge variant="info">Requires Verification</Badge>
+                )}
+              </Flex>
+
+              {task.description && (
+                <Text style={{ whiteSpace: 'pre-wrap' }}>{task.description}</Text>
+              )}
+
+              <Flex gap="lg" className="flex-wrap">
+                {task.dueDate && (
+                  <Stack spacing="xs">
+                    <Text variant="small" weight="semibold">Due Date</Text>
+                    <Text variant="small">{new Date(task.dueDate).toLocaleDateString()}</Text>
+                  </Stack>
+                )}
+                {task.estimatedHours && (
+                  <Stack spacing="xs">
+                    <Text variant="small" weight="semibold">Estimated</Text>
+                    <Text variant="small">{task.estimatedHours} hours</Text>
+                  </Stack>
+                )}
+                {task.actualHours && (
+                  <Stack spacing="xs">
+                    <Text variant="small" weight="semibold">Actual</Text>
+                    <Text variant="small">{task.actualHours} hours</Text>
+                  </Stack>
+                )}
+                <Stack spacing="xs">
+                  <Text variant="small" weight="semibold">Created</Text>
+                  <Text variant="small">{new Date(task.createdAt).toLocaleDateString()}</Text>
+                </Stack>
+              </Flex>
+            </Stack>
+          </Card>
+
+          {/* Status Update */}
+          {(canUpdate || isAssignee) && (
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Update Status</Heading>
+                <Flex gap="sm" className="flex-wrap">
+                  {statusOptions.map((status) => (
+                    <Button
+                      key={status}
+                      variant={task.status === status ? 'primary' : 'ghost'}
+                      size="sm"
+                      onClick={() => handleStatusChange(status)}
+                      disabled={updateTaskMutation.isPending}
+                    >
+                      {status.replace('_', ' ')}
+                    </Button>
+                  ))}
+                </Flex>
+              </Stack>
+            </Card>
+          )}
+
+          {/* Checklist */}
+          <Card>
+            <Stack spacing="md">
+              <Flex justify="between" align="center">
+                <Heading level={3}>Checklist</Heading>
+                <Flex gap="sm" align="center">
+                  {totalCount > 0 && (
+                    <Badge variant={completedCount === totalCount ? 'success' : 'neutral'}>
+                      {completedCount}/{totalCount} completed
+                    </Badge>
+                  )}
+                  {canUseAI && aiSuggestions.length === 0 && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleGenerateSuggestions}
+                      disabled={suggestItemsMutation.isPending}
+                    >
+                      {suggestItemsMutation.isPending ? '✨ Generating...' : '✨ AI Suggest'}
+                    </Button>
+                  )}
+                </Flex>
+              </Flex>
+
+              {/* AI Suggestions Panel */}
+              {aiSuggestions.length > 0 && (
+                <Card className="bg-purple-50 border-purple-200">
+                  <Stack spacing="md">
+                    <Flex justify="between" align="center">
+                      <Text weight="semibold" className="text-purple-800">
+                        ✨ AI Suggestions
+                      </Text>
+                      <Text variant="small" color="muted">
+                        {selectedSuggestions.size} of {aiSuggestions.length} selected
+                      </Text>
+                    </Flex>
+                    
+                    <Stack spacing="sm">
+                      {aiSuggestions.map((suggestion, index) => (
+                        <Flex 
+                          key={index} 
+                          gap="sm" 
+                          align="center"
+                          className="cursor-pointer"
+                          onClick={() => handleToggleSuggestion(index)}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleToggleSuggestion(index)
+                            }}
+                          >
+                            {selectedSuggestions.has(index) ? '☑️' : '⬜'}
+                          </Button>
+                          <Text variant="small">{suggestion}</Text>
+                        </Flex>
+                      ))}
+                    </Stack>
+
+                    <Flex gap="sm" justify="end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDismissSuggestions}
+                      >
+                        Dismiss
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleAddSelectedSuggestions}
+                        disabled={selectedSuggestions.size === 0 || createManyMutation.isPending}
+                      >
+                        {createManyMutation.isPending 
+                          ? 'Adding...' 
+                          : `Add ${selectedSuggestions.size} Items`
+                        }
+                      </Button>
+                    </Flex>
+                  </Stack>
+                </Card>
+              )}
+
+              {checklistItems.length === 0 && aiSuggestions.length === 0 ? (
+                <Text variant="small" color="muted">No checklist items yet. Add items to track progress or use AI to suggest some.</Text>
+              ) : checklistItems.length > 0 ? (
+                <Stack spacing="sm">
+                  {checklistItems.map((item) => (
+                    <Flex key={item.id} gap="sm" align="center" justify="between">
+                      <Flex gap="sm" align="center" className="flex-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleItem(item.id)}
+                          disabled={toggleItemMutation.isPending}
+                        >
+                          {item.isCompleted ? '☑️' : '⬜'}
+                        </Button>
+                        <Text 
+                          variant="small" 
+                          style={{ 
+                            textDecoration: item.isCompleted ? 'line-through' : 'none',
+                            opacity: item.isCompleted ? 0.6 : 1 
+                          }}
+                        >
+                          {item.description}
+                        </Text>
+                        {item.isCompleted && item.completedBy && (
+                          <Text variant="small" color="muted">
+                            — {item.completedBy.name}
+                          </Text>
+                        )}
+                      </Flex>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteItem(item.id)}
+                        disabled={deleteItemMutation.isPending}
+                      >
+                        ✕
+                      </Button>
+                    </Flex>
+                  ))}
+                </Stack>
+              ) : null}
+
+              <Flex gap="sm" align="end">
+                <Input
+                  placeholder="Add a checklist item..."
+                  value={newItemText}
+                  onChange={(e) => setNewItemText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddItem()
+                    }
+                  }}
+                />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleAddItem}
+                  disabled={createItemMutation.isPending || !newItemText.trim()}
+                >
+                  Add
+                </Button>
+              </Flex>
+            </Stack>
+          </Card>
+
+          {/* Verification Status */}
+          {task.requiresVerification && task.verificationStatus && (
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Verification</Heading>
+                <Flex gap="md" align="center">
+                  <Badge 
+                    variant={
+                      task.verificationStatus === 'APPROVED' ? 'success' : 
+                      task.verificationStatus === 'REJECTED' ? 'danger' : 'warning'
+                    }
+                  >
+                    {task.verificationStatus}
+                  </Badge>
+                  {task.verifiedBy && (
+                    <Text variant="small" color="muted">
+                      by {task.verifiedBy.name} on {new Date(task.verifiedAt).toLocaleDateString()}
+                    </Text>
+                  )}
+                </Flex>
+                {task.verificationNotes && (
+                  <Text variant="small">{task.verificationNotes}</Text>
+                )}
+              </Stack>
+            </Card>
+          )}
+
+          {/* Proof/Evidence */}
+          {task.proofDescription && (
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Proof of Completion</Heading>
+                <Text>{task.proofDescription}</Text>
+              </Stack>
+            </Card>
+          )}
+
+          {/* Back to Project */}
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={() => router.push(`/bands/${slug}/projects/${task.projectId}`)}
+          >
+            ← Back to Project
+          </Button>
+        </Stack>
+
+        {/* Edit Modal */}
+        <Modal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          title="Edit Task"
+        >
+          <Stack spacing="md">
+            <Stack spacing="sm">
+              <Text variant="small" weight="semibold">Task Name</Text>
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Task name"
+              />
+            </Stack>
+
+            <Stack spacing="sm">
+              <Text variant="small" weight="semibold">Description</Text>
+              <Textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Task description"
+                rows={3}
+              />
+            </Stack>
+
+            <Stack spacing="sm">
+              <Text variant="small" weight="semibold">Priority</Text>
+              <Flex gap="sm">
+                {priorityOptions.map((priority) => (
+                  <Button
+                    key={priority}
+                    variant={editPriority === priority ? 'primary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setEditPriority(priority)}
+                  >
+                    {priority}
+                  </Button>
+                ))}
+              </Flex>
+            </Stack>
+
+            <Stack spacing="sm">
+              <Text variant="small" weight="semibold">Assignee</Text>
+              <Flex gap="sm" className="flex-wrap">
+                <Button
+                  variant={editAssigneeId === null ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setEditAssigneeId(null)}
+                >
+                  Unassigned
+                </Button>
+                {band?.members.map((member: any) => (
+                  <Button
+                    key={member.user.id}
+                    variant={editAssigneeId === member.user.id ? 'primary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setEditAssigneeId(member.user.id)}
+                  >
+                    {member.user.name}
+                  </Button>
+                ))}
+              </Flex>
+            </Stack>
+
+            <Stack spacing="sm">
+              <Text variant="small" weight="semibold">Due Date</Text>
+              <Input
+                type="date"
+                value={editDueDate}
+                onChange={(e) => setEditDueDate(e.target.value)}
+              />
+            </Stack>
+
+            <Stack spacing="sm">
+              <Text variant="small" weight="semibold">Estimated Hours</Text>
+              <Input
+                type="number"
+                value={editEstimatedHours || ''}
+                onChange={(e) => setEditEstimatedHours(e.target.value ? Number(e.target.value) : null)}
+                placeholder="e.g. 4"
+              />
+            </Stack>
+
+            <Flex gap="sm" justify="end">
+              <Button variant="ghost" onClick={() => setShowEditModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSaveEdit}
+                disabled={updateTaskMutation.isPending || !editName.trim()}
+              >
+                {updateTaskMutation.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </Flex>
+          </Stack>
+        </Modal>
+      </BandLayout>
+    </>
   )
 }
