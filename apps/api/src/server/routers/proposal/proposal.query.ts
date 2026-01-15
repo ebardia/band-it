@@ -169,4 +169,37 @@ export const proposalQueryRouter = router({
         proposals: needsVote,
       }
     }),
+
+  /**
+   * Get all proposals created by user across all bands
+   */
+  getMyProposals: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const proposals = await prisma.proposal.findMany({
+        where: {
+          createdById: input.userId,
+        },
+        include: {
+          band: {
+            select: { id: true, name: true, slug: true },
+          },
+          _count: {
+            select: { votes: true },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      })
+
+      return {
+        success: true,
+        proposals,
+      }
+    }),
 })

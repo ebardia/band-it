@@ -12,6 +12,7 @@ export const proposalRouter = router({
   getByBand: proposalQueryRouter.getByBand,
   getById: proposalQueryRouter.getById,
   getMyPendingVotes: proposalQueryRouter.getMyPendingVotes,
+  getMyProposals: proposalQueryRouter.getMyProposals,
   
   // Vote
   vote: proposalVoteRouter.vote,

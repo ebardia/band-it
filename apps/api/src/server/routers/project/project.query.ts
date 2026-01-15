@@ -122,3 +122,41 @@ export const getProjectsByBand = publicProcedure
 
     return { projects }
   })
+
+export const getMyProjects = publicProcedure
+  .input(z.object({
+    userId: z.string(),
+  }))
+  .query(async ({ input }) => {
+    const { userId } = input
+
+    // Get projects where user is lead or creator
+    const projects = await prisma.project.findMany({
+      where: {
+        OR: [
+          { leadId: userId },
+          { createdById: userId },
+        ]
+      },
+      include: {
+        band: {
+          select: { id: true, name: true, slug: true }
+        },
+        proposal: {
+          select: { id: true, title: true }
+        },
+        lead: {
+          select: { id: true, name: true }
+        },
+        _count: {
+          select: { tasks: true }
+        }
+      },
+      orderBy: [
+        { status: 'asc' },
+        { createdAt: 'desc' }
+      ]
+    })
+
+    return { projects }
+  })

@@ -5,9 +5,17 @@ import { Stack, NavButton, Heading, Badge } from '@/components/ui'
 
 interface DashboardSidebarProps {
   bandCount?: number
+  proposalCount?: number
+  projectCount?: number
+  taskCount?: number
 }
 
-export function DashboardSidebar({ bandCount = 0 }: DashboardSidebarProps) {
+export function DashboardSidebar({ 
+  bandCount = 0,
+  proposalCount = 0,
+  projectCount = 0,
+  taskCount = 0,
+}: DashboardSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -20,15 +28,21 @@ export function DashboardSidebar({ bandCount = 0 }: DashboardSidebarProps) {
     },
     { 
       label: 'My Proposals', 
-      path: '/proposals', 
-      count: 0,
-      available: false 
+      path: '/my-proposals', 
+      count: proposalCount,
+      available: true 
     },
     { 
       label: 'My Projects', 
-      path: '/projects', 
-      count: 0,
-      available: false 
+      path: '/my-projects', 
+      count: projectCount,
+      available: true 
+    },
+    { 
+      label: 'My Tasks', 
+      path: '/my-tasks', 
+      count: taskCount,
+      available: true 
     },
     { 
       label: 'Messages', 

@@ -1,6 +1,6 @@
 import { router } from '../../trpc'
 import { createTask } from './task.create'
-import { getTasksByProject, getTaskById, getTasksByBand } from './task.query'
+import { getTasksByProject, getTaskById, getTasksByBand, getMyTasks } from './task.query'
 import { updateTask } from './task.update'
 import { submitForVerification, verifyTask } from './task.verify'
 import { suggestTasks } from './task.ai'
@@ -13,6 +13,7 @@ export const taskRouter = router({
   getByProject: getTasksByProject,
   getById: getTaskById,
   getByBand: getTasksByBand,
+  getMyTasks: getMyTasks,
   
   // Update
   update: updateTask,

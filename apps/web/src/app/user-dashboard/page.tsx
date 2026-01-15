@@ -65,6 +65,22 @@ export default function OverviewDashboard() {
 
   const { data: allBandsData } = trpc.band.getAll.useQuery()
 
+  // Fetch user's proposals, projects, and tasks
+  const { data: myProposalsData } = trpc.proposal.getMyProposals.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
+  const { data: myProjectsData } = trpc.project.getMyProjects.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
+  const { data: myTasksData } = trpc.task.getMyTasks.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
   // Calculate recommended bands (bands user is NOT a member of)
   const myBandIds = new Set(myBandsData?.bands.map((b: any) => b.id) || [])
   const recommendedBands = allBandsData?.bands.filter((band: any) => 
@@ -126,6 +142,9 @@ export default function OverviewDashboard() {
   const bandCount = myBandsData?.bands.length || 0
   const inviteCount = invitationsData?.invitations.length || 0
   const applicationCount = applicationsData?.applications.length || 0
+  const proposalCount = myProposalsData?.proposals.length || 0
+  const projectCount = myProjectsData?.projects.length || 0
+  const taskCount = myTasksData?.tasks.length || 0
   const pendingBands = myBandsData?.bands.filter((b: any) => b.status === 'PENDING') || []
   const newBandsThisWeek = allBandsData?.bands.filter((band: any) => {
     const createdDate = new Date(band.createdAt)
@@ -141,7 +160,12 @@ export default function OverviewDashboard() {
       <DashboardContainer>
         <Flex gap="md" align="start">
           {/* Left Sidebar */}
-          <DashboardSidebar bandCount={bandCount} />
+          <DashboardSidebar 
+            bandCount={bandCount}
+            proposalCount={proposalCount}
+            projectCount={projectCount}
+            taskCount={taskCount}
+          />
 
           {/* Center Content */}
           <div className="flex-1">
@@ -152,25 +176,25 @@ export default function OverviewDashboard() {
               <Flex gap="md">
                 <Card>
                   <Stack spacing="sm">
-                    <Text variant="small" variant="muted">My Bands</Text>
+                    <Text variant="small" color="muted">My Bands</Text>
                     <Heading level={2}>{bandCount}</Heading>
                   </Stack>
                 </Card>
                 <Card>
                   <Stack spacing="sm">
-                    <Text variant="small" variant="muted">Pending Invites</Text>
+                    <Text variant="small" color="muted">Pending Invites</Text>
                     <Heading level={2}>{inviteCount}</Heading>
                   </Stack>
                 </Card>
                 <Card>
                   <Stack spacing="sm">
-                    <Text variant="small" variant="muted">To Review</Text>
+                    <Text variant="small" color="muted">To Review</Text>
                     <Heading level={2}>{applicationCount}</Heading>
                   </Stack>
                 </Card>
                 <Card>
                   <Stack spacing="sm">
-                    <Text variant="small" variant="muted">Total Members</Text>
+                    <Text variant="small" color="muted">Total Members</Text>
                     <Heading level={2}>
                       {myBandsData?.bands.reduce((sum: number, band: any) => sum + band._count.members, 0) || 0}
                     </Heading>
@@ -191,7 +215,7 @@ export default function OverviewDashboard() {
                         <Flex justify="between">
                           <Stack spacing="sm">
                             <Heading level={4}>{invitation.band.name}</Heading>
-                            <Text variant="small" variant="muted">{invitation.band.description}</Text>
+                            <Text variant="small" color="muted">{invitation.band.description}</Text>
                           </Stack>
                           <Flex gap="sm">
                             <Button
@@ -324,7 +348,7 @@ export default function OverviewDashboard() {
                         <Flex justify="between">
                           <Stack spacing="sm">
                             <Heading level={4}>{band.name}</Heading>
-                            <Text variant="small" variant="muted">{band.description}</Text>
+                            <Text variant="small" color="muted">{band.description}</Text>
                             <Flex gap="sm">
                               <Badge variant="info">{band._count.members} members</Badge>
                               <Badge variant={band.status === 'ACTIVE' ? 'success' : 'warning'}>{band.status}</Badge>
@@ -361,7 +385,7 @@ export default function OverviewDashboard() {
                         <Flex justify="between">
                           <Stack spacing="sm">
                             <Heading level={4}>{band.name}</Heading>
-                            <Text variant="small" variant="muted">{band.description}</Text>
+                            <Text variant="small" color="muted">{band.description}</Text>
                             <Badge variant="info">{band._count.members} members</Badge>
                           </Stack>
                           <Button
@@ -381,7 +405,7 @@ export default function OverviewDashboard() {
                 <Card>
                   <Stack spacing="sm">
                     <Heading level={4}>Grant Opportunities</Heading>
-                    <Text variant="small" variant="muted">Coming soon - We'll show grant opportunities matched to your interests</Text>
+                    <Text variant="small" color="muted">Coming soon - We'll show grant opportunities matched to your interests</Text>
                   </Stack>
                 </Card>
               </Stack>
@@ -400,9 +424,9 @@ export default function OverviewDashboard() {
                       <Stack spacing="sm">
                         <Text variant="small" weight="semibold">{notification.title}</Text>
                         {notification.message && (
-                          <Text variant="small" variant="muted">{notification.message}</Text>
+                          <Text variant="small" color="muted">{notification.message}</Text>
                         )}
-                        <Text variant="small" variant="muted">
+                        <Text variant="small" color="muted">
                           {new Date(notification.createdAt).toLocaleString()}
                         </Text>
                       </Stack>
@@ -410,7 +434,7 @@ export default function OverviewDashboard() {
                   ))}
                 </Stack>
               ) : (
-                <Text variant="small" variant="muted">No recent activity</Text>
+                <Text variant="small" color="muted">No recent activity</Text>
               )}
 
               {/* Quick Stats */}
@@ -426,7 +450,7 @@ export default function OverviewDashboard() {
               <Card>
                 <Stack spacing="sm">
                   <Heading level={4}>Messages</Heading>
-                  <Text variant="small" variant="muted">Coming soon</Text>
+                  <Text variant="small" color="muted">Coming soon</Text>
                 </Stack>
               </Card>
             </Stack>
