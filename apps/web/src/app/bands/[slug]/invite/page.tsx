@@ -11,8 +11,6 @@ import {
   Input,
   Button,
   useToast,
-  PageWrapper,
-  DashboardContainer,
   Flex,
   Card,
   Alert,
@@ -20,7 +18,7 @@ import {
   Badge,
   List,
   ListItem,
-  BandSidebar
+  BandLayout
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -96,132 +94,130 @@ export default function InviteMembersPage() {
 
   if (!bandData?.band) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName="Loading..."
+          pageTitle="Invite Members"
+          isMember={false}
+          wide={true}
+        >
           <Loading message="Loading..." />
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
   return (
-    <PageWrapper variant="dashboard">
+    <>
       <AppNav />
-      
-      <DashboardContainer>
-        <Flex gap="md" align="start">
-          {/* Left Sidebar */}
-          <BandSidebar 
-            bandSlug={slug} 
-            canApprove={canApprove} 
-            isMember={isMember}
-          />
+      <BandLayout
+        bandSlug={slug}
+        bandName={bandData.band.name}
+        pageTitle="Invite Members"
+        canApprove={canApprove}
+        isMember={isMember}
+        wide={true}
+      >
+        <Stack spacing="xl">
+          {/* Recommended Users */}
+          <Stack spacing="lg">
+            <Heading level={2}>Recommended Users</Heading>
+            <Text color="muted">These users match your band's needs</Text>
 
-          {/* Main Content */}
-          <div className="flex-1 bg-white rounded-lg shadow p-8">
-            <Stack spacing="xl">
-              <Heading level={1}>Invite Members to {bandData.band.name}</Heading>
-
-              {/* Recommended Users */}
-              <Stack spacing="lg">
-                <Heading level={2}>Recommended Users</Heading>
-                <Text variant="muted">These users match your band's needs</Text>
-
-                {loadingRecommended ? (
-                  <Loading message="Finding matches..." />
-                ) : recommendedData?.users && recommendedData.users.length > 0 ? (
-                  <Stack spacing="md">
-                    {recommendedData.users.map((user: any) => (
-                      <Card key={user.id}>
-                        <Stack spacing="md">
-                          <Flex justify="between">
-                            <Stack spacing="sm">
-                              <Heading level={3}>{user.name}</Heading>
-                              <Text variant="small" variant="muted">{user.email}</Text>
-                            </Stack>
-                            <Badge variant="info">Score: {user.matchScore}</Badge>
-                          </Flex>
-
-                          {user.matches && user.matches.length > 0 && (
-                            <Stack spacing="sm">
-                              <Text variant="small" weight="semibold">Why they're a good fit:</Text>
-                              <List>
-                                {user.matches.map((match: string, idx: number) => (
-                                  <ListItem key={idx}>{match}</ListItem>
-                                ))}
-                              </List>
-                            </Stack>
-                          )}
-
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleInvite(user.id)}
-                            disabled={inviteMutation.isPending}
-                          >
-                            {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
-                          </Button>
+            {loadingRecommended ? (
+              <Loading message="Finding matches..." />
+            ) : recommendedData?.users && recommendedData.users.length > 0 ? (
+              <Stack spacing="md">
+                {recommendedData.users.map((user: any) => (
+                  <Card key={user.id}>
+                    <Stack spacing="md">
+                      <Flex justify="between">
+                        <Stack spacing="sm">
+                          <Heading level={3}>{user.name}</Heading>
+                          <Text variant="small" color="muted">{user.email}</Text>
                         </Stack>
-                      </Card>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Alert variant="info">
-                    <Text>No recommended users found at this time.</Text>
-                  </Alert>
-                )}
+                        <Badge variant="info">Score: {user.matchScore}</Badge>
+                      </Flex>
+
+                      {user.matches && user.matches.length > 0 && (
+                        <Stack spacing="sm">
+                          <Text variant="small" weight="semibold">Why they're a good fit:</Text>
+                          <List>
+                            {user.matches.map((match: string, idx: number) => (
+                              <ListItem key={idx}>{match}</ListItem>
+                            ))}
+                          </List>
+                        </Stack>
+                      )}
+
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleInvite(user.id)}
+                        disabled={inviteMutation.isPending}
+                      >
+                        {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
+                      </Button>
+                    </Stack>
+                  </Card>
+                ))}
               </Stack>
+            ) : (
+              <Alert variant="info">
+                <Text>No recommended users found at this time.</Text>
+              </Alert>
+            )}
+          </Stack>
 
-              {/* Search Users */}
-              <Stack spacing="lg">
-                <Heading level={2}>Search Users</Heading>
-                <Input
-                  label="Search by name or email"
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Start typing..."
-                  helperText="Search for existing Band IT users"
-                />
+          {/* Search Users */}
+          <Stack spacing="lg">
+            <Heading level={2}>Search Users</Heading>
+            <Input
+              label="Search by name or email"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Start typing..."
+              helperText="Search for existing Band IT users"
+            />
 
-                {loadingSearch && debouncedQuery.length >= 2 && (
-                  <Loading message="Searching..." />
-                )}
+            {loadingSearch && debouncedQuery.length >= 2 && (
+              <Loading message="Searching..." />
+            )}
 
-                {searchData?.users && searchData.users.length > 0 && (
-                  <Stack spacing="md">
-                    {searchData.users.map((user: any) => (
-                      <Card key={user.id}>
-                        <Flex justify="between">
-                          <Stack spacing="sm">
-                            <Heading level={3}>{user.name}</Heading>
-                            <Text variant="small" variant="muted">{user.email}</Text>
-                          </Stack>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => handleInvite(user.id)}
-                            disabled={inviteMutation.isPending}
-                          >
-                            {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
-                          </Button>
-                        </Flex>
-                      </Card>
-                    ))}
-                  </Stack>
-                )}
-
-                {debouncedQuery.length >= 2 && searchData?.users && searchData.users.length === 0 && (
-                  <Alert variant="info">
-                    <Text>No users found. They can register at Band IT first, then you can invite them!</Text>
-                  </Alert>
-                )}
+            {searchData?.users && searchData.users.length > 0 && (
+              <Stack spacing="md">
+                {searchData.users.map((user: any) => (
+                  <Card key={user.id}>
+                    <Flex justify="between">
+                      <Stack spacing="sm">
+                        <Heading level={3}>{user.name}</Heading>
+                        <Text variant="small" color="muted">{user.email}</Text>
+                      </Stack>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleInvite(user.id)}
+                        disabled={inviteMutation.isPending}
+                      >
+                        {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
+                      </Button>
+                    </Flex>
+                  </Card>
+                ))}
               </Stack>
-            </Stack>
-          </div>
-        </Flex>
-      </DashboardContainer>
-    </PageWrapper>
+            )}
+
+            {debouncedQuery.length >= 2 && searchData?.users && searchData.users.length === 0 && (
+              <Alert variant="info">
+                <Text>No users found. They can register at Band IT first, then you can invite them!</Text>
+              </Alert>
+            )}
+          </Stack>
+        </Stack>
+      </BandLayout>
+    </>
   )
 }

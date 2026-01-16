@@ -62,6 +62,7 @@ export default function ProposalsPage() {
           bandName="Loading..."
           pageTitle="Band Proposals"
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading proposals..." />
         </BandLayout>
@@ -78,6 +79,7 @@ export default function ProposalsPage() {
           bandName=""
           pageTitle="Band Proposals"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -117,9 +119,10 @@ export default function ProposalsPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
-          pageTitle="Band Proposals"
+        pageTitle="Band Proposals"
         canApprove={canApprove}
         isMember={isMember}
+        wide={true}
         canCreateProposal={canCreateProposal}
         action={
           canCreateProposal ? (

@@ -171,6 +171,7 @@ export default function ProposalDetailPage() {
           bandName="Loading..."
           pageTitle="Proposal"
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading proposal..." />
         </BandLayout>
@@ -187,6 +188,7 @@ export default function ProposalDetailPage() {
           bandName=""
           pageTitle="Proposal"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Proposal not found</Text>
@@ -268,6 +270,7 @@ export default function ProposalDetailPage() {
         pageTitle={proposal.title}
         canApprove={canApprove}
         isMember={isMember}
+        wide={true}
         action={
           canEdit ? (
             <Button variant="secondary" size="md" onClick={handleOpenEditModal}>

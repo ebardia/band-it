@@ -11,13 +11,10 @@ import {
   Textarea,
   Button,
   useToast,
-  PageWrapper,
-  DashboardContainer,
-  Flex,
   Card,
   Alert,
   Loading,
-  BandSidebar
+  BandLayout
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -78,7 +75,7 @@ export default function ApplyToBandPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!userId || !bandData?.band) {
       showToast('Error submitting application', 'error')
       return
@@ -94,25 +91,37 @@ export default function ApplyToBandPage() {
   // NOW DO CONDITIONAL RENDERING
   if (bandLoading || myBandsLoading) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName="Loading..."
+          pageTitle="Apply to Join"
+          isMember={false}
+          wide={true}
+        >
           <Loading message="Loading..." />
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
   if (!bandData?.band) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName=""
+          pageTitle="Apply to Join"
+          isMember={false}
+          wide={true}
+        >
           <Alert variant="danger">
             <Text>Band not found</Text>
           </Alert>
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
@@ -129,97 +138,87 @@ export default function ApplyToBandPage() {
   // Show error if already a member
   if (isAlreadyMember) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
-          <Flex gap="md" align="start">
-            <BandSidebar 
-              bandSlug={slug} 
-              canApprove={canApprove} 
-              isMember={isMember}
-            />
-            <div className="flex-1 bg-white rounded-lg shadow p-8">
-              <Alert variant="warning">
-                <Stack spacing="md">
-                  <Heading level={2}>Already a Member</Heading>
-                  <Text>You are already a member of {band.name}!</Text>
-                  <Button variant="primary" size="md" onClick={() => router.push(`/bands/${slug}`)}>
-                    View Band
-                  </Button>
-                </Stack>
-              </Alert>
-            </div>
-          </Flex>
-        </DashboardContainer>
-      </PageWrapper>
+        <BandLayout
+          bandSlug={slug}
+          bandName={band.name}
+          pageTitle="Apply to Join"
+          canApprove={canApprove}
+          isMember={isMember}
+          wide={true}
+        >
+          <Alert variant="warning">
+            <Stack spacing="md">
+              <Heading level={2}>Already a Member</Heading>
+              <Text>You are already a member of {band.name}!</Text>
+              <Button variant="primary" size="md" onClick={() => router.push(`/bands/${slug}`)}>
+                View Band
+              </Button>
+            </Stack>
+          </Alert>
+        </BandLayout>
+      </>
     )
   }
 
   return (
-    <PageWrapper variant="dashboard">
+    <>
       <AppNav />
-
-      <DashboardContainer>
-        <Flex gap="md" align="start">
-          {/* Left Sidebar */}
-          <BandSidebar 
-            bandSlug={slug} 
-            canApprove={false} 
-            isMember={false}
-          />
-
-          {/* Main Content */}
-          <div className="flex-1 bg-white rounded-lg shadow p-8">
-            <Stack spacing="xl">
-              <Heading level={1}>Apply to Join {band.name}</Heading>
-
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>About the Band</Heading>
-                  <Text>{band.description}</Text>
-                </Stack>
-              </Card>
-
-              <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Membership Requirements</Heading>
-                  <Text>{band.membershipRequirements}</Text>
-                </Stack>
-              </Card>
-
-              <Alert variant="info">
-                <Text variant="small">
-                  Your application will be reviewed by the band's {band.whoCanApprove.map((r: string) => r.replace('_', ' ')).join(', ')}.
-                </Text>
-              </Alert>
-
-              <form onSubmit={handleSubmit}>
-                <Stack spacing="lg">
-                  <Textarea
-                    label="Why do you want to join this band?"
-                    required
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Tell the band why you'd be a great fit..."
-                    rows={6}
-                    helperText="At least 10 characters - Share your experience, skills, and what you hope to contribute"
-                  />
-
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    disabled={applyMutation.isPending}
-                    className="w-full"
-                  >
-                    {applyMutation.isPending ? 'Submitting Application...' : 'Submit Application'}
-                  </Button>
-                </Stack>
-              </form>
+      <BandLayout
+        bandSlug={slug}
+        bandName={band.name}
+        pageTitle="Apply to Join"
+        canApprove={false}
+        isMember={false}
+        wide={true}
+      >
+        <Stack spacing="xl">
+          <Card>
+            <Stack spacing="md">
+              <Heading level={3}>About the Band</Heading>
+              <Text>{band.description}</Text>
             </Stack>
-          </div>
-        </Flex>
-      </DashboardContainer>
-    </PageWrapper>
+          </Card>
+
+          <Card>
+            <Stack spacing="md">
+              <Heading level={3}>Membership Requirements</Heading>
+              <Text>{band.membershipRequirements}</Text>
+            </Stack>
+          </Card>
+
+          <Alert variant="info">
+            <Text variant="small">
+              Your application will be reviewed by the band's {band.whoCanApprove.map((r: string) => r.replace('_', ' ')).join(', ')}.
+            </Text>
+          </Alert>
+
+          <form onSubmit={handleSubmit}>
+            <Stack spacing="lg">
+              <Textarea
+                label="Why do you want to join this band?"
+                required
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Tell the band why you'd be a great fit..."
+                rows={6}
+                helperText="At least 10 characters - Share your experience, skills, and what you hope to contribute"
+              />
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                disabled={applyMutation.isPending}
+                className="w-full"
+              >
+                {applyMutation.isPending ? 'Submitting Application...' : 'Submit Application'}
+              </Button>
+            </Stack>
+          </form>
+        </Stack>
+      </BandLayout>
+    </>
   )
 }

@@ -64,6 +64,7 @@ export default function BandTasksPage() {
           bandName="Loading..."
           pageTitle="Band Tasks"
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading tasks..." />
         </BandLayout>
@@ -80,6 +81,7 @@ export default function BandTasksPage() {
           bandName=""
           pageTitle="Band Tasks"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -155,6 +157,7 @@ export default function BandTasksPage() {
         pageTitle="Band Tasks"
         canApprove={canApprove}
         isMember={isMember}
+        wide={true}
       >
         <Stack spacing="xl">
           {/* Summary Stats */}

@@ -229,6 +229,10 @@ export default function TaskDetailPage() {
     setSelectedSuggestions(new Set())
   }
 
+  const handleViewChecklistItem = (itemId: string) => {
+    router.push(`/bands/${slug}/tasks/${taskId}/checklist/${itemId}`)
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'TODO':
@@ -270,6 +274,7 @@ export default function TaskDetailPage() {
           bandName="Loading..."
           pageTitle="Task Details"
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading task..." />
         </BandLayout>
@@ -286,6 +291,7 @@ export default function TaskDetailPage() {
           bandName=""
           pageTitle="Task Details"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Task not found</Text>
@@ -321,6 +327,7 @@ export default function TaskDetailPage() {
         pageTitle={task.name}
         canApprove={canApprove || false}
         isMember={isMember}
+        wide={true}
         action={
           (canUpdate || isAssignee) ? (
             <Button variant="secondary" size="md" onClick={handleOpenEditModal}>
@@ -515,41 +522,81 @@ export default function TaskDetailPage() {
                 <Text variant="small" color="muted">No checklist items yet. Add items to track progress or use AI to suggest some.</Text>
               ) : checklistItems.length > 0 ? (
                 <Stack spacing="sm">
-                  {checklistItems.map((item) => (
-                    <Flex key={item.id} gap="sm" align="center" justify="between">
-                      <Flex gap="sm" align="center" className="flex-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleItem(item.id)}
-                          disabled={toggleItemMutation.isPending}
-                        >
-                          {item.isCompleted ? '☑️' : '⬜'}
-                        </Button>
-                        <Text 
-                          variant="small" 
-                          style={{ 
-                            textDecoration: item.isCompleted ? 'line-through' : 'none',
-                            opacity: item.isCompleted ? 0.6 : 1 
-                          }}
-                        >
-                          {item.description}
-                        </Text>
-                        {item.isCompleted && item.completedBy && (
-                          <Text variant="small" color="muted">
-                            — {item.completedBy.name}
-                          </Text>
-                        )}
+                  {checklistItems.map((item: any) => (
+                    <Card key={item.id} className="bg-gray-50 p-3">
+                      <Flex gap="sm" align="start" justify="between">
+                        <Flex gap="sm" align="start" className="flex-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleToggleItem(item.id)}
+                            disabled={toggleItemMutation.isPending}
+                          >
+                            {item.isCompleted ? '☑️' : '⬜'}
+                          </Button>
+                          <Stack spacing="xs" className="flex-1">
+                            <Flex gap="sm" align="center">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewChecklistItem(item.id)}
+                                className="p-0 h-auto"
+                              >
+                                <Text 
+                                  variant="small" 
+                                  weight="semibold"
+                                  color="primary"
+                                  style={{ 
+                                    textDecoration: item.isCompleted ? 'line-through' : 'none',
+                                    opacity: item.isCompleted ? 0.6 : 1 
+                                  }}
+                                >
+                                  {item.description}
+                                </Text>
+                              </Button>
+                              {item.isCompleted && item.completedBy && (
+                                <Text variant="small" color="muted">
+                                  — {item.completedBy.name}
+                                </Text>
+                              )}
+                            </Flex>
+                            {/* Additional info badges */}
+                            <Flex gap="sm" className="flex-wrap">
+                              {item.assignee && (
+                                <Badge variant="info">{item.assignee.name}</Badge>
+                              )}
+                              {item.dueDate && (
+                                <Badge 
+                                  variant={new Date(item.dueDate) < new Date() && !item.isCompleted ? 'danger' : 'neutral'}
+                                >
+                                  Due: {new Date(item.dueDate).toLocaleDateString()}
+                                </Badge>
+                              )}
+                              {item.files && item.files.length > 0 && (
+                                <Badge variant="neutral">📎 {item.files.length}</Badge>
+                              )}
+                            </Flex>
+                          </Stack>
+                        </Flex>
+                        <Flex gap="sm">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewChecklistItem(item.id)}
+                          >
+                            →
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteItem(item.id)}
+                            disabled={deleteItemMutation.isPending}
+                          >
+                            ✕
+                          </Button>
+                        </Flex>
                       </Flex>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteItem(item.id)}
-                        disabled={deleteItemMutation.isPending}
-                      >
-                        ✕
-                      </Button>
-                    </Flex>
+                    </Card>
                   ))}
                 </Stack>
               ) : null}

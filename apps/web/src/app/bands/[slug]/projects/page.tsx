@@ -59,6 +59,7 @@ export default function BandProjectsPage() {
           bandName="Loading..."
           pageTitle="Band Projects"
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading projects..." />
         </BandLayout>
@@ -75,6 +76,7 @@ export default function BandProjectsPage() {
           bandName=""
           pageTitle="Band Projects"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -133,6 +135,7 @@ export default function BandProjectsPage() {
         pageTitle="Band Projects"
         canApprove={canApprove}
         isMember={isMember}
+        wide={true}
       >
         <Stack spacing="xl">
           {/* Summary Stats */}

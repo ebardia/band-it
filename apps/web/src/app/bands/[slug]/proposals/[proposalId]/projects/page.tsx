@@ -10,14 +10,12 @@ import {
   Stack,
   Button,
   useToast,
-  PageWrapper,
-  DashboardContainer,
   Flex,
   Card,
   Badge,
   Loading,
   Alert,
-  BandSidebar,
+  BandLayout,
   Input
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
@@ -38,10 +36,10 @@ export default function ProposalProjectsPage() {
   const slug = params.slug as string
   const proposalId = params.proposalId as string
   const { showToast } = useToast()
-  
+
   const [userId, setUserId] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
-  
+
   // Form state
   const [newProject, setNewProject] = useState({
     name: '',
@@ -126,7 +124,7 @@ export default function ProposalProjectsPage() {
       showToast('Project name is required', 'error')
       return
     }
-    
+
     createProjectMutation.mutate({
       proposalId,
       name: newProject.name.trim(),
@@ -149,12 +147,12 @@ export default function ProposalProjectsPage() {
       proposalId,
       userId: userId!,
     })
-    
+
     if (result.message) {
       showToast(result.message, 'info')
       return
     }
-    
+
     if (result.suggestions && result.suggestions.length > 0) {
       // Create all suggested projects
       for (const suggestion of result.suggestions) {
@@ -179,25 +177,37 @@ export default function ProposalProjectsPage() {
 
   if (bandLoading || proposalLoading || projectsLoading) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName="Loading..."
+          pageTitle="Projects"
+          isMember={false}
+          wide={true}
+        >
           <Loading message="Loading projects..." />
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
   if (!bandData?.band || !proposalData?.proposal) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName=""
+          pageTitle="Projects"
+          isMember={false}
+          wide={true}
+        >
           <Alert variant="danger">
             <Text>Proposal not found</Text>
           </Alert>
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
@@ -206,6 +216,8 @@ export default function ProposalProjectsPage() {
   const projects = projectsData?.projects || []
   const currentMember = band.members.find((m: any) => m.user.id === userId)
   const canCreateProject = currentMember && CAN_CREATE_PROJECT.includes(currentMember.role)
+  const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
+  const isMember = !!currentMember
   const isApproved = proposal.status === 'APPROVED'
 
   const getStatusBadge = (status: string) => {
@@ -241,340 +253,333 @@ export default function ProposalProjectsPage() {
   }
 
   return (
-    <PageWrapper variant="dashboard">
+    <>
       <AppNav />
+      <BandLayout
+        bandSlug={slug}
+        bandName={band.name}
+        pageTitle="Projects"
+        canApprove={canApprove}
+        isMember={isMember}
+        canCreateProposal={canCreateProject}
+        wide={true}
+        action={
+          isApproved && canCreateProject ? (
+            <Flex gap="sm">
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => setShowCreateForm(true)}
+                disabled={showCreateForm}
+              >
+                + Create Project
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={handleAISuggest}
+                disabled={aiSuggestMutation.isPending || createProjectMutation.isPending}
+              >
+                {aiSuggestMutation.isPending ? 'Generating...' : 'AI Suggest'}
+              </Button>
+            </Flex>
+          ) : undefined
+        }
+      >
+        <Stack spacing="xl">
+          {/* Header */}
+          <Stack spacing="sm">
+            <Text variant="small" className="text-gray-500">
+              <button
+                onClick={() => router.push(`/bands/${slug}/proposals/${proposalId}`)}
+                className="hover:text-blue-600"
+              >
+                Back to Proposal
+              </button>
+            </Text>
+            <Text color="muted">From proposal: {proposal.title}</Text>
+            <Flex gap="sm">
+              <Badge variant={isApproved ? 'success' : 'warning'}>
+                Proposal: {proposal.status}
+              </Badge>
+            </Flex>
+          </Stack>
 
-      <DashboardContainer>
-        <Flex gap="md" align="start">
-          {/* Left Sidebar */}
-          <BandSidebar 
-            bandSlug={slug} 
-            canApprove={false} 
-            isMember={!!currentMember}
-            canCreateProposal={canCreateProject}
-          />
+          {/* Not Approved Warning */}
+          {!isApproved && (
+            <Alert variant="warning">
+              <Text>This proposal has not been approved yet. Projects can only be created for approved proposals.</Text>
+            </Alert>
+          )}
 
-          {/* Main Content */}
-          <div className="flex-1 bg-white rounded-lg shadow p-8">
-            <Stack spacing="xl">
-              {/* Header */}
-              <Stack spacing="sm">
-                <Text variant="small" className="text-gray-500">
-                  <button 
-                    onClick={() => router.push(`/bands/${slug}/proposals/${proposalId}`)}
-                    className="hover:text-blue-600"
-                  >
-                    ← Back to Proposal
-                  </button>
-                </Text>
-                <Heading level={1}>Projects</Heading>
-                <Text variant="muted">From proposal: {proposal.title}</Text>
+          {/* Create Form */}
+          {showCreateForm && (
+            <Card>
+              <Stack spacing="lg">
+                <Heading level={3}>Create New Project</Heading>
+
+                {/* Basic Info */}
+                <Stack spacing="md">
+                  <Input
+                    label="Project Name *"
+                    value={newProject.name}
+                    onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                    placeholder="e.g., Site Preparation"
+                  />
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={newProject.description}
+                      onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                      placeholder="Describe what this project will accomplish..."
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Priority
+                    </label>
+                    <select
+                      value={newProject.priority}
+                      onChange={(e) => setNewProject({ ...newProject, priority: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      {PRIORITY_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </Stack>
+
+                {/* Timeline */}
+                <Stack spacing="md">
+                  <Text weight="semibold">Timeline</Text>
+                  <Flex gap="md">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={newProject.startDate}
+                        onChange={(e) => setNewProject({ ...newProject, startDate: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Target Date
+                      </label>
+                      <input
+                        type="date"
+                        value={newProject.targetDate}
+                        onChange={(e) => setNewProject({ ...newProject, targetDate: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </Flex>
+                </Stack>
+
+                {/* Budget & Effort */}
+                <Stack spacing="md">
+                  <Text weight="semibold">Budget & Effort</Text>
+                  <Flex gap="md">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Estimated Budget ($)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={newProject.estimatedBudget}
+                        onChange={(e) => setNewProject({ ...newProject, estimatedBudget: e.target.value })}
+                        placeholder="0.00"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Estimated Hours
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={newProject.estimatedHours}
+                        onChange={(e) => setNewProject({ ...newProject, estimatedHours: e.target.value })}
+                        placeholder="0"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </Flex>
+                </Stack>
+
+                {/* Deliverables & Success */}
+                <Stack spacing="md">
+                  <Text weight="semibold">Deliverables & Success Criteria</Text>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Deliverables
+                    </label>
+                    <textarea
+                      value={newProject.deliverables}
+                      onChange={(e) => setNewProject({ ...newProject, deliverables: e.target.value })}
+                      placeholder="What will this project produce?"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows={2}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Success Criteria
+                    </label>
+                    <textarea
+                      value={newProject.successCriteria}
+                      onChange={(e) => setNewProject({ ...newProject, successCriteria: e.target.value })}
+                      placeholder="How will we know this project is complete?"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows={2}
+                    />
+                  </div>
+                </Stack>
+
+                {/* Tags & Lead */}
+                <Stack spacing="md">
+                  <Text weight="semibold">Organization</Text>
+                  <Flex gap="md">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tags (comma separated)
+                      </label>
+                      <input
+                        type="text"
+                        value={newProject.tags}
+                        onChange={(e) => setNewProject({ ...newProject, tags: e.target.value })}
+                        placeholder="e.g., planning, research, permits"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Project Lead
+                      </label>
+                      <select
+                        value={newProject.leadId}
+                        onChange={(e) => setNewProject({ ...newProject, leadId: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select a lead (optional)</option>
+                        {band.members.map((member: any) => (
+                          <option key={member.user.id} value={member.user.id}>
+                            {member.user.name} ({member.role})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </Flex>
+                </Stack>
+
+                {/* Actions */}
                 <Flex gap="sm">
-                  <Badge variant={isApproved ? 'success' : 'warning'}>
-                    Proposal: {proposal.status}
-                  </Badge>
-                </Flex>
-              </Stack>
-
-              {/* Not Approved Warning */}
-              {!isApproved && (
-                <Alert variant="warning">
-                  <Text>This proposal has not been approved yet. Projects can only be created for approved proposals.</Text>
-                </Alert>
-              )}
-
-              {/* Actions */}
-              {isApproved && canCreateProject && (
-                <Flex gap="md">
                   <Button
                     variant="primary"
                     size="md"
-                    onClick={() => setShowCreateForm(true)}
-                    disabled={showCreateForm}
+                    onClick={handleCreateProject}
+                    disabled={createProjectMutation.isPending}
                   >
-                    + Create Project
+                    {createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
                   </Button>
                   <Button
-                    variant="secondary"
+                    variant="ghost"
                     size="md"
-                    onClick={handleAISuggest}
-                    disabled={aiSuggestMutation.isPending || createProjectMutation.isPending}
+                    onClick={() => {
+                      setShowCreateForm(false)
+                      resetForm()
+                    }}
                   >
-                    {aiSuggestMutation.isPending ? 'Generating...' : '✨ AI Suggest Projects'}
+                    Cancel
                   </Button>
                 </Flex>
-              )}
+              </Stack>
+            </Card>
+          )}
 
-              {/* Create Form */}
-              {showCreateForm && (
-                <Card>
-                  <Stack spacing="lg">
-                    <Heading level={3}>Create New Project</Heading>
-                    
-                    {/* Basic Info */}
-                    <Stack spacing="md">
-                      <Input
-                        label="Project Name *"
-                        value={newProject.name}
-                        onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                        placeholder="e.g., Site Preparation"
-                      />
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Description
-                        </label>
-                        <textarea
-                          value={newProject.description}
-                          onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                          placeholder="Describe what this project will accomplish..."
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={3}
-                        />
-                      </div>
+          {/* Projects List */}
+          <Stack spacing="lg">
+            <Heading level={2}>Projects ({projects.length})</Heading>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Priority
-                        </label>
-                        <select
-                          value={newProject.priority}
-                          onChange={(e) => setNewProject({ ...newProject, priority: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          {PRIORITY_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </Stack>
-
-                    {/* Timeline */}
-                    <Stack spacing="md">
-                      <Text weight="semibold">Timeline</Text>
-                      <Flex gap="md">
-                        <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Start Date
-                          </label>
-                          <input
-                            type="date"
-                            value={newProject.startDate}
-                            onChange={(e) => setNewProject({ ...newProject, startDate: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Target Date
-                          </label>
-                          <input
-                            type="date"
-                            value={newProject.targetDate}
-                            onChange={(e) => setNewProject({ ...newProject, targetDate: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                      </Flex>
-                    </Stack>
-
-                    {/* Budget & Effort */}
-                    <Stack spacing="md">
-                      <Text weight="semibold">Budget & Effort</Text>
-                      <Flex gap="md">
-                        <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Estimated Budget ($)
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={newProject.estimatedBudget}
-                            onChange={(e) => setNewProject({ ...newProject, estimatedBudget: e.target.value })}
-                            placeholder="0.00"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Estimated Hours
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={newProject.estimatedHours}
-                            onChange={(e) => setNewProject({ ...newProject, estimatedHours: e.target.value })}
-                            placeholder="0"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                      </Flex>
-                    </Stack>
-
-                    {/* Deliverables & Success */}
-                    <Stack spacing="md">
-                      <Text weight="semibold">Deliverables & Success Criteria</Text>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Deliverables
-                        </label>
-                        <textarea
-                          value={newProject.deliverables}
-                          onChange={(e) => setNewProject({ ...newProject, deliverables: e.target.value })}
-                          placeholder="What will this project produce?"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={2}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Success Criteria
-                        </label>
-                        <textarea
-                          value={newProject.successCriteria}
-                          onChange={(e) => setNewProject({ ...newProject, successCriteria: e.target.value })}
-                          placeholder="How will we know this project is complete?"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={2}
-                        />
-                      </div>
-                    </Stack>
-
-                    {/* Tags & Lead */}
-                    <Stack spacing="md">
-                      <Text weight="semibold">Organization</Text>
-                      <Flex gap="md">
-                        <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Tags (comma separated)
-                          </label>
-                          <input
-                            type="text"
-                            value={newProject.tags}
-                            onChange={(e) => setNewProject({ ...newProject, tags: e.target.value })}
-                            placeholder="e.g., planning, research, permits"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Project Lead
-                          </label>
-                          <select
-                            value={newProject.leadId}
-                            onChange={(e) => setNewProject({ ...newProject, leadId: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          >
-                            <option value="">Select a lead (optional)</option>
-                            {band.members.map((member: any) => (
-                              <option key={member.user.id} value={member.user.id}>
-                                {member.user.name} ({member.role})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </Flex>
-                    </Stack>
-
-                    {/* Actions */}
-                    <Flex gap="sm">
+            {projects.length > 0 ? (
+              <Stack spacing="md">
+                {projects.map((project: any) => (
+                  <Card key={project.id}>
+                    <Flex justify="between">
+                      <Stack spacing="sm">
+                        <Flex gap="sm" align="center">
+                          <Heading level={3}>{project.name}</Heading>
+                          {project.aiGenerated && (
+                            <Badge variant="info">AI</Badge>
+                          )}
+                        </Flex>
+                        {project.description && (
+                          <Text color="muted">{project.description}</Text>
+                        )}
+                        <Flex gap="sm" className="flex-wrap">
+                          {getStatusBadge(project.status)}
+                          {getPriorityBadge(project.priority)}
+                          {project.lead && (
+                            <Badge variant="neutral">Lead: {project.lead.name}</Badge>
+                          )}
+                        </Flex>
+                        <Flex gap="md" className="flex-wrap">
+                          <Text variant="small" className="text-gray-500">
+                            Created by {project.createdBy.name}
+                          </Text>
+                          {project.startDate && (
+                            <Text variant="small" className="text-gray-500">
+                              Start: {new Date(project.startDate).toLocaleDateString()}
+                            </Text>
+                          )}
+                          {project.targetDate && (
+                            <Text variant="small" className="text-gray-500">
+                              Target: {new Date(project.targetDate).toLocaleDateString()}
+                            </Text>
+                          )}
+                          {project.estimatedHours && (
+                            <Text variant="small" className="text-gray-500">
+                              Est: {project.estimatedHours}h
+                            </Text>
+                          )}
+                        </Flex>
+                      </Stack>
                       <Button
-                        variant="primary"
-                        size="md"
-                        onClick={handleCreateProject}
-                        disabled={createProjectMutation.isPending}
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => router.push(`/bands/${slug}/projects/${project.id}`)}
                       >
-                        {createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="md"
-                        onClick={() => {
-                          setShowCreateForm(false)
-                          resetForm()
-                        }}
-                      >
-                        Cancel
+                        View Details
                       </Button>
                     </Flex>
-                  </Stack>
-                </Card>
-              )}
-
-              {/* Projects List */}
-              <Stack spacing="lg">
-                <Heading level={2}>Projects ({projects.length})</Heading>
-
-                {projects.length > 0 ? (
-                  <Stack spacing="md">
-                    {projects.map((project: any) => (
-                      <Card key={project.id}>
-                        <Flex justify="between">
-                          <Stack spacing="sm">
-                            <Flex gap="sm" align="center">
-                              <Heading level={3}>{project.name}</Heading>
-                              {project.aiGenerated && (
-                                <Badge variant="info">AI</Badge>
-                              )}
-                            </Flex>
-                            {project.description && (
-                              <Text variant="muted">{project.description}</Text>
-                            )}
-                            <Flex gap="sm" className="flex-wrap">
-                              {getStatusBadge(project.status)}
-                              {getPriorityBadge(project.priority)}
-                              {project.lead && (
-                                <Badge variant="neutral">Lead: {project.lead.name}</Badge>
-                              )}
-                            </Flex>
-                            <Flex gap="md" className="flex-wrap">
-                              <Text variant="small" className="text-gray-500">
-                                Created by {project.createdBy.name}
-                              </Text>
-                              {project.startDate && (
-                                <Text variant="small" className="text-gray-500">
-                                  Start: {new Date(project.startDate).toLocaleDateString()}
-                                </Text>
-                              )}
-                              {project.targetDate && (
-                                <Text variant="small" className="text-gray-500">
-                                  Target: {new Date(project.targetDate).toLocaleDateString()}
-                                </Text>
-                              )}
-                              {project.estimatedHours && (
-                                <Text variant="small" className="text-gray-500">
-                                  Est: {project.estimatedHours}h
-                                </Text>
-                              )}
-                            </Flex>
-                          </Stack>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => router.push(`/bands/${slug}/projects/${project.id}`)}
-                          >
-                            View Details
-                          </Button>
-                        </Flex>
-                      </Card>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Alert variant="info">
-                    <Text>
-                      {isApproved 
-                        ? 'No projects yet. Create one or use AI to suggest projects based on the proposal.'
-                        : 'Projects will be available once the proposal is approved.'
-                      }
-                    </Text>
-                  </Alert>
-                )}
+                  </Card>
+                ))}
               </Stack>
-            </Stack>
-          </div>
-        </Flex>
-      </DashboardContainer>
-    </PageWrapper>
+            ) : (
+              <Alert variant="info">
+                <Text>
+                  {isApproved
+                    ? 'No projects yet. Create one or use AI to suggest projects based on the proposal.'
+                    : 'Projects will be available once the proposal is approved.'
+                  }
+                </Text>
+              </Alert>
+            )}
+          </Stack>
+        </Stack>
+      </BandLayout>
+    </>
   )
 }

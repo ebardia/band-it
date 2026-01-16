@@ -11,14 +11,14 @@ import {
   Button,
   useToast,
   PageWrapper,
-  TopNav,
   DashboardContainer,
   Flex,
   Card,
   Badge,
   Loading
 } from '@/components/ui'
-import Image from 'next/image'
+import { AppNav } from '@/components/AppNav'
+import { DashboardSidebar } from '@/components/DashboardSidebar'
 
 export default function MyBandsPage() {
   const router = useRouter()
@@ -45,6 +45,22 @@ export default function MyBandsPage() {
     { enabled: !!userId }
   )
 
+  // Fetch counts for sidebar
+  const { data: myProposalsData } = trpc.proposal.getMyProposals.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
+  const { data: myProjectsData } = trpc.project.getMyProjects.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
+  const { data: myTasksData } = trpc.task.getMyTasks.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -58,25 +74,22 @@ export default function MyBandsPage() {
     }
   }
 
+  const bandCount = myBandsData?.bands.length || 0
+  const proposalCount = myProposalsData?.proposals.length || 0
+  const projectCount = myProjectsData?.projects.length || 0
+  const taskCount = myTasksData?.tasks.length || 0
+
   if (isLoading) {
     return (
       <PageWrapper variant="dashboard">
-        <TopNav>
-          <Flex justify="between">
-            <Image 
-              src="/logo.png" 
-              alt="Band IT Logo" 
-              width={200} 
-              height={200}
-              priority
-            />
-            <Button variant="ghost" size="sm" onClick={() => router.push('/user-dashboard')}>
-              Back to Dashboard
-            </Button>
+        <AppNav />
+        <DashboardContainer wide>
+          <Flex gap="md" align="start">
+            <DashboardSidebar />
+            <div className="flex-1">
+              <Loading message="Loading your bands..." />
+            </div>
           </Flex>
-        </TopNav>
-        <DashboardContainer>
-          <Loading message="Loading your bands..." />
         </DashboardContainer>
       </PageWrapper>
     )
@@ -84,70 +97,65 @@ export default function MyBandsPage() {
 
   return (
     <PageWrapper variant="dashboard">
-      <TopNav>
-        <Flex justify="between">
-          <Image 
-            src="/logo.png" 
-            alt="Band IT Logo" 
-            width={200} 
-            height={200}
-            priority
+      <AppNav />
+      <DashboardContainer wide>
+        <Flex gap="md" align="start">
+          <DashboardSidebar
+            bandCount={bandCount}
+            proposalCount={proposalCount}
+            projectCount={projectCount}
+            taskCount={taskCount}
           />
-          <Button variant="ghost" size="sm" onClick={() => router.push('/user-dashboard')}>
-            Back to Dashboard
-          </Button>
-        </Flex>
-      </TopNav>
 
-      <DashboardContainer>
-        <Stack spacing="xl">
-          <Flex justify="between">
-            <Heading level={1}>My Bands</Heading>
-            <Button variant="primary" size="md" onClick={() => router.push('/bands/create')}>
-              Create New Band
-            </Button>
-          </Flex>
+          <div className="flex-1">
+            <Stack spacing="xl">
+              <Flex justify="between" align="center">
+                <Heading level={1}>My Bands</Heading>
+                <Button variant="primary" size="md" onClick={() => router.push('/bands/create')}>
+                  Create New Band
+                </Button>
+              </Flex>
 
-          {myBandsData?.bands && myBandsData.bands.length > 0 ? (
-            <Stack spacing="md">
-              {myBandsData.bands.map((band: any) => (
-                <Card key={band.id} hover>
-                  <Stack spacing="md">
-                    <Flex justify="between">
-                      <Heading level={2}>{band.name}</Heading>
-                      {getStatusBadge(band.status)}
+              {myBandsData?.bands && myBandsData.bands.length > 0 ? (
+                <Stack spacing="md">
+                  {myBandsData.bands.map((band: any) => (
+                    <Card key={band.id} hover onClick={() => router.push(`/bands/${band.slug}`)}>
+                      <Stack spacing="md">
+                        <Flex justify="between" align="center">
+                          <Heading level={2}>{band.name}</Heading>
+                          {getStatusBadge(band.status)}
+                        </Flex>
+                        <Text color="muted">{band.description}</Text>
+                        <Flex justify="between">
+                          <Text variant="small">
+                            Role: <Text variant="small" weight="semibold">{band.myRole.replace('_', ' ')}</Text>
+                          </Text>
+                          <Text variant="small">
+                            Members: <Text variant="small" weight="semibold">{band._count?.members || 0}</Text>
+                          </Text>
+                        </Flex>
+                      </Stack>
+                    </Card>
+                  ))}
+                </Stack>
+              ) : (
+                <Card>
+                  <Stack spacing="md" align="center">
+                    <Text>You're not a member of any bands yet.</Text>
+                    <Flex gap="md">
+                      <Button variant="primary" size="md" onClick={() => router.push('/bands/create')}>
+                        Create Your First Band
+                      </Button>
+                      <Button variant="secondary" size="md" onClick={() => router.push('/bands')}>
+                        Browse Bands
+                      </Button>
                     </Flex>
-                    <Text variant="muted">{band.description}</Text>
-                    <Flex justify="between">
-                      <Text variant="small">
-                        Role: <Text variant="small" weight="semibold">{band.myRole.replace('_', ' ')}</Text>
-                      </Text>
-                      <Text variant="small">
-                        Members: <Text variant="small" weight="semibold">{band._count?.members || 0}</Text>
-                      </Text>
-                    </Flex>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => router.push(`/bands/${band.slug}`)}
-                    >
-                      View Band
-                    </Button>
                   </Stack>
                 </Card>
-              ))}
+              )}
             </Stack>
-          ) : (
-            <Card>
-              <Stack spacing="md">
-                <Text>You're not a member of any bands yet.</Text>
-                <Button variant="primary" size="md" onClick={() => router.push('/bands/create')}>
-                  Create Your First Band
-                </Button>
-              </Stack>
-            </Card>
-          )}
-        </Stack>
+          </div>
+        </Flex>
       </DashboardContainer>
     </PageWrapper>
   )

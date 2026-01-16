@@ -131,7 +131,7 @@ export default function OverviewDashboard() {
     return (
       <PageWrapper variant="dashboard">
         <AppNav />
-        <DashboardContainer>
+        <DashboardContainer wide>
           <Loading message="Loading..." />
         </DashboardContainer>
       </PageWrapper>
@@ -157,7 +157,7 @@ export default function OverviewDashboard() {
     <PageWrapper variant="dashboard">
       <AppNav />
 
-      <DashboardContainer>
+      <DashboardContainer wide>
         <Flex gap="md" align="start">
           {/* Left Sidebar */}
           <DashboardSidebar 

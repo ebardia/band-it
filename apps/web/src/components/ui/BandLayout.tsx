@@ -14,6 +14,7 @@ interface BandLayoutProps {
   canCreateProposal?: boolean
   action?: ReactNode
   rightSidebar?: ReactNode
+  wide?: boolean
 }
 
 export function BandLayout({
@@ -26,15 +27,16 @@ export function BandLayout({
   canCreateProposal = false,
   action,
   rightSidebar,
+  wide = false,
 }: BandLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className={`mx-auto px-4 ${wide ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
         {/* Page Header - inside the same container */}
         <div className="py-6">
           <Flex gap="md" align="start">
             {/* Spacer to match sidebar width */}
-            <div className="w-64 flex-shrink-0" />
+            <div className="w-52 flex-shrink-0" />
             
             {/* Header content aligned with main content */}
             <div className="flex-1">

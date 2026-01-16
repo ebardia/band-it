@@ -12,13 +12,11 @@ import {
   Textarea,
   Button,
   useToast,
-  PageWrapper,
-  DashboardContainer,
   Flex,
   Card,
   Alert,
   Loading,
-  BandSidebar,
+  BandLayout,
   Badge
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
@@ -46,7 +44,7 @@ export default function CreateProposalPage() {
   const { showToast } = useToast()
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
-  
+
   // Form state
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -167,25 +165,37 @@ export default function CreateProposalPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName="Loading..."
+          pageTitle="Create Proposal"
+          isMember={false}
+          wide={true}
+        >
           <Loading message="Loading..." />
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
   if (!bandData?.band) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName=""
+          pageTitle="Create Proposal"
+          isMember={false}
+          wide={true}
+        >
           <Alert variant="danger">
             <Text>Band not found</Text>
           </Alert>
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
@@ -197,303 +207,301 @@ export default function CreateProposalPage() {
 
   if (!canCreateProposal) {
     return (
-      <PageWrapper variant="dashboard">
+      <>
         <AppNav />
-        <DashboardContainer>
+        <BandLayout
+          bandSlug={slug}
+          bandName={band.name}
+          pageTitle="Create Proposal"
+          canApprove={canApprove}
+          isMember={isMember}
+          wide={true}
+        >
           <Alert variant="danger">
             <Text>You do not have permission to create proposals in this band.</Text>
           </Alert>
-        </DashboardContainer>
-      </PageWrapper>
+        </BandLayout>
+      </>
     )
   }
 
   return (
-    <PageWrapper variant="dashboard">
+    <>
       <AppNav />
+      <BandLayout
+        bandSlug={slug}
+        bandName={band.name}
+        pageTitle="Create Proposal"
+        canApprove={canApprove}
+        isMember={isMember}
+        canCreateProposal={canCreateProposal}
+        wide={true}
+      >
+        <Stack spacing="xl">
+          {/* Voting Settings Info */}
+          <Card>
+            <Stack spacing="md">
+              <Heading level={3}>Voting Settings</Heading>
+              <Flex gap="lg">
+                <Text variant="small">
+                  <strong>Method:</strong> {band.votingMethod?.replace(/_/g, ' ') || 'Simple Majority'}
+                </Text>
+                <Text variant="small">
+                  <strong>Period:</strong> {band.votingPeriodDays || 7} days
+                </Text>
+              </Flex>
+            </Stack>
+          </Card>
 
-      <DashboardContainer>
-        <Flex gap="md" align="start">
-          <BandSidebar 
-            bandSlug={slug} 
-            canApprove={canApprove} 
-            isMember={isMember}
-            canCreateProposal={canCreateProposal}
-          />
-
-          <div className="flex-1 bg-white rounded-lg shadow p-8">
+          <form onSubmit={handleSubmit}>
             <Stack spacing="xl">
-              <Stack spacing="sm">
-                <Heading level={1}>Create Proposal</Heading>
-                <Text variant="muted">{band.name}</Text>
-              </Stack>
-
-              {/* Voting Settings Info */}
+              {/* Basic Info */}
               <Card>
-                <Stack spacing="md">
-                  <Heading level={3}>Voting Settings</Heading>
-                  <Flex gap="lg">
-                    <Text variant="small">
-                      <strong>Method:</strong> {band.votingMethod?.replace(/_/g, ' ') || 'Simple Majority'}
+                <Stack spacing="lg">
+                  <Heading level={3}>Basic Information</Heading>
+
+                  <Input
+                    label="Proposal Title"
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="What do you want to propose?"
+                    helperText="At least 5 characters"
+                  />
+
+                  {/* Type Selection */}
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">Proposal Type</Text>
+                    <Flex gap="sm" className="flex-wrap">
+                      {PROPOSAL_TYPES.map((t) => (
+                        <Button
+                          key={t.value}
+                          type="button"
+                          variant={type === t.value ? 'primary' : 'secondary'}
+                          size="sm"
+                          onClick={() => setType(t.value)}
+                        >
+                          {t.label}
+                        </Button>
+                      ))}
+                    </Flex>
+                    <Text variant="small" color="muted">
+                      {PROPOSAL_TYPES.find(t => t.value === type)?.description}
                     </Text>
-                    <Text variant="small">
-                      <strong>Period:</strong> {band.votingPeriodDays || 7} days
-                    </Text>
-                  </Flex>
+                  </Stack>
+
+                  {/* Priority Selection */}
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">Priority</Text>
+                    <Flex gap="sm">
+                      {PRIORITIES.map((p) => (
+                        <Button
+                          key={p.value}
+                          type="button"
+                          variant={priority === p.value ? 'primary' : 'ghost'}
+                          size="sm"
+                          onClick={() => setPriority(p.value)}
+                        >
+                          {p.label}
+                        </Button>
+                      ))}
+                    </Flex>
+                  </Stack>
                 </Stack>
               </Card>
 
-              <form onSubmit={handleSubmit}>
-                <Stack spacing="xl">
-                  {/* Basic Info */}
-                  <Card>
-                    <Stack spacing="lg">
-                      <Heading level={3}>Basic Information</Heading>
-                      
-                      <Input
-                        label="Proposal Title"
-                        required
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="What do you want to propose?"
-                        helperText="At least 5 characters"
-                      />
+              {/* AI Assistant */}
+              <Card>
+                <Stack spacing="md">
+                  <Flex justify="between">
+                    <Heading level={3}>AI Assistant</Heading>
+                    <Badge variant="info">Beta</Badge>
+                  </Flex>
+                  <Text variant="small" color="muted">
+                    Let AI help you structure your proposal based on best practices.
+                  </Text>
 
-                      {/* Type Selection */}
-                      <Stack spacing="sm">
-                        <Text variant="small" weight="semibold">Proposal Type</Text>
-                        <Flex gap="sm" className="flex-wrap">
-                          {PROPOSAL_TYPES.map((t) => (
-                            <Button
-                              key={t.value}
-                              type="button"
-                              variant={type === t.value ? 'primary' : 'secondary'}
-                              size="sm"
-                              onClick={() => setType(t.value)}
-                            >
-                              {t.label}
-                            </Button>
-                          ))}
-                        </Flex>
-                        <Text variant="small" variant="muted">
-                          {PROPOSAL_TYPES.find(t => t.value === type)?.description}
-                        </Text>
-                      </Stack>
+                  <Textarea
+                    label="Additional Context (optional)"
+                    value={aiContext}
+                    onChange={(e) => setAiContext(e.target.value)}
+                    placeholder="Provide any additional context to help generate a better draft..."
+                    rows={2}
+                  />
 
-                      {/* Priority Selection */}
-                      <Stack spacing="sm">
-                        <Text variant="small" weight="semibold">Priority</Text>
-                        <Flex gap="sm">
-                          {PRIORITIES.map((p) => (
-                            <Button
-                              key={p.value}
-                              type="button"
-                              variant={priority === p.value ? 'primary' : 'ghost'}
-                              size="sm"
-                              onClick={() => setPriority(p.value)}
-                            >
-                              {p.label}
-                            </Button>
-                          ))}
-                        </Flex>
-                      </Stack>
-                    </Stack>
-                  </Card>
-
-                  {/* AI Assistant */}
-                  <Card>
-                    <Stack spacing="md">
-                      <Flex justify="between">
-                        <Heading level={3}>✨ AI Assistant</Heading>
-                        <Badge variant="info">Beta</Badge>
-                      </Flex>
-                      <Text variant="small" variant="muted">
-                        Let AI help you structure your proposal based on best practices.
-                      </Text>
-                      
-                      <Textarea
-                        label="Additional Context (optional)"
-                        value={aiContext}
-                        onChange={(e) => setAiContext(e.target.value)}
-                        placeholder="Provide any additional context to help generate a better draft..."
-                        rows={2}
-                      />
-
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="md"
-                        onClick={handleGenerateDraft}
-                        disabled={generateDraftMutation.isPending || title.length < 3}
-                      >
-                        {generateDraftMutation.isPending ? 'Generating...' : '✨ Generate Draft'}
-                      </Button>
-                    </Stack>
-                  </Card>
-
-                  {/* Description */}
-                  <Card>
-                    <Stack spacing="lg">
-                      <Heading level={3}>Description</Heading>
-                      
-                      <Textarea
-                        label="Proposal Description"
-                        required
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Describe your proposal in detail..."
-                        rows={6}
-                        helperText="At least 20 characters - Be thorough so members can make informed decisions"
-                      />
-                    </Stack>
-                  </Card>
-
-                  {/* Advanced Fields Toggle */}
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="secondary"
                     size="md"
-                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    onClick={handleGenerateDraft}
+                    disabled={generateDraftMutation.isPending || title.length < 3}
                   >
-                    {showAdvanced ? '▼ Hide Advanced Fields' : '▶ Show Advanced Fields'}
+                    {generateDraftMutation.isPending ? 'Generating...' : 'Generate Draft'}
                   </Button>
-
-                  {showAdvanced && (
-                    <>
-                      {/* Problem & Outcome */}
-                      <Card>
-                        <Stack spacing="lg">
-                          <Heading level={3}>Problem & Outcome</Heading>
-                          
-                          <Textarea
-                            label="Problem Statement"
-                            value={problemStatement}
-                            onChange={(e) => setProblemStatement(e.target.value)}
-                            placeholder="What problem or opportunity does this address?"
-                            rows={3}
-                          />
-
-                          <Textarea
-                            label="Expected Outcome"
-                            value={expectedOutcome}
-                            onChange={(e) => setExpectedOutcome(e.target.value)}
-                            placeholder="What will be achieved if approved?"
-                            rows={3}
-                          />
-
-                          <Textarea
-                            label="Risks & Concerns"
-                            value={risksAndConcerns}
-                            onChange={(e) => setRisksAndConcerns(e.target.value)}
-                            placeholder="What are potential downsides or risks?"
-                            rows={3}
-                          />
-                        </Stack>
-                      </Card>
-
-                      {/* Budget (show if BUDGET type or always in advanced) */}
-                      <Card>
-                        <Stack spacing="lg">
-                          <Heading level={3}>Budget (if applicable)</Heading>
-                          
-                          <Input
-                            label="Budget Requested ($)"
-                            type="number"
-                            value={budgetRequested}
-                            onChange={(e) => setBudgetRequested(e.target.value)}
-                            placeholder="0.00"
-                          />
-
-                          <Textarea
-                            label="Budget Breakdown"
-                            value={budgetBreakdown}
-                            onChange={(e) => setBudgetBreakdown(e.target.value)}
-                            placeholder="• Item 1: $X&#10;• Item 2: $X&#10;• Total: $X"
-                            rows={4}
-                          />
-
-                          <Input
-                            label="Funding Source"
-                            value={fundingSource}
-                            onChange={(e) => setFundingSource(e.target.value)}
-                            placeholder="Where will the funds come from?"
-                          />
-                        </Stack>
-                      </Card>
-
-                      {/* Timeline */}
-                      <Card>
-                        <Stack spacing="lg">
-                          <Heading level={3}>Timeline (if applicable)</Heading>
-                          
-                          <Flex gap="md">
-                            <Input
-                              label="Proposed Start Date"
-                              type="date"
-                              value={proposedStartDate}
-                              onChange={(e) => setProposedStartDate(e.target.value)}
-                            />
-                            <Input
-                              label="Proposed End Date"
-                              type="date"
-                              value={proposedEndDate}
-                              onChange={(e) => setProposedEndDate(e.target.value)}
-                            />
-                          </Flex>
-
-                          <Textarea
-                            label="Milestones"
-                            value={milestones}
-                            onChange={(e) => setMilestones(e.target.value)}
-                            placeholder="• Week 1: First milestone&#10;• Week 2: Second milestone"
-                            rows={4}
-                          />
-                        </Stack>
-                      </Card>
-
-                      {/* External Links */}
-                      <Card>
-                        <Stack spacing="lg">
-                          <Heading level={3}>Supporting Links</Heading>
-                          
-                          <Textarea
-                            label="External Links"
-                            value={externalLinks}
-                            onChange={(e) => setExternalLinks(e.target.value)}
-                            placeholder="https://example.com/doc1&#10;https://example.com/doc2"
-                            rows={3}
-                            helperText="One URL per line"
-                          />
-                        </Stack>
-                      </Card>
-                    </>
-                  )}
-
-                  {/* Submit */}
-                  <Flex gap="md">
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="lg"
-                      disabled={createMutation.isPending}
-                    >
-                      {createMutation.isPending ? 'Creating...' : 'Create Proposal'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="lg"
-                      onClick={() => router.push(`/bands/${slug}/proposals`)}
-                    >
-                      Cancel
-                    </Button>
-                  </Flex>
                 </Stack>
-              </form>
+              </Card>
+
+              {/* Description */}
+              <Card>
+                <Stack spacing="lg">
+                  <Heading level={3}>Description</Heading>
+
+                  <Textarea
+                    label="Proposal Description"
+                    required
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe your proposal in detail..."
+                    rows={6}
+                    helperText="At least 20 characters - Be thorough so members can make informed decisions"
+                  />
+                </Stack>
+              </Card>
+
+              {/* Advanced Fields Toggle */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="md"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+              >
+                {showAdvanced ? 'Hide Advanced Fields' : 'Show Advanced Fields'}
+              </Button>
+
+              {showAdvanced && (
+                <>
+                  {/* Problem & Outcome */}
+                  <Card>
+                    <Stack spacing="lg">
+                      <Heading level={3}>Problem & Outcome</Heading>
+
+                      <Textarea
+                        label="Problem Statement"
+                        value={problemStatement}
+                        onChange={(e) => setProblemStatement(e.target.value)}
+                        placeholder="What problem or opportunity does this address?"
+                        rows={3}
+                      />
+
+                      <Textarea
+                        label="Expected Outcome"
+                        value={expectedOutcome}
+                        onChange={(e) => setExpectedOutcome(e.target.value)}
+                        placeholder="What will be achieved if approved?"
+                        rows={3}
+                      />
+
+                      <Textarea
+                        label="Risks & Concerns"
+                        value={risksAndConcerns}
+                        onChange={(e) => setRisksAndConcerns(e.target.value)}
+                        placeholder="What are potential downsides or risks?"
+                        rows={3}
+                      />
+                    </Stack>
+                  </Card>
+
+                  {/* Budget (show if BUDGET type or always in advanced) */}
+                  <Card>
+                    <Stack spacing="lg">
+                      <Heading level={3}>Budget (if applicable)</Heading>
+
+                      <Input
+                        label="Budget Requested ($)"
+                        type="number"
+                        value={budgetRequested}
+                        onChange={(e) => setBudgetRequested(e.target.value)}
+                        placeholder="0.00"
+                      />
+
+                      <Textarea
+                        label="Budget Breakdown"
+                        value={budgetBreakdown}
+                        onChange={(e) => setBudgetBreakdown(e.target.value)}
+                        placeholder="• Item 1: $X&#10;• Item 2: $X&#10;• Total: $X"
+                        rows={4}
+                      />
+
+                      <Input
+                        label="Funding Source"
+                        value={fundingSource}
+                        onChange={(e) => setFundingSource(e.target.value)}
+                        placeholder="Where will the funds come from?"
+                      />
+                    </Stack>
+                  </Card>
+
+                  {/* Timeline */}
+                  <Card>
+                    <Stack spacing="lg">
+                      <Heading level={3}>Timeline (if applicable)</Heading>
+
+                      <Flex gap="md">
+                        <Input
+                          label="Proposed Start Date"
+                          type="date"
+                          value={proposedStartDate}
+                          onChange={(e) => setProposedStartDate(e.target.value)}
+                        />
+                        <Input
+                          label="Proposed End Date"
+                          type="date"
+                          value={proposedEndDate}
+                          onChange={(e) => setProposedEndDate(e.target.value)}
+                        />
+                      </Flex>
+
+                      <Textarea
+                        label="Milestones"
+                        value={milestones}
+                        onChange={(e) => setMilestones(e.target.value)}
+                        placeholder="• Week 1: First milestone&#10;• Week 2: Second milestone"
+                        rows={4}
+                      />
+                    </Stack>
+                  </Card>
+
+                  {/* External Links */}
+                  <Card>
+                    <Stack spacing="lg">
+                      <Heading level={3}>Supporting Links</Heading>
+
+                      <Textarea
+                        label="External Links"
+                        value={externalLinks}
+                        onChange={(e) => setExternalLinks(e.target.value)}
+                        placeholder="https://example.com/doc1&#10;https://example.com/doc2"
+                        rows={3}
+                        helperText="One URL per line"
+                      />
+                    </Stack>
+                  </Card>
+                </>
+              )}
+
+              {/* Submit */}
+              <Flex gap="md">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  disabled={createMutation.isPending}
+                >
+                  {createMutation.isPending ? 'Creating...' : 'Create Proposal'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="lg"
+                  onClick={() => router.push(`/bands/${slug}/proposals`)}
+                >
+                  Cancel
+                </Button>
+              </Flex>
             </Stack>
-          </div>
-        </Flex>
-      </DashboardContainer>
-    </PageWrapper>
+          </form>
+        </Stack>
+      </BandLayout>
+    </>
   )
 }

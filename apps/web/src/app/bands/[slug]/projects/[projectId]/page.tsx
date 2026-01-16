@@ -294,6 +294,7 @@ export default function ProjectDetailPage() {
           bandName="Loading..."
           pageTitle="Project Details"
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading project..." />
         </BandLayout>
@@ -310,6 +311,7 @@ export default function ProjectDetailPage() {
           bandName=""
           pageTitle="Project Details"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Project not found</Text>
@@ -336,6 +338,7 @@ export default function ProjectDetailPage() {
         pageTitle={project.name}
         canApprove={false}
         isMember={!!currentMember}
+        wide={true}
         action={
           canUpdateProject && !isEditing ? (
             <Button variant="secondary" size="md" onClick={() => setIsEditing(true)}>
