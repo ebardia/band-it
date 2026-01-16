@@ -65,6 +65,7 @@ model User {
   reactionsGiven          Reaction[] @relation("ReactionsGiven")
   mentionsReceived        Mention[] @relation("MentionsReceived")
   checklistItemsCompleted ChecklistItem[] @relation("ChecklistItemsCompleted")
+  checklistItemsAssigned  ChecklistItem[] @relation("ChecklistItemsAssigned")
 }
 
 enum SubscriptionStatus {
@@ -253,6 +254,7 @@ model Band {
   tasks     Task[]
   files     File[]
   comments  Comment[]
+  auditLogs AuditLog[]
 
   @@index([createdById])
   @@index([status])
@@ -614,6 +616,11 @@ model ChecklistItem {
   
   // Content
   description String
+  notes       String?  @db.Text
+  
+  // Assignment
+  assigneeId  String?
+  dueDate     DateTime?
   
   // Status
   isCompleted   Boolean  @default(false)
@@ -629,9 +636,12 @@ model ChecklistItem {
   // Relations
   task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   completedBy User?    @relation("ChecklistItemsCompleted", fields: [completedById], references: [id])
+  assignee    User?    @relation("ChecklistItemsAssigned", fields: [assigneeId], references: [id])
+  files       File[]
 
   @@index([taskId])
   @@index([completedById])
+  @@index([assigneeId])
 }
 
 // ============================================
@@ -663,10 +673,11 @@ model File {
   uploadedById  String
   
   // Attachments - which entity this file belongs to (only one should be set)
-  bandId        String?
-  proposalId    String?
-  projectId     String?
-  taskId        String?
+  bandId          String?
+  proposalId      String?
+  projectId       String?
+  taskId          String?
+  checklistItemId String?
   
   // Metadata
   description   String?
@@ -681,12 +692,14 @@ model File {
   proposal      Proposal? @relation(fields: [proposalId], references: [id], onDelete: Cascade)
   project       Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   task          Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  checklistItem ChecklistItem? @relation(fields: [checklistItemId], references: [id], onDelete: Cascade)
 
   @@index([uploadedById])
   @@index([bandId])
   @@index([proposalId])
   @@index([projectId])
   @@index([taskId])
+  @@index([checklistItemId])
   @@index([category])
 }
 
@@ -792,4 +805,42 @@ model Mention {
   @@unique([userId, commentId])
   @@index([userId, isRead])
   @@index([commentId])
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+
+  // Context - which band (null for non-band entities)
+  bandId      String?
+
+  // What happened
+  action      String   // "created", "updated", "deleted"
+  entityType  String   // "Band", "Task", "Proposal", etc.
+  entityId    String   // ID of the affected record
+  entityName  String?  // Human-readable name (e.g., task name, proposal title)
+
+  // Who did it
+  actorId     String?  // User ID (null if system action)
+  actorType   String   @default("user") // "user", "system"
+
+  // What changed (for updates)
+  changes     Json?    // { "status": { "from": "TODO", "to": "DONE" } }
+
+  // Request context
+  ipAddress   String?
+  userAgent   String?
+
+  createdAt   DateTime @default(now())
+
+  // Relations
+  band        Band?    @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  @@index([bandId, createdAt])
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([createdAt])
 }

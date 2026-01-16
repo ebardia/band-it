@@ -12,6 +12,11 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
       links: [
         httpBatchLink({
           url: 'http://localhost:3001/trpc',
+          async headers() {
+            if (typeof window === 'undefined') return {}
+            const token = localStorage.getItem('accessToken')
+            return token ? { Authorization: `Bearer ${token}` } : {}
+          },
         }),
       ],
     })

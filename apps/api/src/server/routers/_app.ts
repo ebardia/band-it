@@ -11,6 +11,7 @@ import { aiRouter } from './ai'
 import { fileRouter } from './file'
 import { commentRouter } from './comment'
 import { checklistRouter } from './checklist'
+import { auditRouter } from './audit'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -26,6 +27,7 @@ export const appRouter = router({
   file: fileRouter,
   comment: commentRouter,
   checklist: checklistRouter,
+  audit: auditRouter,
 })
 
 // Export type definition of API

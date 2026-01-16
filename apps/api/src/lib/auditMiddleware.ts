@@ -1,0 +1,191 @@
+import { Prisma, PrismaClient } from '@prisma/client'
+import { getAuditContext } from './auditContext'
+
+// Entities we want to audit
+const AUDITED_ENTITIES = [
+  'Band',
+  'Member',
+  'Proposal',
+  'Vote',
+  'Project',
+  'Task',
+  'ChecklistItem',
+  'Comment',
+  'File',
+]
+
+// Fields to exclude from change tracking (noisy/sensitive)
+const EXCLUDED_FIELDS = [
+  'updatedAt',
+  'createdAt',
+  'password',
+]
+
+// Map entity to its band relationship field
+const BAND_ID_FIELD: Record<string, string | null> = {
+  'Band': 'id',           // Band's own ID
+  'Member': 'bandId',
+  'Proposal': 'bandId',
+  'Vote': null,           // Get from proposal
+  'Project': 'bandId',
+  'Task': 'bandId',
+  'ChecklistItem': null,  // Get from task
+  'Comment': 'bandId',
+  'File': 'bandId',
+}
+
+// Fields to use as human-readable name
+const NAME_FIELD: Record<string, string> = {
+  'Band': 'name',
+  'Member': 'id',
+  'Proposal': 'title',
+  'Vote': 'id',
+  'Project': 'name',
+  'Task': 'name',
+  'ChecklistItem': 'description',
+  'Comment': 'id',
+  'File': 'originalName',
+}
+
+function computeChanges(before: any, after: any): Record<string, { from: any; to: any }> | null {
+  if (!before || !after) return null
+
+  const changes: Record<string, { from: any; to: any }> = {}
+
+  const allKeys = new Set([...Object.keys(before), ...Object.keys(after)])
+
+  for (const key of allKeys) {
+    if (EXCLUDED_FIELDS.includes(key)) continue
+    if (key.startsWith('_')) continue // Prisma internal fields
+
+    const fromVal = before[key]
+    const toVal = after[key]
+
+    // Skip if both are objects (relations) - we only track scalar changes
+    if (typeof fromVal === 'object' && fromVal !== null && !Array.isArray(fromVal)) continue
+    if (typeof toVal === 'object' && toVal !== null && !Array.isArray(toVal)) continue
+
+    // Compare values
+    const fromStr = JSON.stringify(fromVal)
+    const toStr = JSON.stringify(toVal)
+
+    if (fromStr !== toStr) {
+      changes[key] = { from: fromVal, to: toVal }
+    }
+  }
+
+  return Object.keys(changes).length > 0 ? changes : null
+}
+
+function getBandId(model: string, record: any): string | null {
+  if (!record) return null
+
+  const field = BAND_ID_FIELD[model]
+  if (field === null) return null
+  if (field === 'id') return record.id // For Band model itself
+
+  return record[field] || null
+}
+
+export function createAuditMiddleware(prismaClient: PrismaClient): Prisma.Middleware {
+  return async (params, next) => {
+    const { model, action } = params
+
+    // Skip non-audited models
+    if (!model || !AUDITED_ENTITIES.includes(model)) {
+      return next(params)
+    }
+
+    // Skip read operations
+    if (!['create', 'update', 'delete', 'updateMany', 'deleteMany'].includes(action)) {
+      return next(params)
+    }
+
+    // Get context
+    const context = getAuditContext()
+
+    // For update/delete, get the before state
+    let beforeState: any = null
+    if ((action === 'update' || action === 'delete') && params.args?.where) {
+      try {
+        beforeState = await (prismaClient as any)[model.charAt(0).toLowerCase() + model.slice(1)].findUnique({
+          where: params.args.where,
+        })
+      } catch (e) {
+        // Ignore - might not exist
+      }
+    }
+
+    // Execute the actual operation
+    const result = await next(params)
+
+    // Build audit log entry
+    try {
+      let auditAction: string
+      let entityId: string
+      let entityName: string | null = null
+      let bandId: string | null = null
+      let changes: any = null
+
+      switch (action) {
+        case 'create':
+          auditAction = 'created'
+          entityId = result.id
+          entityName = result[NAME_FIELD[model]] || null
+          bandId = getBandId(model, result)
+          break
+
+        case 'update':
+          auditAction = 'updated'
+          entityId = result.id
+          entityName = result[NAME_FIELD[model]] || null
+          bandId = getBandId(model, result)
+          changes = computeChanges(beforeState, result)
+          // Skip if nothing meaningful changed
+          if (!changes) return result
+          break
+
+        case 'delete':
+          auditAction = 'deleted'
+          entityId = beforeState?.id || params.args?.where?.id || 'unknown'
+          entityName = beforeState?.[NAME_FIELD[model]] || null
+          bandId = getBandId(model, beforeState)
+          break
+
+        case 'updateMany':
+        case 'deleteMany':
+          // For bulk operations, log a summary
+          auditAction = action === 'updateMany' ? 'bulk_updated' : 'bulk_deleted'
+          entityId = 'multiple'
+          break
+
+        default:
+          return result
+      }
+
+      // Create audit log (fire and forget - don't block the main operation)
+      prismaClient.auditLog.create({
+        data: {
+          bandId,
+          action: auditAction,
+          entityType: model,
+          entityId,
+          entityName,
+          actorId: context.userId || null,
+          actorType: context.userId ? 'user' : 'system',
+          changes,
+          ipAddress: context.ipAddress || null,
+          userAgent: context.userAgent || null,
+        },
+      }).catch((err: any) => {
+        console.error('Failed to create audit log:', err)
+      })
+
+    } catch (err) {
+      // Don't let audit failures break the main operation
+      console.error('Audit middleware error:', err)
+    }
+
+    return result
+  }
+}

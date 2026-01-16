@@ -23,6 +23,7 @@ export function BandSidebar({ bandSlug, canApprove = false, isMember = false, ca
     { label: '📝 Proposals', path: `/bands/${bandSlug}/proposals` },
     { label: '📁 Projects', path: `/bands/${bandSlug}/projects` },
     { label: '✅ Tasks', path: `/bands/${bandSlug}/tasks` },
+    { label: '📜 Audit Log', path: `/bands/${bandSlug}/audit` },
   ]
 
   // Member actions
