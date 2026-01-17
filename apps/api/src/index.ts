@@ -15,18 +15,24 @@ const UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || './uploads'
 
 // Enable CORS for frontend (supports comma-separated list of origins)
 const ALLOWED_ORIGINS = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, ''))
   : ['http://localhost:3000']
+
+console.log('[CORS] Allowed origins:', ALLOWED_ORIGINS)
 
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true)
 
-    if (ALLOWED_ORIGINS.includes(origin)) {
+    // Normalize origin by removing trailing slash
+    const normalizedOrigin = origin.replace(/\/$/, '')
+
+    if (ALLOWED_ORIGINS.includes(normalizedOrigin)) {
       callback(null, true)
     } else {
-      console.warn(`CORS blocked origin: ${origin}`)
+      console.warn(`[CORS] Blocked origin: ${origin} (normalized: ${normalizedOrigin})`)
+      console.warn(`[CORS] Allowed origins are: ${ALLOWED_ORIGINS.join(', ')}`)
       callback(null, false)
     }
   },
