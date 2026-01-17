@@ -66,6 +66,7 @@ model User {
   mentionsReceived        Mention[] @relation("MentionsReceived")
   checklistItemsCompleted ChecklistItem[] @relation("ChecklistItemsCompleted")
   checklistItemsAssigned  ChecklistItem[] @relation("ChecklistItemsAssigned")
+  pendingInvitesCreated   PendingInvite[] @relation("PendingInvitesCreated")
 }
 
 enum SubscriptionStatus {
@@ -255,6 +256,7 @@ model Band {
   files     File[]
   comments  Comment[]
   auditLogs AuditLog[]
+  pendingInvites PendingInvite[]
 
   @@index([createdById])
   @@index([status])
@@ -805,6 +807,32 @@ model Mention {
   @@unique([userId, commentId])
   @@index([userId, isRead])
   @@index([commentId])
+}
+
+// ============================================
+// PENDING INVITES (for non-registered users)
+// ============================================
+
+model PendingInvite {
+  id          String   @id @default(cuid())
+  email       String
+  bandId      String
+  invitedById String
+  role        MemberRole @default(VOTING_MEMBER)
+  token       String   @unique
+  expiresAt   DateTime
+  notes       String?  @db.Text
+
+  createdAt   DateTime @default(now())
+
+  band        Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  invitedBy   User     @relation("PendingInvitesCreated", fields: [invitedById], references: [id])
+
+  @@unique([email, bandId])
+  @@index([email])
+  @@index([bandId])
+  @@index([token])
+  @@index([expiresAt])
 }
 
 // ============================================

@@ -25,10 +25,13 @@ export const bandRouter = router({
   // Invites
   searchUsers: bandInviteRouter.searchUsers,
   inviteUser: bandInviteRouter.inviteUser,
+  inviteByEmail: bandInviteRouter.inviteByEmail,
   getMyInvitations: bandInviteRouter.getMyInvitations,
   acceptInvitation: bandInviteRouter.acceptInvitation,
   declineInvitation: bandInviteRouter.declineInvitation,
   leaveBand: bandInviteRouter.leaveBand,
+  getPendingInvites: bandInviteRouter.getPendingInvites,
+  cancelPendingInvite: bandInviteRouter.cancelPendingInvite,
   
   // Matching
   getRecommendedUsers: bandMatchingRouter.getRecommendedUsers,

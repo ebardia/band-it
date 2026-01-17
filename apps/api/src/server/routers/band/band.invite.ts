@@ -1,7 +1,12 @@
 import { z } from 'zod'
+import crypto from 'crypto'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
+import { emailService } from '../../services/email.service'
+
+// Roles that can invite members
+const CAN_INVITE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 
 export const bandInviteRouter = router({
   /**
@@ -479,6 +484,277 @@ export const bandInviteRouter = router({
       return {
         success: true,
         message: 'You have left the band',
+      }
+    }),
+
+  /**
+   * Invite someone by email - works for both existing and non-existing users
+   */
+  inviteByEmail: publicProcedure
+    .input(
+      z.object({
+        bandId: z.string(),
+        inviterId: z.string(),
+        email: z.string().email('Invalid email address'),
+        notes: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { bandId, inviterId, email, notes } = input
+      const normalizedEmail = email.toLowerCase().trim()
+
+      // Get inviter's membership and band info
+      const inviterMembership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: {
+            userId: inviterId,
+            bandId,
+          },
+        },
+        include: {
+          band: true,
+          user: {
+            select: { id: true, name: true },
+          },
+        },
+      })
+
+      if (!inviterMembership) {
+        throw new Error('You are not a member of this band')
+      }
+
+      // Check if inviter has permission
+      if (!CAN_INVITE.includes(inviterMembership.role)) {
+        throw new Error('You do not have permission to invite members')
+      }
+
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: normalizedEmail },
+        select: { id: true, name: true, email: true },
+      })
+
+      if (existingUser) {
+        // User exists - check if already a member or invited
+        const existingMembership = await prisma.member.findUnique({
+          where: {
+            userId_bandId: {
+              userId: existingUser.id,
+              bandId,
+            },
+          },
+        })
+
+        if (existingMembership) {
+          if (existingMembership.status === 'ACTIVE') {
+            throw new Error('This user is already a member of this band')
+          }
+          if (existingMembership.status === 'INVITED') {
+            throw new Error('This user has already been invited')
+          }
+          if (existingMembership.status === 'PENDING') {
+            throw new Error('This user has already applied to join')
+          }
+        }
+
+        // Create invitation for existing user
+        const membership = await prisma.member.create({
+          data: {
+            userId: existingUser.id,
+            bandId,
+            role: 'VOTING_MEMBER',
+            status: 'INVITED',
+            invitedBy: inviterId,
+            notes,
+          },
+          include: {
+            user: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        })
+
+        // Create in-app notification
+        await notificationService.create({
+          userId: existingUser.id,
+          type: 'BAND_INVITE_RECEIVED',
+          actionUrl: '/invitations',
+          priority: 'HIGH',
+          metadata: {
+            inviterName: inviterMembership.user.name,
+            bandName: inviterMembership.band.name,
+            bandSlug: inviterMembership.band.slug,
+            membershipId: membership.id,
+          },
+          relatedId: bandId,
+          relatedType: 'BAND',
+        })
+
+        // Send email notification
+        await emailService.sendExistingUserInviteEmail({
+          email: existingUser.email,
+          userName: existingUser.name,
+          bandName: inviterMembership.band.name,
+          inviterName: inviterMembership.user.name,
+          notes,
+        })
+
+        return {
+          success: true,
+          message: `Invitation sent to ${existingUser.name}`,
+          type: 'existing_user',
+          membership,
+        }
+      } else {
+        // User doesn't exist - create pending invite
+
+        // Check if already has pending invite for this band
+        const existingInvite = await prisma.pendingInvite.findUnique({
+          where: {
+            email_bandId: {
+              email: normalizedEmail,
+              bandId,
+            },
+          },
+        })
+
+        if (existingInvite) {
+          throw new Error('An invitation has already been sent to this email')
+        }
+
+        // Generate secure token
+        const token = crypto.randomBytes(32).toString('hex')
+
+        // Set expiration to 7 days from now
+        const expiresAt = new Date()
+        expiresAt.setDate(expiresAt.getDate() + 7)
+
+        // Create pending invite
+        const pendingInvite = await prisma.pendingInvite.create({
+          data: {
+            email: normalizedEmail,
+            bandId,
+            invitedById: inviterId,
+            role: 'VOTING_MEMBER',
+            token,
+            expiresAt,
+            notes,
+          },
+          include: {
+            band: {
+              select: { id: true, name: true, slug: true },
+            },
+          },
+        })
+
+        // Send invite email
+        await emailService.sendBandInviteEmail({
+          email: normalizedEmail,
+          bandName: inviterMembership.band.name,
+          inviterName: inviterMembership.user.name,
+          inviteToken: token,
+          notes,
+        })
+
+        return {
+          success: true,
+          message: `Invitation email sent to ${normalizedEmail}`,
+          type: 'new_user',
+          pendingInvite: {
+            id: pendingInvite.id,
+            email: pendingInvite.email,
+            expiresAt: pendingInvite.expiresAt,
+          },
+        }
+      }
+    }),
+
+  /**
+   * Get pending invites for a band (admin view)
+   */
+  getPendingInvites: publicProcedure
+    .input(
+      z.object({
+        bandId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { bandId, userId } = input
+
+      // Check user is a member with permission
+      const membership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: { userId, bandId },
+        },
+      })
+
+      if (!membership || !CAN_INVITE.includes(membership.role)) {
+        throw new Error('You do not have permission to view pending invites')
+      }
+
+      const pendingInvites = await prisma.pendingInvite.findMany({
+        where: {
+          bandId,
+          expiresAt: { gt: new Date() }, // Only non-expired
+        },
+        include: {
+          invitedBy: {
+            select: { id: true, name: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      })
+
+      return {
+        success: true,
+        pendingInvites,
+      }
+    }),
+
+  /**
+   * Cancel/revoke a pending invite
+   */
+  cancelPendingInvite: publicProcedure
+    .input(
+      z.object({
+        inviteId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { inviteId, userId } = input
+
+      const pendingInvite = await prisma.pendingInvite.findUnique({
+        where: { id: inviteId },
+        include: { band: true },
+      })
+
+      if (!pendingInvite) {
+        throw new Error('Invite not found')
+      }
+
+      // Check user has permission
+      const membership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: {
+            userId,
+            bandId: pendingInvite.bandId,
+          },
+        },
+      })
+
+      if (!membership || !CAN_INVITE.includes(membership.role)) {
+        throw new Error('You do not have permission to cancel invites')
+      }
+
+      await prisma.pendingInvite.delete({
+        where: { id: inviteId },
+      })
+
+      return {
+        success: true,
+        message: 'Invitation cancelled',
       }
     }),
 })

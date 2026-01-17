@@ -21,13 +21,15 @@ export const authRouter = router({
           .string()
           .min(2, 'Name must be at least 2 characters')
           .max(100, 'Name must be less than 100 characters'),
+        inviteToken: z.string().optional(), // Optional token from band invite email
       })
     )
     .mutation(async ({ input }) => {
       const result = await authService.register(
         input.email,
         input.password,
-        input.name
+        input.name,
+        input.inviteToken
       )
 
       return {
@@ -36,6 +38,7 @@ export const authRouter = router({
         user: result.user,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
+        bandsJoined: result.bandsJoined, // Return info about auto-joined bands
       }
     }),
 

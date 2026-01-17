@@ -1,26 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { trpc } from '@/lib/trpc'
-import { useRouter } from 'next/navigation'
-import { 
-  Button, 
-  Input, 
-  Card, 
-  PageLayout, 
-  Container, 
-  Heading, 
-  Text, 
+import { useRouter, useSearchParams } from 'next/navigation'
+import {
+  Button,
+  Input,
+  Card,
+  PageLayout,
+  Container,
+  Heading,
+  Text,
   useToast,
   Stack,
   Center,
   Link,
-  Progress
+  Progress,
+  Alert,
+  Loading
 } from '@/components/ui'
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { showToast } = useToast()
+  const inviteToken = searchParams.get('invite')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -33,12 +37,22 @@ export default function RegisterPage() {
       localStorage.setItem('refreshToken', data.refreshToken)
       localStorage.setItem('userEmail', formData.email)
 
+      // Show bands joined message if any
+      if (data.bandsJoined && data.bandsJoined.length > 0) {
+        const bandNames = data.bandsJoined.map((b: { name: string }) => b.name).join(', ')
+        showToast(`Welcome! You've automatically joined: ${bandNames}`, 'success')
+      }
+
       // Check if email is already verified (SKIP_EMAIL_VERIFICATION mode)
       if (data.user.emailVerified) {
-        showToast('Account created successfully!', 'success')
+        if (!data.bandsJoined || data.bandsJoined.length === 0) {
+          showToast('Account created successfully!', 'success')
+        }
         router.push('/profile') // Skip email verification, go to profile
       } else {
-        showToast('Account created! Please check your email.', 'success')
+        if (!data.bandsJoined || data.bandsJoined.length === 0) {
+          showToast('Account created! Please check your email.', 'success')
+        }
         router.push('/verify-email')
       }
     },
@@ -49,7 +63,10 @@ export default function RegisterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    registerMutation.mutate(formData)
+    registerMutation.mutate({
+      ...formData,
+      inviteToken: inviteToken || undefined,
+    })
   }
 
   return (
@@ -61,6 +78,14 @@ export default function RegisterPage() {
               <Heading level={1}>Create Account</Heading>
               <Text variant="muted">Join Band IT to start managing your band</Text>
             </Center>
+
+            {inviteToken && (
+              <Alert variant="info">
+                <Text variant="small">
+                  You've been invited to join a band! Create your account to accept the invitation and join automatically.
+                </Text>
+              </Alert>
+            )}
 
             <Progress
               steps={[
@@ -123,5 +148,21 @@ export default function RegisterPage() {
         </Card>
       </Container>
     </PageLayout>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <PageLayout>
+        <Container size="sm">
+          <Card>
+            <Loading message="Loading..." />
+          </Card>
+        </Container>
+      </PageLayout>
+    }>
+      <RegisterContent />
+    </Suspense>
   )
 }

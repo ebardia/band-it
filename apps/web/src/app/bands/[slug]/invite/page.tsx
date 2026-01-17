@@ -30,6 +30,8 @@ export default function InviteMembersPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [emailInvite, setEmailInvite] = useState('')
+  const [emailNotes, setEmailNotes] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -78,12 +80,57 @@ export default function InviteMembersPage() {
     },
   })
 
+  // TODO: Uncomment after testing basic page load
+  // const pendingInvitesQuery = trpc.band.getPendingInvites.useQuery(
+  //   { bandId: bandData?.band?.id || '', userId: userId || '' },
+  //   { enabled: !!bandData?.band?.id && !!userId }
+  // )
+
+  const inviteByEmailMutation = trpc.band.inviteByEmail.useMutation({
+    onSuccess: (data: any) => {
+      showToast(data.message, 'success')
+      setEmailInvite('')
+      setEmailNotes('')
+    },
+    onError: (error: any) => {
+      showToast(error.message, 'error')
+    },
+  })
+
+  const cancelInviteMutation = trpc.band.cancelPendingInvite.useMutation({
+    onSuccess: () => {
+      showToast('Invitation cancelled', 'success')
+    },
+    onError: (error: any) => {
+      showToast(error.message, 'error')
+    },
+  })
+
   const handleInvite = (inviteeId: string) => {
     if (!userId || !bandData?.band) return
     inviteMutation.mutate({
       bandId: bandData.band.id,
       inviterId: userId,
       userId: inviteeId,
+    })
+  }
+
+  const handleEmailInvite = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!userId || !bandData?.band || !emailInvite.trim()) return
+    inviteByEmailMutation.mutate({
+      bandId: bandData.band.id,
+      inviterId: userId,
+      email: emailInvite.trim(),
+      notes: emailNotes.trim() || undefined,
+    })
+  }
+
+  const handleCancelInvite = (inviteId: string) => {
+    if (!userId) return
+    cancelInviteMutation.mutate({
+      inviteId,
+      userId,
     })
   }
 
@@ -121,6 +168,76 @@ export default function InviteMembersPage() {
         wide={true}
       >
         <Stack spacing="xl">
+          {/* Invite by Email */}
+          <Stack spacing="lg">
+            <Heading level={2}>Invite by Email</Heading>
+            <Text color="muted">
+              Enter an email address to invite someone. If they don't have an account yet,
+              they'll receive an invitation email to register and automatically join your band.
+            </Text>
+
+            <Card>
+              <form onSubmit={handleEmailInvite}>
+                <Stack spacing="md">
+                  <Input
+                    label="Email Address"
+                    type="email"
+                    value={emailInvite}
+                    onChange={(e) => setEmailInvite(e.target.value)}
+                    placeholder="someone@example.com"
+                    required
+                  />
+                  <Input
+                    label="Personal Message (optional)"
+                    type="text"
+                    value={emailNotes}
+                    onChange={(e) => setEmailNotes(e.target.value)}
+                    placeholder="Hi! I'd love for you to join our band..."
+                    helperText="This message will be included in the invitation email"
+                  />
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={inviteByEmailMutation.isPending || !emailInvite.trim()}
+                  >
+                    {inviteByEmailMutation.isPending ? 'Sending...' : 'Send Invitation'}
+                  </Button>
+                </Stack>
+              </form>
+            </Card>
+          </Stack>
+
+          {/* Pending Email Invites - TODO: Uncomment after testing */}
+          {/* {pendingInvitesQuery.data?.pendingInvites && pendingInvitesQuery.data.pendingInvites.length > 0 && (
+            <Stack spacing="lg">
+              <Heading level={2}>Pending Email Invitations</Heading>
+              <Text color="muted">These invitations are waiting for recipients to create accounts</Text>
+
+              <Stack spacing="md">
+                {pendingInvitesQuery.data.pendingInvites.map((invite: any) => (
+                  <Card key={invite.id}>
+                    <Flex justify="between" align="center">
+                      <Stack spacing="sm">
+                        <Text weight="semibold">{invite.email}</Text>
+                        <Text variant="small" color="muted">
+                          Invited by {invite.invitedBy.name} • Expires {new Date(invite.expiresAt).toLocaleDateString()}
+                        </Text>
+                      </Stack>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCancelInvite(invite.id)}
+                        disabled={cancelInviteMutation.isPending}
+                      >
+                        Cancel
+                      </Button>
+                    </Flex>
+                  </Card>
+                ))}
+              </Stack>
+            </Stack>
+          )} */}
+
           {/* Recommended Users */}
           <Stack spacing="lg">
             <Heading level={2}>Recommended Users</Heading>

@@ -16,11 +16,14 @@ const SKIP_PAYMENT_CHECK = process.env.SKIP_PAYMENT_CHECK === 'true'
 export const authService = {
   /**
    * Register a new user
+   * @param inviteToken - Optional invite token from band invite email
    */
-  async register(email: string, password: string, name: string) {
+  async register(email: string, password: string, name: string, inviteToken?: string) {
+    const normalizedEmail = email.toLowerCase().trim()
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     })
 
     if (existingUser) {
@@ -36,7 +39,7 @@ export const authService = {
     // Create user with optional auto-verification and subscription activation
     const user = await prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         name,
         // Auto-verify email if SKIP_EMAIL_VERIFICATION is enabled
@@ -63,11 +66,116 @@ export const authService = {
       await emailService.sendVerificationEmail(user.id, user.email, user.name)
     }
 
+    // Process pending invites for this email
+    const bandsJoined = await this.processPendingInvites(user.id, normalizedEmail, inviteToken)
+
     return {
       user,
       accessToken,
       refreshToken,
+      bandsJoined, // Return info about auto-joined bands
     }
+  },
+
+  /**
+   * Process pending invites after user registration
+   * Creates Member records and deletes PendingInvite records
+   */
+  async processPendingInvites(userId: string, email: string, inviteToken?: string) {
+    const bandsJoined: Array<{ id: string; name: string; slug: string }> = []
+
+    // Find all pending invites for this email
+    const pendingInvites = await prisma.pendingInvite.findMany({
+      where: {
+        email,
+        expiresAt: { gt: new Date() }, // Only non-expired
+      },
+      include: {
+        band: {
+          select: { id: true, name: true, slug: true },
+        },
+      },
+    })
+
+    // If inviteToken provided, prioritize that specific invite
+    if (inviteToken) {
+      const tokenInvite = await prisma.pendingInvite.findUnique({
+        where: { token: inviteToken },
+        include: {
+          band: {
+            select: { id: true, name: true, slug: true },
+          },
+        },
+      })
+
+      // Add to list if valid and not already in pendingInvites
+      if (tokenInvite && tokenInvite.expiresAt > new Date()) {
+        const alreadyIncluded = pendingInvites.some(pi => pi.id === tokenInvite.id)
+        if (!alreadyIncluded) {
+          pendingInvites.push(tokenInvite)
+        }
+      }
+    }
+
+    // Process each pending invite
+    for (const invite of pendingInvites) {
+      try {
+        // Check if user is already a member (shouldn't happen, but safety check)
+        const existingMember = await prisma.member.findUnique({
+          where: {
+            userId_bandId: {
+              userId,
+              bandId: invite.bandId,
+            },
+          },
+        })
+
+        if (!existingMember) {
+          // Create member record
+          await prisma.member.create({
+            data: {
+              userId,
+              bandId: invite.bandId,
+              role: invite.role,
+              status: 'ACTIVE', // Direct join since they were explicitly invited
+              invitedBy: invite.invitedById,
+              notes: invite.notes,
+            },
+          })
+
+          bandsJoined.push({
+            id: invite.band.id,
+            name: invite.band.name,
+            slug: invite.band.slug,
+          })
+
+          // Check if band should become active (3+ members)
+          const activeMembers = await prisma.member.count({
+            where: {
+              bandId: invite.bandId,
+              status: 'ACTIVE',
+            },
+          })
+
+          if (activeMembers >= 3) {
+            await prisma.band.update({
+              where: { id: invite.bandId },
+              data: { status: 'ACTIVE' },
+            })
+          }
+        }
+
+        // Delete the pending invite
+        await prisma.pendingInvite.delete({
+          where: { id: invite.id },
+        })
+      } catch (error) {
+        console.error(`Failed to process pending invite ${invite.id}:`, error)
+        // Continue processing other invites
+      }
+    }
+
+    return bandsJoined
   },
 
   /**
