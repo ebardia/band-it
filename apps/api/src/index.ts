@@ -14,24 +14,8 @@ const PORT = process.env.PORT || 3001
 const UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || './uploads'
 
 // Enable CORS for frontend
-const ALLOWED_ORIGINS = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, ''))
-  : ['http://localhost:3000']
-
-console.log('[CORS] Allowed origins:', ALLOWED_ORIGINS)
-
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, Postman)
-    if (!origin) return callback(null, true)
-
-    if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      console.log('[CORS] Blocked:', origin)
-      callback(new Error('Not allowed by CORS'))
-    }
-  },
+  origin: true,
   credentials: true,
 }))
 
