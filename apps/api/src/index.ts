@@ -13,10 +13,23 @@ const app = express()
 const PORT = process.env.PORT || 3001
 const UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || './uploads'
 
-// Enable CORS for frontend
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
+// Enable CORS for frontend (supports comma-separated list of origins)
+const ALLOWED_ORIGINS = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+  : ['http://localhost:3000']
+
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true)
+
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true)
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`)
+      callback(null, false)
+    }
+  },
   credentials: true,
 }))
 
