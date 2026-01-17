@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
+import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 
 // Roles that can update projects
 const CAN_UPDATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -25,13 +26,27 @@ export const updateProject = publicProcedure
     dependsOn: z.array(z.string()).optional(),
     leadId: z.string().optional().nullable(),
     orderIndex: z.number().int().optional(),
+    // Integrity Guard flags
+    proceedWithFlags: z.boolean().optional(),
+    flagReasons: z.array(z.string()).optional(),
+    flagDetails: z.any().optional(),
   }))
   .mutation(async ({ input }) => {
-    const { 
+    const {
       projectId, userId, name, description, status, priority,
       startDate, targetDate, estimatedBudget, estimatedHours,
-      deliverables, successCriteria, tags, dependsOn, leadId, orderIndex
+      deliverables, successCriteria, tags, dependsOn, leadId, orderIndex,
+      proceedWithFlags, flagReasons, flagDetails
     } = input
+
+    // Set integrity flags in audit context if user proceeded with warnings
+    if (proceedWithFlags && flagReasons && flagReasons.length > 0) {
+      setAuditFlags({
+        flagged: true,
+        flagReasons,
+        flagDetails,
+      })
+    }
 
     // Get project with band members
     const project = await prisma.project.findUnique({
@@ -158,6 +173,9 @@ export const updateProject = publicProcedure
         }
       }
     })
+
+    // Clear flags to prevent leaking to other operations
+    clearAuditFlags()
 
     return { project: updatedProject }
   })

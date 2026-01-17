@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
+import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 
 // Roles that can update any task
 const CAN_UPDATE_ANY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -26,13 +27,27 @@ export const updateTask = publicProcedure
     requiresVerification: z.boolean().optional(),
     tags: z.array(z.string()).optional(),
     orderIndex: z.number().int().optional(),
+    // Integrity Guard flags
+    proceedWithFlags: z.boolean().optional(),
+    flagReasons: z.array(z.string()).optional(),
+    flagDetails: z.any().optional(),
   }))
   .mutation(async ({ input }) => {
-    const { 
+    const {
       taskId, userId, name, description, status, priority,
       assigneeId, assigneeType, dueDate, estimatedHours, actualHours,
-      estimatedCost, actualCost, requiresVerification, tags, orderIndex
+      estimatedCost, actualCost, requiresVerification, tags, orderIndex,
+      proceedWithFlags, flagReasons, flagDetails
     } = input
+
+    // Set integrity flags in audit context if user proceeded with warnings
+    if (proceedWithFlags && flagReasons && flagReasons.length > 0) {
+      setAuditFlags({
+        flagged: true,
+        flagReasons,
+        flagDetails,
+      })
+    }
 
     // Get task with band members
     const task = await prisma.task.findUnique({
@@ -208,6 +223,9 @@ export const updateTask = publicProcedure
         })
       }
     }
+
+    // Clear flags to prevent leaking to other operations
+    clearAuditFlags()
 
     return { task: updatedTask }
   })

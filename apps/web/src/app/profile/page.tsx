@@ -46,10 +46,21 @@ export default function ProfilePage() {
     }
   }, [router])
 
+  // Fetch user profile to check subscription status
+  const { data: profileData } = trpc.auth.getProfile.useQuery(
+    { userId: userId || '' },
+    { enabled: !!userId }
+  )
+
   const updateProfileMutation = trpc.auth.updateProfile.useMutation({
     onSuccess: () => {
       showToast('Profile saved successfully!', 'success')
-      router.push('/payment')
+      // Skip payment if subscription is already active (SKIP_PAYMENT_CHECK mode)
+      if (profileData?.user?.subscriptionStatus === 'ACTIVE') {
+        router.push('/user-dashboard')
+      } else {
+        router.push('/payment')
+      }
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -150,7 +161,11 @@ export default function ProfilePage() {
                   disabled={updateProfileMutation.isPending || !userId}
                   className="w-full"
                 >
-                  {updateProfileMutation.isPending ? 'Saving...' : 'Continue to Payment'}
+                  {updateProfileMutation.isPending
+                    ? 'Saving...'
+                    : profileData?.user?.subscriptionStatus === 'ACTIVE'
+                      ? 'Save & Continue'
+                      : 'Continue to Payment'}
                 </Button>
               </Stack>
             </form>
@@ -159,7 +174,11 @@ export default function ProfilePage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push('/payment')}
+                onClick={() => router.push(
+                  profileData?.user?.subscriptionStatus === 'ACTIVE'
+                    ? '/user-dashboard'
+                    : '/payment'
+                )}
               >
                 Skip for now
               </Button>

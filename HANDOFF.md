@@ -4,6 +4,11 @@ always give me the full file instead of asking me to copy paste sections of a fi
 I user powershell commands on a windows laptop
 
 
+this is how we update the DB scheme: 
+cd apps/api
+npx prisma generate
+npx prisma db push
+
 Band-It Development Handoff
 January 13, 2026
 Current State

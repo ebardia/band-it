@@ -86,6 +86,9 @@ export default function AuditLogPage() {
     { enabled: !!bandData?.band?.id }
   )
 
+  // Utils for imperative queries - must be called before conditional returns
+  const utils = trpc.useUtils()
+
   if (bandLoading) {
     return (
       <>
@@ -172,7 +175,7 @@ export default function AuditLogPage() {
     }).join(', ')
   }
 
-  const handleRowClick = (item: any) => {
+  const handleRowClick = async (item: any) => {
     if (item.action === 'deleted') return
 
     const entityType = item.entityType
@@ -199,8 +202,17 @@ export default function AuditLogPage() {
         router.push(`/bands/${slug}/tasks/${entityId}`)
         break
       case 'ChecklistItem':
-        // Would need to look up the task ID - for now go to tasks
-        router.push(`/bands/${slug}/tasks`)
+        // Look up the task ID and navigate to the checklist item
+        try {
+          const result = await utils.checklist.getById.fetch({ itemId: entityId })
+          if (result.item?.task?.id) {
+            router.push(`/bands/${slug}/tasks/${result.item.task.id}/checklist/${entityId}`)
+          } else {
+            router.push(`/bands/${slug}/tasks`)
+          }
+        } catch {
+          router.push(`/bands/${slug}/tasks`)
+        }
         break
       case 'Comment':
         // Comments don't have their own page
@@ -299,7 +311,7 @@ export default function AuditLogPage() {
                     {auditData?.items.map((item) => (
                       <tr
                         key={item.id}
-                        className={`border-b border-gray-100 hover:bg-gray-50 ${item.action !== 'deleted' ? 'cursor-pointer' : 'cursor-default'}`}
+                        className={`border-b border-gray-100 hover:bg-gray-50 ${item.action !== 'deleted' ? 'cursor-pointer' : 'cursor-default'} ${item.flagged ? 'bg-amber-50' : ''}`}
                         onClick={() => handleRowClick(item)}
                       >
                         <td className="py-3 px-4 text-gray-600 whitespace-nowrap">
@@ -309,7 +321,14 @@ export default function AuditLogPage() {
                           {item.actorName || <span className="text-gray-400">System</span>}
                         </td>
                         <td className="py-3 px-4">
-                          {getActionBadge(item.action)}
+                          <Flex gap="xs" align="center">
+                            {getActionBadge(item.action)}
+                            {item.flagged && (
+                              <Badge variant="warning" title={item.flagReasons?.join(', ') || 'Flagged'}>
+                                ⚠️
+                              </Badge>
+                            )}
+                          </Flex>
                         </td>
                         <td className="py-3 px-4">
                           <span className="text-gray-500">{item.entityType}:</span>{' '}
@@ -322,7 +341,13 @@ export default function AuditLogPage() {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-gray-500 font-mono text-xs max-w-xs truncate">
-                          {formatChanges(item.changes)}
+                          {item.flagged && item.flagReasons?.length ? (
+                            <span className="text-amber-600">
+                              Flagged: {item.flagReasons.join(', ')}
+                            </span>
+                          ) : (
+                            formatChanges(item.changes)
+                          )}
                         </td>
                       </tr>
                     ))}

@@ -20,13 +20,14 @@ export const fileRouter = router({
       proposalId: z.string().optional(),
       projectId: z.string().optional(),
       taskId: z.string().optional(),
+      checklistItemId: z.string().optional(),
       description: z.string().optional(),
       category: z.enum(['IMAGE', 'DOCUMENT', 'RECEIPT', 'OTHER']).optional(),
     }))
     .mutation(async ({ input }) => {
       const { 
         fileName, mimeType, base64Data, userId,
-        bandId, proposalId, projectId, taskId,
+        bandId, proposalId, projectId, taskId, checklistItemId,
         description, category 
       } = input
 
@@ -79,6 +80,12 @@ export const fileRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' })
         }
       }
+      if (checklistItemId) {
+        const checklistItem = await prisma.checklistItem.findUnique({ where: { id: checklistItemId } })
+        if (!checklistItem) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
+        }
+      }
 
       const uploadResult = await storageService.upload(buffer, fileName, mimeType)
       
@@ -98,6 +105,7 @@ export const fileRouter = router({
           proposalId,
           projectId,
           taskId,
+          checklistItemId,
           description,
         },
         include: {
@@ -116,9 +124,10 @@ export const fileRouter = router({
       proposalId: z.string().optional(),
       projectId: z.string().optional(),
       taskId: z.string().optional(),
+      checklistItemId: z.string().optional(),
     }))
     .query(async ({ input }) => {
-      const { bandId, proposalId, projectId, taskId } = input
+      const { bandId, proposalId, projectId, taskId, checklistItemId } = input
 
       const where: any = {
         deletedAt: null,
@@ -128,6 +137,7 @@ export const fileRouter = router({
       if (proposalId) where.proposalId = proposalId
       if (projectId) where.projectId = projectId
       if (taskId) where.taskId = taskId
+      if (checklistItemId) where.checklistItemId = checklistItemId
 
       const files = await prisma.file.findMany({
         where,

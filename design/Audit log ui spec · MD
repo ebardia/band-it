@@ -1,0 +1,237 @@
+# BAND IT - Audit Log UI Specification
+
+## Overview
+
+Add an Audit Log page to each band that displays all tracked changes in a filterable table. This supports Band It's transparency principle - everyone can see what happened.
+
+---
+
+## Page Details
+
+**Route:** `/band/[bandId]/audit`
+
+**Navigation:** Add "Audit Log" to the left sidebar in band pages (use an appropriate icon like `ScrollText` or `History` from lucide-react)
+
+**Access:** All band members can view (no role restrictions)
+
+---
+
+## Layout
+
+Use the existing `BandLayout` component. Page structure:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Audit Log                                    [Filters]  │
+├─────────────────────────────────────────────────────────┤
+│ Filters: [Entity Type ▼] [User ▼] [Action ▼] [Date ▼]  │
+├─────────────────────────────────────────────────────────┤
+│ When          │ Who    │ Action  │ What         │Changes│
+│───────────────│────────│─────────│──────────────│───────│
+│ Jan 16, 2:34p │ Sarah  │ updated │ Task: "Fix…" │ sta…  │
+│ Jan 16, 2:30p │ Mike   │ created │ Proposal: …  │ —     │
+│ Jan 16, 1:15p │ System │ deleted │ ChecklistI…  │ —     │
+│               │        │         │              │       │
+├─────────────────────────────────────────────────────────┤
+│                    < 1 2 3 ... 10 >                     │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Table Columns
+
+| Column | Content | Notes |
+|--------|---------|-------|
+| When | Formatted timestamp | "Jan 16, 2:34pm" or "Today, 2:34pm" |
+| Who | User name or "System" | Display name, not ID. "System" if actorId is null |
+| Action | created / updated / deleted | Badge style: green/blue/red |
+| What | Entity type + name | "Task: Fix login bug" - clickable, links to entity |
+| Changes | Field diffs | "status: TODO → IN_PROGRESS" or "—" if none |
+
+---
+
+## Filters
+
+All filters at the top of the page, horizontal row:
+
+### Entity Type (dropdown)
+- All (default)
+- Band
+- Member
+- Proposal
+- Vote
+- Project
+- Task
+- ChecklistItem
+- Comment
+- File
+
+### User (dropdown)
+- All (default)
+- [List of band members by display name]
+- System
+
+### Action (dropdown)
+- All (default)
+- Created
+- Updated
+- Deleted
+
+### Date Range (dropdown)
+- Last 7 days (default)
+- Last 30 days
+- Last 90 days
+- All time
+
+---
+
+## Pagination
+
+- 25 rows per page
+- Show page numbers with prev/next buttons
+- Display total count: "Showing 1-25 of 142 entries"
+
+---
+
+## Row Click Behavior
+
+Clicking a row navigates to the entity:
+
+| Entity Type | Navigate To |
+|-------------|-------------|
+| Band | `/band/[bandId]` |
+| Member | `/band/[bandId]/members` |
+| Proposal | `/band/[bandId]/proposals/[proposalId]` |
+| Vote | `/band/[bandId]/proposals/[proposalId]` (parent proposal) |
+| Project | `/band/[bandId]/projects/[projectId]` |
+| Task | `/band/[bandId]/projects/[projectId]/tasks/[taskId]` |
+| ChecklistItem | Navigate to parent task |
+| Comment | Navigate to parent entity |
+| File | Navigate to parent entity or download |
+
+If the entity was deleted, don't make it clickable (or show a toast "This item was deleted").
+
+---
+
+## Empty State
+
+When no audit logs exist (or filters return nothing):
+
+```
+┌─────────────────────────────────────────┐
+│                                         │
+│          No log entries                 │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+Simple, centered text. No illustration needed.
+
+---
+
+## API Endpoint
+
+Create a new tRPC procedure: `audit.list`
+
+**Input:**
+```typescript
+{
+  bandId: string
+  entityType?: string      // filter
+  actorId?: string         // filter  
+  action?: string          // filter
+  daysBack?: number        // 7, 30, 90, or null for all
+  page?: number            // default 1
+  pageSize?: number        // default 25
+}
+```
+
+**Output:**
+```typescript
+{
+  items: {
+    id: string
+    createdAt: Date
+    action: string
+    entityType: string
+    entityId: string
+    entityName: string | null
+    actorId: string | null
+    actorName: string | null  // JOIN with User table
+    changes: Record<string, { from: any; to: any }> | null
+  }[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+```
+
+**Query logic:**
+- Filter by bandId (required)
+- Apply optional filters
+- Order by createdAt DESC
+- Paginate with OFFSET/LIMIT
+- JOIN with User table to get actor's display name
+
+---
+
+## Files to Create
+
+### 1. `apps/web/src/app/band/[bandId]/audit/page.tsx`
+
+The main page component with:
+- Filter state management
+- Table rendering
+- Pagination controls
+- Row click handlers
+
+### 2. `apps/api/src/routers/audit.ts`
+
+New router with the `list` procedure. Add to main router.
+
+---
+
+## Files to Modify
+
+### 1. Band sidebar navigation
+
+Add "Audit Log" link with icon. Find where the sidebar links are defined (likely in a layout or navigation component for band pages).
+
+### 2. `apps/api/src/routers/index.ts` (or main router file)
+
+Import and add the audit router.
+
+---
+
+## Styling Notes
+
+- Follow existing table patterns in the codebase
+- Action badges: Created (green), Updated (blue), Deleted (red)
+- Changes column: use monospace or subtle styling for the diffs
+- Keep it clean and readable - this is a reference log, not a dashboard
+
+---
+
+## Implementation Order
+
+1. Create the audit router with list procedure
+2. Add audit router to main router
+3. Create the audit log page
+4. Add navigation link to sidebar
+5. Test with real data
+
+---
+
+## Testing Checklist
+
+- [ ] Page loads at `/band/[bandId]/audit`
+- [ ] Table displays audit logs correctly
+- [ ] All four filters work
+- [ ] Pagination works
+- [ ] Clicking a row navigates to the entity
+- [ ] Empty state shows when no results
+- [ ] "System" shows for null actorId
+- [ ] Changes display as "field: old → new"
+- [ ] Deleted entities are not clickable (or handled gracefully)

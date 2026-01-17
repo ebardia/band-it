@@ -20,6 +20,8 @@ import {
   Input,
   Textarea,
   Modal,
+  IntegrityBlockModal,
+  IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -50,6 +52,18 @@ export default function TaskDetailPage() {
   const [editAssigneeId, setEditAssigneeId] = useState<string | null>(null)
   const [editDueDate, setEditDueDate] = useState('')
   const [editEstimatedHours, setEditEstimatedHours] = useState<number | null>(null)
+
+  // Integrity Guard state (for checklist items)
+  const [validationIssues, setValidationIssues] = useState<any[]>([])
+  const [showBlockModal, setShowBlockModal] = useState(false)
+  const [showWarningModal, setShowWarningModal] = useState(false)
+  const [pendingChecklistData, setPendingChecklistData] = useState<any>(null)
+
+  // Integrity Guard state (for task edit)
+  const [taskValidationIssues, setTaskValidationIssues] = useState<any[]>([])
+  const [showTaskBlockModal, setShowTaskBlockModal] = useState(false)
+  const [showTaskWarningModal, setShowTaskWarningModal] = useState(false)
+  const [pendingTaskData, setPendingTaskData] = useState<any>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -143,6 +157,9 @@ export default function TaskDetailPage() {
     }
   })
 
+  // Integrity Guard validation mutation
+  const validationMutation = trpc.validation.check.useMutation()
+
   const handleStatusChange = (newStatus: TaskStatus) => {
     if (!userId) return
     updateTaskMutation.mutate({
@@ -164,9 +181,10 @@ export default function TaskDetailPage() {
     setShowEditModal(true)
   }
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!userId || !editName.trim()) return
-    updateTaskMutation.mutate({
+
+    const taskEditData = {
       taskId,
       userId,
       name: editName,
@@ -175,16 +193,156 @@ export default function TaskDetailPage() {
       assigneeId: editAssigneeId || undefined,
       dueDate: editDueDate ? new Date(editDueDate) : undefined,
       estimatedHours: editEstimatedHours || undefined,
-    })
+    }
+
+    // Store data for potential later use
+    setPendingTaskData(taskEditData)
+
+    // Run integrity validation
+    try {
+      const validation = await validationMutation.mutateAsync({
+        entityType: 'Task',
+        action: 'update',
+        bandId: taskData?.task?.bandId || '',
+        data: {
+          name: editName,
+          description: editDescription || null,
+        },
+        parentId: taskData?.task?.projectId,
+      })
+
+      if (!validation.canProceed) {
+        // BLOCK - show block modal, cannot proceed
+        setTaskValidationIssues(validation.issues)
+        setShowTaskBlockModal(true)
+        return
+      }
+
+      if (validation.issues.length > 0) {
+        // FLAG - show warning modal, user can choose to proceed
+        setTaskValidationIssues(validation.issues)
+        setShowTaskWarningModal(true)
+        return
+      }
+
+      // All clear - update task normally
+      updateTaskMutation.mutate(taskEditData)
+    } catch (error) {
+      // Validation failed - show error but don't update
+      console.error('Validation error:', error)
+      showToast('Unable to validate content. Please try again.', 'error')
+    }
   }
 
-  const handleAddItem = () => {
+  // Handle proceeding with warnings for task edit
+  const handleProceedWithWarningsTask = () => {
+    if (!pendingTaskData) return
+
+    updateTaskMutation.mutate({
+      ...pendingTaskData,
+      proceedWithFlags: true,
+      flagReasons: taskValidationIssues.map(i => `${i.type}_mismatch`),
+      flagDetails: taskValidationIssues,
+    })
+
+    // Close modal and clear state
+    setShowTaskWarningModal(false)
+    setTaskValidationIssues([])
+    setPendingTaskData(null)
+  }
+
+  // Handle canceling warning for task edit
+  const handleCancelWarningTask = () => {
+    setShowTaskWarningModal(false)
+    setTaskValidationIssues([])
+    setPendingTaskData(null)
+  }
+
+  // Handle closing block modal for task edit
+  const handleCloseBlockTask = () => {
+    setShowTaskBlockModal(false)
+    setTaskValidationIssues([])
+    setPendingTaskData(null)
+    setShowEditModal(false) // Close the edit modal too
+  }
+
+  const handleAddItem = async () => {
     if (!newItemText.trim() || !userId) return
-    createItemMutation.mutate({
+
+    const checklistData = {
       taskId,
       description: newItemText,
       userId,
+    }
+
+    // Store data for potential later use
+    setPendingChecklistData(checklistData)
+
+    // Run integrity validation
+    try {
+      const validation = await validationMutation.mutateAsync({
+        entityType: 'ChecklistItem',
+        action: 'create',
+        bandId: taskData?.task?.bandId || '',
+        data: {
+          description: newItemText,
+        },
+        parentId: taskId,
+      })
+
+      if (!validation.canProceed) {
+        // BLOCK - show block modal, cannot proceed
+        setValidationIssues(validation.issues)
+        setShowBlockModal(true)
+        return
+      }
+
+      if (validation.issues.length > 0) {
+        // FLAG - show warning modal, user can choose to proceed
+        setValidationIssues(validation.issues)
+        setShowWarningModal(true)
+        return
+      }
+
+      // All clear - create checklist item normally
+      createItemMutation.mutate(checklistData)
+    } catch (error) {
+      // Validation failed - show error but don't create item
+      console.error('Validation error:', error)
+      showToast('Unable to validate content. Please try again.', 'error')
+    }
+  }
+
+  // Handle proceeding with warnings for checklist
+  const handleProceedWithWarningsChecklist = () => {
+    if (!pendingChecklistData) return
+
+    createItemMutation.mutate({
+      ...pendingChecklistData,
+      proceedWithFlags: true,
+      flagReasons: validationIssues.map(i => `${i.type}_mismatch`),
+      flagDetails: validationIssues,
     })
+
+    // Close modal and clear state
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingChecklistData(null)
+  }
+
+  // Handle canceling warning for checklist
+  const handleCancelWarningChecklist = () => {
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingChecklistData(null)
+  }
+
+  // Handle closing block modal for checklist
+  const handleCloseBlockChecklist = () => {
+    setShowBlockModal(false)
+    setValidationIssues([])
+    setPendingChecklistData(null)
+    setNewItemText('') // Clear the input
   }
 
   const handleToggleItem = (itemId: string) => {
@@ -617,9 +775,9 @@ export default function TaskDetailPage() {
                   variant="primary"
                   size="sm"
                   onClick={handleAddItem}
-                  disabled={createItemMutation.isPending || !newItemText.trim()}
+                  disabled={createItemMutation.isPending || validationMutation.isPending || !newItemText.trim()}
                 >
-                  Add
+                  {validationMutation.isPending ? '...' : 'Add'}
                 </Button>
               </Flex>
             </Stack>
@@ -763,13 +921,43 @@ export default function TaskDetailPage() {
               <Button
                 variant="primary"
                 onClick={handleSaveEdit}
-                disabled={updateTaskMutation.isPending || !editName.trim()}
+                disabled={updateTaskMutation.isPending || validationMutation.isPending || !editName.trim()}
               >
-                {updateTaskMutation.isPending ? 'Saving...' : 'Save Changes'}
+                {validationMutation.isPending ? 'Checking...' : updateTaskMutation.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
             </Flex>
           </Stack>
         </Modal>
+
+        {/* Integrity Guard Modals - Checklist Items */}
+        <IntegrityBlockModal
+          isOpen={showBlockModal}
+          onClose={handleCloseBlockChecklist}
+          issues={validationIssues}
+        />
+
+        <IntegrityWarningModal
+          isOpen={showWarningModal}
+          onClose={handleCancelWarningChecklist}
+          onProceed={handleProceedWithWarningsChecklist}
+          issues={validationIssues}
+          isProceeding={createItemMutation.isPending}
+        />
+
+        {/* Integrity Guard Modals - Task Edit */}
+        <IntegrityBlockModal
+          isOpen={showTaskBlockModal}
+          onClose={handleCloseBlockTask}
+          issues={taskValidationIssues}
+        />
+
+        <IntegrityWarningModal
+          isOpen={showTaskWarningModal}
+          onClose={handleCancelWarningTask}
+          onProceed={handleProceedWithWarningsTask}
+          issues={taskValidationIssues}
+          isProceeding={updateTaskMutation.isPending}
+        />
       </BandLayout>
     </>
   )

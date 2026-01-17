@@ -32,9 +32,15 @@ export default function RegisterPage() {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
       localStorage.setItem('userEmail', formData.email)
-      
-      showToast('Account created! Please check your email.', 'success')
-      router.push('/verify-email')
+
+      // Check if email is already verified (SKIP_EMAIL_VERIFICATION mode)
+      if (data.user.emailVerified) {
+        showToast('Account created successfully!', 'success')
+        router.push('/profile') // Skip email verification, go to profile
+      } else {
+        showToast('Account created! Please check your email.', 'success')
+        router.push('/verify-email')
+      }
     },
     onError: (error) => {
       showToast(error.message, 'error')

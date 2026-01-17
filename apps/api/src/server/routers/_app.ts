@@ -12,6 +12,7 @@ import { fileRouter } from './file'
 import { commentRouter } from './comment'
 import { checklistRouter } from './checklist'
 import { auditRouter } from './audit'
+import { validationRouter } from './validation'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -28,6 +29,7 @@ export const appRouter = router({
   comment: commentRouter,
   checklist: checklistRouter,
   audit: auditRouter,
+  validation: validationRouter,
 })
 
 // Export type definition of API

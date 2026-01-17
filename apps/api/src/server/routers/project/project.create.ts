@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
+import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 
 // Roles that can create projects from approved proposals
 const CAN_CREATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -25,13 +26,27 @@ export const createProject = publicProcedure
     orderIndex: z.number().int().optional(),
     userId: z.string(),
     aiGenerated: z.boolean().optional().default(false),
+    // Integrity Guard flags
+    proceedWithFlags: z.boolean().optional(),
+    flagReasons: z.array(z.string()).optional(),
+    flagDetails: z.any().optional(),
   }))
   .mutation(async ({ input }) => {
-    const { 
+    const {
       proposalId, name, description, priority, startDate, targetDate,
       estimatedBudget, estimatedHours, deliverables, successCriteria,
-      tags, dependsOn, leadId, orderIndex, userId, aiGenerated 
+      tags, dependsOn, leadId, orderIndex, userId, aiGenerated,
+      proceedWithFlags, flagReasons, flagDetails
     } = input
+
+    // Set integrity flags in audit context if user proceeded with warnings
+    if (proceedWithFlags && flagReasons && flagReasons.length > 0) {
+      setAuditFlags({
+        flagged: true,
+        flagReasons,
+        flagDetails,
+      })
+    }
 
     // Validate dates
     if (startDate && targetDate) {
@@ -159,6 +174,9 @@ export const createProject = publicProcedure
       }))
 
     await Promise.all(notificationPromises)
+
+    // Clear flags to prevent leaking to other operations
+    clearAuditFlags()
 
     return { project }
   })

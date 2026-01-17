@@ -3,6 +3,7 @@ import { router, publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { setAuditFlags, clearAuditFlags } from '../../lib/auditContext'
 
 const anthropic = new Anthropic()
 
@@ -10,6 +11,60 @@ const anthropic = new Anthropic()
 const CAN_USE_AI = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 
 export const checklistRouter = router({
+  // Get a single checklist item by ID
+  getById: publicProcedure
+    .input(z.object({
+      itemId: z.string(),
+    }))
+    .query(async ({ input }) => {
+      const { itemId } = input
+
+      const item = await prisma.checklistItem.findUnique({
+        where: { id: itemId },
+        include: {
+          completedBy: {
+            select: { id: true, name: true }
+          },
+          assignee: {
+            select: { id: true, name: true }
+          },
+          files: {
+            include: {
+              uploadedBy: {
+                select: { id: true, name: true }
+              }
+            },
+            orderBy: { createdAt: 'desc' }
+          },
+          task: {
+            include: {
+              project: {
+                select: { id: true, name: true }
+              },
+              band: {
+                include: {
+                  members: {
+                    where: { status: 'ACTIVE' },
+                    include: {
+                      user: {
+                        select: { id: true, name: true, email: true }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      })
+
+      if (!item) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
+      }
+
+      return { item }
+    }),
+
   // Get checklist items for a task
   getByTask: publicProcedure
     .input(z.object({
@@ -23,6 +78,12 @@ export const checklistRouter = router({
         include: {
           completedBy: {
             select: { id: true, name: true }
+          },
+          assignee: {
+            select: { id: true, name: true }
+          },
+          files: {
+            select: { id: true }
           }
         },
         orderBy: { orderIndex: 'asc' }
@@ -36,10 +97,26 @@ export const checklistRouter = router({
     .input(z.object({
       taskId: z.string(),
       description: z.string().min(1, 'Description is required'),
+      notes: z.string().optional(),
+      assigneeId: z.string().optional(),
+      dueDate: z.coerce.date().optional(),
       userId: z.string(),
+      // Integrity Guard flags
+      proceedWithFlags: z.boolean().optional(),
+      flagReasons: z.array(z.string()).optional(),
+      flagDetails: z.any().optional(),
     }))
     .mutation(async ({ input }) => {
-      const { taskId, description, userId } = input
+      const { taskId, description, notes, assigneeId, dueDate, userId, proceedWithFlags, flagReasons, flagDetails } = input
+
+      // Set integrity flags in audit context if user proceeded with warnings
+      if (proceedWithFlags && flagReasons && flagReasons.length > 0) {
+        setAuditFlags({
+          flagged: true,
+          flagReasons,
+          flagDetails,
+        })
+      }
 
       // Verify task exists
       const task = await prisma.task.findUnique({ where: { id: taskId } })
@@ -58,14 +135,23 @@ export const checklistRouter = router({
         data: {
           taskId,
           description,
+          notes,
+          assigneeId,
+          dueDate,
           orderIndex: (maxOrder?.orderIndex ?? -1) + 1,
         },
         include: {
           completedBy: {
             select: { id: true, name: true }
+          },
+          assignee: {
+            select: { id: true, name: true }
           }
         }
       })
+
+      // Clear flags to prevent leaking to other operations
+      clearAuditFlags()
 
       return { item }
     }),
@@ -107,6 +193,9 @@ export const checklistRouter = router({
             include: {
               completedBy: {
                 select: { id: true, name: true }
+              },
+              assignee: {
+                select: { id: true, name: true }
               }
             }
           })
@@ -121,25 +210,60 @@ export const checklistRouter = router({
     .input(z.object({
       itemId: z.string(),
       description: z.string().min(1).optional(),
+      notes: z.string().nullable().optional(),
+      assigneeId: z.string().nullable().optional(),
+      dueDate: z.coerce.date().nullable().optional(),
       userId: z.string(),
+      // Integrity Guard flags
+      proceedWithFlags: z.boolean().optional(),
+      flagReasons: z.array(z.string()).optional(),
+      flagDetails: z.any().optional(),
     }))
     .mutation(async ({ input }) => {
-      const { itemId, description } = input
+      const { itemId, description, notes, assigneeId, dueDate, userId, proceedWithFlags, flagReasons, flagDetails } = input
+
+      // Set integrity flags in audit context if user proceeded with warnings
+      if (proceedWithFlags && flagReasons && flagReasons.length > 0) {
+        setAuditFlags({
+          flagged: true,
+          flagReasons,
+          flagDetails,
+        })
+      }
 
       const item = await prisma.checklistItem.findUnique({ where: { id: itemId } })
       if (!item) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
       }
 
+      const updateData: any = {}
+      if (description !== undefined) updateData.description = description
+      if (notes !== undefined) updateData.notes = notes
+      if (assigneeId !== undefined) updateData.assigneeId = assigneeId
+      if (dueDate !== undefined) updateData.dueDate = dueDate
+
       const updatedItem = await prisma.checklistItem.update({
         where: { id: itemId },
-        data: { description },
+        data: updateData,
         include: {
           completedBy: {
             select: { id: true, name: true }
+          },
+          assignee: {
+            select: { id: true, name: true }
+          },
+          files: {
+            include: {
+              uploadedBy: {
+                select: { id: true, name: true }
+              }
+            }
           }
         }
       })
+
+      // Clear flags to prevent leaking to other operations
+      clearAuditFlags()
 
       return { item: updatedItem }
     }),
@@ -167,6 +291,9 @@ export const checklistRouter = router({
         },
         include: {
           completedBy: {
+            select: { id: true, name: true }
+          },
+          assignee: {
             select: { id: true, name: true }
           }
         }
@@ -218,6 +345,9 @@ export const checklistRouter = router({
         where: { taskId },
         include: {
           completedBy: {
+            select: { id: true, name: true }
+          },
+          assignee: {
             select: { id: true, name: true }
           }
         },

@@ -16,6 +16,8 @@ import {
   Alert,
   BandLayout,
   DiscussionSidebar,
+  IntegrityBlockModal,
+  IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { ProjectHeader } from './components/ProjectHeader'
@@ -60,6 +62,18 @@ export default function ProjectDetailPage() {
   // AI Suggestions state
   const [taskSuggestions, setTaskSuggestions] = useState<TaskSuggestion[] | null>(null)
   const [suggestionsCreatedCount, setSuggestionsCreatedCount] = useState(0)
+
+  // Integrity Guard state (for task creation)
+  const [validationIssues, setValidationIssues] = useState<any[]>([])
+  const [showBlockModal, setShowBlockModal] = useState(false)
+  const [showWarningModal, setShowWarningModal] = useState(false)
+  const [pendingTaskData, setPendingTaskData] = useState<any>(null)
+
+  // Integrity Guard state (for project edit)
+  const [projectValidationIssues, setProjectValidationIssues] = useState<any[]>([])
+  const [showProjectBlockModal, setShowProjectBlockModal] = useState(false)
+  const [showProjectWarningModal, setShowProjectWarningModal] = useState(false)
+  const [pendingProjectData, setPendingProjectData] = useState<any>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -178,6 +192,9 @@ export default function ProjectDetailPage() {
     }
   })
 
+  // Integrity Guard validation mutation
+  const validationMutation = trpc.validation.check.useMutation()
+
   const handleStatusChange = (newStatus: ProjectStatus) => {
     updateProjectMutation.mutate({
       projectId,
@@ -186,20 +203,161 @@ export default function ProjectDetailPage() {
     })
   }
 
-  const handleSaveProject = (data: any) => {
-    updateProjectMutation.mutate({
+  const handleSaveProject = async (data: any) => {
+    const projectEditData = {
       projectId,
       userId: userId!,
       ...data,
-    })
+    }
+
+    // Store data for potential later use
+    setPendingProjectData(projectEditData)
+
+    // Run integrity validation
+    try {
+      const validation = await validationMutation.mutateAsync({
+        entityType: 'Project',
+        action: 'update',
+        bandId: projectData?.project?.bandId || '',
+        data: {
+          name: data.name,
+          description: data.description,
+          deliverables: data.deliverables,
+          successCriteria: data.successCriteria,
+        },
+      })
+
+      if (!validation.canProceed) {
+        // BLOCK - show block modal, cannot proceed
+        setProjectValidationIssues(validation.issues)
+        setShowProjectBlockModal(true)
+        return
+      }
+
+      if (validation.issues.length > 0) {
+        // FLAG - show warning modal, user can choose to proceed
+        setProjectValidationIssues(validation.issues)
+        setShowProjectWarningModal(true)
+        return
+      }
+
+      // All clear - update project normally
+      updateProjectMutation.mutate(projectEditData)
+    } catch (error) {
+      // Validation failed - show error but don't update
+      console.error('Validation error:', error)
+      showToast('Unable to validate content. Please try again.', 'error')
+    }
   }
 
-  const handleCreateTask = (data: any) => {
+  // Handle proceeding with warnings for project edit
+  const handleProceedWithWarningsProject = () => {
+    if (!pendingProjectData) return
+
+    updateProjectMutation.mutate({
+      ...pendingProjectData,
+      proceedWithFlags: true,
+      flagReasons: projectValidationIssues.map(i => `${i.type}_mismatch`),
+      flagDetails: projectValidationIssues,
+    })
+
+    // Close modal and clear state
+    setShowProjectWarningModal(false)
+    setProjectValidationIssues([])
+    setPendingProjectData(null)
+  }
+
+  // Handle canceling warning for project edit
+  const handleCancelWarningProject = () => {
+    setShowProjectWarningModal(false)
+    setProjectValidationIssues([])
+    setPendingProjectData(null)
+  }
+
+  // Handle closing block modal for project edit
+  const handleCloseBlockProject = () => {
+    setShowProjectBlockModal(false)
+    setProjectValidationIssues([])
+    setPendingProjectData(null)
+    setIsEditing(false) // Close the edit form
+  }
+
+  const handleCreateTask = async (data: any) => {
+    // Store the data for potential later use
+    setPendingTaskData(data)
+
+    // Run integrity validation
+    try {
+      const validation = await validationMutation.mutateAsync({
+        entityType: 'Task',
+        action: 'create',
+        bandId: project?.bandId || '',
+        data: {
+          name: data.name,
+          description: data.description,
+        },
+        parentId: projectId,
+      })
+
+      if (!validation.canProceed) {
+        // BLOCK - show block modal, cannot proceed
+        setValidationIssues(validation.issues)
+        setShowBlockModal(true)
+        return
+      }
+
+      if (validation.issues.length > 0) {
+        // FLAG - show warning modal, user can choose to proceed
+        setValidationIssues(validation.issues)
+        setShowWarningModal(true)
+        return
+      }
+
+      // All clear - create task normally
+      createTaskMutation.mutate({
+        projectId,
+        userId: userId!,
+        ...data,
+      })
+    } catch (error) {
+      // Validation failed - show error but don't create task (security first)
+      console.error('Validation error:', error)
+      showToast('Unable to validate content. Please try again.', 'error')
+    }
+  }
+
+  // Handle proceeding with warnings (user clicked "Proceed Anyway")
+  const handleProceedWithWarnings = () => {
+    if (!pendingTaskData) return
+
     createTaskMutation.mutate({
       projectId,
       userId: userId!,
-      ...data,
+      ...pendingTaskData,
+      proceedWithFlags: true,
+      flagReasons: validationIssues.map(i => `${i.type}_mismatch`),
+      flagDetails: validationIssues,
     })
+
+    // Close modal and clear state
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingTaskData(null)
+  }
+
+  // Handle closing warning modal (user clicked "Cancel")
+  const handleCancelWarning = () => {
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingTaskData(null)
+  }
+
+  // Handle closing block modal
+  const handleCloseBlock = () => {
+    setShowBlockModal(false)
+    setValidationIssues([])
+    setPendingTaskData(null)
+    setShowCreateTask(false) // Close the form so they can't re-submit blocked content
   }
 
   const handleSuggestTasks = () => {
@@ -414,7 +572,7 @@ export default function ProjectDetailPage() {
               showCreateForm={showCreateTask}
               onShowCreateForm={setShowCreateTask}
               onCreateTask={handleCreateTask}
-              isCreating={createTaskMutation.isPending || createSuggestedTaskMutation.isPending}
+              isCreating={createTaskMutation.isPending || createSuggestedTaskMutation.isPending || validationMutation.isPending}
               onStatusChange={handleTaskStatusChange}
               onSubmitForVerification={handleSubmitForVerification}
               onReview={handleReviewTask}
@@ -466,6 +624,36 @@ export default function ProjectDetailPage() {
           onApprove={(notes) => handleVerifyTask(true, notes)}
           onReject={(notes) => handleVerifyTask(false, notes)}
           isSubmitting={verifyTaskMutation.isPending}
+        />
+
+        {/* Integrity Guard Modals - Task Creation */}
+        <IntegrityBlockModal
+          isOpen={showBlockModal}
+          onClose={handleCloseBlock}
+          issues={validationIssues}
+        />
+
+        <IntegrityWarningModal
+          isOpen={showWarningModal}
+          onClose={handleCancelWarning}
+          onProceed={handleProceedWithWarnings}
+          issues={validationIssues}
+          isProceeding={createTaskMutation.isPending}
+        />
+
+        {/* Integrity Guard Modals - Project Edit */}
+        <IntegrityBlockModal
+          isOpen={showProjectBlockModal}
+          onClose={handleCloseBlockProject}
+          issues={projectValidationIssues}
+        />
+
+        <IntegrityWarningModal
+          isOpen={showProjectWarningModal}
+          onClose={handleCancelWarningProject}
+          onProceed={handleProceedWithWarningsProject}
+          issues={projectValidationIssues}
+          isProceeding={updateProjectMutation.isPending}
         />
       </BandLayout>
     </>

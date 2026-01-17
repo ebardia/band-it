@@ -6,8 +6,12 @@ import { emailService } from './email.service'
 
 // JWT secret (in production, use environment variable)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
-const JWT_EXPIRES_IN = '15m' // Access token expires in 15 minutes
+const JWT_EXPIRES_IN = '7d' // Access token expires in 7 days (for development - implement refresh in production)
 const REFRESH_TOKEN_EXPIRES_IN = 30 * 24 * 60 * 60 * 1000 // 30 days in milliseconds
+
+// Feature flags for testing/development
+const SKIP_EMAIL_VERIFICATION = process.env.SKIP_EMAIL_VERIFICATION === 'true'
+const SKIP_PAYMENT_CHECK = process.env.SKIP_PAYMENT_CHECK === 'true'
 
 export const authService = {
   /**
@@ -29,26 +33,35 @@ export const authService = {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user
+    // Create user with optional auto-verification and subscription activation
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
+        // Auto-verify email if SKIP_EMAIL_VERIFICATION is enabled
+        emailVerified: SKIP_EMAIL_VERIFICATION,
+        emailVerifiedAt: SKIP_EMAIL_VERIFICATION ? new Date() : null,
+        // Auto-activate subscription if SKIP_PAYMENT_CHECK is enabled
+        subscriptionStatus: SKIP_PAYMENT_CHECK ? 'ACTIVE' : 'INCOMPLETE',
       },
       select: {
         id: true,
         email: true,
         name: true,
         createdAt: true,
+        emailVerified: true,
+        subscriptionStatus: true,
       },
     })
 
     // Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user.id)
 
-    // Send verification email
-    await emailService.sendVerificationEmail(user.id, user.email, user.name)
+    // Send verification email (skip if auto-verified)
+    if (!SKIP_EMAIL_VERIFICATION) {
+      await emailService.sendVerificationEmail(user.id, user.email, user.name)
+    }
 
     return {
       user,

@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
+import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 
 // Roles that can create proposals
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -42,9 +43,22 @@ export const proposalCreateRouter = router({
         
         // Links
         externalLinks: z.array(z.string()).optional(),
+        // Integrity Guard flags
+        proceedWithFlags: z.boolean().optional(),
+        flagReasons: z.array(z.string()).optional(),
+        flagDetails: z.any().optional(),
       })
     )
     .mutation(async ({ input }) => {
+      // Set integrity flags in audit context if user proceeded with warnings
+      if (input.proceedWithFlags && input.flagReasons && input.flagReasons.length > 0) {
+        setAuditFlags({
+          flagged: true,
+          flagReasons: input.flagReasons,
+          flagDetails: input.flagDetails,
+        })
+      }
+
       // Check if user is a member with permission to create proposals
       const membership = await prisma.member.findUnique({
         where: {
@@ -126,6 +140,9 @@ export const proposalCreateRouter = router({
           relatedType: 'PROPOSAL',
         })
       }
+
+      // Clear flags to prevent leaking to other operations
+      clearAuditFlags()
 
       return {
         success: true,

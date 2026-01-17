@@ -22,7 +22,9 @@ import {
   List,
   ListItem,
   Modal,
-  ProposalProjects
+  ProposalProjects,
+  IntegrityBlockModal,
+  IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -67,6 +69,12 @@ export default function ProposalDetailPage() {
   const [editProblemStatement, setEditProblemStatement] = useState('')
   const [editExpectedOutcome, setEditExpectedOutcome] = useState('')
   const [editRisksAndConcerns, setEditRisksAndConcerns] = useState('')
+
+  // Integrity Guard state
+  const [validationIssues, setValidationIssues] = useState<any[]>([])
+  const [showBlockModal, setShowBlockModal] = useState(false)
+  const [showWarningModal, setShowWarningModal] = useState(false)
+  const [pendingEditData, setPendingEditData] = useState<any>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -124,6 +132,9 @@ export default function ProposalDetailPage() {
     },
   })
 
+  // Integrity Guard validation mutation
+  const validationMutation = trpc.validation.check.useMutation()
+
   useEffect(() => {
     if (proposalData?.proposal && userId) {
       const existingVote = proposalData.proposal.votes.find((v: any) => v.user.id === userId)
@@ -147,9 +158,10 @@ export default function ProposalDetailPage() {
     setShowEditModal(true)
   }
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!userId || !editTitle.trim() || !editDescription.trim()) return
-    updateMutation.mutate({
+
+    const editData = {
       proposalId,
       userId,
       title: editTitle,
@@ -159,7 +171,79 @@ export default function ProposalDetailPage() {
       problemStatement: editProblemStatement || null,
       expectedOutcome: editExpectedOutcome || null,
       risksAndConcerns: editRisksAndConcerns || null,
+    }
+
+    // Store data for potential later use
+    setPendingEditData(editData)
+
+    // Run integrity validation
+    try {
+      const validation = await validationMutation.mutateAsync({
+        entityType: 'Proposal',
+        action: 'update',
+        bandId: proposalData?.proposal?.band?.id || '',
+        data: {
+          title: editTitle,
+          description: editDescription,
+          problemStatement: editProblemStatement || null,
+          expectedOutcome: editExpectedOutcome || null,
+          risksAndConcerns: editRisksAndConcerns || null,
+        },
+      })
+
+      if (!validation.canProceed) {
+        // BLOCK - show block modal, cannot proceed
+        setValidationIssues(validation.issues)
+        setShowBlockModal(true)
+        return
+      }
+
+      if (validation.issues.length > 0) {
+        // FLAG - show warning modal, user can choose to proceed
+        setValidationIssues(validation.issues)
+        setShowWarningModal(true)
+        return
+      }
+
+      // All clear - update proposal normally
+      updateMutation.mutate(editData)
+    } catch (error) {
+      // Validation failed - show error but don't update
+      console.error('Validation error:', error)
+      showToast('Unable to validate content. Please try again.', 'error')
+    }
+  }
+
+  // Handle proceeding with warnings
+  const handleProceedWithWarnings = () => {
+    if (!pendingEditData) return
+
+    updateMutation.mutate({
+      ...pendingEditData,
+      proceedWithFlags: true,
+      flagReasons: validationIssues.map(i => `${i.type}_mismatch`),
+      flagDetails: validationIssues,
     })
+
+    // Close modal and clear state
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingEditData(null)
+  }
+
+  // Handle canceling warning
+  const handleCancelWarning = () => {
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingEditData(null)
+  }
+
+  // Handle closing block modal
+  const handleCloseBlock = () => {
+    setShowBlockModal(false)
+    setValidationIssues([])
+    setPendingEditData(null)
+    setShowEditModal(false) // Close the edit modal too
   }
 
   if (isLoading) {
@@ -693,13 +777,28 @@ export default function ProposalDetailPage() {
               <Button
                 variant="primary"
                 onClick={handleSaveEdit}
-                disabled={updateMutation.isPending || !editTitle.trim() || !editDescription.trim()}
+                disabled={updateMutation.isPending || validationMutation.isPending || !editTitle.trim() || !editDescription.trim()}
               >
-                {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                {validationMutation.isPending ? 'Checking...' : updateMutation.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
             </Flex>
           </Stack>
         </Modal>
+
+        {/* Integrity Guard Modals */}
+        <IntegrityBlockModal
+          isOpen={showBlockModal}
+          onClose={handleCloseBlock}
+          issues={validationIssues}
+        />
+
+        <IntegrityWarningModal
+          isOpen={showWarningModal}
+          onClose={handleCancelWarning}
+          onProceed={handleProceedWithWarnings}
+          issues={validationIssues}
+          isProceeding={updateMutation.isPending}
+        />
       </BandLayout>
     </>
   )

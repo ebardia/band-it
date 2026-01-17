@@ -77,10 +77,37 @@ function computeChanges(before: any, after: any): Record<string, { from: any; to
   return Object.keys(changes).length > 0 ? changes : null
 }
 
-function getBandId(model: string, record: any): string | null {
+async function getBandId(model: string, record: any, prismaClient: PrismaClient): Promise<string | null> {
   if (!record) return null
 
   const field = BAND_ID_FIELD[model]
+
+  // For ChecklistItem, look up via task
+  if (model === 'ChecklistItem' && record.taskId) {
+    try {
+      const task = await prismaClient.task.findUnique({
+        where: { id: record.taskId },
+        select: { bandId: true }
+      })
+      return task?.bandId || null
+    } catch {
+      return null
+    }
+  }
+
+  // For Vote, look up via proposal
+  if (model === 'Vote' && record.proposalId) {
+    try {
+      const proposal = await prismaClient.proposal.findUnique({
+        where: { id: record.proposalId },
+        select: { bandId: true }
+      })
+      return proposal?.bandId || null
+    } catch {
+      return null
+    }
+  }
+
   if (field === null) return null
   if (field === 'id') return record.id // For Band model itself
 
@@ -103,6 +130,11 @@ export function createAuditMiddleware(prismaClient: PrismaClient): Prisma.Middle
 
     // Get context
     const context = getAuditContext()
+
+    // Debug logging for audit context
+    if (context.flagged || context.userId) {
+      console.log(`[Audit] ${action} ${model}: userId=${context.userId}, flagged=${context.flagged}, flagReasons=${JSON.stringify(context.flagReasons)}`)
+    }
 
     // For update/delete, get the before state
     let beforeState: any = null
@@ -132,14 +164,14 @@ export function createAuditMiddleware(prismaClient: PrismaClient): Prisma.Middle
           auditAction = 'created'
           entityId = result.id
           entityName = result[NAME_FIELD[model]] || null
-          bandId = getBandId(model, result)
+          bandId = await getBandId(model, result, prismaClient)
           break
 
         case 'update':
           auditAction = 'updated'
           entityId = result.id
           entityName = result[NAME_FIELD[model]] || null
-          bandId = getBandId(model, result)
+          bandId = await getBandId(model, result, prismaClient)
           changes = computeChanges(beforeState, result)
           // Skip if nothing meaningful changed
           if (!changes) return result
@@ -149,7 +181,7 @@ export function createAuditMiddleware(prismaClient: PrismaClient): Prisma.Middle
           auditAction = 'deleted'
           entityId = beforeState?.id || params.args?.where?.id || 'unknown'
           entityName = beforeState?.[NAME_FIELD[model]] || null
-          bandId = getBandId(model, beforeState)
+          bandId = await getBandId(model, beforeState, prismaClient)
           break
 
         case 'updateMany':
@@ -164,22 +196,33 @@ export function createAuditMiddleware(prismaClient: PrismaClient): Prisma.Middle
       }
 
       // Create audit log (fire and forget - don't block the main operation)
-      prismaClient.auditLog.create({
-        data: {
-          bandId,
-          action: auditAction,
-          entityType: model,
-          entityId,
-          entityName,
-          actorId: context.userId || null,
-          actorType: context.userId ? 'user' : 'system',
-          changes,
-          ipAddress: context.ipAddress || null,
-          userAgent: context.userAgent || null,
-        },
-      }).catch((err: any) => {
-        console.error('Failed to create audit log:', err)
-      })
+      const auditData = {
+        bandId,
+        action: auditAction,
+        entityType: model,
+        entityId,
+        entityName,
+        actorId: context.userId || null,
+        actorType: context.userId ? 'user' : 'system',
+        changes,
+        ipAddress: context.ipAddress || null,
+        userAgent: context.userAgent || null,
+        // Integrity Guard flags
+        flagged: context.flagged || false,
+        flagReasons: context.flagReasons || [],
+        flagDetails: context.flagDetails || null,
+      }
+
+      console.log(`[Audit] Creating entry for ${model}: bandId=${bandId}, flagged=${context.flagged}`)
+
+      prismaClient.auditLog.create({ data: auditData })
+        .then(() => {
+          console.log(`[Audit] Saved: ${auditAction} ${model} (${entityId}) bandId=${bandId}`)
+        })
+        .catch((err: any) => {
+          console.error('[Audit] Failed to save:', err.message)
+          console.error('[Audit] Data was:', JSON.stringify(auditData, null, 2))
+        })
 
     } catch (err) {
       // Don't let audit failures break the main operation

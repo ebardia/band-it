@@ -16,7 +16,9 @@ import {
   Loading,
   Alert,
   BandLayout,
-  Input
+  Input,
+  IntegrityBlockModal,
+  IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -54,6 +56,12 @@ export default function ProposalProjectsPage() {
     tags: '',
     leadId: '',
   })
+
+  // Integrity Guard state
+  const [validationIssues, setValidationIssues] = useState<any[]>([])
+  const [showBlockModal, setShowBlockModal] = useState(false)
+  const [showWarningModal, setShowWarningModal] = useState(false)
+  const [pendingProjectData, setPendingProjectData] = useState<any>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -103,6 +111,9 @@ export default function ProposalProjectsPage() {
     }
   })
 
+  // Integrity Guard validation mutation
+  const validationMutation = trpc.validation.check.useMutation()
+
   const resetForm = () => {
     setNewProject({
       name: '',
@@ -119,13 +130,13 @@ export default function ProposalProjectsPage() {
     })
   }
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     if (!newProject.name.trim()) {
       showToast('Project name is required', 'error')
       return
     }
 
-    createProjectMutation.mutate({
+    const projectData = {
       proposalId,
       name: newProject.name.trim(),
       description: newProject.description.trim() || undefined,
@@ -139,7 +150,77 @@ export default function ProposalProjectsPage() {
       tags: newProject.tags ? newProject.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
       leadId: newProject.leadId || undefined,
       userId: userId!,
+    }
+
+    // Store data for potential later use
+    setPendingProjectData(projectData)
+
+    // Run integrity validation
+    try {
+      const validation = await validationMutation.mutateAsync({
+        entityType: 'Project',
+        action: 'create',
+        bandId: bandData?.band?.id || '',
+        data: {
+          name: newProject.name.trim(),
+          description: newProject.description.trim(),
+        },
+        parentId: proposalId,
+      })
+
+      if (!validation.canProceed) {
+        // BLOCK - show block modal, cannot proceed
+        setValidationIssues(validation.issues)
+        setShowBlockModal(true)
+        return
+      }
+
+      if (validation.issues.length > 0) {
+        // FLAG - show warning modal, user can choose to proceed
+        setValidationIssues(validation.issues)
+        setShowWarningModal(true)
+        return
+      }
+
+      // All clear - create project normally
+      createProjectMutation.mutate(projectData)
+    } catch (error) {
+      // Validation failed - show error but don't create project
+      console.error('Validation error:', error)
+      showToast('Unable to validate content. Please try again.', 'error')
+    }
+  }
+
+  // Handle proceeding with warnings
+  const handleProceedWithWarnings = () => {
+    if (!pendingProjectData) return
+
+    createProjectMutation.mutate({
+      ...pendingProjectData,
+      proceedWithFlags: true,
+      flagReasons: validationIssues.map(i => `${i.type}_mismatch`),
+      flagDetails: validationIssues,
     })
+
+    // Close modal and clear state
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingProjectData(null)
+  }
+
+  // Handle canceling warning
+  const handleCancelWarning = () => {
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingProjectData(null)
+  }
+
+  // Handle closing block modal
+  const handleCloseBlock = () => {
+    setShowBlockModal(false)
+    setValidationIssues([])
+    setPendingProjectData(null)
+    setShowCreateForm(false) // Close the form
   }
 
   const handleAISuggest = async () => {
@@ -490,9 +571,9 @@ export default function ProposalProjectsPage() {
                     variant="primary"
                     size="md"
                     onClick={handleCreateProject}
-                    disabled={createProjectMutation.isPending}
+                    disabled={createProjectMutation.isPending || validationMutation.isPending}
                   >
-                    {createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
+                    {createProjectMutation.isPending || validationMutation.isPending ? 'Creating...' : 'Create Project'}
                   </Button>
                   <Button
                     variant="ghost"
@@ -579,6 +660,21 @@ export default function ProposalProjectsPage() {
             )}
           </Stack>
         </Stack>
+
+        {/* Integrity Guard Modals */}
+        <IntegrityBlockModal
+          isOpen={showBlockModal}
+          onClose={handleCloseBlock}
+          issues={validationIssues}
+        />
+
+        <IntegrityWarningModal
+          isOpen={showWarningModal}
+          onClose={handleCancelWarning}
+          onProceed={handleProceedWithWarnings}
+          issues={validationIssues}
+          isProceeding={createProjectMutation.isPending}
+        />
       </BandLayout>
     </>
   )

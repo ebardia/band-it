@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { cn } from '@band-it/shared'
-import { Stack } from './Layout'
+import { Stack } from './layout'
 import { Text } from './Typography'
 import { Alert } from './Alert'
 

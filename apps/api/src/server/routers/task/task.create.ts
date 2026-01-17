@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
+import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 
 // Roles that can create tasks
 const CAN_CREATE_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -23,13 +24,27 @@ export const createTask = publicProcedure
     orderIndex: z.number().int().optional(),
     userId: z.string(),
     aiGenerated: z.boolean().optional().default(false),
+    // Integrity Guard flags - set when user proceeds despite warnings
+    proceedWithFlags: z.boolean().optional(),
+    flagReasons: z.array(z.string()).optional(),
+    flagDetails: z.any().optional(),
   }))
   .mutation(async ({ input }) => {
-    const { 
+    const {
       projectId, name, description, priority, assigneeId, assigneeType,
       dueDate, estimatedHours, estimatedCost, requiresVerification,
-      tags, orderIndex, userId, aiGenerated 
+      tags, orderIndex, userId, aiGenerated,
+      proceedWithFlags, flagReasons, flagDetails
     } = input
+
+    // Set integrity flags in audit context if user proceeded with warnings
+    if (proceedWithFlags && flagReasons && flagReasons.length > 0) {
+      setAuditFlags({
+        flagged: true,
+        flagReasons,
+        flagDetails,
+      })
+    }
 
     // Validate due date is not in the past
     if (dueDate) {
@@ -135,7 +150,10 @@ export const createTask = publicProcedure
       }
     })
 
-    // Update project task count
+    // Clear flags immediately after task creation so the project update isn't flagged
+    clearAuditFlags()
+
+    // Update project task count (this is just a counter, shouldn't be flagged)
     await prisma.project.update({
       where: { id: projectId },
       data: {

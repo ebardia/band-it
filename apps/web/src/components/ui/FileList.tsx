@@ -1,6 +1,6 @@
 'use client'
 
-import { Stack, Flex } from './Layout'
+import { Stack, Flex } from './layout'
 import { Text } from './Typography'
 import { Button } from './Button'
 import { Badge } from './Badge'

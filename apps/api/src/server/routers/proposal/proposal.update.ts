@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
+import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 
 // Roles that can update any proposal
 const CAN_UPDATE_ANY = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
@@ -28,10 +29,23 @@ export const proposalUpdateRouter = router({
         proposedEndDate: z.date().optional().nullable(),
         milestones: z.string().optional().nullable(),
         externalLinks: z.array(z.string()).optional(),
+        // Integrity Guard flags
+        proceedWithFlags: z.boolean().optional(),
+        flagReasons: z.array(z.string()).optional(),
+        flagDetails: z.any().optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { proposalId, userId, ...updateData } = input
+      const { proposalId, userId, proceedWithFlags, flagReasons, flagDetails, ...updateData } = input
+
+      // Set integrity flags in audit context if user proceeded with warnings
+      if (proceedWithFlags && flagReasons && flagReasons.length > 0) {
+        setAuditFlags({
+          flagged: true,
+          flagReasons,
+          flagDetails,
+        })
+      }
 
       // Get the proposal
       const proposal = await prisma.proposal.findUnique({
@@ -78,6 +92,9 @@ export const proposalUpdateRouter = router({
           },
         },
       })
+
+      // Clear flags to prevent leaking to other operations
+      clearAuditFlags()
 
       return {
         success: true,

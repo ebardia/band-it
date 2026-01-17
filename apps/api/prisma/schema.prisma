@@ -836,6 +836,11 @@ model AuditLog {
 
   createdAt   DateTime @default(now())
 
+  // Integrity Guard flags
+  flagged       Boolean  @default(false)
+  flagReasons   String[] // ["legality_block", "values_mismatch", "scope_mismatch"]
+  flagDetails   Json?    // Detailed AI explanations
+
   // Relations
   band        Band?    @relation(fields: [bandId], references: [id], onDelete: Cascade)
 

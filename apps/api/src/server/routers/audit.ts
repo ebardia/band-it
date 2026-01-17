@@ -75,6 +75,9 @@ export const auditRouter = router({
         actorId: item.actorId,
         actorName: item.actorId ? actorMap.get(item.actorId) || 'Unknown' : null,
         changes: item.changes as Record<string, { from: any; to: any }> | null,
+        // Integrity Guard flags
+        flagged: item.flagged,
+        flagReasons: item.flagReasons,
       }))
 
       return {

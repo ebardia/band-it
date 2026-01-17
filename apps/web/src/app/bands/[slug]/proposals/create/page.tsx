@@ -17,7 +17,9 @@ import {
   Alert,
   Loading,
   BandLayout,
-  Badge
+  Badge,
+  IntegrityBlockModal,
+  IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -63,6 +65,12 @@ export default function CreateProposalPage() {
   const [aiContext, setAiContext] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
 
+  // Integrity Guard state
+  const [validationIssues, setValidationIssues] = useState<any[]>([])
+  const [showBlockModal, setShowBlockModal] = useState(false)
+  const [showWarningModal, setShowWarningModal] = useState(false)
+  const [pendingProposalData, setPendingProposalData] = useState<any>(null)
+
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
@@ -102,6 +110,9 @@ export default function CreateProposalPage() {
     },
   })
 
+  // Integrity Guard validation mutation
+  const validationMutation = trpc.validation.check.useMutation()
+
   const generateDraftMutation = trpc.proposal.generateDraft.useMutation({
     onSuccess: (data) => {
       showToast('Draft generated! Review and customize.', 'success')
@@ -130,7 +141,7 @@ export default function CreateProposalPage() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!userId || !bandData?.band) {
@@ -143,7 +154,7 @@ export default function CreateProposalPage() {
       .map(l => l.trim())
       .filter(l => l.length > 0)
 
-    createMutation.mutate({
+    const proposalData = {
       bandId: bandData.band.id,
       userId,
       title,
@@ -160,7 +171,75 @@ export default function CreateProposalPage() {
       proposedEndDate: proposedEndDate || undefined,
       milestones: milestones || undefined,
       externalLinks: linksArray.length > 0 ? linksArray : undefined,
+    }
+
+    // Store data for potential later use
+    setPendingProposalData(proposalData)
+
+    // Run integrity validation
+    try {
+      const validation = await validationMutation.mutateAsync({
+        entityType: 'Proposal',
+        action: 'create',
+        bandId: bandData.band.id,
+        data: {
+          title,
+          description,
+        },
+      })
+
+      if (!validation.canProceed) {
+        // BLOCK - show block modal, cannot proceed
+        setValidationIssues(validation.issues)
+        setShowBlockModal(true)
+        return
+      }
+
+      if (validation.issues.length > 0) {
+        // FLAG - show warning modal, user can choose to proceed
+        setValidationIssues(validation.issues)
+        setShowWarningModal(true)
+        return
+      }
+
+      // All clear - create proposal normally
+      createMutation.mutate(proposalData)
+    } catch (error) {
+      // Validation failed - show error but don't create proposal
+      console.error('Validation error:', error)
+      showToast('Unable to validate content. Please try again.', 'error')
+    }
+  }
+
+  // Handle proceeding with warnings
+  const handleProceedWithWarnings = () => {
+    if (!pendingProposalData) return
+
+    createMutation.mutate({
+      ...pendingProposalData,
+      proceedWithFlags: true,
+      flagReasons: validationIssues.map(i => `${i.type}_mismatch`),
+      flagDetails: validationIssues,
     })
+
+    // Close modal and clear state
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingProposalData(null)
+  }
+
+  // Handle canceling warning
+  const handleCancelWarning = () => {
+    setShowWarningModal(false)
+    setValidationIssues([])
+    setPendingProposalData(null)
+  }
+
+  // Handle closing block modal
+  const handleCloseBlock = () => {
+    setShowBlockModal(false)
+    setValidationIssues([])
+    setPendingProposalData(null)
   }
 
   if (isLoading) {
@@ -485,9 +564,9 @@ export default function CreateProposalPage() {
                   type="submit"
                   variant="primary"
                   size="lg"
-                  disabled={createMutation.isPending}
+                  disabled={createMutation.isPending || validationMutation.isPending}
                 >
-                  {createMutation.isPending ? 'Creating...' : 'Create Proposal'}
+                  {createMutation.isPending || validationMutation.isPending ? 'Creating...' : 'Create Proposal'}
                 </Button>
                 <Button
                   type="button"
@@ -501,6 +580,21 @@ export default function CreateProposalPage() {
             </Stack>
           </form>
         </Stack>
+
+        {/* Integrity Guard Modals */}
+        <IntegrityBlockModal
+          isOpen={showBlockModal}
+          onClose={handleCloseBlock}
+          issues={validationIssues}
+        />
+
+        <IntegrityWarningModal
+          isOpen={showWarningModal}
+          onClose={handleCancelWarning}
+          onProceed={handleProceedWithWarnings}
+          issues={validationIssues}
+          isProceeding={createMutation.isPending}
+        />
       </BandLayout>
     </>
   )

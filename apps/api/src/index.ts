@@ -14,8 +14,9 @@ const PORT = process.env.PORT || 3001
 const UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || './uploads'
 
 // Enable CORS for frontend
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
 app.use(cors({
-  origin: 'http://localhost:3000', // Next.js frontend
+  origin: FRONTEND_URL,
   credentials: true,
 }))
 
@@ -41,8 +42,9 @@ function getAuditContextFromRequest(req: express.Request): AuditContext {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
       userId = decoded.userId
-    } catch {
-      // Invalid token - continue without userId
+    } catch (error: any) {
+      // Log token verification failures for debugging
+      console.warn('JWT verification failed:', error.message)
     }
   }
 
@@ -67,9 +69,10 @@ const trpcMiddleware = createExpressMiddleware({
 // tRPC middleware with audit context wrapper
 app.use('/trpc', (req, res, next) => {
   const auditContext = getAuditContextFromRequest(req)
-  // Use enterWith to set context for entire request lifecycle
-  auditStorage.enterWith(auditContext)
-  trpcMiddleware(req, res, next)
+  // Use run() to properly propagate context through async operations
+  auditStorage.run(auditContext, () => {
+    trpcMiddleware(req, res, next)
+  })
 })
 
 // Start server
