@@ -13,30 +13,16 @@ const app = express()
 const PORT = process.env.PORT || 3001
 const UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || './uploads'
 
-// Enable CORS for frontend (supports comma-separated list of origins)
-const ALLOWED_ORIGINS = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, ''))
-  : ['http://localhost:3000']
-
-console.log('[CORS] Allowed origins:', ALLOWED_ORIGINS)
+// Enable CORS for frontend
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
+console.log('[CORS] FRONTEND_URL env:', process.env.FRONTEND_URL)
+console.log('[CORS] Using origin:', FRONTEND_URL)
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true)
-
-    // Normalize origin by removing trailing slash
-    const normalizedOrigin = origin.replace(/\/$/, '')
-
-    if (ALLOWED_ORIGINS.includes(normalizedOrigin)) {
-      callback(null, true)
-    } else {
-      console.warn(`[CORS] Blocked origin: ${origin} (normalized: ${normalizedOrigin})`)
-      console.warn(`[CORS] Allowed origins are: ${ALLOWED_ORIGINS.join(', ')}`)
-      callback(null, false)
-    }
-  },
+  origin: true, // Allow all origins temporarily for debugging
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 
 // Increase payload limit for file uploads (base64 encoded)
