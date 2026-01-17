@@ -119,9 +119,11 @@ export const updateProject = publicProcedure
     if (status !== undefined) {
       updateData.status = status
       // Set completedAt if marking as completed
-      if (status === 'COMPLETED') {
+      const statusStr = status as string
+      const projectStatusStr = project.status as string
+      if (statusStr === 'COMPLETED') {
         updateData.completedAt = new Date()
-      } else if ((project.status as string) === 'COMPLETED' && status !== 'COMPLETED') {
+      } else if (projectStatusStr === 'COMPLETED' && statusStr !== 'COMPLETED') {
         // Clear completedAt if moving away from completed
         updateData.completedAt = null
       }

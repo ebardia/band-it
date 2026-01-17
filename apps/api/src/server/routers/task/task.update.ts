@@ -137,16 +137,18 @@ export const updateTask = publicProcedure
     // Handle status changes
     if (status !== undefined) {
       updateData.status = status
+      const statusStr = status as string
+      const taskStatusStr = task.status as string
 
       // Set startedAt when moving to IN_PROGRESS
-      if (status === 'IN_PROGRESS' && !task.startedAt) {
+      if (statusStr === 'IN_PROGRESS' && !task.startedAt) {
         updateData.startedAt = new Date()
       }
 
       // Set completedAt when moving to COMPLETED
-      if (status === 'COMPLETED') {
+      if (statusStr === 'COMPLETED') {
         updateData.completedAt = new Date()
-      } else if ((task.status as string) === 'COMPLETED' && status !== 'COMPLETED') {
+      } else if (taskStatusStr === 'COMPLETED' && statusStr !== 'COMPLETED') {
         // Clear completedAt if moving away from completed
         updateData.completedAt = null
       }
@@ -176,12 +178,14 @@ export const updateTask = publicProcedure
 
     // Update project completed count if status changed to/from COMPLETED
     if (status !== undefined && oldStatus !== status) {
-      if (status === 'COMPLETED') {
+      const newStatusStr = status as string
+      const oldStatusStr = oldStatus as string
+      if (newStatusStr === 'COMPLETED') {
         await prisma.project.update({
           where: { id: task.projectId },
           data: { completedTasks: { increment: 1 } }
         })
-      } else if ((oldStatus as string) === 'COMPLETED') {
+      } else if (oldStatusStr === 'COMPLETED') {
         await prisma.project.update({
           where: { id: task.projectId },
           data: { completedTasks: { decrement: 1 } }
