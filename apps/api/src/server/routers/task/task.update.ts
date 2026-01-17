@@ -137,16 +137,16 @@ export const updateTask = publicProcedure
     // Handle status changes
     if (status !== undefined) {
       updateData.status = status
-      
+
       // Set startedAt when moving to IN_PROGRESS
       if (status === 'IN_PROGRESS' && !task.startedAt) {
         updateData.startedAt = new Date()
       }
-      
+
       // Set completedAt when moving to COMPLETED
       if (status === 'COMPLETED') {
         updateData.completedAt = new Date()
-      } else if (task.status === 'COMPLETED' && status !== 'COMPLETED') {
+      } else if ((task.status as string) === 'COMPLETED' && status !== 'COMPLETED') {
         // Clear completedAt if moving away from completed
         updateData.completedAt = null
       }
@@ -181,7 +181,7 @@ export const updateTask = publicProcedure
           where: { id: task.projectId },
           data: { completedTasks: { increment: 1 } }
         })
-      } else if (oldStatus === 'COMPLETED') {
+      } else if ((oldStatus as string) === 'COMPLETED') {
         await prisma.project.update({
           where: { id: task.projectId },
           data: { completedTasks: { decrement: 1 } }
@@ -189,8 +189,8 @@ export const updateTask = publicProcedure
       }
     }
 
-    // Notify new assignee if changed
-    if (assigneeId !== undefined && assigneeId !== oldAssigneeId && assigneeId !== userId) {
+    // Notify new assignee if changed (only if assigneeId is a valid string)
+    if (assigneeId && assigneeId !== oldAssigneeId && assigneeId !== userId) {
       await notificationService.create({
         userId: assigneeId,
         type: 'TASK_ASSIGNED',

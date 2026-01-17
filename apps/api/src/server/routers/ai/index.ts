@@ -44,10 +44,10 @@ export const aiRouter = router({
         bandMission: proposal.band.mission,
       })
 
-      // Save validation result
+      // Save validation result (cast to Json for Prisma)
       await prisma.proposal.update({
         where: { id: proposalId },
-        data: { aiValidation: validation }
+        data: { aiValidation: validation as any }
       })
 
       return { validation }
@@ -97,10 +97,10 @@ export const aiRouter = router({
         proposalBudget: project.proposal.budgetRequested ? Number(project.proposal.budgetRequested) : null,
       })
 
-      // Save validation result
+      // Save validation result (cast to Json for Prisma)
       await prisma.project.update({
         where: { id: projectId },
-        data: { aiValidation: validation }
+        data: { aiValidation: validation as any }
       })
 
       return { validation }
@@ -146,10 +146,10 @@ export const aiRouter = router({
         projectBudget: task.project.estimatedBudget ? Number(task.project.estimatedBudget) : null,
       })
 
-      // Save validation result
+      // Save validation result (cast to Json for Prisma)
       await prisma.task.update({
         where: { id: taskId },
-        data: { aiValidation: validation }
+        data: { aiValidation: validation as any }
       })
 
       return { validation }
