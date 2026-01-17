@@ -13,16 +13,14 @@ const app = express()
 const PORT = process.env.PORT || 3001
 const UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || './uploads'
 
-// Enable CORS for frontend
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
-console.log('[CORS] FRONTEND_URL env:', process.env.FRONTEND_URL)
-console.log('[CORS] Using origin:', FRONTEND_URL)
+// Enable CORS for frontend (supports comma-separated list of origins)
+const ALLOWED_ORIGINS = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, ''))
+  : ['http://localhost:3000']
 
 app.use(cors({
-  origin: true, // Allow all origins temporarily for debugging
+  origin: ALLOWED_ORIGINS,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 
 // Increase payload limit for file uploads (base64 encoded)
