@@ -2,12 +2,19 @@ import { z } from 'zod'
 import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic()
+import { callAI, parseAIJson } from '../../../lib/ai-client'
 
 // Roles that can use AI suggestions
 const CAN_USE_AI = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
+
+interface TaskSuggestion {
+  name: string
+  description: string
+  estimatedHours: number | null
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+  order: number
+  requiresVerification: boolean
+}
 
 export const suggestTasks = publicProcedure
   .input(z.object({
@@ -57,9 +64,11 @@ export const suggestTasks = publicProcedure
       })
     }
 
-    // Build context for AI
-    const existingTasks = project.tasks.map(t => `- ${t.name} (${t.status})`).join('\n')
-    
+    // Build context for AI - include full details so AI can detect semantic duplicates
+    const existingTasks = project.tasks.map(t =>
+      `- ${t.name} (${t.status})${t.description ? `\n  Description: ${t.description}` : ''}`
+    ).join('\n')
+
     const projectContext = `
 PROJECT NAME: ${project.name}
 
@@ -84,7 +93,7 @@ ${existingTasks ? `EXISTING TASKS:\n${existingTasks}` : 'NO EXISTING TASKS YET'}
 
 A "task" is a specific, actionable item that one person can complete. Tasks should be concrete and verifiable.
 
-Your job is to suggest 3-7 tasks that would help accomplish this project's goals. Consider any existing tasks and don't duplicate them.
+Your job is to suggest 3-7 tasks that would help accomplish this project's goals. IMPORTANT: Carefully review any existing tasks listed below - do NOT suggest tasks that cover the same work, even if the name is different.
 
 RULES:
 1. Each task should be specific and actionable (something one person can do)
@@ -92,8 +101,9 @@ RULES:
 3. Task names should be concise action items (under 100 characters)
 4. Task descriptions should be 1-2 sentences explaining what needs to be done
 5. Consider the project timeline and budget when estimating effort
-6. Don't suggest tasks that duplicate existing ones
+6. CRITICAL: Do NOT suggest tasks that duplicate existing ones - check both names AND descriptions for overlap. If an existing task already covers certain work (like "research", "planning", "setup", etc.), do not suggest another task covering the same scope even with a different name.
 7. Include a mix of planning, execution, and verification tasks as appropriate
+8. If all necessary tasks already exist, return an empty array []
 
 Respond with a JSON array of task suggestions. Each object should have:
 - name: string (task name, action-oriented)
@@ -126,57 +136,34 @@ Example response:
 Respond ONLY with the JSON array, no other text.`
 
     try {
-      const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [
-          {
-            role: 'user',
-            content: `Please analyze this project and suggest tasks to help complete it:\n\n${projectContext}`
-          }
-        ],
-        system: systemPrompt,
-      })
-
-      // Extract text from response
-      const textContent = response.content.find(c => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text response from AI')
-      }
+      const response = await callAI(
+        `Please analyze this project and suggest tasks to help complete it:\n\n${projectContext}`,
+        {
+          operation: 'task_suggestions',
+          entityType: 'project',
+          entityId: projectId,
+          bandId: project.band.id,
+          userId,
+        },
+        {
+          system: systemPrompt,
+          maxTokens: 2000,
+        }
+      )
 
       // Parse JSON response
-      let suggestions
-      try {
-        // Clean up response (remove markdown code blocks if present)
-        let jsonText = textContent.text.trim()
-        if (jsonText.startsWith('```json')) {
-          jsonText = jsonText.slice(7)
-        }
-        if (jsonText.startsWith('```')) {
-          jsonText = jsonText.slice(3)
-        }
-        if (jsonText.endsWith('```')) {
-          jsonText = jsonText.slice(0, -3)
-        }
-        suggestions = JSON.parse(jsonText.trim())
-      } catch (parseError) {
-        console.error('Failed to parse AI response:', textContent.text)
+      const suggestions = parseAIJson<any[]>(response.content)
+
+      if (!suggestions || !Array.isArray(suggestions)) {
+        console.error('Failed to parse AI response:', response.content)
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to parse AI response'
         })
       }
 
-      // Validate suggestions structure
-      if (!Array.isArray(suggestions)) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Invalid AI response format'
-        })
-      }
-
       // Ensure each suggestion has required fields
-      const validatedSuggestions = suggestions.map((s: any, index: number) => ({
+      const validatedSuggestions: TaskSuggestion[] = suggestions.map((s: any, index: number) => ({
         name: s.name || `Task ${index + 1}`,
         description: s.description || '',
         estimatedHours: typeof s.estimatedHours === 'number' ? s.estimatedHours : null,
@@ -185,14 +172,14 @@ Respond ONLY with the JSON array, no other text.`
         requiresVerification: typeof s.requiresVerification === 'boolean' ? s.requiresVerification : true,
       }))
 
-      return { 
+      return {
         suggestions: validatedSuggestions,
-        projectName: project.name 
+        projectName: project.name
       }
 
     } catch (error) {
       if (error instanceof TRPCError) throw error
-      
+
       console.error('AI task suggestion error:', error)
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',

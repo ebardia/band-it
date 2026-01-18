@@ -2,10 +2,8 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { setAuditFlags, clearAuditFlags } from '../../lib/auditContext'
-
-const anthropic = new Anthropic()
+import { callAI, parseAIJson } from '../../lib/ai-client'
 
 // Roles that can use AI suggestions
 const CAN_USE_AI = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -430,15 +428,16 @@ ${existingItems ? `EXISTING CHECKLIST ITEMS:\n${existingItems}` : 'NO EXISTING C
 
 A "checklist item" is a small, specific step that can be checked off. Think of it like a to-do within a to-do.
 
-Your job is to suggest 3-8 checklist items that would help complete this task. Consider any existing items and don't duplicate them.
+Your job is to suggest 3-8 checklist items that would help complete this task. IMPORTANT: Carefully review any existing checklist items listed below - do NOT suggest items that cover the same work, even if worded differently.
 
 RULES:
 1. Each item should be a single, specific action (not a complex sub-task)
 2. Items should be ordered logically (what to do first, second, etc.)
 3. Keep item descriptions short and actionable (under 100 characters ideally)
 4. Start with verbs: "Call...", "Send...", "Review...", "Draft...", "Schedule...", etc.
-5. Don't suggest items that duplicate existing ones
+5. CRITICAL: Do NOT suggest items that duplicate existing ones - check for semantic overlap, not just exact matches. If an existing item covers "review documents", don't suggest "check documentation" or similar.
 6. Be practical and specific to the task at hand
+7. If all necessary checklist items already exist, return an empty array []
 
 Respond with a JSON array of strings, where each string is a checklist item description.
 
@@ -454,52 +453,29 @@ Example response:
 Respond ONLY with the JSON array, no other text.`
 
       try {
-        const response = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [
-            {
-              role: 'user',
-              content: `Please suggest checklist items for this task:\n\n${taskContext}`
-            }
-          ],
-          system: systemPrompt,
-        })
-
-        // Extract text from response
-        const textContent = response.content.find(c => c.type === 'text')
-        if (!textContent || textContent.type !== 'text') {
-          throw new Error('No text response from AI')
-        }
+        const response = await callAI(
+          `Please suggest checklist items for this task:\n\n${taskContext}`,
+          {
+            operation: 'checklist_suggestions',
+            entityType: 'task',
+            entityId: taskId,
+            bandId: task.band.id,
+            userId,
+          },
+          {
+            system: systemPrompt,
+            maxTokens: 1000,
+          }
+        )
 
         // Parse JSON response
-        let suggestions: string[]
-        try {
-          // Clean up response (remove markdown code blocks if present)
-          let jsonText = textContent.text.trim()
-          if (jsonText.startsWith('```json')) {
-            jsonText = jsonText.slice(7)
-          }
-          if (jsonText.startsWith('```')) {
-            jsonText = jsonText.slice(3)
-          }
-          if (jsonText.endsWith('```')) {
-            jsonText = jsonText.slice(0, -3)
-          }
-          suggestions = JSON.parse(jsonText.trim())
-        } catch (parseError) {
-          console.error('Failed to parse AI response:', textContent.text)
+        const suggestions = parseAIJson<string[]>(response.content)
+
+        if (!suggestions || !Array.isArray(suggestions) || !suggestions.every(s => typeof s === 'string')) {
+          console.error('Failed to parse AI response:', response.content)
           throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: 'Failed to parse AI response'
-          })
-        }
-
-        // Validate suggestions structure
-        if (!Array.isArray(suggestions) || !suggestions.every(s => typeof s === 'string')) {
-          throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: 'Invalid AI response format'
           })
         }
 

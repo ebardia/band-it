@@ -38,6 +38,7 @@ export default function ProposalProjectsPage() {
   const slug = params.slug as string
   const proposalId = params.proposalId as string
   const { showToast } = useToast()
+  const utils = trpc.useUtils()
 
   const [userId, setUserId] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -229,6 +230,9 @@ export default function ProposalProjectsPage() {
       userId: userId!,
     })
 
+    // Refresh AI usage tracker
+    utils.aiUsage.invalidate()
+
     if (result.message) {
       showToast(result.message, 'info')
       return
@@ -253,6 +257,8 @@ export default function ProposalProjectsPage() {
         })
       }
       showToast(`Created ${result.suggestions.length} projects from AI suggestions`, 'success')
+    } else {
+      showToast('All necessary projects already exist - no new suggestions needed', 'info')
     }
   }
 

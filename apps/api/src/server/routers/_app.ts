@@ -8,6 +8,7 @@ import { proposalRouter } from './proposal'
 import { projectRouter } from './project'
 import { taskRouter } from './task'
 import { aiRouter } from './ai'
+import { aiUsageRouter } from './aiUsage'
 import { fileRouter } from './file'
 import { commentRouter } from './comment'
 import { checklistRouter } from './checklist'
@@ -25,6 +26,7 @@ export const appRouter = router({
   project: projectRouter,
   task: taskRouter,
   ai: aiRouter,
+  aiUsage: aiUsageRouter,
   file: fileRouter,
   comment: commentRouter,
   checklist: checklistRouter,

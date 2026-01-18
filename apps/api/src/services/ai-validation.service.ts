@@ -1,6 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic()
+import { callAI, parseAIJson, AIOperationType, AIEntityType } from '../lib/ai-client'
 
 export interface ValidationIssue {
   type: 'DATE' | 'BUDGET' | 'ALIGNMENT' | 'COMPLETENESS' | 'LEGAL'
@@ -15,34 +13,40 @@ export interface ValidationResult {
   issues: ValidationIssue[]
 }
 
-async function callAIValidation(prompt: string, systemPrompt: string): Promise<ValidationResult> {
+interface ValidationContext {
+  bandId?: string
+  userId?: string
+  entityId?: string
+}
+
+async function callAIValidation(
+  prompt: string,
+  systemPrompt: string,
+  operation: AIOperationType,
+  entityType: AIEntityType,
+  context: ValidationContext
+): Promise<ValidationResult> {
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1500,
+    const response = await callAI(prompt, {
+      operation,
+      entityType,
+      entityId: context.entityId,
+      bandId: context.bandId,
+      userId: context.userId,
+    }, {
       system: systemPrompt,
-      messages: [{ role: 'user', content: prompt }]
+      maxTokens: 1500,
     })
 
-    const textContent = response.content.find(c => c.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text response')
+    console.log('AI Validation raw response:', response.content)
+
+    // Parse JSON response
+    const result = parseAIJson<{ status?: string; issues?: any[] }>(response.content)
+
+    if (!result) {
+      throw new Error('Failed to parse AI validation response')
     }
 
-    // Parse JSON response - handle various formats
-    let jsonText = textContent.text.trim()
-    
-    // Remove markdown code blocks if present
-    const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/)
-    if (jsonMatch) {
-      jsonText = jsonMatch[1].trim()
-    }
-    
-    console.log('AI Validation raw response:', textContent.text)
-    console.log('AI Validation parsed JSON text:', jsonText)
-    
-    const result = JSON.parse(jsonText)
-    
     // Validate and normalize the response
     const normalizedIssues: ValidationIssue[] = (result.issues || []).map((issue: any) => ({
       type: issue.type || 'COMPLETENESS',
@@ -50,15 +54,15 @@ async function callAIValidation(prompt: string, systemPrompt: string): Promise<V
       message: issue.message || 'No message provided',
       suggestion: issue.suggestion || 'No suggestion provided',
     }))
-    
+
     // Determine overall status based on issues
-    let status: 'PASS' | 'WARNING' | 'CONCERN' = result.status || 'PASS'
+    let status: 'PASS' | 'WARNING' | 'CONCERN' = (result.status as any) || 'PASS'
     if (!result.status && normalizedIssues.length > 0) {
       const hasConcern = normalizedIssues.some(i => i.severity === 'CONCERN')
       const hasWarning = normalizedIssues.some(i => i.severity === 'WARNING')
       status = hasConcern ? 'CONCERN' : hasWarning ? 'WARNING' : 'PASS'
     }
-    
+
     return {
       status,
       checkedAt: new Date().toISOString(),
@@ -91,6 +95,10 @@ interface ValidateProjectInput {
   bandValues: string[]
   bandMission: string
   proposalBudget?: number | null
+  // Tracking context
+  bandId?: string
+  userId?: string
+  projectId?: string
 }
 
 export async function validateProject(input: ValidateProjectInput): Promise<ValidationResult> {
@@ -141,7 +149,11 @@ BAND MISSION: ${input.bandMission || 'Not specified'}
 
 Today's date: ${new Date().toLocaleDateString()}`
 
-  return callAIValidation(prompt, systemPrompt)
+  return callAIValidation(prompt, systemPrompt, 'project_validation', 'project', {
+    bandId: input.bandId,
+    userId: input.userId,
+    entityId: input.projectId,
+  })
 }
 
 interface ValidateProposalInput {
@@ -154,6 +166,10 @@ interface ValidateProposalInput {
   proposedEndDate?: Date | null
   bandValues: string[]
   bandMission: string
+  // Tracking context
+  bandId?: string
+  userId?: string
+  proposalId?: string
 }
 
 export async function validateProposal(input: ValidateProposalInput): Promise<ValidationResult> {
@@ -201,7 +217,11 @@ BAND MISSION: ${input.bandMission || 'Not specified'}
 
 Today's date: ${new Date().toLocaleDateString()}`
 
-  return callAIValidation(prompt, systemPrompt)
+  return callAIValidation(prompt, systemPrompt, 'proposal_validation', 'proposal', {
+    bandId: input.bandId,
+    userId: input.userId,
+    entityId: input.proposalId,
+  })
 }
 
 interface ValidateTaskInput {
@@ -212,6 +232,10 @@ interface ValidateTaskInput {
   estimatedCost?: number | null
   projectTargetDate?: Date | null
   projectBudget?: number | null
+  // Tracking context
+  bandId?: string
+  userId?: string
+  taskId?: string
 }
 
 export async function validateTask(input: ValidateTaskInput): Promise<ValidationResult> {
@@ -255,7 +279,11 @@ PROJECT BUDGET: ${input.projectBudget ? '$' + input.projectBudget : 'Not set'}
 
 Today's date: ${new Date().toLocaleDateString()}`
 
-  return callAIValidation(prompt, systemPrompt)
+  return callAIValidation(prompt, systemPrompt, 'task_validation', 'task', {
+    bandId: input.bandId,
+    userId: input.userId,
+    entityId: input.taskId,
+  })
 }
 
 export const aiValidationService = {

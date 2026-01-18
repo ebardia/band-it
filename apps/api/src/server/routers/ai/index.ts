@@ -17,7 +17,7 @@ export const aiRouter = router({
         where: { id: proposalId },
         include: {
           band: {
-            select: { values: true, mission: true, members: true }
+            select: { id: true, values: true, mission: true, members: true }
           }
         }
       })
@@ -42,6 +42,10 @@ export const aiRouter = router({
         proposedEndDate: proposal.proposedEndDate,
         bandValues: proposal.band.values,
         bandMission: proposal.band.mission,
+        // Tracking context
+        bandId: proposal.band.id,
+        userId,
+        proposalId,
       })
 
       // Save validation result (cast to Json for Prisma)
@@ -65,7 +69,7 @@ export const aiRouter = router({
         where: { id: projectId },
         include: {
           band: {
-            select: { values: true, mission: true, members: true }
+            select: { id: true, values: true, mission: true, members: true }
           },
           proposal: {
             select: { budgetRequested: true }
@@ -95,6 +99,10 @@ export const aiRouter = router({
         bandValues: project.band.values,
         bandMission: project.band.mission,
         proposalBudget: project.proposal.budgetRequested ? Number(project.proposal.budgetRequested) : null,
+        // Tracking context
+        bandId: project.band.id,
+        userId,
+        projectId,
       })
 
       // Save validation result (cast to Json for Prisma)
@@ -118,7 +126,7 @@ export const aiRouter = router({
         where: { id: taskId },
         include: {
           band: {
-            select: { members: true }
+            select: { id: true, members: true }
           },
           project: {
             select: { targetDate: true, estimatedBudget: true }
@@ -144,6 +152,10 @@ export const aiRouter = router({
         estimatedCost: task.estimatedCost ? Number(task.estimatedCost) : null,
         projectTargetDate: task.project.targetDate,
         projectBudget: task.project.estimatedBudget ? Number(task.project.estimatedBudget) : null,
+        // Tracking context
+        bandId: task.band.id,
+        userId,
+        taskId,
       })
 
       // Save validation result (cast to Json for Prisma)

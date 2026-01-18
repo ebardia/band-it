@@ -1,9 +1,5 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { callAI, parseAIJson, AIOperationType } from '../lib/ai-client'
 import { prisma } from '../lib/prisma'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
 
 // Types
 export type EntityType = 'Proposal' | 'Project' | 'Task' | 'ChecklistItem'
@@ -25,6 +21,8 @@ export interface ValidateContentParams {
   entityType: EntityType
   action: 'create' | 'update'
   bandId: string
+  userId?: string
+  entityId?: string
   data: {
     title?: string
     name?: string
@@ -42,6 +40,16 @@ interface LegalityCheckResult {
 interface AlignmentCheckResult {
   isAligned: boolean
   concerns: string[]
+}
+
+// Map EntityType to AIEntityType
+function mapEntityType(entityType: EntityType): 'proposal' | 'project' | 'task' | 'checklist' {
+  switch (entityType) {
+    case 'Proposal': return 'proposal'
+    case 'Project': return 'project'
+    case 'Task': return 'task'
+    case 'ChecklistItem': return 'checklist'
+  }
 }
 
 // Helper to get content title/name based on entity type
@@ -99,10 +107,19 @@ function getParentTypeName(entityType: EntityType): string {
   }
 }
 
+// Context for tracking
+interface CheckContext {
+  bandId: string
+  userId?: string
+  entityId?: string
+  entityType: EntityType
+}
+
 // Legality Check - BLOCK if unlawful
 async function checkLegality(
   entityType: EntityType,
-  data: Record<string, any>
+  data: Record<string, any>,
+  context: CheckContext
 ): Promise<LegalityCheckResult> {
   const contentName = getContentName(entityType, data)
   const description = data.description || ''
@@ -137,36 +154,25 @@ Respond with JSON only:
 If lawful, concerns should be an empty array. If not lawful, provide specific concerns explaining why.`
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }],
+    const response = await callAI(prompt, {
+      operation: 'content_legality_check',
+      entityType: mapEntityType(entityType),
+      entityId: context.entityId,
+      bandId: context.bandId,
+      userId: context.userId,
+    }, {
+      maxTokens: 500,
     })
 
-    const textContent = message.content.find((c) => c.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
-      // Default to lawful if AI fails
-      console.log('[Validation] No text content in legality response')
+    console.log('[Validation] Legality check for:', contentName || description?.substring(0, 50))
+    console.log('[Validation] AI response:', response.content)
+
+    const result = parseAIJson<LegalityCheckResult>(response.content)
+    if (!result) {
+      console.log('[Validation] Failed to parse legality response')
       return { isLawful: true, concerns: [] }
     }
 
-    console.log('[Validation] Legality check for:', contentName || description?.substring(0, 50))
-    console.log('[Validation] AI response:', textContent.text)
-
-    // Strip markdown code blocks if present
-    let jsonText = textContent.text.trim()
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.slice(7)
-    }
-    if (jsonText.startsWith('```')) {
-      jsonText = jsonText.slice(3)
-    }
-    if (jsonText.endsWith('```')) {
-      jsonText = jsonText.slice(0, -3)
-    }
-    jsonText = jsonText.trim()
-
-    const result = JSON.parse(jsonText) as LegalityCheckResult
     console.log('[Validation] Parsed result - isLawful:', result.isLawful, 'concerns:', result.concerns)
     return result
   } catch (error) {
@@ -180,7 +186,8 @@ If lawful, concerns should be an empty array. If not lawful, provide specific co
 async function checkValuesAlignment(
   entityType: EntityType,
   data: Record<string, any>,
-  band: { values: string[]; mission: string | null }
+  band: { values: string[]; mission: string | null },
+  context: CheckContext
 ): Promise<AlignmentCheckResult> {
   // Skip if band has no values or mission defined
   if ((!band.values || band.values.length === 0) && !band.mission) {
@@ -220,31 +227,21 @@ Respond with JSON only:
 If aligned, concerns should be an empty array. If misaligned, provide specific explanations.`
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }],
+    const response = await callAI(prompt, {
+      operation: 'content_values_check',
+      entityType: mapEntityType(entityType),
+      entityId: context.entityId,
+      bandId: context.bandId,
+      userId: context.userId,
+    }, {
+      maxTokens: 500,
     })
 
-    const textContent = message.content.find((c) => c.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
+    const result = parseAIJson<AlignmentCheckResult>(response.content)
+    if (!result) {
       return { isAligned: true, concerns: [] }
     }
-
-    // Strip markdown code blocks if present
-    let jsonText = textContent.text.trim()
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.slice(7)
-    }
-    if (jsonText.startsWith('```')) {
-      jsonText = jsonText.slice(3)
-    }
-    if (jsonText.endsWith('```')) {
-      jsonText = jsonText.slice(0, -3)
-    }
-    jsonText = jsonText.trim()
-
-    return JSON.parse(jsonText) as AlignmentCheckResult
+    return result
   } catch (error) {
     console.error('Values alignment check error:', error)
     return { isAligned: true, concerns: [] }
@@ -255,7 +252,8 @@ If aligned, concerns should be an empty array. If misaligned, provide specific e
 async function checkScopeAlignment(
   entityType: EntityType,
   data: Record<string, any>,
-  parent: Record<string, any>
+  parent: Record<string, any>,
+  context: CheckContext
 ): Promise<AlignmentCheckResult> {
   const contentName = getContentName(entityType, data)
   const description = data.description || ''
@@ -297,31 +295,21 @@ Respond with JSON only:
 If aligned, concerns should be an empty array. If misaligned, explain how it doesn't fit the parent's scope.`
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }],
+    const response = await callAI(prompt, {
+      operation: 'content_scope_check',
+      entityType: mapEntityType(entityType),
+      entityId: context.entityId,
+      bandId: context.bandId,
+      userId: context.userId,
+    }, {
+      maxTokens: 500,
     })
 
-    const textContent = message.content.find((c) => c.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
+    const result = parseAIJson<AlignmentCheckResult>(response.content)
+    if (!result) {
       return { isAligned: true, concerns: [] }
     }
-
-    // Strip markdown code blocks if present
-    let jsonText = textContent.text.trim()
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.slice(7)
-    }
-    if (jsonText.startsWith('```')) {
-      jsonText = jsonText.slice(3)
-    }
-    if (jsonText.endsWith('```')) {
-      jsonText = jsonText.slice(0, -3)
-    }
-    jsonText = jsonText.trim()
-
-    return JSON.parse(jsonText) as AlignmentCheckResult
+    return result
   } catch (error) {
     console.error('Scope alignment check error:', error)
     return { isAligned: true, concerns: [] }
@@ -331,6 +319,12 @@ If aligned, concerns should be an empty array. If misaligned, explain how it doe
 // Main validation function
 export async function validateContent(params: ValidateContentParams): Promise<ValidationResult> {
   const issues: ValidationIssue[] = []
+  const context: CheckContext = {
+    bandId: params.bandId,
+    userId: params.userId,
+    entityId: params.entityId,
+    entityType: params.entityType,
+  }
 
   // 1. Fetch band for values/mission
   const band = await prisma.band.findUnique({
@@ -350,9 +344,9 @@ export async function validateContent(params: ValidateContentParams): Promise<Va
 
   // 3. Run all checks in parallel for performance
   const [legalityResult, valuesResult, scopeResult] = await Promise.all([
-    checkLegality(params.entityType, params.data),
-    checkValuesAlignment(params.entityType, params.data, band),
-    parent ? checkScopeAlignment(params.entityType, params.data, parent) : Promise.resolve(null),
+    checkLegality(params.entityType, params.data, context),
+    checkValuesAlignment(params.entityType, params.data, band, context),
+    parent ? checkScopeAlignment(params.entityType, params.data, parent, context) : Promise.resolve(null),
   ])
 
   // 4. Process legality result - BLOCK

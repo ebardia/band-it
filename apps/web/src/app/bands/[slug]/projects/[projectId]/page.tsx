@@ -51,6 +51,7 @@ export default function ProjectDetailPage() {
   const projectId = params.projectId as string
   const highlightedTaskId = searchParams.get('task')
   const { showToast } = useToast()
+  const utils = trpc.useUtils()
   
   const [userId, setUserId] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -147,9 +148,15 @@ export default function ProjectDetailPage() {
 
   const suggestTasksMutation = trpc.task.suggestTasks.useMutation({
     onSuccess: (data) => {
-      setTaskSuggestions(data.suggestions)
-      setSuggestionsCreatedCount(0)
-      showToast(`Generated ${data.suggestions.length} task suggestions`, 'success')
+      if (data.suggestions.length === 0) {
+        showToast('All necessary tasks already exist - no new suggestions needed', 'info')
+      } else {
+        setTaskSuggestions(data.suggestions)
+        setSuggestionsCreatedCount(0)
+        showToast(`Generated ${data.suggestions.length} task suggestions`, 'success')
+      }
+      // Refresh AI usage tracker
+      utils.aiUsage.invalidate()
     },
     onError: (error) => {
       showToast(error.message, 'error')

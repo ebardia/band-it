@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
-import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown } from '@/components/ui'
+import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown, AIUsageTicker } from '@/components/ui'
 import { theme } from '@band-it/shared'
 
 export function AppNav() {
@@ -29,7 +29,9 @@ export function AppNav() {
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
 
   return (
-    <nav className={theme.components.nav.container}>
+    <>
+      <AIUsageTicker />
+      <nav className={theme.components.nav.container}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <button onClick={() => router.push('/user-dashboard')}>
@@ -84,5 +86,6 @@ export function AppNav() {
         </div>
       </div>
     </nav>
+    </>
   )
 }

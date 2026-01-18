@@ -24,6 +24,8 @@ export const validationRouter = router({
       entityType: entityTypeEnum,
       action: actionEnum,
       bandId: z.string(),
+      userId: z.string().optional(),
+      entityId: z.string().optional(),
       data: z.object({
         title: z.string().optional(),
         name: z.string().optional(),
@@ -36,6 +38,8 @@ export const validationRouter = router({
         entityType: input.entityType as EntityType,
         action: input.action,
         bandId: input.bandId,
+        userId: input.userId,
+        entityId: input.entityId,
         data: input.data,
         parentId: input.parentId,
       })

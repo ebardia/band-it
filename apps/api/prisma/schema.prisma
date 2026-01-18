@@ -257,6 +257,7 @@ model Band {
   comments  Comment[]
   auditLogs AuditLog[]
   pendingInvites PendingInvite[]
+  aiUsage   AIUsage[]
 
   @@index([createdById])
   @@index([status])
@@ -875,5 +876,54 @@ model AuditLog {
   @@index([bandId, createdAt])
   @@index([entityType, entityId])
   @@index([actorId])
+  @@index([createdAt])
+}
+
+// ============================================
+// AI USAGE TRACKING
+// ============================================
+
+model AIUsage {
+  id          String   @id @default(cuid())
+
+  // Context
+  bandId      String?
+  userId      String?
+  entityType  String   // "proposal", "project", "task", "checklist"
+  entityId    String?
+
+  // Operation
+  operation   String   // "proposal_draft", "proposal_validation", etc.
+
+  // Token Metrics
+  inputTokens  Int
+  outputTokens Int
+  totalTokens  Int
+
+  // Environmental Impact (calculated)
+  co2Grams        Float
+  waterMl         Float
+  electricityWh   Float
+  ledMinutes      Float
+
+  // Model Info
+  model       String   // e.g., "claude-sonnet-4-20250514"
+
+  // Timing
+  durationMs  Int
+
+  // Metadata
+  promptHash  String?  // Optional hash for tracking prompt versions
+  success     Boolean  @default(true)
+  error       String?
+
+  createdAt   DateTime @default(now())
+
+  // Relations
+  band        Band?    @relation(fields: [bandId], references: [id], onDelete: SetNull)
+
+  @@index([bandId, createdAt])
+  @@index([entityType, entityId])
+  @@index([operation])
   @@index([createdAt])
 }

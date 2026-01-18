@@ -36,6 +36,7 @@ export default function TaskDetailPage() {
   const router = useRouter()
   const params = useParams()
   const { showToast } = useToast()
+  const utils = trpc.useUtils()
   const slug = params.slug as string
   const taskId = params.taskId as string
   
@@ -148,9 +149,15 @@ export default function TaskDetailPage() {
 
   const suggestItemsMutation = trpc.checklist.suggestItems.useMutation({
     onSuccess: (data) => {
-      setAiSuggestions(data.suggestions)
-      setSelectedSuggestions(new Set(data.suggestions.map((_, i) => i)))
-      showToast(`Generated ${data.suggestions.length} suggestions!`, 'success')
+      if (data.suggestions.length === 0) {
+        showToast('All necessary checklist items already exist - no new suggestions needed', 'info')
+      } else {
+        setAiSuggestions(data.suggestions)
+        setSelectedSuggestions(new Set(data.suggestions.map((_, i) => i)))
+        showToast(`Generated ${data.suggestions.length} suggestions!`, 'success')
+      }
+      // Refresh AI usage tracker
+      utils.aiUsage.invalidate()
     },
     onError: (error) => {
       showToast(error.message, 'error')

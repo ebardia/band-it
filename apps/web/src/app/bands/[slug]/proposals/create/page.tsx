@@ -44,6 +44,7 @@ export default function CreateProposalPage() {
   const router = useRouter()
   const params = useParams()
   const { showToast } = useToast()
+  const utils = trpc.useUtils()
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
 
@@ -123,6 +124,8 @@ export default function CreateProposalPage() {
       setBudgetBreakdown(data.draft.budgetBreakdown)
       setMilestones(data.draft.milestones)
       setShowAdvanced(true)
+      // Refresh AI usage tracker
+      utils.aiUsage.invalidate()
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -138,6 +141,9 @@ export default function CreateProposalPage() {
       title,
       type: type as any,
       context: aiContext || undefined,
+      bandId: bandData?.band?.id,
+      bandName: bandData?.band?.name,
+      userId: userId || undefined,
     })
   }
 

@@ -1,14 +1,12 @@
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+import { callAI, parseAIJson } from '../lib/ai-client'
 
 interface GenerateProposalDraftInput {
   title: string
   type: 'GENERAL' | 'BUDGET' | 'PROJECT' | 'POLICY' | 'MEMBERSHIP'
   context?: string
   bandName?: string
+  bandId?: string
+  userId?: string
 }
 
 interface ProposalDraft {
@@ -30,7 +28,7 @@ export const aiService = {
       MEMBERSHIP: 'a membership change (promotion, role change, etc.)',
     }
 
-    const prompt = `You are helping a member of a collaborative band/team write a proposal. 
+    const prompt = `You are helping a member of a collaborative band/team write a proposal.
 The proposal is titled: "${input.title}"
 Type: ${typeDescriptions[input.type]}
 ${input.context ? `Additional context: ${input.context}` : ''}
@@ -51,30 +49,26 @@ Respond in JSON format with these exact fields:
 Only respond with the JSON object, no other text.`
 
     try {
-      const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
+      const response = await callAI(prompt, {
+        operation: 'proposal_draft',
+        entityType: 'proposal',
+        bandId: input.bandId,
+        userId: input.userId,
+      }, {
+        maxTokens: 1500,
       })
 
-      // Extract text content
-      const textContent = message.content.find((c) => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text response from AI')
-      }
-
       // Parse JSON response
-      const draft = JSON.parse(textContent.text) as ProposalDraft
+      const draft = parseAIJson<ProposalDraft>(response.content)
+
+      if (!draft) {
+        throw new Error('Failed to parse AI response as JSON')
+      }
 
       return draft
     } catch (error) {
       console.error('AI generation error:', error)
-      
+
       // Return fallback template if AI fails
       return {
         description: `This proposal addresses: ${input.title}\n\n[Provide a detailed description of what you are proposing and why it matters to the band.]`,

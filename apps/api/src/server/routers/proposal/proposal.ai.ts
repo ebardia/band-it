@@ -13,6 +13,8 @@ export const proposalAiRouter = router({
         type: z.enum(['GENERAL', 'BUDGET', 'PROJECT', 'POLICY', 'MEMBERSHIP']),
         context: z.string().optional(),
         bandName: z.string().optional(),
+        bandId: z.string().optional(),
+        userId: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -21,6 +23,8 @@ export const proposalAiRouter = router({
         type: input.type,
         context: input.context,
         bandName: input.bandName,
+        bandId: input.bandId,
+        userId: input.userId,
       })
 
       return {

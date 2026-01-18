@@ -2,9 +2,7 @@ import { z } from 'zod'
 import { publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic()
+import { callAI, parseAIJson } from '../../lib/ai-client'
 
 // Roles that can use AI suggestions
 const CAN_USE_AI = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -105,52 +103,29 @@ Example response:
 Respond ONLY with the JSON array, no other text.`
 
     try {
-      const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [
-          {
-            role: 'user',
-            content: `Please suggest checklist items for this task:\n\n${taskContext}`
-          }
-        ],
-        system: systemPrompt,
-      })
-
-      // Extract text from response
-      const textContent = response.content.find(c => c.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text response from AI')
-      }
+      const response = await callAI(
+        `Please suggest checklist items for this task:\n\n${taskContext}`,
+        {
+          operation: 'checklist_suggestions',
+          entityType: 'task',
+          entityId: taskId,
+          bandId: task.band.id,
+          userId,
+        },
+        {
+          system: systemPrompt,
+          maxTokens: 1000,
+        }
+      )
 
       // Parse JSON response
-      let suggestions: string[]
-      try {
-        // Clean up response (remove markdown code blocks if present)
-        let jsonText = textContent.text.trim()
-        if (jsonText.startsWith('```json')) {
-          jsonText = jsonText.slice(7)
-        }
-        if (jsonText.startsWith('```')) {
-          jsonText = jsonText.slice(3)
-        }
-        if (jsonText.endsWith('```')) {
-          jsonText = jsonText.slice(0, -3)
-        }
-        suggestions = JSON.parse(jsonText.trim())
-      } catch (parseError) {
-        console.error('Failed to parse AI response:', textContent.text)
+      const suggestions = parseAIJson<string[]>(response.content)
+
+      if (!suggestions || !Array.isArray(suggestions) || !suggestions.every(s => typeof s === 'string')) {
+        console.error('Failed to parse AI response:', response.content)
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to parse AI response'
-        })
-      }
-
-      // Validate suggestions structure
-      if (!Array.isArray(suggestions) || !suggestions.every(s => typeof s === 'string')) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Invalid AI response format'
         })
       }
 
