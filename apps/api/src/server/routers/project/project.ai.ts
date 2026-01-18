@@ -68,23 +68,29 @@ export const suggestProjects = publicProcedure
       })
     }
 
-    // Build context for AI - include full details so AI can detect semantic duplicates
+    // Build context for AI - include full hierarchy
     const existingProjects = proposal.projects.map(p =>
       `- ${p.name} (${p.status})${p.description ? `\n  Description: ${p.description}` : ''}`
     ).join('\n')
+    const band = proposal.band
 
     const proposalContext = `
+=== BAND CONTEXT ===
+BAND NAME: ${band.name}
+${band.mission ? `BAND MISSION: ${band.mission}` : ''}
+${band.values ? `BAND VALUES: ${band.values}` : ''}
+${band.description ? `BAND DESCRIPTION: ${band.description}` : ''}
+
+=== PROPOSAL CONTEXT ===
 PROPOSAL TITLE: ${proposal.title}
-
-DESCRIPTION:
-${proposal.description}
-
-${proposal.problemStatement ? `PROBLEM STATEMENT:\n${proposal.problemStatement}\n` : ''}
-${proposal.expectedOutcome ? `EXPECTED OUTCOME:\n${proposal.expectedOutcome}\n` : ''}
-${proposal.milestones ? `MILESTONES:\n${proposal.milestones}\n` : ''}
-${proposal.budgetRequested ? `BUDGET: $${proposal.budgetRequested}\n` : ''}
-${proposal.proposedStartDate ? `START DATE: ${new Date(proposal.proposedStartDate).toLocaleDateString()}\n` : ''}
-${proposal.proposedEndDate ? `END DATE: ${new Date(proposal.proposedEndDate).toLocaleDateString()}\n` : ''}
+PROPOSAL TYPE: ${proposal.type}
+PROPOSAL DESCRIPTION: ${proposal.description}
+${proposal.problemStatement ? `PROBLEM STATEMENT: ${proposal.problemStatement}` : ''}
+${proposal.expectedOutcome ? `EXPECTED OUTCOME: ${proposal.expectedOutcome}` : ''}
+${proposal.milestones ? `MILESTONES: ${proposal.milestones}` : ''}
+${proposal.budgetRequested ? `BUDGET: $${proposal.budgetRequested}` : ''}
+${proposal.proposedStartDate ? `START DATE: ${new Date(proposal.proposedStartDate).toLocaleDateString()}` : ''}
+${proposal.proposedEndDate ? `END DATE: ${new Date(proposal.proposedEndDate).toLocaleDateString()}` : ''}
 
 ${existingProjects ? `EXISTING PROJECTS:\n${existingProjects}` : 'NO EXISTING PROJECTS YET'}
     `.trim()
@@ -92,6 +98,14 @@ ${existingProjects ? `EXISTING PROJECTS:\n${existingProjects}` : 'NO EXISTING PR
     const systemPrompt = `You are a project management expert helping a community band break down an approved proposal into actionable projects.
 
 A "project" is a logical grouping of work that delivers a specific outcome. Projects will later be broken down into individual tasks.
+
+IMPORTANT: You are given the FULL CONTEXT of the organization hierarchy:
+- BAND: The organization/group with its mission and purpose
+- PROPOSAL: The approved initiative needing projects
+
+You MUST understand and respect this context. Your suggestions should align with:
+- The band's mission and purpose (if it's a test band, suggest test-related projects)
+- The proposal's specific goals and expected outcomes
 
 Your job is to suggest 2-5 projects that together would accomplish the proposal's goals. IMPORTANT: Carefully review any existing projects listed below - do NOT suggest projects that cover the same work, even if the name is different.
 
@@ -103,6 +117,7 @@ RULES:
 5. Consider the timeline and budget when sizing projects
 6. CRITICAL: Do NOT suggest projects that duplicate existing ones - check both names AND descriptions for overlap. If an existing project already covers certain work (like "planning", "research", "procurement", etc.), do not suggest another project covering the same scope even with a different name.
 7. If all necessary projects already exist, return an empty array []
+8. NEVER suggest generic projects that don't match the band's actual mission (e.g., don't suggest "recruit musicians" for a test band)
 
 Respond with a JSON array of project suggestions. Each object should have:
 - name: string (project name)

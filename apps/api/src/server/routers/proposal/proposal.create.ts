@@ -82,6 +82,11 @@ export const proposalCreateRouter = router({
         throw new Error('Your role does not have permission to create proposals')
       }
 
+      // Check if band is active (has 3+ members)
+      if (membership.band.status !== 'ACTIVE') {
+        throw new Error('Band must be active (3+ members) before creating proposals')
+      }
+
       // Calculate voting end date
       const votingEndsAt = new Date()
       votingEndsAt.setDate(votingEndsAt.getDate() + membership.band.votingPeriodDays)

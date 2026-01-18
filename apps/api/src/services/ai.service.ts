@@ -1,4 +1,5 @@
 import { callAI, parseAIJson } from '../lib/ai-client'
+import { prisma } from '../lib/prisma'
 
 interface GenerateProposalDraftInput {
   title: string
@@ -28,11 +29,31 @@ export const aiService = {
       MEMBERSHIP: 'a membership change (promotion, role change, etc.)',
     }
 
+    // Fetch band details if bandId is provided
+    let bandContext = ''
+    if (input.bandId) {
+      const band = await prisma.band.findUnique({
+        where: { id: input.bandId },
+        select: { name: true, mission: true, description: true, values: true }
+      })
+      if (band) {
+        bandContext = `
+=== BAND CONTEXT ===
+BAND NAME: ${band.name}
+${band.mission ? `BAND MISSION: ${band.mission}` : ''}
+${band.values ? `BAND VALUES: ${band.values}` : ''}
+${band.description ? `BAND DESCRIPTION: ${band.description}` : ''}
+
+IMPORTANT: Your proposal MUST align with this band's mission and purpose. Do not suggest anything unrelated to what this band is about.
+`
+      }
+    }
+
     const prompt = `You are helping a member of a collaborative band/team write a proposal.
+${bandContext}
 The proposal is titled: "${input.title}"
 Type: ${typeDescriptions[input.type]}
 ${input.context ? `Additional context: ${input.context}` : ''}
-${input.bandName ? `Band/Team name: ${input.bandName}` : ''}
 
 Generate a well-structured proposal draft with the following sections. Be specific, professional, and actionable. Use placeholder brackets [like this] only where the user needs to fill in specific details you don't know.
 

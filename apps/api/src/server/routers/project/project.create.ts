@@ -90,6 +90,14 @@ export const createProject = publicProcedure
       })
     }
 
+    // Check if band is active (has 3+ members)
+    if (proposal.band.status !== 'ACTIVE') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'Band must be active (3+ members) before creating projects'
+      })
+    }
+
     // Check user is a member with permission
     const member = proposal.band.members.find(m => m.userId === userId)
     if (!member) {

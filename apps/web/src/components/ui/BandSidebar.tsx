@@ -19,16 +19,16 @@ export function BandSidebar({ bandSlug, canApprove = false, isMember = false, ca
 
   // Main navigation - always visible
   const mainNav = [
-    { label: '📋 Details', path: `/bands/${bandSlug}` },
-    { label: '📝 Proposals', path: `/bands/${bandSlug}/proposals` },
-    { label: '📁 Projects', path: `/bands/${bandSlug}/projects` },
-    { label: '✅ Tasks', path: `/bands/${bandSlug}/tasks` },
-    { label: '📜 Audit Log', path: `/bands/${bandSlug}/audit` },
+    { label: '📋 Band Details', path: `/bands/${bandSlug}` },
+    { label: '📝 Band Proposals', path: `/bands/${bandSlug}/proposals` },
+    { label: '📁 Band Projects', path: `/bands/${bandSlug}/projects` },
+    { label: '✅ Band Tasks', path: `/bands/${bandSlug}/tasks` },
+    { label: '📜 Band Audit Log', path: `/bands/${bandSlug}/audit` },
   ]
 
   // Member actions
   const memberActions = [
-    { label: '👥 Members', path: `/bands/${bandSlug}/members`, show: true },
+    { label: '👥 Band Members', path: `/bands/${bandSlug}/members`, show: true },
     { label: '📨 Invite', path: `/bands/${bandSlug}/invite`, show: isMember },
     { label: '📋 Applications', path: `/bands/${bandSlug}/applications`, show: canApprove },
   ].filter(item => item.show !== false)

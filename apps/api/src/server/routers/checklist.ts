@@ -116,10 +116,21 @@ export const checklistRouter = router({
         })
       }
 
-      // Verify task exists
-      const task = await prisma.task.findUnique({ where: { id: taskId } })
+      // Verify task exists and get band status
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+        include: { band: { select: { status: true } } }
+      })
       if (!task) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' })
+      }
+
+      // Check if band is active (has 3+ members)
+      if (task.band.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Band must be active (3+ members) before creating checklist items'
+        })
       }
 
       // Get max order index
@@ -164,10 +175,21 @@ export const checklistRouter = router({
     .mutation(async ({ input }) => {
       const { taskId, descriptions, userId } = input
 
-      // Verify task exists
-      const task = await prisma.task.findUnique({ where: { id: taskId } })
+      // Verify task exists and get band status
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+        include: { band: { select: { status: true } } }
+      })
       if (!task) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' })
+      }
+
+      // Check if band is active (has 3+ members)
+      if (task.band.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Band must be active (3+ members) before creating checklist items'
+        })
       }
 
       // Get max order index
@@ -364,15 +386,22 @@ export const checklistRouter = router({
     .mutation(async ({ input }) => {
       const { taskId, userId } = input
 
-      // Get task with full context
+      // Get task with full context including band mission and proposal
       const task = await prisma.task.findUnique({
         where: { id: taskId },
         include: {
           project: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
+            include: {
+              proposal: {
+                select: {
+                  id: true,
+                  title: true,
+                  description: true,
+                  type: true,
+                  problemStatement: true,
+                  expectedOutcome: true,
+                }
+              }
             }
           },
           band: {
@@ -405,18 +434,33 @@ export const checklistRouter = router({
         })
       }
 
-      // Build context for AI
+      // Build context for AI - include full hierarchy
       const existingItems = task.checklistItems.map(i => `- ${i.description}`).join('\n')
+      const band = task.band
+      const project = task.project
+      const proposal = project.proposal
 
       const taskContext = `
+=== BAND CONTEXT ===
+BAND NAME: ${band.name}
+${band.mission ? `BAND MISSION: ${band.mission}` : ''}
+${band.values ? `BAND VALUES: ${band.values}` : ''}
+${band.description ? `BAND DESCRIPTION: ${band.description}` : ''}
+
+=== PROPOSAL CONTEXT ===
+${proposal ? `PROPOSAL TITLE: ${proposal.title}
+PROPOSAL TYPE: ${proposal.type}
+PROPOSAL DESCRIPTION: ${proposal.description || 'No description'}
+${proposal.problemStatement ? `PROBLEM STATEMENT: ${proposal.problemStatement}` : ''}
+${proposal.expectedOutcome ? `EXPECTED OUTCOME: ${proposal.expectedOutcome}` : ''}` : 'NO LINKED PROPOSAL'}
+
+=== PROJECT CONTEXT ===
+PROJECT NAME: ${project.name}
+${project.description ? `PROJECT DESCRIPTION: ${project.description}` : ''}
+
+=== TASK CONTEXT ===
 TASK NAME: ${task.name}
-
-TASK DESCRIPTION:
-${task.description || 'No description provided'}
-
-PROJECT: ${task.project.name}
-${task.project.description ? `PROJECT DESCRIPTION: ${task.project.description}` : ''}
-
+TASK DESCRIPTION: ${task.description || 'No description provided'}
 PRIORITY: ${task.priority}
 ${task.dueDate ? `DUE DATE: ${new Date(task.dueDate).toLocaleDateString()}` : ''}
 ${task.estimatedHours ? `ESTIMATED HOURS: ${task.estimatedHours}` : ''}
@@ -428,6 +472,18 @@ ${existingItems ? `EXISTING CHECKLIST ITEMS:\n${existingItems}` : 'NO EXISTING C
 
 A "checklist item" is a small, specific step that can be checked off. Think of it like a to-do within a to-do.
 
+IMPORTANT: You are given the FULL CONTEXT of the organization hierarchy:
+- BAND: The organization/group with its mission and purpose
+- PROPOSAL: The approved initiative this work stems from
+- PROJECT: The specific project containing this task
+- TASK: The actual task needing checklist items
+
+You MUST understand and respect this context. Your suggestions should align with:
+- The band's mission and purpose (if it's a test band, suggest test-related items)
+- The proposal's goals and expected outcomes
+- The project's objectives
+- The specific task requirements
+
 Your job is to suggest 3-8 checklist items that would help complete this task. IMPORTANT: Carefully review any existing checklist items listed below - do NOT suggest items that cover the same work, even if worded differently.
 
 RULES:
@@ -436,8 +492,9 @@ RULES:
 3. Keep item descriptions short and actionable (under 100 characters ideally)
 4. Start with verbs: "Call...", "Send...", "Review...", "Draft...", "Schedule...", etc.
 5. CRITICAL: Do NOT suggest items that duplicate existing ones - check for semantic overlap, not just exact matches. If an existing item covers "review documents", don't suggest "check documentation" or similar.
-6. Be practical and specific to the task at hand
+6. Be practical and specific to the task at hand - USE THE FULL CONTEXT provided above
 7. If all necessary checklist items already exist, return an empty array []
+8. NEVER suggest generic items that don't match the band's actual mission (e.g., don't suggest "recruit musicians" for a test band)
 
 Respond with a JSON array of strings, where each string is a checklist item description.
 
