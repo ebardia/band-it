@@ -67,6 +67,7 @@ model User {
   checklistItemsCompleted ChecklistItem[] @relation("ChecklistItemsCompleted")
   checklistItemsAssigned  ChecklistItem[] @relation("ChecklistItemsAssigned")
   pendingInvitesCreated   PendingInvite[] @relation("PendingInvitesCreated")
+  bandsAsBillingOwner     Band[] @relation("BandBillingOwner")
 }
 
 enum SubscriptionStatus {
@@ -169,6 +170,17 @@ enum NotificationType {
   TASK_VERIFICATION_NEEDED
   TASK_VERIFIED
   TASK_REJECTED
+
+  // Billing
+  BILLING_PAYMENT_REQUIRED
+  BILLING_PAYMENT_SUCCEEDED
+  BILLING_PAYMENT_FAILED
+  BILLING_GRACE_PERIOD_WARNING
+  BILLING_BAND_DEACTIVATED
+  BILLING_OWNER_LEFT
+  BILLING_OWNER_CLAIMED
+  BILLING_SUBSCRIPTION_UPGRADED
+  BILLING_SUBSCRIPTION_DOWNGRADED
 }
 
 enum NotificationPriority {
@@ -211,29 +223,39 @@ model Band {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
-  
+
   // Core Information
   description String @db.Text
   mission     String @db.Text
   values      String[]
-  
+
   // Location
   zipcode     String?
-  
+
   // Matching
   skillsLookingFor     String[]
   whatMembersWillLearn String[]
-  
+
   // Visual
   imageUrl    String?
-  
+
   // Status
-  status      BandStatus @default(PENDING)
-  
+  status      BandStatus @default(INACTIVE)
+
+  // Billing
+  billingOwnerId        String?
+  stripeCustomerId      String?   @unique
+  stripeSubscriptionId  String?   @unique
+  stripePriceId         String?
+  billingStatus         BillingStatus @default(NONE)
+  billingCycleStart     DateTime?
+  paymentFailedAt       DateTime?
+  gracePeriodEndsAt     DateTime?
+
   // Membership Configuration
   membershipRequirements String @db.Text
   whoCanApprove         MemberRole[]
-  
+
   // Voting Configuration
   votingMethod          VotingMethod @default(SIMPLE_MAJORITY)
   votingPeriodDays      Int @default(7)
@@ -241,7 +263,7 @@ model Band {
 
   // Role Management Configuration
   whoCanChangeRoles     MemberRole[] @default([FOUNDER])
-  
+
   // Metadata
   createdById String
   createdAt   DateTime @default(now())
@@ -249,6 +271,7 @@ model Band {
 
   // Relations
   createdBy User @relation("BandCreator", fields: [createdById], references: [id])
+  billingOwner User? @relation("BandBillingOwner", fields: [billingOwnerId], references: [id])
   members   Member[]
   proposals Proposal[]
   projects  Project[]
@@ -261,12 +284,22 @@ model Band {
 
   @@index([createdById])
   @@index([status])
+  @@index([billingOwnerId])
+  @@index([billingStatus])
 }
 
 enum BandStatus {
-  PENDING
+  PENDING    // DEPRECATED - do not use, kept for migration compatibility
   ACTIVE
   INACTIVE
+}
+
+enum BillingStatus {
+  NONE           // No payment needed yet (< 3 members)
+  PENDING        // 3 members reached, awaiting first payment
+  ACTIVE         // Subscription active
+  PAST_DUE       // Payment failed, in grace period
+  INACTIVE       // Grace period expired or subscription cancelled
 }
 
 enum VotingMethod {

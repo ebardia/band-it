@@ -6,6 +6,8 @@ import { createExpressMiddleware } from '@trpc/server/adapters/express'
 import { appRouter } from './server/routers/_app'
 import { createContext } from './server/trpc'
 import { auditStorage, AuditContext } from './lib/auditContext'
+import { handleStripeWebhook } from './webhooks/stripe'
+import { initBillingCron } from './cron/billing-cron'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 
@@ -18,6 +20,10 @@ app.use(cors({
   origin: true,
   credentials: true,
 }))
+
+// Stripe webhook endpoint - MUST be before JSON body parser
+// Stripe requires raw body for signature verification
+app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook)
 
 // Increase payload limit for file uploads (base64 encoded)
 app.use(express.json({ limit: '15mb' }))
@@ -78,5 +84,10 @@ app.use('/trpc', (req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Backend API running on http://localhost:${PORT}`)
   console.log(`📡 tRPC endpoint: http://localhost:${PORT}/trpc`)
+  console.log(`💳 Stripe webhook: http://localhost:${PORT}/webhooks/stripe`)
   console.log(`📁 Uploads served from: http://localhost:${PORT}/uploads`)
+
+  // Initialize billing cron jobs
+  initBillingCron()
+  console.log(`⏰ Billing cron jobs scheduled`)
 })

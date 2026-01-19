@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
+import { memberBillingTriggers } from '../../services/member-billing-triggers'
 
 export const bandApplicationRouter = router({
   /**
@@ -220,45 +221,8 @@ export const bandApplicationRouter = router({
         })
       }
 
-      // Check if band should become active (3+ members)
-      const activeMembers = await prisma.member.count({
-        where: {
-          bandId: membership.bandId,
-          status: 'ACTIVE',
-        },
-      })
-
-      if (activeMembers >= 3 && membership.band.status === 'PENDING') {
-        await prisma.band.update({
-          where: { id: membership.bandId },
-          data: { status: 'ACTIVE' },
-        })
-
-        // Notify all members that band is now active
-        const allActiveMem = await prisma.member.findMany({
-          where: {
-            bandId: membership.bandId,
-            status: 'ACTIVE',
-          },
-          select: { userId: true },
-        })
-
-        for (const member of allActiveMem) {
-          await notificationService.create({
-            userId: member.userId,
-            type: 'BAND_STATUS_CHANGED',
-            actionUrl: `/bands/${membership.band.slug}`,
-            priority: 'HIGH',
-            metadata: {
-              bandName: membership.band.name,
-              bandSlug: membership.band.slug,
-              status: 'ACTIVE',
-            },
-            relatedId: membership.bandId,
-            relatedType: 'BAND',
-          })
-        }
-      }
+      // Trigger billing checks (3rd member, 21st member, etc.)
+      await memberBillingTriggers.onMemberActivated(membership.bandId)
 
       return {
         success: true,

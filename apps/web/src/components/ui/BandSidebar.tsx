@@ -31,6 +31,7 @@ export function BandSidebar({ bandSlug, canApprove = false, isMember = false, ca
     { label: '👥 Band Members', path: `/bands/${bandSlug}/members`, show: true },
     { label: '📨 Invite', path: `/bands/${bandSlug}/invite`, show: isMember },
     { label: '📋 Applications', path: `/bands/${bandSlug}/applications`, show: canApprove },
+    { label: '⚙️ Settings', path: `/bands/${bandSlug}/settings`, show: isMember },
   ].filter(item => item.show !== false)
 
   // Non-member actions

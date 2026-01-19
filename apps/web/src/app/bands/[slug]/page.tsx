@@ -19,7 +19,8 @@ import {
   ListItem,
   BandLayout,
   DiscussionSidebar,
-  Modal
+  Modal,
+  BillingBanner
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -161,6 +162,15 @@ export default function BandDetailsPage() {
               )}
             </Stack>
           </Card>
+
+          {/* Billing Banner - shown to members when payment action needed */}
+          {isMember && userId && (
+            <BillingBanner
+              bandId={band.id}
+              bandSlug={slug}
+              userId={userId}
+            />
+          )}
 
           <Card>
             <Stack spacing="md">

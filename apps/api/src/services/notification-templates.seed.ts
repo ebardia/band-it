@@ -116,6 +116,71 @@ const templates = [
     emailSubject: 'Proposal closed in {bandName}',
     emailBody: 'The proposal "{proposalTitle}" in {bandName} has been closed.',
   },
+
+  // Billing Notifications
+  {
+    type: NotificationType.BILLING_PAYMENT_REQUIRED,
+    title: 'Payment Required',
+    message: '{bandName} now has 3+ members and requires a subscription',
+    emailSubject: 'Payment required for {bandName}',
+    emailBody: 'Hi,\n\n{bandName} now has 3 or more members and requires an active subscription to remain active.\n\nAs a member, you can claim billing ownership and set up payment:\n{actionUrl}\n\nCurrent monthly rate: ${priceAmount}/month',
+  },
+  {
+    type: NotificationType.BILLING_PAYMENT_SUCCEEDED,
+    title: 'Payment Successful',
+    message: 'Payment processed for {bandName}',
+    emailSubject: 'Payment confirmed for {bandName}',
+    emailBody: 'Your payment of ${priceAmount} for {bandName} has been successfully processed.\n\nThank you for keeping {bandName} active!',
+  },
+  {
+    type: NotificationType.BILLING_PAYMENT_FAILED,
+    title: 'Payment Failed',
+    message: 'Payment failed for {bandName}. Please update your payment method.',
+    emailSubject: 'Payment failed for {bandName} - Action Required',
+    emailBody: 'Hi,\n\nThe payment for {bandName} has failed. Please update your payment method within {gracePeriodDays} days to avoid band deactivation.\n\nUpdate payment method:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.BILLING_GRACE_PERIOD_WARNING,
+    title: 'Grace Period Warning',
+    message: '{bandName} will be deactivated in {daysLeft} days if payment is not updated',
+    emailSubject: 'Urgent: {bandName} deactivation in {daysLeft} days',
+    emailBody: 'Hi,\n\nThis is a reminder that {bandName} will be deactivated in {daysLeft} days due to payment failure.\n\nPlease update your payment method immediately:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.BILLING_BAND_DEACTIVATED,
+    title: 'Band Deactivated',
+    message: '{bandName} has been deactivated due to payment failure',
+    emailSubject: '{bandName} has been deactivated',
+    emailBody: 'Hi,\n\n{bandName} has been deactivated due to payment failure. All band activities are now paused.\n\nTo reactivate the band, a billing owner must set up a new subscription:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.BILLING_OWNER_LEFT,
+    title: 'Billing Owner Left',
+    message: 'The billing owner of {bandName} has left. A new billing owner is needed.',
+    emailSubject: 'Billing owner needed for {bandName}',
+    emailBody: 'Hi,\n\nThe billing owner of {bandName} has left the band. A new member must claim billing ownership to manage payments.\n\nClaim billing ownership:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.BILLING_OWNER_CLAIMED,
+    title: 'Billing Ownership Claimed',
+    message: '{newOwnerName} has claimed billing ownership of {bandName}',
+    emailSubject: 'Billing owner claimed for {bandName}',
+    emailBody: 'Hi,\n\n{newOwnerName} has claimed billing ownership for {bandName} and will be responsible for managing payments.',
+  },
+  {
+    type: NotificationType.BILLING_SUBSCRIPTION_UPGRADED,
+    title: 'Subscription Upgraded',
+    message: '{bandName} subscription upgraded to {newPlan}',
+    emailSubject: 'Subscription upgraded for {bandName}',
+    emailBody: 'Hi,\n\n{bandName} has reached 21+ members. Your subscription has been automatically upgraded to the {newPlan} plan at ${priceAmount}/month.',
+  },
+  {
+    type: NotificationType.BILLING_SUBSCRIPTION_DOWNGRADED,
+    title: 'Subscription Downgraded',
+    message: '{bandName} subscription will downgrade to {newPlan} at billing cycle end',
+    emailSubject: 'Subscription downgrade scheduled for {bandName}',
+    emailBody: 'Hi,\n\n{bandName} now has fewer than 21 members. Your subscription will be downgraded to the {newPlan} plan at ${priceAmount}/month at the end of the current billing cycle.',
+  },
 ]
 
 export async function seedNotificationTemplates() {

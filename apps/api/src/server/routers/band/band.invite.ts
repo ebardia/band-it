@@ -4,6 +4,7 @@ import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
 import { emailService } from '../../services/email.service'
+import { memberBillingTriggers } from '../../services/member-billing-triggers'
 
 // Roles that can invite members
 const CAN_INVITE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -277,45 +278,8 @@ export const bandInviteRouter = router({
         })
       }
 
-      // Check if band should become active (3+ members)
-      const activeMembers = await prisma.member.count({
-        where: {
-          bandId: membership.bandId,
-          status: 'ACTIVE',
-        },
-      })
-
-      if (activeMembers >= 3 && membership.band.status === 'PENDING') {
-        await prisma.band.update({
-          where: { id: membership.bandId },
-          data: { status: 'ACTIVE' },
-        })
-
-        // Notify all members that band is now active
-        const allActiveMem = await prisma.member.findMany({
-          where: {
-            bandId: membership.bandId,
-            status: 'ACTIVE',
-          },
-          select: { userId: true },
-        })
-
-        for (const member of allActiveMem) {
-          await notificationService.create({
-            userId: member.userId,
-            type: 'BAND_STATUS_CHANGED',
-            actionUrl: `/bands/${membership.band.slug}`,
-            priority: 'HIGH',
-            metadata: {
-              bandName: membership.band.name,
-              bandSlug: membership.band.slug,
-              status: 'ACTIVE',
-            },
-            relatedId: membership.bandId,
-            relatedType: 'BAND',
-          })
-        }
-      }
+      // Trigger billing checks (3rd member, 21st member, etc.)
+      await memberBillingTriggers.onMemberActivated(membership.bandId)
 
       return {
         success: true,
@@ -449,37 +413,8 @@ export const bandInviteRouter = router({
         })
       }
 
-      // Check if band should go back to PENDING (less than 3 active members)
-      const activeMembers = await prisma.member.count({
-        where: {
-          bandId: input.bandId,
-          status: 'ACTIVE',
-        },
-      })
-
-      if (activeMembers < 3 && membership.band.status === 'ACTIVE') {
-        await prisma.band.update({
-          where: { id: input.bandId },
-          data: { status: 'PENDING' },
-        })
-
-        // Notify remaining members
-        for (const member of remainingMembers) {
-          await notificationService.create({
-            userId: member.userId,
-            type: 'BAND_STATUS_CHANGED',
-            actionUrl: `/bands/${membership.band.slug}`,
-            priority: 'HIGH',
-            metadata: {
-              bandName: membership.band.name,
-              bandSlug: membership.band.slug,
-              status: 'PENDING',
-            },
-            relatedId: input.bandId,
-            relatedType: 'BAND',
-          })
-        }
-      }
+      // Trigger billing checks (member count changes, billing owner left, etc.)
+      await memberBillingTriggers.onMemberRemoved(input.bandId, input.userId)
 
       return {
         success: true,
