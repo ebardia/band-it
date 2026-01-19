@@ -30,6 +30,10 @@ model User {
   emailVerified    Boolean  @default(false)
   emailVerifiedAt  DateTime?
   verificationToken String?  @unique
+
+  // Password Reset
+  passwordResetToken   String?   @unique
+  passwordResetExpires DateTime?
   
   // Payment
   stripeCustomerId      String?  @unique

@@ -272,6 +272,54 @@ export const emailService = {
   },
 
   /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(email: string, name: string, token: string) {
+    const resetUrl = `${FRONTEND_URL}/reset-password?token=${token}`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #3B82F6;">Reset Your Password</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${name}, we received a request to reset your password for your Band IT account.
+        </p>
+        <div style="margin: 30px 0;">
+          <a href="${resetUrl}"
+             style="background-color: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            Reset Password
+          </a>
+        </div>
+        <p style="font-size: 14px; color: #6B7280;">
+          Or copy and paste this link into your browser:<br>
+          <a href="${resetUrl}" style="color: #3B82F6;">${resetUrl}</a>
+        </p>
+        <p style="font-size: 14px; color: #EF4444; margin-top: 20px;">
+          This link will expire in 1 hour.
+        </p>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
+        </p>
+      </div>
+    `
+
+    // In development, just log the link
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 PASSWORD RESET LINK:')
+      console.log(resetUrl)
+      console.log('=================================\n')
+      return { success: true, resetUrl }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: 'Reset Your Band IT Password',
+      html,
+    })
+  },
+
+  /**
    * Verify email token
    */
   async verifyEmail(token: string) {

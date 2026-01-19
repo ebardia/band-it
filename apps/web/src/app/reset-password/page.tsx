@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { trpc } from '@/lib/trpc'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
@@ -15,47 +15,25 @@ import {
   Stack,
   Center,
   Link,
-  Progress,
   Alert,
   Loading
 } from '@/components/ui'
 
-function RegisterContent() {
+function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { showToast } = useToast()
-  const inviteToken = searchParams.get('invite')
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-  })
+  const token = searchParams.get('token')
+
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [success, setSuccess] = useState(false)
 
-  const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: (data) => {
-      localStorage.setItem('accessToken', data.accessToken)
-      localStorage.setItem('refreshToken', data.refreshToken)
-      localStorage.setItem('userEmail', formData.email)
-
-      // Show bands joined message if any
-      if (data.bandsJoined && data.bandsJoined.length > 0) {
-        const bandNames = data.bandsJoined.map((b: { name: string }) => b.name).join(', ')
-        showToast(`Welcome! You've automatically joined: ${bandNames}`, 'success')
-      }
-
-      // Check if email is already verified (SKIP_EMAIL_VERIFICATION mode)
-      if (data.user.emailVerified) {
-        if (!data.bandsJoined || data.bandsJoined.length === 0) {
-          showToast('Account created successfully!', 'success')
-        }
-        router.push('/profile') // Skip email verification, go to profile
-      } else {
-        if (!data.bandsJoined || data.bandsJoined.length === 0) {
-          showToast('Account created! Please check your email.', 'success')
-        }
-        router.push('/verify-email')
-      }
+  const resetMutation = trpc.auth.resetPassword.useMutation({
+    onSuccess: () => {
+      setSuccess(true)
+      showToast('Password reset successfully!', 'success')
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -64,10 +42,75 @@ function RegisterContent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    registerMutation.mutate({
-      ...formData,
-      inviteToken: inviteToken || undefined,
-    })
+
+    if (password !== confirmPassword) {
+      showToast('Passwords do not match', 'error')
+      return
+    }
+
+    if (!token) {
+      showToast('Invalid reset link', 'error')
+      return
+    }
+
+    resetMutation.mutate({ token, newPassword: password })
+  }
+
+  if (!token) {
+    return (
+      <PageLayout>
+        <Container size="sm">
+          <Card>
+            <Stack spacing="lg">
+              <Center>
+                <Heading level={1}>Invalid Link</Heading>
+              </Center>
+
+              <Alert variant="danger">
+                <Text variant="small">
+                  This password reset link is invalid or has expired.
+                </Text>
+              </Alert>
+
+              <Center>
+                <Link href="/forgot-password">Request a new reset link</Link>
+              </Center>
+            </Stack>
+          </Card>
+        </Container>
+      </PageLayout>
+    )
+  }
+
+  if (success) {
+    return (
+      <PageLayout>
+        <Container size="sm">
+          <Card>
+            <Stack spacing="lg">
+              <Center>
+                <Heading level={1}>Password Reset</Heading>
+              </Center>
+
+              <Alert variant="success">
+                <Text variant="small">
+                  Your password has been reset successfully.
+                </Text>
+              </Alert>
+
+              <Button
+                variant="primary"
+                size="md"
+                className="w-full"
+                onClick={() => router.push('/login')}
+              >
+                Sign In
+              </Button>
+            </Stack>
+          </Card>
+        </Container>
+      </PageLayout>
+    )
   }
 
   return (
@@ -76,56 +119,21 @@ function RegisterContent() {
         <Card>
           <Stack spacing="lg">
             <Center>
-              <Heading level={1}>Create Account</Heading>
-              <Text variant="muted">Join Band IT to start managing your band</Text>
+              <Heading level={1}>Reset Password</Heading>
+              <Text variant="muted">Enter your new password</Text>
             </Center>
-
-            {inviteToken && (
-              <Alert variant="info">
-                <Text variant="small">
-                  You've been invited to join a band! Create your account to accept the invitation and join automatically.
-                </Text>
-              </Alert>
-            )}
-
-            <Progress
-              steps={[
-                { label: 'Register', status: 'active' },
-                { label: 'Verify', status: 'inactive' },
-                { label: 'Profile', status: 'inactive' },
-              ]}
-            />
 
             <form onSubmit={handleSubmit}>
               <Stack spacing="lg">
-                <Input
-                  label="Full Name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="John Doe"
-                />
-
-                <Input
-                  label="Email Address"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="john@example.com"
-                />
-
                 <div className="relative">
                   <Input
-                    label="Password"
+                    label="New Password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="At least 8 characters"
                     minLength={8}
-                    helperText="Must be at least 8 characters"
                   />
                   <button
                     type="button"
@@ -146,21 +154,31 @@ function RegisterContent() {
                   </button>
                 </div>
 
+                <Input
+                  label="Confirm Password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  minLength={8}
+                />
+
                 <Button
                   type="submit"
                   variant="primary"
                   size="md"
-                  disabled={registerMutation.isPending}
+                  disabled={resetMutation.isPending}
                   className="w-full"
                 >
-                  {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
+                  {resetMutation.isPending ? 'Resetting...' : 'Reset Password'}
                 </Button>
               </Stack>
             </form>
 
             <Center>
               <Text variant="small">
-                Already have an account? <Link href="/login">Sign in</Link>
+                Remember your password? <Link href="/login">Sign in</Link>
               </Text>
             </Center>
           </Stack>
@@ -170,7 +188,7 @@ function RegisterContent() {
   )
 }
 
-export default function RegisterPage() {
+export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
       <PageLayout>
@@ -181,7 +199,7 @@ export default function RegisterPage() {
         </Container>
       </PageLayout>
     }>
-      <RegisterContent />
+      <ResetPasswordContent />
     </Suspense>
   )
 }

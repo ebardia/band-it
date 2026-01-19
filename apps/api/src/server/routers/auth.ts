@@ -211,6 +211,96 @@ export const authRouter = router({
     }),
 
   /**
+   * Request password reset
+   */
+  requestPasswordReset: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email('Invalid email address'),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const user = await prisma.user.findUnique({
+        where: { email: input.email },
+        select: { id: true, email: true, name: true },
+      })
+
+      // Always return success to prevent email enumeration
+      if (!user) {
+        return {
+          success: true,
+          message: 'If an account exists with this email, you will receive a password reset link.',
+        }
+      }
+
+      // Generate reset token
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const expires = new Date(Date.now() + 60 * 60 * 1000) // 1 hour from now
+
+      // Save token to database
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passwordResetToken: token,
+          passwordResetExpires: expires,
+        },
+      })
+
+      // Send email
+      await emailService.sendPasswordResetEmail(user.email, user.name, token)
+
+      return {
+        success: true,
+        message: 'If an account exists with this email, you will receive a password reset link.',
+      }
+    }),
+
+  /**
+   * Reset password with token
+   */
+  resetPassword: publicProcedure
+    .input(
+      z.object({
+        token: z.string(),
+        newPassword: z
+          .string()
+          .min(8, 'Password must be at least 8 characters')
+          .max(100, 'Password must be less than 100 characters'),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const user = await prisma.user.findUnique({
+        where: { passwordResetToken: input.token },
+      })
+
+      if (!user) {
+        throw new Error('Invalid or expired reset link')
+      }
+
+      if (!user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+        throw new Error('Reset link has expired. Please request a new one.')
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(input.newPassword, 10)
+
+      // Update password and clear reset token
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          password: hashedPassword,
+          passwordResetToken: null,
+          passwordResetExpires: null,
+        },
+      })
+
+      return {
+        success: true,
+        message: 'Password reset successfully. You can now sign in with your new password.',
+      }
+    }),
+
+  /**
    * Change password
    */
   changePassword: publicProcedure
