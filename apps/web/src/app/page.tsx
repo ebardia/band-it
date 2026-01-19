@@ -4,7 +4,6 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
   PageLayout,
-  Container,
   Button,
   Stack,
   Center,
@@ -16,36 +15,46 @@ export default function HomePage() {
 
   return (
     <PageLayout>
-      <Container size="md">
-        <Center>
-          <Stack spacing="xl">
-            <Image 
-              src="/logo.png" 
-              alt="Band IT Logo" 
-              width={600} 
-              height={600}
-              priority
-            />
+      {/* Top navigation bar */}
+      <div className="absolute top-0 left-0 right-0 p-4">
+        <Flex justify="end" gap="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/register')}
+          >
+            Register
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => router.push('/login')}
+          >
+            Sign In
+          </Button>
+        </Flex>
+      </div>
 
-            <Flex justify="center" gap="md">
-              <Button 
-                variant="primary" 
-                size="lg"
-                onClick={() => router.push('/register')}
-              >
-                Get Started
-              </Button>
-              <Button 
-                variant="secondary" 
-                size="lg"
-                onClick={() => router.push('/login')}
-              >
-                Sign In
-              </Button>
-            </Flex>
-          </Stack>
-        </Center>
-      </Container>
+      {/* Main content */}
+      <Center className="min-h-screen">
+        <Stack spacing="xl" className="items-center">
+          <Image
+            src="/logo.png"
+            alt="Band IT Logo"
+            width={600}
+            height={600}
+            priority
+          />
+
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => router.push('/about')}
+          >
+            Learn More
+          </Button>
+        </Stack>
+      </Center>
     </PageLayout>
   )
 }

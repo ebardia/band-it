@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
+import { jwtDecode } from 'jwt-decode'
 import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown, AIUsageTicker } from '@/components/ui'
+import { trpc } from '@/lib/trpc'
 import { theme } from '@band-it/shared'
 
 export function AppNav() {
@@ -11,6 +13,31 @@ export function AppNav() {
   const pathname = usePathname()
   const { showToast } = useToast()
   const [showNotifications, setShowNotifications] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token)
+        setUserId(decoded.userId)
+      } catch (error) {
+        console.error('Invalid token:', error)
+      }
+    }
+  }, [])
+
+  // Check if user is a founder of any band
+  const { data: myBandsData } = trpc.band.getMyBands.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
+  const isFounder = myBandsData?.bands?.some(
+    (band: any) => band.members?.some(
+      (member: any) => member.userId === userId && member.role === 'FOUNDER'
+    )
+  ) ?? false
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken')
@@ -73,9 +100,11 @@ export function AppNav() {
             <DropdownItem onClick={() => router.push('/user-dashboard/profile')}>
               Profile
             </DropdownItem>
-            <DropdownItem onClick={() => router.push('/user-dashboard/subscription')}>
-              Subscription
-            </DropdownItem>
+            {isFounder && (
+              <DropdownItem onClick={() => router.push('/user-dashboard/subscription')}>
+                Subscription
+              </DropdownItem>
+            )}
             <DropdownItem onClick={() => router.push('/user-dashboard/settings')}>
               Settings
             </DropdownItem>
