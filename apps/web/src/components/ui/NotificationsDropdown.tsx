@@ -48,7 +48,7 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
   }, [isOpen, onClose])
 
   const { data: notificationsData, isLoading, refetch } = trpc.notification.getMyNotifications.useQuery(
-    { userId: userId!, unreadOnly: false, limit: 10 },
+    { userId: userId!, unreadOnly: true, limit: 10 },
     { enabled: !!userId }
   )
 
@@ -68,13 +68,21 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
     },
   })
 
-  const handleNotificationClick = (notification: any) => {
-    if (!notification.isRead) {
-      markAsReadMutation.mutate({
-        notificationId: notification.id,
-        userId: userId!,
-      })
-    }
+  const handleMarkAsRead = (e: React.MouseEvent, notification: any) => {
+    e.stopPropagation()
+    markAsReadMutation.mutate({
+      notificationId: notification.id,
+      userId: userId!,
+    })
+  }
+
+  const handleView = (e: React.MouseEvent, notification: any) => {
+    e.stopPropagation()
+    // Mark as read when viewing
+    markAsReadMutation.mutate({
+      notificationId: notification.id,
+      userId: userId!,
+    })
     if (notification.actionUrl) {
       router.push(notification.actionUrl)
       onClose()
@@ -113,38 +121,55 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
           {notificationsData?.notifications && notificationsData.notifications.length > 0 ? (
             <div>
               {notificationsData.notifications.map((notification: any) => (
-                <button
+                <div
                   key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
                   className={cn(
                     theme.components.notificationDropdown.item.base,
-                    !notification.isRead && theme.components.notificationDropdown.item.unread
+                    theme.components.notificationDropdown.item.unread
                   )}
                 >
                   <Stack spacing="sm">
-                    <Flex justify="between">
-                      <Text variant="small" weight="semibold">
+                    <Flex justify="between" align="start">
+                      <Text variant="small" weight="semibold" className="flex-1">
                         {notification.title}
                       </Text>
-                      {!notification.isRead && (
-                        <span className={theme.components.notificationDropdown.unreadDot}></span>
-                      )}
+                      <span className={theme.components.notificationDropdown.unreadDot}></span>
                     </Flex>
                     {notification.message && (
-                      <Text variant="small" variant="muted">
+                      <Text variant="small" color="muted">
                         {notification.message}
                       </Text>
                     )}
-                    <Text variant="small" variant="muted">
-                      {new Date(notification.createdAt).toLocaleString()}
-                    </Text>
+                    <Flex justify="between" align="center">
+                      <Text variant="small" color="muted">
+                        {new Date(notification.createdAt).toLocaleString()}
+                      </Text>
+                      <Flex gap="xs">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleMarkAsRead(e, notification)}
+                        >
+                          Mark Read
+                        </Button>
+                        {notification.actionUrl && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={(e) => handleView(e, notification)}
+                          >
+                            View
+                          </Button>
+                        )}
+                      </Flex>
+                    </Flex>
                   </Stack>
-                </button>
+                </div>
               ))}
             </div>
           ) : (
             <div className={theme.components.notificationDropdown.empty}>
-              <Text variant="muted">No notifications yet</Text>
+              <Text color="muted">No unread notifications</Text>
             </div>
           )}
 
