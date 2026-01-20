@@ -5,8 +5,8 @@ import { BillingStatus } from '@prisma/client'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 // Price IDs from environment variables
-const STRIPE_PRICE_SMALL = process.env.STRIPE_PRICE_SMALL! // $20/month for 3-20 members
-const STRIPE_PRICE_LARGE = process.env.STRIPE_PRICE_LARGE! // $100/month for 21+ members
+const STRIPE_PRICE_20 = process.env.STRIPE_PRICE_20 // $20/month for 3-20 members
+const STRIPE_PRICE_100 = process.env.STRIPE_PRICE_100 // $100/month for 21+ members
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
 const GRACE_PERIOD_DAYS = 7
@@ -16,7 +16,11 @@ export const bandBillingService = {
    * Get the appropriate price ID based on member count
    */
   getPriceId(memberCount: number): string {
-    return memberCount >= 21 ? STRIPE_PRICE_LARGE : STRIPE_PRICE_SMALL
+    const priceId = memberCount >= 21 ? STRIPE_PRICE_100 : STRIPE_PRICE_20
+    if (!priceId) {
+      throw new Error(`Stripe price not configured. Please set ${memberCount >= 21 ? 'STRIPE_PRICE_100' : 'STRIPE_PRICE_20'} environment variable.`)
+    }
+    return priceId
   },
 
   /**
