@@ -72,6 +72,10 @@ model User {
   checklistItemsAssigned  ChecklistItem[] @relation("ChecklistItemsAssigned")
   pendingInvitesCreated   PendingInvite[] @relation("PendingInvitesCreated")
   bandsAsBillingOwner     Band[] @relation("BandBillingOwner")
+  eventsCreated           Event[] @relation("EventsCreated")
+  eventRSVPs              EventRSVP[] @relation("EventRSVPs")
+  eventAttendances        EventAttendance[] @relation("EventAttendances")
+  attendanceMarked        EventAttendance[] @relation("AttendanceMarker")
 }
 
 enum SubscriptionStatus {
@@ -185,6 +189,14 @@ enum NotificationType {
   BILLING_OWNER_CLAIMED
   BILLING_SUBSCRIPTION_UPGRADED
   BILLING_SUBSCRIPTION_DOWNGRADED
+
+  // Events
+  EVENT_CREATED
+  EVENT_UPDATED
+  EVENT_CANCELLED
+  EVENT_REMINDER
+  EVENT_RSVP_RECEIVED
+  EVENT_ATTENDANCE_MARKED
 }
 
 enum NotificationPriority {
@@ -280,6 +292,7 @@ model Band {
   proposals Proposal[]
   projects  Project[]
   tasks     Task[]
+  events    Event[]
   files     File[]
   comments  Comment[]
   auditLogs AuditLog[]
@@ -647,6 +660,150 @@ model Task {
 }
 
 // ============================================
+// EVENTS
+// ============================================
+
+enum EventType {
+  ONLINE_MEETING
+  IN_PERSON_MEETING
+  SOCIAL
+  HYBRID
+}
+
+enum RSVPStatus {
+  GOING
+  NOT_GOING
+  MAYBE
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  bandId      String
+  createdById String
+
+  // Core
+  title       String
+  description String?  @db.Text
+  eventType   EventType
+
+  // Timing
+  startTime   DateTime
+  endTime     DateTime
+  timezone    String   @default("America/New_York")
+
+  // Location (for IN_PERSON_MEETING, SOCIAL, HYBRID)
+  location    String?
+  address     String?  @db.Text
+
+  // Online meeting (for ONLINE_MEETING, HYBRID)
+  meetingUrl  String?
+  meetingId   String?
+  meetingPassword String?
+
+  // Recurrence (using RRULE format from iCalendar RFC 5545)
+  // null = one-time event
+  // Example: "FREQ=WEEKLY;BYDAY=MO,WE,FR" or "FREQ=MONTHLY;BYMONTHDAY=15"
+  recurrenceRule String?
+
+  // For recurring events, track the series end date (optional)
+  recurrenceEndDate DateTime?
+
+  // For exceptions/modifications to recurring events
+  // If this is set, this event is an exception to the series
+  parentEventId String?
+  exceptionDate DateTime?  // The date this exception replaces in the series
+
+  // Cancellation
+  isCancelled     Boolean  @default(false)
+  cancelledAt     DateTime?
+  cancellationNote String?
+
+  // Notes from event (added after meeting)
+  meetingNotes    String?  @db.Text
+
+  // Reminders (hours before event)
+  reminderHours   Int[]    @default([24, 1])
+  lastReminderSentAt DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  band        Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation("EventsCreated", fields: [createdById], references: [id])
+  parentEvent Event?   @relation("EventExceptions", fields: [parentEventId], references: [id])
+  exceptions  Event[]  @relation("EventExceptions")
+  rsvps       EventRSVP[]
+  attendance  EventAttendance[]
+  files       File[]
+
+  @@index([bandId])
+  @@index([createdById])
+  @@index([startTime])
+  @@index([eventType])
+  @@index([parentEventId])
+  @@index([isCancelled])
+}
+
+model EventRSVP {
+  id          String   @id @default(cuid())
+  eventId     String
+  userId      String
+
+  status      RSVPStatus
+  note        String?  @db.Text
+
+  // For recurring events, RSVP applies to the series
+  // If user needs different response for specific instance, use EventAttendance
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user        User     @relation("EventRSVPs", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
+}
+
+model EventAttendance {
+  id          String   @id @default(cuid())
+  eventId     String
+  userId      String
+
+  // For recurring events, track which occurrence this is for
+  occurrenceDate DateTime?
+
+  // Attendance status
+  attended    Boolean
+  arrivedAt   DateTime?
+  leftAt      DateTime?
+
+  // Notes about attendance
+  notes       String?  @db.Text
+
+  // Who marked attendance (could be the user themselves or a moderator)
+  markedById  String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user        User     @relation("EventAttendances", fields: [userId], references: [id], onDelete: Cascade)
+  markedBy    User     @relation("AttendanceMarker", fields: [markedById], references: [id])
+
+  @@unique([eventId, userId, occurrenceDate])
+  @@index([eventId])
+  @@index([userId])
+  @@index([occurrenceDate])
+  @@index([markedById])
+}
+
+// ============================================
 // CHECKLIST ITEMS
 // ============================================
 
@@ -718,6 +875,7 @@ model File {
   projectId       String?
   taskId          String?
   checklistItemId String?
+  eventId         String?
   
   // Metadata
   description   String?
@@ -733,6 +891,7 @@ model File {
   project       Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   task          Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
   checklistItem ChecklistItem? @relation(fields: [checklistItemId], references: [id], onDelete: Cascade)
+  event         Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([uploadedById])
   @@index([bandId])
@@ -740,6 +899,7 @@ model File {
   @@index([projectId])
   @@index([taskId])
   @@index([checklistItemId])
+  @@index([eventId])
   @@index([category])
 }
 

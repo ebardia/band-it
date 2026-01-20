@@ -21,14 +21,15 @@ export const fileRouter = router({
       projectId: z.string().optional(),
       taskId: z.string().optional(),
       checklistItemId: z.string().optional(),
+      eventId: z.string().optional(),
       description: z.string().optional(),
       category: z.enum(['IMAGE', 'DOCUMENT', 'RECEIPT', 'OTHER']).optional(),
     }))
     .mutation(async ({ input }) => {
-      const { 
+      const {
         fileName, mimeType, base64Data, userId,
-        bandId, proposalId, projectId, taskId, checklistItemId,
-        description, category 
+        bandId, proposalId, projectId, taskId, checklistItemId, eventId,
+        description, category
       } = input
 
       if (!isAllowedType(mimeType)) {
@@ -86,6 +87,12 @@ export const fileRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
         }
       }
+      if (eventId) {
+        const event = await prisma.event.findUnique({ where: { id: eventId } })
+        if (!event) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Event not found' })
+        }
+      }
 
       const uploadResult = await storageService.upload(buffer, fileName, mimeType)
       
@@ -106,6 +113,7 @@ export const fileRouter = router({
           projectId,
           taskId,
           checklistItemId,
+          eventId,
           description,
         },
         include: {
@@ -125,9 +133,10 @@ export const fileRouter = router({
       projectId: z.string().optional(),
       taskId: z.string().optional(),
       checklistItemId: z.string().optional(),
+      eventId: z.string().optional(),
     }))
     .query(async ({ input }) => {
-      const { bandId, proposalId, projectId, taskId, checklistItemId } = input
+      const { bandId, proposalId, projectId, taskId, checklistItemId, eventId } = input
 
       const where: any = {
         deletedAt: null,
@@ -138,6 +147,7 @@ export const fileRouter = router({
       if (projectId) where.projectId = projectId
       if (taskId) where.taskId = taskId
       if (checklistItemId) where.checklistItemId = checklistItemId
+      if (eventId) where.eventId = eventId
 
       const files = await prisma.file.findMany({
         where,

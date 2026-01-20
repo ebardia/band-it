@@ -181,6 +181,50 @@ const templates = [
     emailSubject: 'Subscription downgrade scheduled for {bandName}',
     emailBody: 'Hi,\n\n{bandName} now has fewer than 21 members. Your subscription will be downgraded to the {newPlan} plan at ${priceAmount}/month at the end of the current billing cycle.',
   },
+
+  // Events
+  {
+    type: NotificationType.EVENT_CREATED,
+    title: 'New Event',
+    message: '"{eventTitle}" has been scheduled for {eventDate}',
+    emailSubject: 'New event in {bandName}',
+    emailBody: 'Hi,\n\nA new event "{eventTitle}" has been scheduled in {bandName}.\n\nDate: {eventDate}\nTime: {eventTime}\n\nView event details and RSVP:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.EVENT_UPDATED,
+    title: 'Event Updated',
+    message: '"{eventTitle}" has been updated',
+    emailSubject: 'Event updated in {bandName}',
+    emailBody: 'Hi,\n\nThe event "{eventTitle}" in {bandName} has been updated.\n\nPlease check the new details:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.EVENT_CANCELLED,
+    title: 'Event Cancelled',
+    message: '"{eventTitle}" has been cancelled',
+    emailSubject: 'Event cancelled in {bandName}',
+    emailBody: 'Hi,\n\nThe event "{eventTitle}" in {bandName} has been cancelled.\n\n{cancellationNote}',
+  },
+  {
+    type: NotificationType.EVENT_REMINDER,
+    title: 'Event Reminder',
+    message: '"{eventTitle}" is starting in {timeUntil}',
+    emailSubject: 'Reminder: {eventTitle} is coming up',
+    emailBody: 'Hi,\n\nThis is a reminder that "{eventTitle}" in {bandName} is starting in {timeUntil}.\n\nDate: {eventDate}\nTime: {eventTime}\n\nEvent details:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.EVENT_RSVP_RECEIVED,
+    title: 'New RSVP',
+    message: '{userName} is going to "{eventTitle}"',
+    emailSubject: 'New RSVP for {eventTitle}',
+    emailBody: 'Hi,\n\n{userName} has RSVP\'d as going to your event "{eventTitle}" in {bandName}.\n\nView all RSVPs:\n{actionUrl}',
+  },
+  {
+    type: NotificationType.EVENT_ATTENDANCE_MARKED,
+    title: 'Attendance Marked',
+    message: 'Your attendance for "{eventTitle}" was marked by {markerName}',
+    emailSubject: 'Attendance marked for {eventTitle}',
+    emailBody: 'Hi,\n\nYour attendance for "{eventTitle}" in {bandName} has been marked by {markerName}.\n\nView event:\n{actionUrl}',
+  },
 ]
 
 export async function seedNotificationTemplates() {

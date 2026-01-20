@@ -7,6 +7,7 @@ import { notificationRouter } from './notification'
 import { proposalRouter } from './proposal'
 import { projectRouter } from './project'
 import { taskRouter } from './task'
+import { eventRouter } from './event'
 import { aiRouter } from './ai'
 import { aiUsageRouter } from './aiUsage'
 import { fileRouter } from './file'
@@ -25,6 +26,7 @@ export const appRouter = router({
   proposal: proposalRouter,
   project: projectRouter,
   task: taskRouter,
+  event: eventRouter,
   ai: aiRouter,
   aiUsage: aiUsageRouter,
   file: fileRouter,
