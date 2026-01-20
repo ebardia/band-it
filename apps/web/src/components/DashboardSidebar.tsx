@@ -9,15 +9,19 @@ interface DashboardSidebarProps {
   projectCount?: number
   assignedTaskCount?: number
   projectTaskCount?: number
+  taskCount?: number // backwards compatibility
 }
 
 export function DashboardSidebar({
   bandCount = 0,
   proposalCount = 0,
   projectCount = 0,
-  assignedTaskCount = 0,
+  assignedTaskCount,
   projectTaskCount = 0,
+  taskCount = 0, // backwards compatibility
 }: DashboardSidebarProps) {
+  // Use assignedTaskCount if provided, otherwise fall back to taskCount
+  const effectiveAssignedTaskCount = assignedTaskCount ?? taskCount
   const router = useRouter()
   const pathname = usePathname()
 
@@ -45,7 +49,7 @@ export function DashboardSidebar({
     {
       label: 'Assigned Tasks',
       path: '/my-tasks',
-      count: assignedTaskCount,
+      count: effectiveAssignedTaskCount,
       available: true
     },
     { 
