@@ -54,21 +54,17 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
 
   const markAsReadMutation = trpc.notification.markAsRead.useMutation({
     onSuccess: () => {
-      refetch()
-      // Invalidate unread count so bell updates
-      if (userId) {
-        utils.notification.getUnreadCount.invalidate({ userId })
-      }
+      // Invalidate all notification queries to refresh everything
+      utils.notification.getUnreadCount.invalidate()
+      utils.notification.getMyNotifications.invalidate()
     },
   })
 
   const markAllAsReadMutation = trpc.notification.markAllAsRead.useMutation({
     onSuccess: () => {
-      refetch()
-      // Invalidate unread count so bell updates
-      if (userId) {
-        utils.notification.getUnreadCount.invalidate({ userId })
-      }
+      // Invalidate all notification queries to refresh everything
+      utils.notification.getUnreadCount.invalidate()
+      utils.notification.getMyNotifications.invalidate()
     },
   })
 
@@ -158,7 +154,7 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
               variant="ghost"
               size="sm"
               onClick={() => {
-                router.push('/user-dashboard')
+                router.push('/notifications')
                 onClose()
               }}
               className="w-full"
