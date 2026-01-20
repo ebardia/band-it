@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
@@ -26,6 +26,9 @@ export default function BandEventsPage() {
   const [eventTypeFilter, setEventTypeFilter] = useState<string | undefined>(undefined)
   const [showPast, setShowPast] = useState(false)
 
+  // Memoize the current date to prevent infinite query loops
+  const nowISO = useMemo(() => new Date().toISOString(), [])
+
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
@@ -50,7 +53,7 @@ export default function BandEventsPage() {
     {
       bandId: bandData?.band?.id || '',
       eventType: eventTypeFilter as any,
-      startAfter: showPast ? undefined : new Date().toISOString(),
+      startAfter: showPast ? undefined : nowISO,
     },
     { enabled: !!bandData?.band?.id }
   )
