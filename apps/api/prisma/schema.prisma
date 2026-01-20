@@ -48,6 +48,10 @@ model User {
   guidelinesAcceptedAt DateTime?
   guidelinesVersion    Int?
 
+  // Terms of Service & Privacy Policy Acceptance
+  tosAcceptedAt DateTime?
+  tosVersion    Int?
+
   // Notification Settings
   emailNotificationFrequency EmailFrequency @default(DAILY)
   

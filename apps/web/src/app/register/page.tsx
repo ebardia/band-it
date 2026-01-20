@@ -23,6 +23,8 @@ import {
 
 // Current version of community guidelines - increment when guidelines change
 const COMMUNITY_GUIDELINES_VERSION = 1
+// Current version of Terms of Service & Privacy Policy - increment when they change
+const TOS_VERSION = 1
 
 function RegisterContent() {
   const router = useRouter()
@@ -36,6 +38,7 @@ function RegisterContent() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [guidelinesAccepted, setGuidelinesAccepted] = useState(false)
+  const [tosAccepted, setTosAccepted] = useState(false)
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
@@ -73,10 +76,15 @@ function RegisterContent() {
       showToast('Please accept the community guidelines to continue', 'error')
       return
     }
+    if (!tosAccepted) {
+      showToast('Please accept the Terms of Service and Privacy Policy to continue', 'error')
+      return
+    }
     registerMutation.mutate({
       ...formData,
       inviteToken: inviteToken || undefined,
       guidelinesVersion: COMMUNITY_GUIDELINES_VERSION,
+      tosVersion: TOS_VERSION,
     })
   }
 
@@ -188,11 +196,33 @@ function RegisterContent() {
                   </label>
                 </div>
 
+                {/* Terms of Service & Privacy Policy */}
+                <div className="border rounded-lg p-4 bg-gray-50">
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={tosAccepted}
+                      onChange={(e) => setTosAccepted(e.target.checked)}
+                      className="rounded w-4 h-4 mt-0.5"
+                    />
+                    <Text variant="small">
+                      I agree to the{' '}
+                      <a href="/terms" target="_blank" className="text-blue-600 hover:underline">
+                        Terms of Service
+                      </a>{' '}
+                      and{' '}
+                      <a href="/privacy" target="_blank" className="text-blue-600 hover:underline">
+                        Privacy Policy
+                      </a>
+                    </Text>
+                  </label>
+                </div>
+
                 <Button
                   type="submit"
                   variant="primary"
                   size="md"
-                  disabled={registerMutation.isPending || !guidelinesAccepted}
+                  disabled={registerMutation.isPending || !guidelinesAccepted || !tosAccepted}
                   className="w-full"
                 >
                   {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}

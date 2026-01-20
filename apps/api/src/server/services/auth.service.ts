@@ -18,8 +18,9 @@ export const authService = {
    * Register a new user
    * @param inviteToken - Optional invite token from band invite email
    * @param guidelinesVersion - Version of community guidelines accepted
+   * @param tosVersion - Version of Terms of Service/Privacy Policy accepted
    */
-  async register(email: string, password: string, name: string, inviteToken?: string, guidelinesVersion?: number) {
+  async register(email: string, password: string, name: string, inviteToken?: string, guidelinesVersion?: number, tosVersion?: number) {
     const normalizedEmail = email.toLowerCase().trim()
 
     // Check if user already exists
@@ -53,6 +54,9 @@ export const authService = {
         // Community guidelines acceptance
         guidelinesAcceptedAt: guidelinesVersion ? new Date() : null,
         guidelinesVersion: guidelinesVersion || null,
+        // Terms of Service & Privacy Policy acceptance
+        tosAcceptedAt: tosVersion ? new Date() : null,
+        tosVersion: tosVersion || null,
       },
       select: {
         id: true,
