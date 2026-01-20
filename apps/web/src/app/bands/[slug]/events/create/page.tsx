@@ -15,7 +15,6 @@ import {
   Alert,
   BandLayout,
   Input,
-  Label,
   Textarea,
   useToast
 } from '@/components/ui'
@@ -201,7 +200,7 @@ export default function CreateEventPage() {
                 <Heading level={3}>Event Details</Heading>
 
                 <div>
-                  <Label htmlFor="title">Event Title *</Label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="title">Event Title *</label>
                   <Input
                     id="title"
                     value={title}
@@ -212,7 +211,7 @@ export default function CreateEventPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Description</Label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="description">Description</label>
                   <Textarea
                     id="description"
                     value={description}
@@ -223,7 +222,7 @@ export default function CreateEventPage() {
                 </div>
 
                 <div>
-                  <Label>Event Type *</Label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Type *</label>
                   <Flex gap="sm" className="flex-wrap mt-2">
                     {[
                       { value: 'IN_PERSON_MEETING', label: 'In Person' },
@@ -253,7 +252,7 @@ export default function CreateEventPage() {
 
                 <Flex gap="md" className="flex-wrap">
                   <div className="flex-1 min-w-[200px]">
-                    <Label htmlFor="startDate">Start Date *</Label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="startDate">Start Date *</label>
                     <Input
                       id="startDate"
                       type="date"
@@ -268,7 +267,7 @@ export default function CreateEventPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-[150px]">
-                    <Label htmlFor="startTime">Start Time *</Label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="startTime">Start Time *</label>
                     <Input
                       id="startTime"
                       type="time"
@@ -281,7 +280,7 @@ export default function CreateEventPage() {
 
                 <Flex gap="md" className="flex-wrap">
                   <div className="flex-1 min-w-[200px]">
-                    <Label htmlFor="endDate">End Date *</Label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="endDate">End Date *</label>
                     <Input
                       id="endDate"
                       type="date"
@@ -292,7 +291,7 @@ export default function CreateEventPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-[150px]">
-                    <Label htmlFor="endTime">End Time *</Label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="endTime">End Time *</label>
                     <Input
                       id="endTime"
                       type="time"
@@ -313,16 +312,16 @@ export default function CreateEventPage() {
                       onChange={(e) => setIsRecurring(e.target.checked)}
                       className="w-4 h-4"
                     />
-                    <Label htmlFor="isRecurring" className="mb-0 cursor-pointer">
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="isRecurring" className="mb-0 cursor-pointer">
                       This is a recurring event
-                    </Label>
+                    </label>
                   </Flex>
                 </div>
 
                 {isRecurring && (
                   <Flex gap="md" className="flex-wrap">
                     <div className="flex-1 min-w-[150px]">
-                      <Label htmlFor="frequency">Repeats</Label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="frequency">Repeats</label>
                       <select
                         id="frequency"
                         value={recurrenceFrequency}
@@ -335,7 +334,7 @@ export default function CreateEventPage() {
                       </select>
                     </div>
                     <div className="flex-1 min-w-[200px]">
-                      <Label htmlFor="recurrenceEnd">Until (optional)</Label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="recurrenceEnd">Until (optional)</label>
                       <Input
                         id="recurrenceEnd"
                         type="date"
@@ -356,7 +355,7 @@ export default function CreateEventPage() {
                   <Heading level={3}>Location</Heading>
 
                   <div>
-                    <Label htmlFor="location">Venue Name *</Label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="location">Venue Name *</label>
                     <Input
                       id="location"
                       value={location}
@@ -367,7 +366,7 @@ export default function CreateEventPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="address">Address</Label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="address">Address</label>
                     <Textarea
                       id="address"
                       value={address}
@@ -387,7 +386,7 @@ export default function CreateEventPage() {
                   <Heading level={3}>Online Meeting Details</Heading>
 
                   <div>
-                    <Label htmlFor="meetingUrl">Meeting Link *</Label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="meetingUrl">Meeting Link *</label>
                     <Input
                       id="meetingUrl"
                       type="url"
@@ -400,7 +399,7 @@ export default function CreateEventPage() {
 
                   <Flex gap="md" className="flex-wrap">
                     <div className="flex-1 min-w-[200px]">
-                      <Label htmlFor="meetingId">Meeting ID (optional)</Label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="meetingId">Meeting ID (optional)</label>
                       <Input
                         id="meetingId"
                         value={meetingId}
@@ -409,7 +408,7 @@ export default function CreateEventPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-[200px]">
-                      <Label htmlFor="meetingPassword">Password (optional)</Label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="meetingPassword">Password (optional)</label>
                       <Input
                         id="meetingPassword"
                         value={meetingPassword}
