@@ -43,7 +43,11 @@ model User {
   
   // Profile Completion
   profileCompleted Boolean @default(false)
-  
+
+  // Community Guidelines Acceptance
+  guidelinesAcceptedAt DateTime?
+  guidelinesVersion    Int?
+
   // Notification Settings
   emailNotificationFrequency EmailFrequency @default(DAILY)
   

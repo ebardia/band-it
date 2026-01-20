@@ -17,8 +17,12 @@ import {
   Link,
   Progress,
   Alert,
-  Loading
+  Loading,
+  Flex
 } from '@/components/ui'
+
+// Current version of community guidelines - increment when guidelines change
+const COMMUNITY_GUIDELINES_VERSION = 1
 
 function RegisterContent() {
   const router = useRouter()
@@ -31,6 +35,7 @@ function RegisterContent() {
     password: '',
   })
   const [showPassword, setShowPassword] = useState(false)
+  const [guidelinesAccepted, setGuidelinesAccepted] = useState(false)
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
@@ -64,9 +69,14 @@ function RegisterContent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!guidelinesAccepted) {
+      showToast('Please accept the community guidelines to continue', 'error')
+      return
+    }
     registerMutation.mutate({
       ...formData,
       inviteToken: inviteToken || undefined,
+      guidelinesVersion: COMMUNITY_GUIDELINES_VERSION,
     })
   }
 
@@ -146,11 +156,43 @@ function RegisterContent() {
                   </button>
                 </div>
 
+                {/* Community Guidelines */}
+                <div className="border rounded-lg p-4 bg-gray-50">
+                  <Heading level={4} className="mb-3">Community Guidelines</Heading>
+                  <Text variant="small" color="muted" className="mb-3">
+                    Band It is a family-friendly platform where people of all ages collaborate. By joining, you agree to:
+                  </Text>
+                  <ul className="text-sm text-gray-700 space-y-1 mb-3 ml-4">
+                    <li>• No illegal activity or speech</li>
+                    <li>• No spam, unsolicited marketing, or scams</li>
+                    <li>• No violent, threatening, or harassing language</li>
+                    <li>• No hate speech or discrimination</li>
+                    <li>• Respect that minors may participate in band activities</li>
+                    <li>• Keep all content appropriate for a general audience</li>
+                  </ul>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-3">
+                    <Text variant="small" className="text-yellow-800 font-medium">
+                      Violating these principles may result in account suspension or removal from Band It.
+                    </Text>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={guidelinesAccepted}
+                      onChange={(e) => setGuidelinesAccepted(e.target.checked)}
+                      className="rounded w-4 h-4"
+                    />
+                    <Text variant="small">
+                      I have read and agree to follow these community guidelines
+                    </Text>
+                  </label>
+                </div>
+
                 <Button
                   type="submit"
                   variant="primary"
                   size="md"
-                  disabled={registerMutation.isPending}
+                  disabled={registerMutation.isPending || !guidelinesAccepted}
                   className="w-full"
                 >
                   {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}

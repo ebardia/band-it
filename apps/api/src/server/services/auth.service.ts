@@ -17,8 +17,9 @@ export const authService = {
   /**
    * Register a new user
    * @param inviteToken - Optional invite token from band invite email
+   * @param guidelinesVersion - Version of community guidelines accepted
    */
-  async register(email: string, password: string, name: string, inviteToken?: string) {
+  async register(email: string, password: string, name: string, inviteToken?: string, guidelinesVersion?: number) {
     const normalizedEmail = email.toLowerCase().trim()
 
     // Check if user already exists
@@ -36,7 +37,9 @@ export const authService = {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user with optional auto-verification and subscription activation
+    // Create user with optional auto-verification
+    // Registration is free - all users start as ACTIVE
+    // Payment will be required when creating a band
     const user = await prisma.user.create({
       data: {
         email: normalizedEmail,
@@ -45,8 +48,11 @@ export const authService = {
         // Auto-verify email if SKIP_EMAIL_VERIFICATION is enabled
         emailVerified: SKIP_EMAIL_VERIFICATION,
         emailVerifiedAt: SKIP_EMAIL_VERIFICATION ? new Date() : null,
-        // Auto-activate subscription if SKIP_PAYMENT_CHECK is enabled
-        subscriptionStatus: SKIP_PAYMENT_CHECK ? 'ACTIVE' : 'INCOMPLETE',
+        // All users are ACTIVE by default - payment happens at band creation
+        subscriptionStatus: 'ACTIVE',
+        // Community guidelines acceptance
+        guidelinesAcceptedAt: guidelinesVersion ? new Date() : null,
+        guidelinesVersion: guidelinesVersion || null,
       },
       select: {
         id: true,
