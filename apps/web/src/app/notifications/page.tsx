@@ -63,7 +63,16 @@ export default function NotificationsPage() {
     },
   })
 
-  const handleNotificationClick = (notification: any) => {
+  const handleMarkAsRead = (e: React.MouseEvent, notification: any) => {
+    e.stopPropagation()
+    markAsReadMutation.mutate({
+      notificationId: notification.id,
+      userId: userId!,
+    })
+  }
+
+  const handleView = (e: React.MouseEvent, notification: any) => {
+    e.stopPropagation()
     if (!notification.isRead) {
       markAsReadMutation.mutate({
         notificationId: notification.id,
@@ -148,8 +157,6 @@ export default function NotificationsPage() {
               {notifications.map((notification: any) => (
                 <Card
                   key={notification.id}
-                  hover
-                  onClick={() => handleNotificationClick(notification)}
                   className={notification.isRead ? 'opacity-70' : ''}
                 >
                   <Flex justify="between" align="start">
@@ -174,11 +181,26 @@ export default function NotificationsPage() {
                         {new Date(notification.createdAt).toLocaleString()}
                       </Text>
                     </Stack>
-                    {notification.actionUrl && (
-                      <Button variant="ghost" size="sm">
-                        View →
-                      </Button>
-                    )}
+                    <Flex gap="sm">
+                      {!notification.isRead && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleMarkAsRead(e, notification)}
+                        >
+                          Mark Read
+                        </Button>
+                      )}
+                      {notification.actionUrl && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => handleView(e, notification)}
+                        >
+                          View →
+                        </Button>
+                      )}
+                    </Flex>
                   </Flex>
                 </Card>
               ))}
