@@ -290,7 +290,7 @@ export const bandBillingService = {
     }
 
     // Already on large tier
-    if (band.stripePriceId === STRIPE_PRICE_LARGE) {
+    if (band.stripePriceId === STRIPE_PRICE_100) {
       return
     }
 
@@ -301,7 +301,7 @@ export const bandBillingService = {
       items: [
         {
           id: subscription.items.data[0].id,
-          price: STRIPE_PRICE_LARGE,
+          price: STRIPE_PRICE_100,
         },
       ],
       proration_behavior: 'create_prorations',
@@ -309,7 +309,7 @@ export const bandBillingService = {
 
     await prisma.band.update({
       where: { id: bandId },
-      data: { stripePriceId: STRIPE_PRICE_LARGE }
+      data: { stripePriceId: STRIPE_PRICE_100 }
     })
   },
 
@@ -327,7 +327,7 @@ export const bandBillingService = {
     }
 
     // Already on small tier
-    if (band.stripePriceId === STRIPE_PRICE_SMALL) {
+    if (band.stripePriceId === STRIPE_PRICE_20) {
       return
     }
 
@@ -338,7 +338,7 @@ export const bandBillingService = {
       items: [
         {
           id: subscription.items.data[0].id,
-          price: STRIPE_PRICE_SMALL,
+          price: STRIPE_PRICE_20,
         },
       ],
       proration_behavior: 'none',
@@ -346,7 +346,7 @@ export const bandBillingService = {
 
     await prisma.band.update({
       where: { id: bandId },
-      data: { stripePriceId: STRIPE_PRICE_SMALL }
+      data: { stripePriceId: STRIPE_PRICE_20 }
     })
   },
 
@@ -566,7 +566,7 @@ export const bandBillingService = {
     }
 
     const memberCount = band.members.length
-    const currentPriceAmount = band.stripePriceId === STRIPE_PRICE_LARGE ? 100 : 20
+    const currentPriceAmount = band.stripePriceId === STRIPE_PRICE_100 ? 100 : 20
     const expectedPriceAmount = this.getPriceAmount(memberCount)
 
     return {
@@ -575,8 +575,8 @@ export const bandBillingService = {
       memberCount,
       currentPriceAmount,
       expectedPriceAmount,
-      willUpgrade: memberCount >= 21 && band.stripePriceId === STRIPE_PRICE_SMALL,
-      willDowngrade: memberCount < 21 && band.stripePriceId === STRIPE_PRICE_LARGE,
+      willUpgrade: memberCount >= 21 && band.stripePriceId === STRIPE_PRICE_20,
+      willDowngrade: memberCount < 21 && band.stripePriceId === STRIPE_PRICE_100,
       billingCycleStart: band.billingCycleStart,
       paymentFailedAt: band.paymentFailedAt,
       gracePeriodEndsAt: band.gracePeriodEndsAt,

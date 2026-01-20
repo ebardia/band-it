@@ -134,7 +134,7 @@ export const getMyTasks = publicProcedure
     const { userId, status } = input
 
     const tasks = await prisma.task.findMany({
-      where: { 
+      where: {
         assigneeId: userId,
         ...(status && { status }),
       },
@@ -144,6 +144,48 @@ export const getMyTasks = publicProcedure
         },
         band: {
           select: { id: true, name: true, slug: true }
+        },
+      },
+      orderBy: [
+        { dueDate: 'asc' },
+        { priority: 'desc' },
+        { createdAt: 'desc' }
+      ]
+    })
+
+    return { tasks }
+  })
+
+/**
+ * Get tasks in projects where user is creator or lead
+ */
+export const getMyProjectTasks = publicProcedure
+  .input(z.object({
+    userId: z.string(),
+    status: z.enum(['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED', 'BLOCKED']).optional(),
+  }))
+  .query(async ({ input }) => {
+    const { userId, status } = input
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        project: {
+          OR: [
+            { leadId: userId },
+            { createdById: userId },
+          ]
+        },
+        ...(status && { status }),
+      },
+      include: {
+        project: {
+          select: { id: true, name: true }
+        },
+        band: {
+          select: { id: true, name: true, slug: true }
+        },
+        assignee: {
+          select: { id: true, name: true }
         },
       },
       orderBy: [

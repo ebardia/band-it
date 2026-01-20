@@ -81,6 +81,11 @@ export default function OverviewDashboard() {
     { enabled: !!userId }
   )
 
+  const { data: myProjectTasksData } = trpc.task.getMyProjectTasks.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
   // Calculate recommended bands (bands user is NOT a member of)
   const myBandIds = new Set(myBandsData?.bands.map((b: any) => b.id) || [])
   const recommendedBands = allBandsData?.bands.filter((band: any) => 
@@ -144,7 +149,8 @@ export default function OverviewDashboard() {
   const applicationCount = applicationsData?.applications.length || 0
   const proposalCount = myProposalsData?.proposals.length || 0
   const projectCount = myProjectsData?.projects.length || 0
-  const taskCount = myTasksData?.tasks.length || 0
+  const assignedTaskCount = myTasksData?.tasks.length || 0
+  const projectTaskCount = myProjectTasksData?.tasks.length || 0
   const pendingBands = myBandsData?.bands.filter((b: any) => b.status === 'PENDING') || []
   const newBandsThisWeek = allBandsData?.bands.filter((band: any) => {
     const createdDate = new Date(band.createdAt)
@@ -160,11 +166,12 @@ export default function OverviewDashboard() {
       <DashboardContainer wide>
         <Flex gap="md" align="start">
           {/* Left Sidebar */}
-          <DashboardSidebar 
+          <DashboardSidebar
             bandCount={bandCount}
             proposalCount={proposalCount}
             projectCount={projectCount}
-            taskCount={taskCount}
+            assignedTaskCount={assignedTaskCount}
+            projectTaskCount={projectTaskCount}
           />
 
           {/* Center Content */}

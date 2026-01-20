@@ -7,42 +7,46 @@ interface DashboardSidebarProps {
   bandCount?: number
   proposalCount?: number
   projectCount?: number
-  taskCount?: number
+  assignedTaskCount?: number
+  projectTaskCount?: number
 }
 
-export function DashboardSidebar({ 
+export function DashboardSidebar({
   bandCount = 0,
   proposalCount = 0,
   projectCount = 0,
-  taskCount = 0,
+  assignedTaskCount = 0,
+  projectTaskCount = 0,
 }: DashboardSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
   const navItems = [
-    { 
-      label: 'My Bands', 
-      path: '/bands/my-bands', 
+    {
+      label: 'My Bands',
+      path: '/bands/my-bands',
       count: bandCount,
-      available: true 
+      available: true
     },
-    { 
-      label: 'My Proposals', 
-      path: '/my-proposals', 
+    {
+      label: 'My Proposals',
+      path: '/my-proposals',
       count: proposalCount,
-      available: true 
+      available: true
     },
-    { 
-      label: 'My Projects', 
-      path: '/my-projects', 
+    {
+      label: 'My Projects',
+      path: '/my-projects',
       count: projectCount,
-      available: true 
+      subCount: projectTaskCount,
+      subLabel: 'tasks',
+      available: true
     },
-    { 
-      label: 'My Tasks', 
-      path: '/my-tasks', 
-      count: taskCount,
-      available: true 
+    {
+      label: 'Assigned Tasks',
+      path: '/my-tasks',
+      count: assignedTaskCount,
+      available: true
     },
     { 
       label: 'Messages', 
@@ -77,7 +81,7 @@ export function DashboardSidebar({
       <Stack spacing="md">
         <Heading level={3}>My Dashboard</Heading>
         <Stack spacing="sm">
-          {navItems.map((item) => (
+          {navItems.map((item: any) => (
             <div key={item.path} className="relative">
               <NavButton
                 active={isActive(item.path)}
@@ -88,12 +92,17 @@ export function DashboardSidebar({
                   <span className={!item.available ? 'text-gray-400' : ''}>
                     {item.label}
                   </span>
-                  {item.available && item.count > 0 && (
-                    <Badge variant="info">{item.count}</Badge>
-                  )}
-                  {!item.available && (
-                    <span className="text-xs text-gray-400">Soon</span>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {item.available && item.count > 0 && (
+                      <Badge variant="info">{item.count}</Badge>
+                    )}
+                    {item.available && item.subCount > 0 && (
+                      <span className="text-xs text-gray-500">({item.subCount} {item.subLabel})</span>
+                    )}
+                    {!item.available && (
+                      <span className="text-xs text-gray-400">Soon</span>
+                    )}
+                  </div>
                 </div>
               </NavButton>
             </div>
