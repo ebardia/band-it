@@ -3,6 +3,7 @@ import { getAuditContext } from './auditContext'
 
 // Entities we want to audit
 const AUDITED_ENTITIES = [
+  'User',
   'Band',
   'Member',
   'Proposal',
@@ -12,6 +13,9 @@ const AUDITED_ENTITIES = [
   'ChecklistItem',
   'Comment',
   'File',
+  'Event',
+  'EventRSVP',
+  'EventAttendance',
 ]
 
 // Fields to exclude from change tracking (noisy/sensitive)
@@ -19,10 +23,13 @@ const EXCLUDED_FIELDS = [
   'updatedAt',
   'createdAt',
   'password',
+  'passwordResetToken',
+  'passwordResetExpires',
 ]
 
 // Map entity to its band relationship field
 const BAND_ID_FIELD: Record<string, string | null> = {
+  'User': null,           // Users are cross-band
   'Band': 'id',           // Band's own ID
   'Member': 'bandId',
   'Proposal': 'bandId',
@@ -32,10 +39,14 @@ const BAND_ID_FIELD: Record<string, string | null> = {
   'ChecklistItem': null,  // Get from task
   'Comment': 'bandId',
   'File': 'bandId',
+  'Event': 'bandId',
+  'EventRSVP': null,      // Get from event
+  'EventAttendance': null, // Get from event
 }
 
 // Fields to use as human-readable name
 const NAME_FIELD: Record<string, string> = {
+  'User': 'email',
   'Band': 'name',
   'Member': 'id',
   'Proposal': 'title',
@@ -45,6 +56,9 @@ const NAME_FIELD: Record<string, string> = {
   'ChecklistItem': 'description',
   'Comment': 'id',
   'File': 'originalName',
+  'Event': 'title',
+  'EventRSVP': 'id',
+  'EventAttendance': 'id',
 }
 
 function computeChanges(before: any, after: any): Record<string, { from: any; to: any }> | null {
@@ -103,6 +117,32 @@ async function getBandId(model: string, record: any, prismaClient: PrismaClient)
         select: { bandId: true }
       })
       return proposal?.bandId || null
+    } catch {
+      return null
+    }
+  }
+
+  // For EventRSVP, look up via event
+  if (model === 'EventRSVP' && record.eventId) {
+    try {
+      const event = await prismaClient.event.findUnique({
+        where: { id: record.eventId },
+        select: { bandId: true }
+      })
+      return event?.bandId || null
+    } catch {
+      return null
+    }
+  }
+
+  // For EventAttendance, look up via event
+  if (model === 'EventAttendance' && record.eventId) {
+    try {
+      const event = await prismaClient.event.findUnique({
+        where: { id: record.eventId },
+        select: { bandId: true }
+      })
+      return event?.bandId || null
     } catch {
       return null
     }
