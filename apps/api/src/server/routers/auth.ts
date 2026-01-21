@@ -149,6 +149,7 @@ export const authRouter = router({
           developmentPath: true,
           emailVerified: true,
           subscriptionStatus: true,
+          isAdmin: true,
           createdAt: true,
         },
       })

@@ -52,6 +52,9 @@ model User {
   tosAcceptedAt DateTime?
   tosVersion    Int?
 
+  // Platform Admin
+  isAdmin Boolean @default(false)
+
   // Notification Settings
   emailNotificationFrequency EmailFrequency @default(DAILY)
   
