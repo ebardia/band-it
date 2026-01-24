@@ -194,9 +194,10 @@ export default function MemberActionsPage() {
         <AppNav />
         <DashboardContainer>
           <Flex gap="md" align="start">
-            <BandSidebar 
-              bandSlug={slug} 
-              canApprove={canApprove} 
+            <BandSidebar
+              bandSlug={slug}
+              bandName={bandData?.band?.name || ''}
+              canApprove={canApprove}
               isMember={isMember}
             />
             <div className="flex-1 bg-white rounded-lg shadow p-8">
@@ -224,9 +225,10 @@ export default function MemberActionsPage() {
 
       <DashboardContainer>
         <Flex gap="md" align="start">
-          <BandSidebar 
-            bandSlug={slug} 
-            canApprove={canApprove} 
+          <BandSidebar
+            bandSlug={slug}
+            bandName={bandData?.band?.name || ''}
+            canApprove={canApprove}
             isMember={isMember}
           />
 

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
+import { createDefaultChannel } from '../channel'
 
 export const bandCreateRouter = router({
   /**
@@ -74,6 +75,9 @@ export const bandCreateRouter = router({
           status: 'ACTIVE',
         },
       })
+
+      // Create the default General channel
+      await createDefaultChannel(band.id, input.userId)
 
       return {
         success: true,

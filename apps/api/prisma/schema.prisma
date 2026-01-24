@@ -55,6 +55,13 @@ model User {
   // Platform Admin
   isAdmin Boolean @default(false)
 
+  // Moderation Status
+  warningCount     Int       @default(0)
+  suspendedUntil   DateTime?
+  suspensionReason String?
+  bannedAt         DateTime?
+  banReason        String?
+
   // Notification Settings
   emailNotificationFrequency EmailFrequency @default(DAILY)
   
@@ -87,6 +94,19 @@ model User {
   eventRSVPs              EventRSVP[] @relation("EventRSVPs")
   eventAttendances        EventAttendance[] @relation("EventAttendances")
   attendanceMarked        EventAttendance[] @relation("AttendanceMarker")
+  warnings                Warning[] @relation("WarningsReceived")
+  warningsIssued          Warning[] @relation("WarningsIssued")
+  blockedTermsCreated     BlockedTerm[] @relation("BlockedTermsCreated")
+  flaggedContentAuthored  FlaggedContent[] @relation("FlaggedContentAuthor")
+  flaggedContentReviewed  FlaggedContent[] @relation("FlaggedContentReviewer")
+  flaggedContentAppealReviewed FlaggedContent[] @relation("FlaggedContentAppealReviewer")
+  bandMemberBillings      BandMemberBilling[]
+
+  // Discussions
+  channelsCreated         Channel[] @relation("ChannelsCreated")
+  messagesAuthored        Message[] @relation("MessagesAuthored")
+  messageEdits            MessageEdit[] @relation("MessageEdits")
+  channelReadStatuses     ChannelReadStatus[] @relation("ChannelReadStatuses")
 }
 
 enum SubscriptionStatus {
@@ -115,6 +135,146 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ============================================
+// MODERATION
+// ============================================
+
+model Warning {
+  id          String   @id @default(cuid())
+  userId      String
+  issuedById  String
+
+  reason      String   @db.Text
+
+  // Whether the user has acknowledged seeing this warning
+  acknowledged   Boolean  @default(false)
+  acknowledgedAt DateTime?
+
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation("WarningsReceived", fields: [userId], references: [id], onDelete: Cascade)
+  issuedBy    User     @relation("WarningsIssued", fields: [issuedById], references: [id])
+
+  @@index([userId])
+  @@index([issuedById])
+  @@index([createdAt])
+}
+
+model BlockedTerm {
+  id          String   @id @default(cuid())
+  term        String   @unique  // The blocked word or phrase
+  isRegex     Boolean  @default(false)  // Whether to treat as regex pattern
+  severity    BlockedTermSeverity @default(WARN)
+  category    String?  // Optional category (profanity, spam, etc.)
+  isActive    Boolean  @default(true)
+
+  // Metadata
+  reason            String?  // Human-readable explanation (e.g., "Hate speech targeting ethnicity")
+  confidence        MatchConfidence @default(HIGH)  // Expected match confidence
+  userAppealAllowed Boolean @default(true)  // Whether users can appeal content flagged by this term
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy   User     @relation("BlockedTermsCreated", fields: [createdById], references: [id])
+
+  @@index([term])
+  @@index([isActive])
+  @@index([severity])
+  @@index([confidence])
+}
+
+enum BlockedTermSeverity {
+  WARN    // Just flag for review, allow posting
+  BLOCK   // Prevent posting entirely
+}
+
+enum MatchConfidence {
+  HIGH    // Exact match or high-precision regex - auto-action safe
+  MEDIUM  // Regex that may have false positives - always review
+  LOW     // Broad pattern - flag only with multiple matches
+}
+
+model FlaggedContent {
+  id            String   @id @default(cuid())
+
+  // What type of content was flagged
+  contentType   FlaggedContentType
+  contentId     String   // ID of the proposal/comment/task
+  contentText   String   @db.Text  // Snapshot of the flagged text
+
+  // Who created the content
+  authorId      String
+
+  // What terms matched
+  matchedTerms  String[] // Array of matched term strings
+  categories    String[] // Categories of matched terms
+
+  // Match metadata
+  confidence    MatchConfidence @default(HIGH)  // Inherited from matched term
+  canAppeal     Boolean @default(true)  // Whether user can appeal (based on term settings)
+
+  // Status
+  status        FlaggedContentStatus @default(PENDING)
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNotes   String?
+
+  // Action taken
+  actionTaken   FlaggedContentAction?
+
+  // User appeal
+  appealStatus      AppealStatus @default(NONE)
+  appealReason      String?  @db.Text  // User's explanation
+  appealedAt        DateTime?
+  appealReviewedById String?
+  appealReviewedAt  DateTime?
+  appealReviewNotes String?
+
+  createdAt     DateTime @default(now())
+
+  // Relations
+  author        User     @relation("FlaggedContentAuthor", fields: [authorId], references: [id])
+  reviewedBy    User?    @relation("FlaggedContentReviewer", fields: [reviewedById], references: [id])
+  appealReviewedBy User? @relation("FlaggedContentAppealReviewer", fields: [appealReviewedById], references: [id])
+
+  @@index([contentType])
+  @@index([status])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([appealStatus])
+}
+
+enum FlaggedContentType {
+  PROPOSAL
+  COMMENT
+  TASK
+}
+
+enum FlaggedContentStatus {
+  PENDING   // Awaiting review
+  APPROVED  // Reviewed and approved (false positive)
+  REMOVED   // Content was removed
+  WARNED    // User was warned
+}
+
+enum FlaggedContentAction {
+  DISMISS       // False positive, no action needed
+  REMOVE        // Remove the content
+  WARN_USER     // Issue warning to user
+  SUSPEND_USER  // Suspend the user
+  BAN_USER      // Ban the user
+}
+
+enum AppealStatus {
+  NONE      // No appeal submitted
+  PENDING   // Appeal awaiting review
+  APPROVED  // Appeal approved, action reversed
+  DENIED    // Appeal denied
 }
 
 // ============================================
@@ -208,6 +368,11 @@ enum NotificationType {
   EVENT_REMINDER
   EVENT_RSVP_RECEIVED
   EVENT_ATTENDANCE_MARKED
+
+  // Moderation
+  MODERATION_WARNING
+  MODERATION_SUSPENSION
+  MODERATION_BAN
 }
 
 enum NotificationPriority {
@@ -309,6 +474,12 @@ model Band {
   auditLogs AuditLog[]
   pendingInvites PendingInvite[]
   aiUsage   AIUsage[]
+  buckets   Bucket[]
+  financeSettings BandFinanceSettings?
+  stripeAccounts BandStripeAccount[]
+  duesPlans BandDuesPlan[]
+  memberBillings BandMemberBilling[]
+  channels  Channel[]
 
   @@index([createdById])
   @@index([status])
@@ -343,10 +514,13 @@ model Member {
   bandId    String
   role      MemberRole
   status    MemberStatus @default(PENDING)
-  
+
+  // Finance role
+  isTreasurer Boolean @default(false)
+
   invitedBy String?
   notes     String? @db.Text
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -376,6 +550,286 @@ enum MemberStatus {
 }
 
 // ============================================
+// DISCUSSIONS - CHANNELS & MESSAGES
+// ============================================
+
+enum ChannelVisibility {
+  PUBLIC      // All band members can access
+  MODERATOR   // Moderators, Governors, Founders only
+  GOVERNANCE  // Governors, Founders only
+}
+
+enum MessageModerationStatus {
+  PENDING   // Awaiting moderation
+  APPROVED  // Passed moderation
+  FLAGGED   // Flagged for review
+  REMOVED   // Removed by moderator
+}
+
+model Channel {
+  id          String   @id @default(cuid())
+  bandId      String
+  name        String   @db.VarChar(80)
+  slug        String   @db.VarChar(100)
+  description String?  @db.VarChar(500)
+  visibility  ChannelVisibility @default(PUBLIC)
+  isDefault   Boolean  @default(false)
+  isArchived  Boolean  @default(false)
+
+  // Denormalized for performance
+  lastMessageAt DateTime?
+  messageCount  Int      @default(0)
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  band        Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation("ChannelsCreated", fields: [createdById], references: [id])
+  messages    Message[]
+  readStatuses ChannelReadStatus[]
+
+  @@unique([bandId, slug])
+  @@index([bandId, isArchived])
+  @@index([bandId, visibility])
+  @@index([bandId, lastMessageAt])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  channelId   String
+  authorId    String
+  threadId    String?  // If reply, points to parent message ID (must be top-level)
+
+  content     String   @db.Text  // 1-10000 characters
+  isPinned    Boolean  @default(false)
+  isEdited    Boolean  @default(false)
+  editedAt    DateTime?
+
+  moderationStatus MessageModerationStatus @default(PENDING)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?  // Soft delete
+
+  // Relations
+  channel     Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author      User     @relation("MessagesAuthored", fields: [authorId], references: [id])
+  parentMessage Message? @relation("MessageReplies", fields: [threadId], references: [id])
+  replies     Message[] @relation("MessageReplies")
+  edits       MessageEdit[]
+
+  @@index([channelId, createdAt])
+  @@index([channelId, isPinned])
+  @@index([channelId, deletedAt, createdAt])
+  @@index([channelId, moderationStatus])
+  @@index([threadId])
+  @@index([authorId])
+}
+
+model MessageEdit {
+  id              String   @id @default(cuid())
+  messageId       String
+  previousContent String   @db.Text
+  editedById      String
+  editedAt        DateTime @default(now())
+
+  // Relations
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  editedBy        User     @relation("MessageEdits", fields: [editedById], references: [id])
+
+  @@index([messageId])
+}
+
+model ChannelReadStatus {
+  id                String   @id @default(cuid())
+  channelId         String
+  userId            String
+  lastReadAt        DateTime @default(now())
+  lastReadMessageId String?
+
+  // Relations
+  channel           Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user              User     @relation("ChannelReadStatuses", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+  @@index([userId])
+}
+
+// ============================================
+// FINANCE - BUCKETS & SETTINGS
+// ============================================
+
+model Bucket {
+  id        String   @id @default(cuid())
+  bandId    String
+  name      String   @db.VarChar(64)
+  type      BucketType
+  visibility BucketVisibility @default(MEMBERS)
+  isActive  Boolean  @default(true)
+
+  // Audit trail - which proposal created this bucket
+  createdByProposalId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  band      Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  createdByProposal Proposal? @relation("BucketCreatedByProposal", fields: [createdByProposalId], references: [id])
+
+  @@unique([bandId, name])
+  @@index([bandId])
+  @@index([type])
+  @@index([isActive])
+}
+
+enum BucketType {
+  OPERATING     // Day-to-day operational funds
+  PROJECT       // Funds allocated to specific projects
+  RESTRICTED    // Funds with specific usage restrictions
+  UNRESTRICTED  // General purpose funds
+  COMMITMENT    // Funds committed for future obligations
+}
+
+enum BucketVisibility {
+  OFFICERS_ONLY  // Only officers can see this bucket
+  MEMBERS        // All members can see this bucket
+}
+
+model BandFinanceSettings {
+  id        String   @id @default(cuid())
+  bandId    String   @unique
+
+  bucketManagementPolicy BucketManagementPolicy @default(TREASURER_ONLY)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  band      Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+}
+
+enum BucketManagementPolicy {
+  TREASURER_ONLY  // Only treasurers can manage buckets
+  OFFICER_TIER    // Officers (Conductor, Moderator, Governor, Founder) can manage
+}
+
+model BandStripeAccount {
+  id               String    @id @default(uuid())
+  bandId           String
+  stripeAccountId  String
+
+  // Account status from Stripe
+  chargesEnabled   Boolean   @default(false)
+  detailsSubmitted Boolean   @default(false)
+
+  // Timestamps
+  connectedAt      DateTime
+  disconnectedAt   DateTime?  // Soft delete - null means active
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  band             Band      @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  // Only one ACTIVE connection per band (disconnectedAt is null)
+  // Multiple historical records allowed (disconnectedAt is set)
+  @@index([bandId])
+  @@index([stripeAccountId])
+  @@index([disconnectedAt])
+}
+
+// ============================================
+// FINANCE - BAND DUES
+// ============================================
+
+model BandDuesPlan {
+  id              String   @id @default(uuid())
+  bandId          String
+  isActive        Boolean  @default(true)
+
+  // Pricing
+  currency        String   @default("usd")
+  amountCents     Int      // Minimum 50 (~$0.50 Stripe minimum)
+  interval        String   // 'month' | 'year'
+
+  // Stripe IDs (on the connected account)
+  stripeProductId String?
+  stripePriceId   String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  band            Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  @@index([bandId])
+  @@index([isActive])
+}
+
+model BandMemberBilling {
+  id                    String    @id @default(uuid())
+  bandId                String
+  memberUserId          String
+
+  // Billing status
+  status                BandMemberBillingStatus @default(UNPAID)
+  currentPeriodEnd      DateTime?
+
+  // Stripe IDs (on the connected account)
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+
+  // Tracking
+  lastPaymentAt         DateTime?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  band                  Band      @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [memberUserId], references: [id], onDelete: Cascade)
+
+  @@unique([bandId, memberUserId])
+  @@index([bandId, status])
+  @@index([stripeSubscriptionId])
+}
+
+enum BandMemberBillingStatus {
+  UNPAID     // Default, no active subscription
+  ACTIVE     // Subscription exists and current period not ended
+  PAST_DUE   // Stripe reports subscription delinquent / payment failed
+  CANCELED   // Subscription ended
+}
+
+model StripeEventReceipt {
+  id                String    @id @default(uuid())
+  bandId            String?
+  stripeAccountId   String
+  stripeEventId     String    @unique
+  eventType         String
+
+  // Processing status
+  receivedAt        DateTime  @default(now())
+  processedAt       DateTime?
+  processingStatus  StripeEventProcessingStatus
+  errorMessage      String?   @db.Text
+
+  @@index([stripeAccountId])
+  @@index([stripeEventId])
+  @@index([eventType])
+}
+
+enum StripeEventProcessingStatus {
+  OK
+  IGNORED
+  ERROR
+}
+
+// ============================================
 // PROPOSALS
 // ============================================
 
@@ -383,58 +837,71 @@ model Proposal {
   id            String   @id @default(cuid())
   bandId        String
   createdById   String
-  
+
   // Core
   title         String
   description   String @db.Text
-  
-  // Type & Priority
+
+  // Type & Priority (category - what the proposal is about)
   type          ProposalType @default(GENERAL)
   priority      ProposalPriority @default(MEDIUM)
-  
+
+  // Execution Type (behavior - what happens on approval)
+  executionType     ProposalExecutionType @default(PROJECT)
+  executionSubtype  String?  // e.g., "FINANCE_BUCKET_GOVERNANCE_V1" for specific validation rules
+
+  // Declarative Effects (for GOVERNANCE and ACTION types)
+  effects              Json?     // Array of effect operations to execute on approval
+  effectsValidatedAt   DateTime? // When effects were validated
+  effectsExecutedAt    DateTime? // When effects were executed
+  executionError       String?   @db.Text // Error message if execution failed
+
   // Problem & Outcome
   problemStatement    String? @db.Text
   expectedOutcome     String? @db.Text
   risksAndConcerns    String? @db.Text
-  
+
   // Budget
   budgetRequested     Decimal? @db.Decimal(12, 2)
   budgetBreakdown     String? @db.Text
   fundingSource       String?
-  
+
   // Timeline
   proposedStartDate   DateTime?
   proposedEndDate     DateTime?
   milestones          String? @db.Text
-  
+
   // Attachments & Links (legacy - keeping for backwards compatibility)
   attachmentUrls      String[]
   externalLinks       String[]
-  
+
   // Voting
   status        ProposalStatus @default(OPEN)
   votingEndsAt  DateTime
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   closedAt      DateTime?
-  
+
   // AI
   aiValidation  Json?
 
   // Relations
-  band      Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
-  createdBy User @relation("ProposalCreator", fields: [createdById], references: [id])
-  votes     Vote[]
-  projects  Project[]
-  files     File[]
-  comments  Comment[]
+  band          Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  createdBy     User @relation("ProposalCreator", fields: [createdById], references: [id])
+  votes         Vote[]
+  projects      Project[]
+  files         File[]
+  comments      Comment[]
+  executionLogs ProposalExecutionLog[]
+  bucketsCreated Bucket[] @relation("BucketCreatedByProposal")
 
   @@index([bandId])
   @@index([createdById])
   @@index([status])
   @@index([votingEndsAt])
   @@index([type])
+  @@index([executionType])
 }
 
 enum ProposalType {
@@ -443,6 +910,43 @@ enum ProposalType {
   PROJECT
   POLICY
   MEMBERSHIP
+}
+
+// What happens when a proposal is approved
+enum ProposalExecutionType {
+  GOVERNANCE   // Auto-executes effects that change band rules/settings
+  PROJECT      // Creates a project (existing behavior)
+  ACTION       // Auto-executes effects that trigger routine tasks
+  RESOLUTION   // Just records the decision, nothing executes
+}
+
+enum ProposalExecutionStatus {
+  SUCCESS
+  FAILED
+}
+
+model ProposalExecutionLog {
+  id                String   @id @default(cuid())
+  proposalId        String
+  bandId            String
+
+  // What was executed
+  executionSubtype  String   // e.g., "FINANCE_BUCKET_GOVERNANCE_V1"
+  effectsSubmitted  Json     // What was requested
+  effectsExecuted   Json     // What actually ran
+
+  // Result
+  status            ProposalExecutionStatus
+  errorMessage      String?  @db.Text
+
+  executedAt        DateTime @default(now())
+
+  // Relations
+  proposal          Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId])
+  @@index([bandId])
+  @@index([executedAt])
 }
 
 enum ProposalPriority {
@@ -1063,6 +1567,8 @@ model AuditLog {
   // Who did it
   actorId     String?  // User ID (null if system action)
   actorType   String   @default("user") // "user", "system"
+  actorName   String?  // User's name at time of action
+  actorMemberSince DateTime? // When the user joined this band (for context)
 
   // What changed (for updates)
   changes     Json?    // { "status": { "from": "TODO", "to": "DONE" } }

@@ -16,6 +16,8 @@ import { checklistRouter } from './checklist'
 import { auditRouter } from './audit'
 import { validationRouter } from './validation'
 import { adminRouter } from './admin'
+import { channelRouter } from './channel'
+import { messageRouter } from './message'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -36,6 +38,8 @@ export const appRouter = router({
   audit: auditRouter,
   validation: validationRouter,
   admin: adminRouter,
+  channel: channelRouter,
+  message: messageRouter,
 })
 
 // Export type definition of API

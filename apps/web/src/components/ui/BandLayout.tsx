@@ -36,7 +36,7 @@ export function BandLayout({
         <div className="py-6">
           <Flex gap="md" align="start">
             {/* Spacer to match sidebar width */}
-            <div className="w-52 flex-shrink-0" />
+            <div className="w-64 flex-shrink-0" />
             
             {/* Header content aligned with main content */}
             <div className="flex-1">
@@ -60,6 +60,7 @@ export function BandLayout({
             {/* Left Sidebar */}
             <BandSidebar
               bandSlug={bandSlug}
+              bandName={bandName}
               canApprove={canApprove}
               isMember={isMember}
               canCreateProposal={canCreateProposal}

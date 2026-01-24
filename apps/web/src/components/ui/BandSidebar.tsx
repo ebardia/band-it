@@ -5,13 +5,14 @@ import { Stack, NavButton, Text } from '@/components/ui'
 
 interface BandSidebarProps {
   bandSlug: string
+  bandName?: string
   canApprove?: boolean
   isMember?: boolean
   canCreateProposal?: boolean
   onLeaveBand?: () => void
 }
 
-export function BandSidebar({ bandSlug, canApprove = false, isMember = false, canCreateProposal = false, onLeaveBand }: BandSidebarProps) {
+export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMember = false, canCreateProposal = false, onLeaveBand }: BandSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -19,17 +20,20 @@ export function BandSidebar({ bandSlug, canApprove = false, isMember = false, ca
 
   // Main navigation - always visible
   const mainNav = [
-    { label: '📋 Band Details', path: `/bands/${bandSlug}` },
-    { label: '📝 Band Proposals', path: `/bands/${bandSlug}/proposals` },
-    { label: '📁 Band Projects', path: `/bands/${bandSlug}/projects` },
-    { label: '✅ Band Tasks', path: `/bands/${bandSlug}/tasks` },
-    { label: '📅 Band Events', path: `/bands/${bandSlug}/events` },
-    { label: '📜 Band Audit Log', path: `/bands/${bandSlug}/audit` },
+    { label: `💬 ${bandName} Discussions`, path: `/bands/${bandSlug}` },
+    { label: `ℹ️ ${bandName} About`, path: `/bands/${bandSlug}/about` },
+    { label: `📝 ${bandName} Proposals`, path: `/bands/${bandSlug}/proposals` },
+    { label: `📁 ${bandName} Projects`, path: `/bands/${bandSlug}/projects` },
+    { label: `✅ ${bandName} Tasks`, path: `/bands/${bandSlug}/tasks` },
+    { label: `📅 ${bandName} Events`, path: `/bands/${bandSlug}/events` },
+    { label: `💰 ${bandName} Finance`, path: `/bands/${bandSlug}/finance` },
+    { label: `💳 ${bandName} Billing`, path: `/bands/${bandSlug}/billing` },
+    { label: `📜 ${bandName} Audit Log`, path: `/bands/${bandSlug}/audit` },
   ]
 
   // Member actions
   const memberActions = [
-    { label: '👥 Band Members', path: `/bands/${bandSlug}/members`, show: true },
+    { label: `👥 ${bandName} Members`, path: `/bands/${bandSlug}/members`, show: true },
     { label: '📨 Invite', path: `/bands/${bandSlug}/invite`, show: isMember },
     { label: '📋 Applications', path: `/bands/${bandSlug}/applications`, show: canApprove },
     { label: '⚙️ Settings', path: `/bands/${bandSlug}/settings`, show: isMember },
@@ -41,7 +45,7 @@ export function BandSidebar({ bandSlug, canApprove = false, isMember = false, ca
   ].filter(item => item.show)
 
   return (
-    <aside className="w-52 bg-white rounded-lg shadow p-4 flex flex-col">
+    <aside className="w-64 bg-white rounded-lg shadow p-4 flex flex-col">
       <Stack spacing="lg" className="flex-1">
         {/* Main Navigation */}
         <Stack spacing="sm">
