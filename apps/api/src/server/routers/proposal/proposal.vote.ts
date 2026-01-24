@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
+import { proposalEffectsService } from '../../../services/proposal-effects.service'
 
 // Roles that can vote
 const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
@@ -108,7 +109,7 @@ export const proposalVoteRouter = router({
     .mutation(async ({ input }) => {
       const proposal = await prisma.proposal.findUnique({
         where: { id: input.proposalId },
-        include: { 
+        include: {
           band: true,
           votes: true,
           createdBy: { select: { name: true } },
@@ -175,6 +176,38 @@ export const proposalVoteRouter = router({
         },
       })
 
+      // If approved, execute based on execution type
+      let executionResult: { success: boolean; error?: string } | null = null
+      if (approved) {
+        switch (proposal.executionType) {
+          case 'GOVERNANCE':
+          case 'ACTION':
+            // Execute declarative effects
+            if (proposal.effects) {
+              executionResult = await proposalEffectsService.executeAndLogEffects(
+                {
+                  id: proposal.id,
+                  bandId: proposal.bandId,
+                  executionSubtype: proposal.executionSubtype,
+                  effects: proposal.effects,
+                },
+                input.userId
+              )
+            }
+            break
+
+          case 'PROJECT':
+            // Create project from proposal (existing behavior)
+            // This is handled separately via the project creation flow
+            // The frontend typically prompts to create a project after approval
+            break
+
+          case 'RESOLUTION':
+            // Just a recorded decision - nothing to execute
+            break
+        }
+      }
+
       // Notify all band members
       const allMembers = await prisma.member.findMany({
         where: {
@@ -201,6 +234,7 @@ export const proposalVoteRouter = router({
         success: true,
         message: `Proposal ${approved ? 'approved' : 'rejected'}`,
         proposal: updatedProposal,
+        executionResult: executionResult || undefined,
       }
     }),
 })

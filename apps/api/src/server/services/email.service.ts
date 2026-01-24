@@ -343,4 +343,160 @@ export const emailService = {
 
     return { success: true, userId: user.id, email: user.email }
   },
+
+  /**
+   * Send warning notification email
+   */
+  async sendWarningEmail(options: {
+    email: string
+    userName: string
+    reason: string
+    warningCount: number
+  }) {
+    const { email, userName, reason, warningCount } = options
+    const guidelinesUrl = `${FRONTEND_URL}/community-guidelines`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #F59E0B;">Account Warning</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, your account has received a warning from the Band IT moderation team.
+        </p>
+        <div style="background-color: #FEF3C7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #F59E0B;">
+          <p style="font-size: 14px; color: #92400E; margin: 0;">
+            <strong>Reason:</strong><br>
+            ${reason}
+          </p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">
+          This is warning #${warningCount} on your account. Continued violations may result in suspension or permanent ban.
+        </p>
+        <p style="font-size: 14px; color: #374151;">
+          Please review our <a href="${guidelinesUrl}" style="color: #3B82F6;">Community Guidelines</a> to ensure your future activity complies with our policies.
+        </p>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          If you believe this warning was issued in error, please contact our support team.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 WARNING EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Reason: ${reason}`)
+      console.log(`Warning #${warningCount}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: 'Warning: Your Band IT Account',
+      html,
+    })
+  },
+
+  /**
+   * Send suspension notification email
+   */
+  async sendSuspensionEmail(options: {
+    email: string
+    userName: string
+    reason: string
+    suspendedUntil: Date
+  }) {
+    const { email, userName, reason, suspendedUntil } = options
+    const guidelinesUrl = `${FRONTEND_URL}/community-guidelines`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #EF4444;">Account Suspended</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, your Band IT account has been temporarily suspended.
+        </p>
+        <div style="background-color: #FEE2E2; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #EF4444;">
+          <p style="font-size: 14px; color: #991B1B; margin: 0;">
+            <strong>Reason:</strong><br>
+            ${reason}
+          </p>
+        </div>
+        <p style="font-size: 16px; color: #374151;">
+          <strong>Suspension ends:</strong> ${suspendedUntil.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </p>
+        <p style="font-size: 14px; color: #374151;">
+          During this time, you will not be able to log in to your account. After the suspension ends, please review our <a href="${guidelinesUrl}" style="color: #3B82F6;">Community Guidelines</a> to ensure your future activity complies with our policies.
+        </p>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          If you believe this suspension was issued in error, please contact our support team.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 SUSPENSION EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Reason: ${reason}`)
+      console.log(`Suspended until: ${suspendedUntil.toLocaleDateString()}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: 'Your Band IT Account Has Been Suspended',
+      html,
+    })
+  },
+
+  /**
+   * Send ban notification email
+   */
+  async sendBanEmail(options: {
+    email: string
+    userName: string
+    reason: string
+  }) {
+    const { email, userName, reason } = options
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #DC2626;">Account Permanently Banned</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, your Band IT account has been permanently banned due to serious violations of our community guidelines.
+        </p>
+        <div style="background-color: #FEE2E2; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #DC2626;">
+          <p style="font-size: 14px; color: #991B1B; margin: 0;">
+            <strong>Reason:</strong><br>
+            ${reason}
+          </p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">
+          This decision is final. You will no longer be able to access your account or any associated bands, proposals, or projects.
+        </p>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          If you believe this ban was issued in error, you may contact our support team for review.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 BAN EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Reason: ${reason}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: 'Your Band IT Account Has Been Permanently Banned',
+      html,
+    })
+  },
 }

@@ -214,6 +214,23 @@ export const authService = {
       })
     }
 
+    // Check if user is banned
+    if (user.bannedAt) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: `Your account has been banned. Reason: ${user.banReason || 'Violation of community guidelines'}`,
+      })
+    }
+
+    // Check if user is suspended
+    if (user.suspendedUntil && user.suspendedUntil > new Date()) {
+      const suspendedUntilStr = user.suspendedUntil.toLocaleDateString()
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: `Your account is suspended until ${suspendedUntilStr}. Please try again later.`,
+      })
+    }
+
     // Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user.id)
 

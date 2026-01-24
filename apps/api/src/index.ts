@@ -7,7 +7,11 @@ import { appRouter } from './server/routers/_app'
 import { createContext } from './server/trpc'
 import { auditStorage, AuditContext } from './lib/auditContext'
 import { handleStripeWebhook } from './webhooks/stripe'
+import { handleStripeConnectWebhook } from './webhooks/stripe-connect'
 import { initBillingCron } from './cron/billing-cron'
+import { initializeEffectHandlers } from './services/effects'
+import stripeConnectRoutes from './routes/stripe-connect'
+import bandDuesRoutes from './routes/band-dues'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 
@@ -21,15 +25,22 @@ app.use(cors({
   credentials: true,
 }))
 
-// Stripe webhook endpoint - MUST be before JSON body parser
+// Stripe webhook endpoints - MUST be before JSON body parser
 // Stripe requires raw body for signature verification
 app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook)
+app.post('/api/webhooks/stripe-connect', express.raw({ type: 'application/json' }), handleStripeConnectWebhook)
 
 // Increase payload limit for file uploads (base64 encoded)
 app.use(express.json({ limit: '15mb' }))
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.resolve(UPLOAD_DIR)))
+
+// Stripe Connect routes (OAuth flow for band Stripe accounts)
+app.use('/api', stripeConnectRoutes)
+
+// Band Dues routes (dues plans, checkout, billing)
+app.use('/api', bandDuesRoutes)
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -80,11 +91,18 @@ app.use('/trpc', (req, res, next) => {
   })
 })
 
+// Initialize proposal effect handlers
+initializeEffectHandlers()
+console.log(`📋 Proposal effect handlers initialized`)
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Backend API running on http://localhost:${PORT}`)
   console.log(`📡 tRPC endpoint: http://localhost:${PORT}/trpc`)
   console.log(`💳 Stripe webhook: http://localhost:${PORT}/webhooks/stripe`)
+  console.log(`💳 Stripe Connect webhook: http://localhost:${PORT}/api/webhooks/stripe-connect`)
+  console.log(`🔗 Stripe Connect: http://localhost:${PORT}/api/bands/:bandId/stripe/*`)
+  console.log(`💰 Band Dues: http://localhost:${PORT}/api/bands/:bandId/dues-*`)
   console.log(`📁 Uploads served from: http://localhost:${PORT}/uploads`)
 
   // Initialize billing cron jobs

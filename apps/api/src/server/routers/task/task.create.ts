@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
+import { checkMultipleFields, saveFlaggedContent } from '../../../services/content-moderation.service'
 
 // Roles that can create tasks
 const CAN_CREATE_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -43,6 +44,20 @@ export const createTask = publicProcedure
         flagged: true,
         flagReasons,
         flagDetails,
+      })
+    }
+
+    // Check content against blocked terms
+    const moderationResult = await checkMultipleFields({
+      name,
+      description,
+    })
+
+    // If blocked, throw error
+    if (!moderationResult.allowed) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Your content contains prohibited terms and cannot be posted. Please review and revise.',
       })
     }
 
@@ -157,6 +172,31 @@ export const createTask = publicProcedure
         }
       }
     })
+
+    // If content was flagged (WARN), save for admin review
+    if (moderationResult.flagged) {
+      const allMatchedTerms = Object.values(moderationResult.fieldResults)
+        .flatMap(r => r.matchedTerms)
+        .filter(t => t.severity === 'WARN')
+
+      if (allMatchedTerms.length > 0) {
+        const contentText = [name, description].filter(Boolean).join('\n\n')
+
+        await saveFlaggedContent(
+          {
+            allowed: true,
+            flagged: true,
+            matchedTerms: allMatchedTerms,
+          },
+          {
+            contentType: 'TASK',
+            contentId: task.id,
+            authorId: userId,
+            contentText,
+          }
+        )
+      }
+    }
 
     // Clear flags immediately after task creation so the project update isn't flagged
     clearAuditFlags()

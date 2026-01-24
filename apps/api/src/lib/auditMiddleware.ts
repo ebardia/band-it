@@ -235,15 +235,43 @@ export function createAuditMiddleware(prismaClient: PrismaClient): Prisma.Middle
           return result
       }
 
+      // Look up actor's name and membership info
+      let actorName: string | null = null
+      let actorMemberSince: Date | null = null
+
+      if (context.userId) {
+        try {
+          const user = await prismaClient.user.findUnique({
+            where: { id: context.userId },
+            select: { name: true },
+          })
+          actorName = user?.name || null
+
+          if (bandId) {
+            const member = await prismaClient.member.findUnique({
+              where: {
+                userId_bandId: { userId: context.userId, bandId },
+              },
+              select: { createdAt: true },
+            })
+            actorMemberSince = member?.createdAt || null
+          }
+        } catch {
+          // Ignore lookup errors
+        }
+      }
+
       // Create audit log (fire and forget - don't block the main operation)
       const auditData = {
-        bandId,
+        band: bandId ? { connect: { id: bandId } } : undefined,
         action: auditAction,
         entityType: model,
         entityId,
         entityName,
         actorId: context.userId || null,
         actorType: context.userId ? 'user' : 'system',
+        actorName,
+        actorMemberSince,
         changes,
         ipAddress: context.ipAddress || null,
         userAgent: context.userAgent || null,
@@ -253,7 +281,7 @@ export function createAuditMiddleware(prismaClient: PrismaClient): Prisma.Middle
         flagDetails: context.flagDetails || null,
       }
 
-      console.log(`[Audit] Creating entry for ${model}: bandId=${bandId}, flagged=${context.flagged}`)
+      console.log(`[Audit] Creating entry for ${model}: bandId=${bandId}, actor=${actorName || context.userId || 'system'}, flagged=${context.flagged}`)
 
       prismaClient.auditLog.create({ data: auditData })
         .then(() => {

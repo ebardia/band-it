@@ -10,7 +10,6 @@ import {
   Stack,
   Button,
   PageWrapper,
-  DashboardContainer,
   Flex,
   Card,
   Badge,
@@ -64,9 +63,9 @@ export default function MyTasksPage() {
     return (
       <PageWrapper variant="dashboard">
         <AppNav />
-        <DashboardContainer>
+        <div className="flex-1 p-8">
           <Loading message="Loading tasks..." />
-        </DashboardContainer>
+        </div>
       </PageWrapper>
     )
   }
@@ -122,35 +121,38 @@ export default function MyTasksPage() {
     <PageWrapper variant="dashboard">
       <AppNav />
 
-      <DashboardContainer>
-        <Flex gap="md" align="start">
-          <DashboardSidebar 
-            bandCount={bandCount}
-            proposalCount={proposalCount}
-            projectCount={projectCount}
-            taskCount={taskCount}
-          />
+      <div className="flex min-h-[calc(100vh-64px)] gap-6 p-6">
+        {/* Left Sidebar */}
+        <DashboardSidebar
+          bandCount={bandCount}
+          proposalCount={proposalCount}
+          projectCount={projectCount}
+          taskCount={taskCount}
+        />
 
-          <div className="flex-1">
-            <Stack spacing="xl">
+        {/* Main Content Area */}
+        <div className="flex-1">
+          <Stack spacing="lg">
+            <Stack spacing="xs">
               <Heading level={1}>My Tasks</Heading>
               <Text color="muted">Tasks assigned to you across all bands</Text>
+            </Stack>
 
-              {/* Filters */}
-              <Flex gap="sm" className="flex-wrap">
-                {statusFilters.map((filter) => (
-                  <Button
-                    key={filter.value || 'all'}
-                    variant={statusFilter === filter.value ? 'primary' : 'ghost'}
-                    size="sm"
-                    onClick={() => setStatusFilter(filter.value)}
-                  >
-                    {filter.label}
-                  </Button>
-                ))}
-              </Flex>
+            {/* Filters */}
+            <Flex gap="sm" className="flex-wrap">
+              {statusFilters.map((filter) => (
+                <Button
+                  key={filter.value || 'all'}
+                  variant={statusFilter === filter.value ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setStatusFilter(filter.value)}
+                >
+                  {filter.label}
+                </Button>
+              ))}
+            </Flex>
 
-              {tasks.length > 0 ? (
+            {tasks.length > 0 ? (
                 <Stack spacing="md">
                   {tasks.map((task: any) => (
                     <Card 
@@ -190,11 +192,10 @@ export default function MyTasksPage() {
                     </Text>
                   </Stack>
                 </Alert>
-              )}
-            </Stack>
-          </div>
-        </Flex>
-      </DashboardContainer>
+            )}
+          </Stack>
+        </div>
+      </div>
     </PageWrapper>
   )
 }

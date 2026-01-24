@@ -3,6 +3,10 @@ import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
+import { checkMultipleFields, saveFlaggedContent } from '../../../services/content-moderation.service'
+import { proposalEffectsService } from '../../../services/proposal-effects.service'
+import { canCreateFinanceBucketGovernanceProposal } from '../../../services/effects/finance-bucket-governance.effects'
+import { TRPCError } from '@trpc/server'
 
 // Roles that can create proposals
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -21,26 +25,35 @@ export const proposalCreateRouter = router({
         userId: z.string(),
         title: z.string().min(5, 'Title must be at least 5 characters'),
         description: z.string().min(20, 'Description must be at least 20 characters'),
-        
-        // Type & Priority
+
+        // Type & Priority (category)
         type: z.enum(['GENERAL', 'BUDGET', 'PROJECT', 'POLICY', 'MEMBERSHIP']).optional(),
         priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
-        
+
+        // Execution Type (behavior on approval)
+        executionType: z.enum(['GOVERNANCE', 'PROJECT', 'ACTION', 'RESOLUTION']).optional(),
+        executionSubtype: z.string().optional(),
+        effects: z.array(z.object({
+          type: z.string(),
+          payload: z.record(z.unknown()),
+          order: z.number().optional(),
+        })).optional(),
+
         // Problem & Outcome
         problemStatement: z.string().optional(),
         expectedOutcome: z.string().optional(),
         risksAndConcerns: z.string().optional(),
-        
+
         // Budget
         budgetRequested: z.number().optional(),
         budgetBreakdown: z.string().optional(),
         fundingSource: z.string().optional(),
-        
+
         // Timeline
         proposedStartDate: z.string().optional(),
         proposedEndDate: z.string().optional(),
         milestones: z.string().optional(),
-        
+
         // Links
         externalLinks: z.array(z.string()).optional(),
         // Integrity Guard flags
@@ -56,6 +69,23 @@ export const proposalCreateRouter = router({
           flagged: true,
           flagReasons: input.flagReasons,
           flagDetails: input.flagDetails,
+        })
+      }
+
+      // Check content against blocked terms
+      const moderationResult = await checkMultipleFields({
+        title: input.title,
+        description: input.description,
+        problemStatement: input.problemStatement,
+        expectedOutcome: input.expectedOutcome,
+        risksAndConcerns: input.risksAndConcerns,
+      })
+
+      // If blocked, throw error
+      if (!moderationResult.allowed) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Your content contains prohibited terms and cannot be posted. Please review and revise.',
         })
       }
 
@@ -87,6 +117,44 @@ export const proposalCreateRouter = router({
         throw new Error('Band must be active (3+ members) before creating proposals')
       }
 
+      // Determine execution type (default to PROJECT for backwards compatibility)
+      const executionType = input.executionType || 'PROJECT'
+
+      // Check subtype-specific authorization
+      if (input.executionSubtype === 'FINANCE_BUCKET_GOVERNANCE_V1') {
+        if (!canCreateFinanceBucketGovernanceProposal(membership.role)) {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'Your role does not have permission to create finance bucket governance proposals. Required: Conductor, Moderator, Governor, or Founder.',
+          })
+        }
+      }
+
+      // Validate effects if provided
+      let effectsValidatedAt: Date | null = null
+      if (input.effects || executionType === 'GOVERNANCE' || executionType === 'ACTION') {
+        const validationResult = await proposalEffectsService.validateEffects(
+          input.effects,
+          executionType,
+          input.executionSubtype || null,
+          { bandId: input.bandId }
+        )
+
+        if (!validationResult.valid) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `Invalid effects: ${validationResult.errors.join('; ')}`,
+          })
+        }
+
+        // Warn about any validation warnings (but don't fail)
+        if (validationResult.warnings.length > 0) {
+          console.warn(`Proposal effects validation warnings: ${validationResult.warnings.join('; ')}`)
+        }
+
+        effectsValidatedAt = new Date()
+      }
+
       // Calculate voting end date
       const votingEndsAt = new Date()
       votingEndsAt.setDate(votingEndsAt.getDate() + membership.band.votingPeriodDays)
@@ -100,6 +168,12 @@ export const proposalCreateRouter = router({
           description: input.description,
           type: input.type || 'GENERAL',
           priority: input.priority || 'MEDIUM',
+          // Execution type fields
+          executionType,
+          executionSubtype: input.executionSubtype,
+          effects: input.effects as object | undefined,
+          effectsValidatedAt,
+          // Content fields
           problemStatement: input.problemStatement,
           expectedOutcome: input.expectedOutcome,
           risksAndConcerns: input.risksAndConcerns,
@@ -122,6 +196,39 @@ export const proposalCreateRouter = router({
         },
       })
 
+      // If content was flagged (WARN), save for admin review
+      if (moderationResult.flagged) {
+        // Combine all matched terms from all fields
+        const allMatchedTerms = Object.values(moderationResult.fieldResults)
+          .flatMap(r => r.matchedTerms)
+          .filter(t => t.severity === 'WARN')
+
+        if (allMatchedTerms.length > 0) {
+          // Combine all text for the flagged content snapshot
+          const contentText = [
+            input.title,
+            input.description,
+            input.problemStatement,
+            input.expectedOutcome,
+            input.risksAndConcerns,
+          ].filter(Boolean).join('\n\n')
+
+          await saveFlaggedContent(
+            {
+              allowed: true,
+              flagged: true,
+              matchedTerms: allMatchedTerms,
+            },
+            {
+              contentType: 'PROPOSAL',
+              contentId: proposal.id,
+              authorId: input.userId,
+              contentText,
+            }
+          )
+        }
+      }
+
       // Notify all voting members
       const votingMembers = await prisma.member.findMany({
         where: {
@@ -133,13 +240,19 @@ export const proposalCreateRouter = router({
         select: { userId: true },
       })
 
+      // Type assertion for included relations
+      const proposalWithRelations = proposal as typeof proposal & {
+        createdBy: { name: string }
+        band: { name: string; slug: string }
+      }
+
       for (const member of votingMembers) {
         await notificationService.create({
           userId: member.userId,
           type: 'PROPOSAL_CREATED',
           title: 'New Proposal',
-          message: `${proposal.createdBy.name} created "${proposal.title}" in ${proposal.band.name}`,
-          actionUrl: `/bands/${proposal.band.slug}/proposals/${proposal.id}`,
+          message: `${proposalWithRelations.createdBy.name} created "${proposal.title}" in ${proposalWithRelations.band.name}`,
+          actionUrl: `/bands/${proposalWithRelations.band.slug}/proposals/${proposal.id}`,
           priority: input.priority === 'URGENT' ? 'HIGH' : 'MEDIUM',
           relatedId: proposal.id,
           relatedType: 'PROPOSAL',

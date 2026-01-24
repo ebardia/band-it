@@ -24,6 +24,7 @@ import {
 import { AppNav } from '@/components/AppNav'
 
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
+const CAN_CREATE_GOVERNANCE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 
 const PROPOSAL_TYPES = [
   { value: 'GENERAL', label: 'General', description: 'General decisions and discussions' },
@@ -33,12 +34,29 @@ const PROPOSAL_TYPES = [
   { value: 'MEMBERSHIP', label: 'Membership', description: 'Member roles and changes' },
 ]
 
+const EXECUTION_TYPES = [
+  { value: 'PROJECT', label: 'Project', description: 'Creates a project when approved (default behavior)' },
+  { value: 'GOVERNANCE', label: 'Governance', description: 'Auto-executes changes to band settings when approved' },
+  { value: 'ACTION', label: 'Action', description: 'Auto-triggers routine tasks when approved' },
+  { value: 'RESOLUTION', label: 'Resolution', description: 'Just records the decision, nothing executes' },
+]
+
 const PRIORITIES = [
   { value: 'LOW', label: 'Low', color: 'neutral' },
   { value: 'MEDIUM', label: 'Medium', color: 'info' },
   { value: 'HIGH', label: 'High', color: 'warning' },
   { value: 'URGENT', label: 'Urgent', color: 'danger' },
 ]
+
+const BUCKET_TYPES = ['OPERATING', 'PROJECT', 'RESTRICTED', 'UNRESTRICTED', 'COMMITMENT']
+const BUCKET_VISIBILITIES = ['MEMBERS', 'OFFICERS_ONLY']
+const BUCKET_POLICIES = ['TREASURER_ONLY', 'OFFICER_TIER']
+
+interface FinanceEffect {
+  type: string
+  payload: Record<string, any>
+  order?: number
+}
 
 export default function CreateProposalPage() {
   const router = useRouter()
@@ -65,6 +83,12 @@ export default function CreateProposalPage() {
   const [externalLinks, setExternalLinks] = useState('')
   const [aiContext, setAiContext] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
+
+  // Execution type & effects (for governance proposals)
+  const [executionType, setExecutionType] = useState<string>('PROJECT')
+  const [executionSubtype, setExecutionSubtype] = useState<string>('')
+  const [financeEffects, setFinanceEffects] = useState<FinanceEffect[]>([])
+  const [showEffectsBuilder, setShowEffectsBuilder] = useState(false)
 
   // Integrity Guard state
   const [validationIssues, setValidationIssues] = useState<any[]>([])
@@ -167,6 +191,9 @@ export default function CreateProposalPage() {
       description,
       type: type as any,
       priority: priority as any,
+      executionType: executionType as any,
+      executionSubtype: executionSubtype || undefined,
+      effects: financeEffects.length > 0 ? financeEffects : undefined,
       problemStatement: problemStatement || undefined,
       expectedOutcome: expectedOutcome || undefined,
       risksAndConcerns: risksAndConcerns || undefined,
@@ -182,7 +209,13 @@ export default function CreateProposalPage() {
     // Store data for potential later use
     setPendingProposalData(proposalData)
 
-    // Run integrity validation
+    // Skip integrity validation for GOVERNANCE proposals (administrative actions)
+    if (executionType === 'GOVERNANCE') {
+      createMutation.mutate(proposalData)
+      return
+    }
+
+    // Run integrity validation for non-governance proposals
     try {
       const validation = await validationMutation.mutateAsync({
         entityType: 'Proposal',
@@ -289,6 +322,7 @@ export default function CreateProposalPage() {
   const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
   const isMember = !!currentMember
   const canCreateProposal = currentMember && CAN_CREATE_PROPOSAL.includes(currentMember.role)
+  const canCreateGovernance = currentMember && CAN_CREATE_GOVERNANCE.includes(currentMember.role)
 
   if (!canCreateProposal) {
     return (
@@ -392,8 +426,234 @@ export default function CreateProposalPage() {
                       ))}
                     </Flex>
                   </Stack>
+
+                  {/* Execution Type Selection */}
+                  {canCreateGovernance && (
+                    <Stack spacing="sm">
+                      <Text variant="small" weight="semibold">What happens when approved?</Text>
+                      <Flex gap="sm" className="flex-wrap">
+                        {EXECUTION_TYPES.map((et) => (
+                          <Button
+                            key={et.value}
+                            type="button"
+                            variant={executionType === et.value ? 'primary' : 'secondary'}
+                            size="sm"
+                            onClick={() => {
+                              setExecutionType(et.value)
+                              if (et.value !== 'GOVERNANCE') {
+                                setExecutionSubtype('')
+                                setFinanceEffects([])
+                                setShowEffectsBuilder(false)
+                              }
+                            }}
+                          >
+                            {et.label}
+                          </Button>
+                        ))}
+                      </Flex>
+                      <Text variant="small" color="muted">
+                        {EXECUTION_TYPES.find(et => et.value === executionType)?.description}
+                      </Text>
+                    </Stack>
+                  )}
                 </Stack>
               </Card>
+
+              {/* Governance Effects Builder */}
+              {executionType === 'GOVERNANCE' && canCreateGovernance && (
+                <Card>
+                  <Stack spacing="lg">
+                    <Stack spacing="sm">
+                      <Heading level={3}>Governance Configuration</Heading>
+                      <Text variant="small" color="muted">
+                        Configure what changes will be automatically applied when this proposal is approved.
+                      </Text>
+                    </Stack>
+
+                    {/* Subtype Selection */}
+                    <Stack spacing="sm">
+                      <Text variant="small" weight="semibold">Governance Type</Text>
+                      <Flex gap="sm" className="flex-wrap">
+                        <Button
+                          type="button"
+                          variant={executionSubtype === 'FINANCE_BUCKET_GOVERNANCE_V1' ? 'primary' : 'secondary'}
+                          size="sm"
+                          onClick={() => {
+                            setExecutionSubtype('FINANCE_BUCKET_GOVERNANCE_V1')
+                            setShowEffectsBuilder(true)
+                          }}
+                        >
+                          Finance & Buckets
+                        </Button>
+                      </Flex>
+                    </Stack>
+
+                    {/* Finance Effects Builder */}
+                    {executionSubtype === 'FINANCE_BUCKET_GOVERNANCE_V1' && showEffectsBuilder && (
+                      <Stack spacing="md">
+                        <Text variant="small" weight="semibold">Effects (actions that will execute on approval)</Text>
+
+                        {/* List existing effects */}
+                        {financeEffects.length > 0 && (
+                          <Stack spacing="sm">
+                            {financeEffects.map((effect, index) => {
+                              // Get friendly description
+                              const getEffectDescription = () => {
+                                switch (effect.type) {
+                                  case 'ADD_TREASURER': {
+                                    const member = band.members.find((m: any) => m.user.id === effect.payload.userId)
+                                    return `Add ${member?.user.name || 'Unknown'} as Treasurer`
+                                  }
+                                  case 'REMOVE_TREASURER': {
+                                    const member = band.members.find((m: any) => m.user.id === effect.payload.userId)
+                                    return `Remove ${member?.user.name || 'Unknown'} as Treasurer`
+                                  }
+                                  case 'CREATE_BUCKET':
+                                    return `Create bucket "${effect.payload.bucket?.name}" (${effect.payload.bucket?.type})`
+                                  case 'UPDATE_BUCKET':
+                                    return `Update bucket "${effect.payload.name || effect.payload.bucketId}"`
+                                  case 'DEACTIVATE_BUCKET':
+                                    return `Deactivate bucket "${effect.payload.bucketId}"`
+                                  case 'SET_BUCKET_MANAGEMENT_POLICY':
+                                    return `Set management policy to ${effect.payload.policy === 'TREASURER_ONLY' ? 'Treasurer Only' : 'Officer Tier'}`
+                                  default:
+                                    return effect.type.replace(/_/g, ' ')
+                                }
+                              }
+
+                              return (
+                                <Card key={index} className="bg-gray-50">
+                                  <Flex justify="between" align="center">
+                                    <Flex gap="sm" align="center">
+                                      <Badge variant="info">{effect.type.replace(/_/g, ' ')}</Badge>
+                                      <Text variant="small">{getEffectDescription()}</Text>
+                                    </Flex>
+                                    <Button
+                                      type="button"
+                                      variant="danger"
+                                      size="sm"
+                                      onClick={() => {
+                                        setFinanceEffects(financeEffects.filter((_, i) => i !== index))
+                                      }}
+                                    >
+                                      Remove
+                                    </Button>
+                                  </Flex>
+                                </Card>
+                              )
+                            })}
+                          </Stack>
+                        )}
+
+                        {/* Add Effect Buttons */}
+                        <Stack spacing="sm">
+                          <Text variant="small" color="muted">Add an effect:</Text>
+                          <Flex gap="sm" className="flex-wrap">
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                const memberName = prompt('Enter member name to add as treasurer:')
+                                if (memberName) {
+                                  const member = band.members.find((m: any) =>
+                                    m.user.name.toLowerCase() === memberName.toLowerCase()
+                                  )
+                                  if (member) {
+                                    setFinanceEffects([...financeEffects, {
+                                      type: 'ADD_TREASURER',
+                                      payload: { userId: member.user.id },
+                                      order: financeEffects.length + 1
+                                    }])
+                                  } else {
+                                    showToast('Member not found', 'error')
+                                  }
+                                }
+                              }}
+                            >
+                              + Add Treasurer
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                const memberName = prompt('Enter member name to remove as treasurer:')
+                                if (memberName) {
+                                  const member = band.members.find((m: any) =>
+                                    m.user.name.toLowerCase() === memberName.toLowerCase()
+                                  )
+                                  if (member) {
+                                    setFinanceEffects([...financeEffects, {
+                                      type: 'REMOVE_TREASURER',
+                                      payload: { userId: member.user.id },
+                                      order: financeEffects.length + 1
+                                    }])
+                                  } else {
+                                    showToast('Member not found', 'error')
+                                  }
+                                }
+                              }}
+                            >
+                              - Remove Treasurer
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                const name = prompt('Bucket name:')
+                                if (!name) return
+                                const typeOptions = BUCKET_TYPES.join(', ')
+                                const bucketType = prompt(`Bucket type (${typeOptions}):`)?.toUpperCase()
+                                if (!bucketType || !BUCKET_TYPES.includes(bucketType)) {
+                                  showToast('Invalid bucket type', 'error')
+                                  return
+                                }
+                                const visibilityOptions = BUCKET_VISIBILITIES.join(', ')
+                                const visibility = prompt(`Visibility (${visibilityOptions}):`)?.toUpperCase() || 'MEMBERS'
+                                setFinanceEffects([...financeEffects, {
+                                  type: 'CREATE_BUCKET',
+                                  payload: { bucket: { name, type: bucketType, visibility } },
+                                  order: financeEffects.length + 1
+                                }])
+                              }}
+                            >
+                              + Create Bucket
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                const policyOptions = BUCKET_POLICIES.join(', ')
+                                const policy = prompt(`Set management policy (${policyOptions}):`)?.toUpperCase()
+                                if (!policy || !BUCKET_POLICIES.includes(policy)) {
+                                  showToast('Invalid policy', 'error')
+                                  return
+                                }
+                                setFinanceEffects([...financeEffects, {
+                                  type: 'SET_BUCKET_MANAGEMENT_POLICY',
+                                  payload: { policy },
+                                  order: financeEffects.length + 1
+                                }])
+                              }}
+                            >
+                              Set Policy
+                            </Button>
+                          </Flex>
+                        </Stack>
+
+                        {financeEffects.length === 0 && (
+                          <Alert variant="warning">
+                            <Text>Add at least one effect for this governance proposal.</Text>
+                          </Alert>
+                        )}
+                      </Stack>
+                    )}
+                  </Stack>
+                </Card>
+              )}
 
               {/* AI Assistant */}
               <Card>

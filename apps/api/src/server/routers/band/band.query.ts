@@ -113,6 +113,16 @@ export const bandQueryRouter = router({
               },
             },
           },
+          // Finance data
+          buckets: {
+            where: {
+              isActive: true,
+            },
+            orderBy: {
+              createdAt: 'asc',
+            },
+          },
+          financeSettings: true,
         },
       })
 

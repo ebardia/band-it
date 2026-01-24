@@ -52,3 +52,68 @@ export function clearAuditFlags(): void {
     store.flagDetails = undefined
   }
 }
+
+/**
+ * Manually log an audit event.
+ * Use this for custom events that aren't captured by the Prisma middleware.
+ */
+import { prisma } from './prisma'
+
+export async function logAuditEvent(params: {
+  bandId: string | null
+  action: string
+  entityType: string
+  entityId: string
+  entityName?: string | null
+  changes?: Record<string, any> | null
+}): Promise<void> {
+  const context = getAuditContext()
+
+  try {
+    // Look up actor's name and membership info if we have a userId and bandId
+    let actorName: string | null = null
+    let actorMemberSince: Date | null = null
+
+    if (context.userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: context.userId },
+        select: { name: true },
+      })
+      actorName = user?.name || null
+
+      // If this is a band-scoped action, get membership info
+      if (params.bandId) {
+        const member = await prisma.member.findUnique({
+          where: {
+            userId_bandId: { userId: context.userId, bandId: params.bandId },
+          },
+          select: { createdAt: true },
+        })
+        actorMemberSince = member?.createdAt || null
+      }
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        band: params.bandId ? { connect: { id: params.bandId } } : undefined,
+        action: params.action,
+        entityType: params.entityType,
+        entityId: params.entityId,
+        entityName: params.entityName || null,
+        actorId: context.userId || null,
+        actorType: context.userId ? 'user' : 'system',
+        actorName,
+        actorMemberSince,
+        changes: params.changes || null,
+        ipAddress: context.ipAddress || null,
+        userAgent: context.userAgent || null,
+        flagged: context.flagged || false,
+        flagReasons: context.flagReasons || [],
+        flagDetails: context.flagDetails || null,
+      },
+    })
+    console.log(`[Audit] Logged: ${params.action} ${params.entityType} (${params.entityId}) by ${actorName || 'system'}`)
+  } catch (err: any) {
+    console.error('[Audit] Failed to log event:', err.message)
+  }
+}

@@ -14,7 +14,8 @@ import {
   useToast,
   Alert,
   Modal,
-  Flex
+  Flex,
+  Card
 } from '@/components/ui'
 
 export default function SettingsPage() {
@@ -22,13 +23,14 @@ export default function SettingsPage() {
   const { showToast } = useToast()
   const [userId, setUserId] = useState<string | null>(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  
+  const utils = trpc.useUtils()
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   })
-  
+
   const [deletePassword, setDeletePassword] = useState('')
 
   useEffect(() => {
@@ -42,6 +44,14 @@ export default function SettingsPage() {
       }
     }
   }, [])
+
+  // Get user warnings
+  const { data: warningsData } = trpc.auth.getMyWarnings.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
+  const unacknowledgedWarnings = warningsData?.warnings.filter(w => !w.acknowledged) || []
 
   const changePasswordMutation = trpc.auth.changePassword.useMutation({
     onSuccess: () => {
@@ -72,9 +82,16 @@ export default function SettingsPage() {
     },
   })
 
+  const acknowledgeAllMutation = trpc.auth.acknowledgeAllWarnings.useMutation({
+    onSuccess: () => {
+      utils.auth.getMyWarnings.invalidate()
+      showToast('Warnings acknowledged', 'success')
+    },
+  })
+
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!userId) {
       showToast('User not found', 'error')
       return
@@ -104,11 +121,93 @@ export default function SettingsPage() {
     })
   }
 
+  const handleAcknowledgeAll = () => {
+    if (!userId) return
+    acknowledgeAllMutation.mutate({ userId })
+  }
+
   return (
     <UserDashboardLayout>
       <Stack spacing="xl">
         <Heading level={1}>Settings</Heading>
         <Text variant="muted">Manage your account settings</Text>
+
+        {/* Warning Banner */}
+        {unacknowledgedWarnings.length > 0 && (
+          <Alert variant="warning">
+            <Stack spacing="md">
+              <Flex justify="between" align="start">
+                <div>
+                  <Text weight="semibold" className="mb-2">
+                    You have {unacknowledgedWarnings.length} unacknowledged warning{unacknowledgedWarnings.length !== 1 ? 's' : ''}
+                  </Text>
+                  <Text variant="small">
+                    Please review the warnings below. Continued violations may result in account suspension or ban.
+                  </Text>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleAcknowledgeAll}
+                  disabled={acknowledgeAllMutation.isPending}
+                >
+                  {acknowledgeAllMutation.isPending ? 'Acknowledging...' : 'Acknowledge All'}
+                </Button>
+              </Flex>
+              <Stack spacing="sm">
+                {unacknowledgedWarnings.map((warning) => (
+                  <Card key={warning.id} className="bg-yellow-50 border-yellow-200">
+                    <Stack spacing="xs">
+                      <Text variant="small" color="muted">
+                        {new Date(warning.createdAt).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </Text>
+                      <Text>{warning.reason}</Text>
+                    </Stack>
+                  </Card>
+                ))}
+              </Stack>
+            </Stack>
+          </Alert>
+        )}
+
+        {/* Warning History */}
+        {warningsData && warningsData.warnings.length > 0 && (
+          <Stack spacing="lg">
+            <Heading level={2}>Warning History</Heading>
+            <Text variant="small" color="muted">
+              You have received {warningsData.warnings.length} warning{warningsData.warnings.length !== 1 ? 's' : ''} on your account.
+            </Text>
+            <Stack spacing="sm">
+              {warningsData.warnings.map((warning) => (
+                <Card key={warning.id}>
+                  <Flex justify="between" align="start">
+                    <Stack spacing="xs">
+                      <Text variant="small" color="muted">
+                        {new Date(warning.createdAt).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </Text>
+                      <Text>{warning.reason}</Text>
+                    </Stack>
+                    {warning.acknowledged ? (
+                      <Text variant="small" color="muted">Acknowledged</Text>
+                    ) : (
+                      <Text variant="small" className="text-yellow-600 font-semibold">Unacknowledged</Text>
+                    )}
+                  </Flex>
+                </Card>
+              ))}
+            </Stack>
+          </Stack>
+        )}
 
         {/* Change Password Section */}
         <Stack spacing="lg">

@@ -3,6 +3,7 @@ import { router, publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../services/notification.service'
+import { checkContent, saveFlaggedContent } from '../../services/content-moderation.service'
 
 export const commentRouter = router({
   // Get comments for an entity
@@ -81,11 +82,22 @@ export const commentRouter = router({
       mentionedUserIds: z.array(z.string()).optional(),
     }))
     .mutation(async ({ input }) => {
-      const { 
+      const {
         content, authorId, parentId,
         bandId, proposalId, projectId, taskId,
-        mentionedUserIds 
+        mentionedUserIds
       } = input
+
+      // Check content against blocked terms
+      const moderationResult = await checkContent(content)
+
+      // If blocked, throw error
+      if (!moderationResult.allowed) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Your comment contains prohibited content and cannot be posted. Please review and revise.',
+        })
+      }
 
       // Verify author exists
       const author = await prisma.user.findUnique({ where: { id: authorId } })
@@ -125,6 +137,19 @@ export const commentRouter = router({
           mentions: true,
         }
       })
+
+      // If content was flagged (WARN), save for admin review
+      if (moderationResult.flagged) {
+        await saveFlaggedContent(
+          moderationResult,
+          {
+            contentType: 'COMMENT',
+            contentId: comment.id,
+            authorId,
+            contentText: content,
+          }
+        )
+      }
 
       // Create mentions and notify users
       if (mentionedUserIds && mentionedUserIds.length > 0) {
@@ -206,8 +231,19 @@ export const commentRouter = router({
     .mutation(async ({ input }) => {
       const { commentId, content, userId } = input
 
+      // Check content against blocked terms
+      const moderationResult = await checkContent(content)
+
+      // If blocked, throw error
+      if (!moderationResult.allowed) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Your comment contains prohibited content and cannot be posted. Please review and revise.',
+        })
+      }
+
       const comment = await prisma.comment.findUnique({ where: { id: commentId } })
-      
+
       if (!comment || comment.deletedAt) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Comment not found' })
       }
@@ -229,6 +265,19 @@ export const commentRouter = router({
           mentions: true,
         }
       })
+
+      // If content was flagged (WARN), save for admin review
+      if (moderationResult.flagged) {
+        await saveFlaggedContent(
+          moderationResult,
+          {
+            contentType: 'COMMENT',
+            contentId: commentId,
+            authorId: userId,
+            contentText: content,
+          }
+        )
+      }
 
       return { comment: updatedComment }
     }),

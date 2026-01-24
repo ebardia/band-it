@@ -131,7 +131,6 @@ function VerifyEmailContent() {
                 { label: 'Register', status: 'complete' },
                 { label: 'Verify', status: 'active' },
                 { label: 'Profile', status: 'inactive' },
-                { label: 'Payment', status: 'inactive' },
               ]}
             />
 

@@ -396,4 +396,87 @@ export const authRouter = router({
       message: 'This will return current user after adding auth middleware',
     }
   }),
+
+  /**
+   * Get user's own warnings
+   */
+  getMyWarnings: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const warnings = await prisma.warning.findMany({
+        where: { userId: input.userId },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          reason: true,
+          acknowledged: true,
+          acknowledgedAt: true,
+          createdAt: true,
+        },
+      })
+
+      return { warnings }
+    }),
+
+  /**
+   * Acknowledge a warning
+   */
+  acknowledgeWarning: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        warningId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Verify warning belongs to user
+      const warning = await prisma.warning.findFirst({
+        where: {
+          id: input.warningId,
+          userId: input.userId,
+        },
+      })
+
+      if (!warning) {
+        throw new Error('Warning not found')
+      }
+
+      const updated = await prisma.warning.update({
+        where: { id: input.warningId },
+        data: {
+          acknowledged: true,
+          acknowledgedAt: new Date(),
+        },
+      })
+
+      return { warning: updated }
+    }),
+
+  /**
+   * Acknowledge all warnings
+   */
+  acknowledgeAllWarnings: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await prisma.warning.updateMany({
+        where: {
+          userId: input.userId,
+          acknowledged: false,
+        },
+        data: {
+          acknowledged: true,
+          acknowledgedAt: new Date(),
+        },
+      })
+
+      return { success: true }
+    }),
 })

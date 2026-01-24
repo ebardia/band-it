@@ -141,6 +141,16 @@ export const theme = {
           md: 'px-4 py-3 text-base rounded-lg',
           lg: 'px-8 py-4 text-lg rounded-lg',
         }
+      },
+      warning: {
+        base: 'bg-yellow-500 text-white font-semibold transition',
+        hover: 'hover:bg-yellow-600',
+        disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+        sizes: {
+          sm: 'px-3 py-1.5 text-sm rounded-lg',
+          md: 'px-4 py-3 text-base rounded-lg',
+          lg: 'px-8 py-4 text-lg rounded-lg',
+        }
       }
     },
 

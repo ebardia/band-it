@@ -10,7 +10,6 @@ import {
   Stack,
   Button,
   PageWrapper,
-  DashboardContainer,
   Flex,
   Card,
   Badge,
@@ -63,9 +62,9 @@ export default function MyProjectsPage() {
     return (
       <PageWrapper variant="dashboard">
         <AppNav />
-        <DashboardContainer>
+        <div className="flex-1 p-8">
           <Loading message="Loading projects..." />
-        </DashboardContainer>
+        </div>
       </PageWrapper>
     )
   }
@@ -97,20 +96,22 @@ export default function MyProjectsPage() {
     <PageWrapper variant="dashboard">
       <AppNav />
 
-      <DashboardContainer>
-        <Flex gap="md" align="start">
-          <DashboardSidebar 
-            bandCount={bandCount}
-            proposalCount={proposalCount}
-            projectCount={projectCount}
-            taskCount={taskCount}
-          />
+      <div className="flex min-h-[calc(100vh-64px)] gap-6 p-6">
+        {/* Left Sidebar */}
+        <DashboardSidebar
+          bandCount={bandCount}
+          proposalCount={proposalCount}
+          projectCount={projectCount}
+          taskCount={taskCount}
+        />
 
-          <div className="flex-1">
-            <Stack spacing="xl">
+        {/* Main Content Area */}
+        <div className="flex-1">
+          <Stack spacing="lg">
+            <Stack spacing="xs">
               <Heading level={1}>My Projects</Heading>
               <Text color="muted">Projects you lead or created across all bands</Text>
-
+            </Stack>
               {projects.length > 0 ? (
                 <Stack spacing="md">
                   {projects.map((project: any) => (
@@ -150,10 +151,9 @@ export default function MyProjectsPage() {
                   </Stack>
                 </Alert>
               )}
-            </Stack>
-          </div>
-        </Flex>
-      </DashboardContainer>
+          </Stack>
+        </div>
+      </div>
     </PageWrapper>
   )
 }
