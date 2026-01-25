@@ -4,16 +4,44 @@ import { useRef, useEffect } from 'react'
 import { trpc } from '@/lib/trpc'
 import { Stack, Flex, Text, Button, Loading } from '@/components/ui'
 import { MessageComposer } from './MessageComposer'
+import { ReactionBar } from './ReactionBar'
+
+// Helper to highlight @mentions in content
+function highlightMentions(content: string): React.ReactNode[] {
+  const mentionRegex = /@(\w+)/g
+  const parts: React.ReactNode[] = []
+  let lastIndex = 0
+  let match
+
+  while ((match = mentionRegex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(content.substring(lastIndex, match.index))
+    }
+    parts.push(
+      <span key={match.index} className="bg-blue-100 text-blue-700 rounded px-0.5">
+        {match[0]}
+      </span>
+    )
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < content.length) {
+    parts.push(content.substring(lastIndex))
+  }
+
+  return parts.length > 0 ? parts : [content]
+}
 
 interface ThreadViewProps {
   messageId: string
   channelId: string
+  bandId: string
   userId: string | null
   userRole?: string
   onClose: () => void
 }
 
-export function ThreadView({ messageId, channelId, userId, userRole, onClose }: ThreadViewProps) {
+export function ThreadView({ messageId, channelId, bandId, userId, userRole, onClose }: ThreadViewProps) {
   const repliesEndRef = useRef<HTMLDivElement>(null)
 
   const { data, isLoading, refetch } = trpc.message.getThread.useQuery(
@@ -69,6 +97,7 @@ export function ThreadView({ messageId, channelId, userId, userRole, onClose }: 
       {/* Parent Message */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">
         <ThreadMessage
+          bandId={bandId}
           message={parentMessage}
           userId={userId}
           userRole={userRole}
@@ -87,6 +116,7 @@ export function ThreadView({ messageId, channelId, userId, userRole, onClose }: 
             replies.map((reply) => (
               <ThreadMessage
                 key={reply.id}
+                bandId={bandId}
                 message={reply}
                 userId={userId}
                 userRole={userRole}
@@ -110,7 +140,15 @@ export function ThreadView({ messageId, channelId, userId, userRole, onClose }: 
   )
 }
 
+interface Reaction {
+  emoji: string
+  count: number
+  includesMe: boolean
+  users: { id: string; name: string }[]
+}
+
 interface ThreadMessageProps {
+  bandId: string
   message: {
     id: string
     content: string
@@ -120,20 +158,21 @@ interface ThreadMessageProps {
     editedAt?: string | null
     createdAt: string
     replyCount?: number
+    reactions?: Reaction[]
   }
   userId: string | null
   userRole?: string
   isParent?: boolean
 }
 
-function ThreadMessage({ message, userId, userRole, isParent }: ThreadMessageProps) {
+function ThreadMessage({ bandId, message, userId, userRole, isParent }: ThreadMessageProps) {
   const utils = trpc.useUtils()
 
   const deleteMutation = trpc.message.delete.useMutation({
     onSuccess: () => {
       utils.message.getThread.invalidate()
       utils.message.list.invalidate()
-      utils.channel.list.invalidate()
+      utils.channel.list.invalidate({ bandId })
     },
   })
 
@@ -180,8 +219,18 @@ function ThreadMessage({ message, userId, userRole, isParent }: ThreadMessagePro
 
           {/* Content */}
           <Text variant="small" className="whitespace-pre-wrap break-words">
-            {message.content}
+            {highlightMentions(message.content)}
           </Text>
+
+          {/* Reactions */}
+          <div className="mt-1">
+            <ReactionBar
+              messageId={message.id}
+              userId={userId}
+              reactions={message.reactions || []}
+              compact
+            />
+          </div>
 
           {/* Reply count for parent */}
           {isParent && message.replyCount !== undefined && message.replyCount > 0 && (

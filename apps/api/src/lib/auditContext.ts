@@ -104,7 +104,7 @@ export async function logAuditEvent(params: {
         actorType: context.userId ? 'user' : 'system',
         actorName,
         actorMemberSince,
-        changes: params.changes || null,
+        changes: params.changes ?? undefined,
         ipAddress: context.ipAddress || null,
         userAgent: context.userAgent || null,
         flagged: context.flagged || false,

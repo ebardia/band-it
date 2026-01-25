@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { canAccessChannel } from '../channel'
+import { processMentions } from './message.mention'
 
 /**
  * Create a new message in a channel
@@ -22,7 +23,9 @@ export const createMessage = publicProcedure
       where: { id: channelId },
       include: {
         band: {
-          include: {
+          select: {
+            id: true,
+            slug: true,
             members: {
               where: { userId, status: 'ACTIVE' },
               select: { role: true },
@@ -122,6 +125,20 @@ export const createMessage = publicProcedure
         messageCount: { increment: 1 },
       },
     })
+
+    // Process mentions asynchronously (don't block message creation)
+    processMentions(
+      message.id,
+      channelId,
+      channel.band.id,
+      userId,
+      message.author.name,
+      content,
+      membership.role,
+      channel.visibility,
+      channel.name,
+      channel.band.slug
+    ).catch(err => console.error('Error processing mentions:', err))
 
     return {
       message: {

@@ -21,6 +21,7 @@ import {
   CreateChannelModal,
   ChannelSettingsModal,
   PinnedMessagesHeader,
+  SearchModal,
 } from '@/components/discussions'
 import { Button } from '@/components/ui'
 
@@ -33,6 +34,7 @@ export default function BandDiscussionsPage() {
   const [openThreadId, setOpenThreadId] = useState<string | null>(null)
   const [showCreateChannel, setShowCreateChannel] = useState(false)
   const [showChannelSettings, setShowChannelSettings] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -129,15 +131,26 @@ export default function BandDiscussionsPage() {
                       </Text>
                     )}
                   </div>
-                  {selectedChannel && selectedChannel.hasAccess && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowChannelSettings(true)}
-                    >
-                      ⚙️ Settings
-                    </Button>
-                  )}
+                  <Flex gap="sm">
+                    {userId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowSearch(true)}
+                      >
+                        🔍 Search
+                      </Button>
+                    )}
+                    {selectedChannel && selectedChannel.hasAccess && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowChannelSettings(true)}
+                      >
+                        ⚙️ Settings
+                      </Button>
+                    )}
+                  </Flex>
                 </Flex>
               </div>
             </Flex>
@@ -200,6 +213,7 @@ export default function BandDiscussionsPage() {
                           onMessageClick={setOpenThreadId}
                         />
                         <MessageList
+                          bandId={band.id}
                           channelId={selectedChannelId}
                           userId={userId}
                           userRole={userRole}
@@ -238,6 +252,7 @@ export default function BandDiscussionsPage() {
                       <ThreadView
                         messageId={openThreadId}
                         channelId={selectedChannelId}
+                        bandId={band.id}
                         userId={userId}
                         userRole={userRole}
                         onClose={() => setOpenThreadId(null)}
@@ -289,6 +304,21 @@ export default function BandDiscussionsPage() {
               c => c.id !== selectedChannel.id && c.hasAccess && !c.isArchived
             )
             setSelectedChannelId(firstAvailable?.id || null)
+          }}
+        />
+      )}
+
+      {/* Search Modal */}
+      {userId && (
+        <SearchModal
+          isOpen={showSearch}
+          onClose={() => setShowSearch(false)}
+          bandId={band.id}
+          userId={userId}
+          channels={channelsData?.channels || []}
+          onResultClick={(channelId, messageId) => {
+            setSelectedChannelId(channelId)
+            setOpenThreadId(messageId)
           }}
         />
       )}

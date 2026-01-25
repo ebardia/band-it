@@ -89,6 +89,13 @@ export const listMessages = publicProcedure
         _count: {
           select: { replies: true },
         },
+        reactions: {
+          include: {
+            user: {
+              select: { id: true, name: true },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
       take: limit + 1, // Get one extra to check if there are more
@@ -100,18 +107,45 @@ export const listMessages = publicProcedure
     const nextCursor = hasMore ? messagesResult[messagesResult.length - 1]?.id : null
 
     return {
-      messages: messagesResult.map(msg => ({
-        id: msg.id,
-        channelId: msg.channelId,
-        content: msg.content,
-        author: msg.author,
-        threadId: msg.threadId,
-        isPinned: msg.isPinned,
-        isEdited: msg.isEdited,
-        editedAt: msg.editedAt,
-        replyCount: msg._count.replies,
-        createdAt: msg.createdAt,
-      })),
+      messages: messagesResult.map(msg => {
+        // Group reactions by emoji
+        const reactionMap = new Map<string, { count: number; includesMe: boolean; users: { id: string; name: string }[] }>()
+        for (const reaction of msg.reactions) {
+          const existing = reactionMap.get(reaction.emoji)
+          if (existing) {
+            existing.count++
+            existing.users.push(reaction.user)
+            if (reaction.userId === userId) {
+              existing.includesMe = true
+            }
+          } else {
+            reactionMap.set(reaction.emoji, {
+              count: 1,
+              includesMe: reaction.userId === userId,
+              users: [reaction.user],
+            })
+          }
+        }
+
+        return {
+          id: msg.id,
+          channelId: msg.channelId,
+          content: msg.content,
+          author: msg.author,
+          threadId: msg.threadId,
+          isPinned: msg.isPinned,
+          isEdited: msg.isEdited,
+          editedAt: msg.editedAt,
+          replyCount: msg._count.replies,
+          createdAt: msg.createdAt,
+          reactions: Array.from(reactionMap.entries()).map(([emoji, data]) => ({
+            emoji,
+            count: data.count,
+            includesMe: data.includesMe,
+            users: data.users.slice(0, 10),
+          })),
+        }
+      }),
       nextCursor,
       hasMore,
     }
@@ -151,6 +185,13 @@ export const getThread = publicProcedure
         },
         _count: {
           select: { replies: true },
+        },
+        reactions: {
+          include: {
+            user: {
+              select: { id: true, name: true },
+            },
+          },
         },
       },
     })
@@ -210,6 +251,13 @@ export const getThread = publicProcedure
         author: {
           select: { id: true, name: true, email: true },
         },
+        reactions: {
+          include: {
+            user: {
+              select: { id: true, name: true },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'asc' },
       take: limit + 1,
@@ -218,6 +266,33 @@ export const getThread = publicProcedure
     const hasMore = replies.length > limit
     const repliesResult = hasMore ? replies.slice(0, -1) : replies
     const nextCursor = hasMore ? repliesResult[repliesResult.length - 1]?.id : null
+
+    // Helper to format reactions
+    const formatReactions = (reactions: Array<{ emoji: string; userId: string; user: { id: string; name: string } }>) => {
+      const reactionMap = new Map<string, { count: number; includesMe: boolean; users: { id: string; name: string }[] }>()
+      for (const reaction of reactions) {
+        const existing = reactionMap.get(reaction.emoji)
+        if (existing) {
+          existing.count++
+          existing.users.push(reaction.user)
+          if (reaction.userId === userId) {
+            existing.includesMe = true
+          }
+        } else {
+          reactionMap.set(reaction.emoji, {
+            count: 1,
+            includesMe: reaction.userId === userId,
+            users: [reaction.user],
+          })
+        }
+      }
+      return Array.from(reactionMap.entries()).map(([emoji, data]) => ({
+        emoji,
+        count: data.count,
+        includesMe: data.includesMe,
+        users: data.users.slice(0, 10),
+      }))
+    }
 
     return {
       message: {
@@ -231,6 +306,7 @@ export const getThread = publicProcedure
         editedAt: message.editedAt,
         replyCount: message._count.replies,
         createdAt: message.createdAt,
+        reactions: formatReactions(message.reactions),
       },
       replies: repliesResult.map(reply => ({
         id: reply.id,
@@ -242,6 +318,7 @@ export const getThread = publicProcedure
         isEdited: reply.isEdited,
         editedAt: reply.editedAt,
         createdAt: reply.createdAt,
+        reactions: formatReactions(reply.reactions),
       })),
       nextCursor,
       hasMore,

@@ -3,15 +3,48 @@
 import { useState, useEffect, useRef } from 'react'
 import { trpc } from '@/lib/trpc'
 import { Stack, Flex, Text, Button, Badge, Loading, Textarea, useToast } from '@/components/ui'
+import { ReactionBar } from './ReactionBar'
+
+// Helper to highlight @mentions in content
+function highlightMentions(content: string): React.ReactNode[] {
+  const mentionRegex = /@(\w+)/g
+  const parts: React.ReactNode[] = []
+  let lastIndex = 0
+  let match
+
+  while ((match = mentionRegex.exec(content)) !== null) {
+    // Add text before the mention
+    if (match.index > lastIndex) {
+      parts.push(content.substring(lastIndex, match.index))
+    }
+
+    // Add the highlighted mention
+    parts.push(
+      <span key={match.index} className="bg-blue-100 text-blue-700 rounded px-0.5">
+        {match[0]}
+      </span>
+    )
+
+    lastIndex = match.index + match[0].length
+  }
+
+  // Add remaining text
+  if (lastIndex < content.length) {
+    parts.push(content.substring(lastIndex))
+  }
+
+  return parts.length > 0 ? parts : [content]
+}
 
 interface MessageListProps {
+  bandId: string
   channelId: string
   userId: string | null
   userRole?: string
   onOpenThread: (messageId: string) => void
 }
 
-export function MessageList({ channelId, userId, userRole, onOpenThread }: MessageListProps) {
+export function MessageList({ bandId, channelId, userId, userRole, onOpenThread }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const utils = trpc.useUtils()
 
@@ -68,6 +101,7 @@ export function MessageList({ channelId, userId, userRole, onOpenThread }: Messa
         {messages.map((message) => (
           <MessageItem
             key={message.id}
+            bandId={bandId}
             message={message}
             userId={userId}
             userRole={userRole}
@@ -81,7 +115,15 @@ export function MessageList({ channelId, userId, userRole, onOpenThread }: Messa
   )
 }
 
+interface Reaction {
+  emoji: string
+  count: number
+  includesMe: boolean
+  users: { id: string; name: string }[]
+}
+
 interface MessageItemProps {
+  bandId: string
   message: {
     id: string
     content: string
@@ -91,13 +133,14 @@ interface MessageItemProps {
     editedAt: string | null
     replyCount: number
     createdAt: string
+    reactions?: Reaction[]
   }
   userId: string | null
   userRole?: string
   onOpenThread: () => void
 }
 
-function MessageItem({ message, userId, userRole, onOpenThread }: MessageItemProps) {
+function MessageItem({ bandId, message, userId, userRole, onOpenThread }: MessageItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState(message.content)
   const utils = trpc.useUtils()
@@ -114,7 +157,7 @@ function MessageItem({ message, userId, userRole, onOpenThread }: MessageItemPro
   const deleteMutation = trpc.message.delete.useMutation({
     onSuccess: () => {
       utils.message.list.invalidate()
-      utils.channel.list.invalidate()
+      utils.channel.list.invalidate({ bandId })
     },
   })
 
@@ -230,7 +273,20 @@ function MessageItem({ message, userId, userRole, onOpenThread }: MessageItemPro
               </Flex>
             </Stack>
           ) : (
-            <Text className="whitespace-pre-wrap break-words">{message.content}</Text>
+            <Text className="whitespace-pre-wrap break-words">
+              {highlightMentions(message.content)}
+            </Text>
+          )}
+
+          {/* Reactions */}
+          {!isEditing && (
+            <div className="mt-2">
+              <ReactionBar
+                messageId={message.id}
+                userId={userId}
+                reactions={message.reactions || []}
+              />
+            </div>
           )}
 
           {/* Actions - only show when not editing */}

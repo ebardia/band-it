@@ -107,6 +107,8 @@ model User {
   messagesAuthored        Message[] @relation("MessagesAuthored")
   messageEdits            MessageEdit[] @relation("MessageEdits")
   channelReadStatuses     ChannelReadStatus[] @relation("ChannelReadStatuses")
+  messageMentions         MessageMention[] @relation("MessageMentionsReceived")
+  messageReactions        MessageReaction[] @relation("MessageReactionsGiven")
 }
 
 enum SubscriptionStatus {
@@ -619,6 +621,8 @@ model Message {
   parentMessage Message? @relation("MessageReplies", fields: [threadId], references: [id])
   replies     Message[] @relation("MessageReplies")
   edits       MessageEdit[]
+  mentions    MessageMention[]
+  reactions   MessageReaction[]
 
   @@index([channelId, createdAt])
   @@index([channelId, isPinned])
@@ -654,6 +658,36 @@ model ChannelReadStatus {
   user              User     @relation("ChannelReadStatuses", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([channelId, userId])
+  @@index([userId])
+}
+
+model MessageMention {
+  id          String   @id @default(cuid())
+  messageId   String
+  userId      String?              // User mention (null if role mention)
+  roleMention String?              // 'governors'|'moderators'|'conductors'|'everyone'|'channel'
+  createdAt   DateTime @default(now())
+
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user        User?    @relation("MessageMentionsReceived", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId])
+  @@index([messageId])
+}
+
+model MessageReaction {
+  id          String   @id @default(cuid())
+  messageId   String
+  userId      String
+  emoji       String   @db.VarChar(32)
+  createdAt   DateTime @default(now())
+
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user        User     @relation("MessageReactionsGiven", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])  // One reaction per user per message
+  @@index([messageId])
   @@index([userId])
 }
 
