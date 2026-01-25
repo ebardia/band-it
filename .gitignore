@@ -43,3 +43,12 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Claude Code
+.claude/
+
+# Uploaded/generated files
+apps/api/uploads/
