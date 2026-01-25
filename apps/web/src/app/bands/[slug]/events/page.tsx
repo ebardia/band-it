@@ -105,6 +105,7 @@ export default function BandEventsPage() {
   const currentMember = band.members.find((m: any) => m.user.id === userId)
   const isMember = !!currentMember
   const canCreateEvent = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
+  const canAccessAdminTools = canCreateEvent // Same roles
 
   const getEventTypeBadge = (type: string) => {
     switch (type) {
@@ -160,6 +161,7 @@ export default function BandEventsPage() {
         bandName={band.name}
         pageTitle="Events"
         isMember={isMember}
+        canAccessAdminTools={canAccessAdminTools}
         wide={true}
         actions={
           canCreateEvent && (
@@ -219,13 +221,24 @@ export default function BandEventsPage() {
               ))}
             </Flex>
 
-            <Button
-              variant={showPast ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setShowPast(!showPast)}
-            >
-              {showPast ? 'Showing All' : 'Show Past Events'}
-            </Button>
+            <Flex gap="sm">
+              <Button
+                variant={showPast ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setShowPast(!showPast)}
+              >
+                {showPast ? 'Showing All' : 'Show Past Events'}
+              </Button>
+              {canCreateEvent && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => router.push(`/bands/${slug}/events/create`)}
+                >
+                  + Create Event
+                </Button>
+              )}
+            </Flex>
           </Flex>
 
           {/* Events List */}

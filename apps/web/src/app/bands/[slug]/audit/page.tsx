@@ -26,6 +26,9 @@ const ENTITY_TYPES = [
   'ChecklistItem',
   'Comment',
   'File',
+  'Event',
+  'EventRSVP',
+  'EventAttendance',
 ]
 
 const DATE_RANGES = [
@@ -129,6 +132,7 @@ export default function AuditLogPage() {
   const currentMember = band.members.find((m: any) => m.user.id === userId)
   const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
   const isMember = !!currentMember
+  const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
   const formatDate = (date: Date) => {
     const d = new Date(date)
@@ -234,6 +238,7 @@ export default function AuditLogPage() {
         pageTitle="Audit Log"
         canApprove={canApprove}
         isMember={isMember}
+        canAccessAdminTools={canAccessAdminTools}
         wide={true}
       >
         <Stack spacing="lg">

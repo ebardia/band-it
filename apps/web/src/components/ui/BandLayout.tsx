@@ -4,7 +4,7 @@ import { ReactNode } from 'react'
 import { Text, Flex, Stack } from '.'
 import { BandSidebar } from './BandSidebar'
 
-interface BandLayoutProps {
+export interface BandLayoutProps {
   children: ReactNode
   bandSlug: string
   bandName: string
@@ -12,7 +12,9 @@ interface BandLayoutProps {
   canApprove?: boolean
   isMember?: boolean
   canCreateProposal?: boolean
+  canAccessAdminTools?: boolean
   action?: ReactNode
+  actions?: ReactNode // Alias for action
   rightSidebar?: ReactNode
   wide?: boolean
 }
@@ -25,10 +27,13 @@ export function BandLayout({
   canApprove = false,
   isMember = false,
   canCreateProposal = false,
+  canAccessAdminTools = false,
   action,
+  actions,
   rightSidebar,
   wide = false,
 }: BandLayoutProps) {
+  const actionContent = action || actions
   return (
     <div className="min-h-screen bg-gray-50">
       <div className={`mx-auto px-4 ${wide ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
@@ -45,7 +50,7 @@ export function BandLayout({
                   <h1 className="text-3xl font-bold text-gray-900">{pageTitle}</h1>
                   <Text color="muted">{bandName}</Text>
                 </Stack>
-                {action && <div>{action}</div>}
+                {actionContent && <div>{actionContent}</div>}
               </Flex>
             </div>
 
@@ -64,6 +69,7 @@ export function BandLayout({
               canApprove={canApprove}
               isMember={isMember}
               canCreateProposal={canCreateProposal}
+              canAccessAdminTools={canAccessAdminTools}
             />
 
             {/* Main Content */}

@@ -105,6 +105,7 @@ export default function BandDiscussionsPage() {
   const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
   const isMember = !!currentMember
   const userRole = currentMember?.role
+  const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
   const selectedChannel = channelsData?.channels?.find(c => c.id === selectedChannelId)
 
@@ -181,6 +182,7 @@ export default function BandDiscussionsPage() {
                 bandName={band.name}
                 canApprove={canApprove}
                 isMember={isMember}
+                canAccessAdminTools={canAccessAdminTools}
               />
 
               {/* Discussion Area */}

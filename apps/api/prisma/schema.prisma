@@ -453,6 +453,7 @@ model Band {
   // Voting Configuration
   votingMethod          VotingMethod @default(SIMPLE_MAJORITY)
   votingPeriodDays      Int @default(7)
+  quorumPercentage      Int @default(50) // Minimum % of eligible voters that must participate
   whoCanCreateProposals MemberRole[] @default([FOUNDER, GOVERNOR, MODERATOR, CONDUCTOR])
 
   // Role Management Configuration
@@ -1674,4 +1675,89 @@ model AIUsage {
   @@index([entityType, entityId])
   @@index([operation])
   @@index([createdAt])
+}
+
+// ============================================
+// ADMIN TASKS (Routine Administrative Actions)
+// ============================================
+
+model AdminTaskDefinition {
+  id            String   @id @default(cuid())
+
+  // Task identification
+  taskType      String   @unique  // e.g., "EXPORT_MEMBER_ROSTER", "EXPORT_AUDIT_LOG", "SEND_ANNOUNCEMENT"
+  name          String             // Human-readable name
+  description   String   @db.Text  // What this task does
+
+  // UI Configuration
+  icon          String?            // Icon name for the UI
+  category      String   @default("general")  // For grouping in UI
+
+  // Permissions - which roles can execute this task
+  allowedRoles  MemberRole[]
+
+  // Parameters schema (JSON Schema format for validation)
+  parametersSchema  Json?
+
+  // Status
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  executions    AdminTaskExecution[]
+
+  @@index([isActive])
+  @@index([category])
+}
+
+enum AdminTaskExecutionStatus {
+  PENDING     // Task is queued
+  RUNNING     // Task is currently executing
+  COMPLETED   // Task finished successfully
+  FAILED      // Task failed
+}
+
+model AdminTaskExecution {
+  id              String   @id @default(cuid())
+
+  // What task was executed
+  taskDefinitionId String
+  taskType        String   // Denormalized for easier queries
+
+  // Context
+  bandId          String
+  executedById    String   // Who triggered the task
+
+  // Parameters used for this execution
+  parameters      Json?
+
+  // Execution status
+  status          AdminTaskExecutionStatus @default(PENDING)
+
+  // Result
+  resultSummary   String?  @db.Text  // Human-readable summary of what happened
+  resultData      Json?              // Structured result data (e.g., file URL, email count)
+  errorMessage    String?  @db.Text  // If failed, what went wrong
+
+  // For file exports - store the file info
+  outputFileUrl   String?
+  outputFileName  String?
+  outputFileSize  Int?
+
+  // Timing
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+
+  // Relations
+  taskDefinition  AdminTaskDefinition @relation(fields: [taskDefinitionId], references: [id])
+
+  @@index([bandId, createdAt])
+  @@index([taskDefinitionId])
+  @@index([executedById])
+  @@index([status])
+  @@index([taskType])
 }

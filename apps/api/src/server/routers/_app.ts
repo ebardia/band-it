@@ -16,6 +16,7 @@ import { checklistRouter } from './checklist'
 import { auditRouter } from './audit'
 import { validationRouter } from './validation'
 import { adminRouter } from './admin'
+import { adminTaskRouter } from './adminTask'
 import { channelRouter } from './channel'
 import { messageRouter } from './message'
 
@@ -38,6 +39,7 @@ export const appRouter = router({
   audit: auditRouter,
   validation: validationRouter,
   admin: adminRouter,
+  adminTask: adminTaskRouter,
   channel: channelRouter,
   message: messageRouter,
 })

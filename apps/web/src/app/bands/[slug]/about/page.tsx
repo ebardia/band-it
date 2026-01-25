@@ -122,6 +122,7 @@ export default function BandAboutPage() {
   const isMember = !!currentMember
   const isFounder = currentMember?.role === 'FOUNDER'
   const canLeave = isMember && !isFounder
+  const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
   return (
     <>
@@ -132,6 +133,7 @@ export default function BandAboutPage() {
         pageTitle={`About ${band.name}`}
         canApprove={canApprove}
         isMember={isMember}
+        canAccessAdminTools={canAccessAdminTools}
         wide={false}
         action={
           canLeave ? (

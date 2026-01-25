@@ -9,10 +9,11 @@ interface BandSidebarProps {
   canApprove?: boolean
   isMember?: boolean
   canCreateProposal?: boolean
+  canAccessAdminTools?: boolean
   onLeaveBand?: () => void
 }
 
-export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMember = false, canCreateProposal = false, onLeaveBand }: BandSidebarProps) {
+export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMember = false, canCreateProposal = false, canAccessAdminTools = false, onLeaveBand }: BandSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -36,6 +37,7 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
     { label: `👥 ${bandName} Members`, path: `/bands/${bandSlug}/members`, show: true },
     { label: '📨 Invite', path: `/bands/${bandSlug}/invite`, show: isMember },
     { label: '📋 Applications', path: `/bands/${bandSlug}/applications`, show: canApprove },
+    { label: '🛠️ Tools', path: `/bands/${bandSlug}/tools`, show: canAccessAdminTools },
     { label: '⚙️ Settings', path: `/bands/${bandSlug}/settings`, show: isMember },
   ].filter(item => item.show !== false)
 

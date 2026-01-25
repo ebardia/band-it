@@ -137,6 +137,7 @@ export default function BandMembersPage() {
   const currentMember = band.members.find((m: any) => m.user.id === userId)
   const isMember = !!currentMember
   const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
+  const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
   const canManageMembers = currentMember && (
     whoCanChangeRoles.includes(currentMember.role) ||
     band.whoCanCreateProposals.includes(currentMember.role)
@@ -162,6 +163,7 @@ export default function BandMembersPage() {
         pageTitle="Members"
         canApprove={canApprove}
         isMember={isMember}
+        canAccessAdminTools={canAccessAdminTools}
         wide={true}
         action={
           isMember ? (

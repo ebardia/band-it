@@ -94,6 +94,7 @@ export default function ProposalsPage() {
   const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
   const isMember = !!currentMember
   const canCreateProposal = currentMember && CAN_CREATE_PROPOSAL.includes(currentMember.role)
+  const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -122,6 +123,7 @@ export default function ProposalsPage() {
         pageTitle="Band Proposals"
         canApprove={canApprove}
         isMember={isMember}
+        canAccessAdminTools={canAccessAdminTools}
         wide={true}
         canCreateProposal={canCreateProposal}
         action={
