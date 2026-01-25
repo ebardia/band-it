@@ -1,7 +1,7 @@
 import { theme, cn } from '@band-it/shared'
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'warning'
-type ButtonSize = 'sm' | 'md' | 'lg'
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'warning' | 'success'
+type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant

@@ -37,7 +37,8 @@ const PROPOSAL_TYPES = [
 const EXECUTION_TYPES = [
   { value: 'PROJECT', label: 'Project', description: 'Creates a project when approved (default behavior)' },
   { value: 'GOVERNANCE', label: 'Governance', description: 'Auto-executes changes to band settings when approved' },
-  { value: 'ACTION', label: 'Action', description: 'Auto-triggers routine tasks when approved' },
+  // ACTION temporarily hidden - not fully implemented yet
+  // { value: 'ACTION', label: 'Action', description: 'Auto-triggers routine tasks when approved' },
   { value: 'RESOLUTION', label: 'Resolution', description: 'Just records the decision, nothing executes' },
 ]
 

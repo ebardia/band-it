@@ -104,6 +104,7 @@ export const proposalVoteRouter = router({
       z.object({
         proposalId: z.string(),
         userId: z.string(),
+        forceClose: z.boolean().optional(), // Only founders can force close before deadline
       })
     )
     .mutation(async ({ input }) => {
@@ -134,23 +135,60 @@ export const proposalVoteRouter = router({
         },
       })
 
-      const canClose = proposal.createdById === input.userId || 
-                       membership?.role === 'FOUNDER' || 
+      const isFounder = membership?.role === 'FOUNDER'
+      const canClose = proposal.createdById === input.userId ||
+                       isFounder ||
                        membership?.role === 'GOVERNOR'
 
       if (!canClose) {
         throw new Error('You do not have permission to close this proposal')
       }
 
+      // Check if voting deadline has passed
+      const now = new Date()
+      const deadlinePassed = now > proposal.votingEndsAt
+
+      if (!deadlinePassed) {
+        if (input.forceClose && isFounder) {
+          // Founders can force close early
+        } else if (input.forceClose) {
+          throw new Error('Only founders can force close a proposal before the deadline')
+        } else {
+          throw new Error('Voting period has not ended yet. The deadline is ' + proposal.votingEndsAt.toLocaleDateString())
+        }
+      }
+
+      // Get count of eligible voters (members with voting roles)
+      const eligibleVoters = await prisma.member.count({
+        where: {
+          bandId: proposal.bandId,
+          status: 'ACTIVE',
+          role: { in: CAN_VOTE as any },
+        },
+      })
+
       // Calculate results
       const yesVotes = proposal.votes.filter(v => v.vote === 'YES').length
       const noVotes = proposal.votes.filter(v => v.vote === 'NO').length
-      const totalVotes = yesVotes + noVotes // Abstain doesn't count
+      const abstainVotes = proposal.votes.filter(v => v.vote === 'ABSTAIN').length
+      const totalVoters = yesVotes + noVotes + abstainVotes // All who participated
+      const totalVotes = yesVotes + noVotes // Abstain doesn't count toward decision
+
+      // Check quorum (minimum participation)
+      const quorumPercentage = proposal.band.quorumPercentage
+      const participationPercentage = eligibleVoters > 0 ? (totalVoters / eligibleVoters) * 100 : 0
+      const quorumMet = participationPercentage >= quorumPercentage
 
       let approved = false
-      if (totalVotes > 0) {
+      let rejectionReason: string | null = null
+
+      if (!quorumMet) {
+        // Quorum not met - proposal fails
+        approved = false
+        rejectionReason = `Quorum not met: ${totalVoters} of ${eligibleVoters} eligible voters participated (${participationPercentage.toFixed(0)}%), needed ${quorumPercentage}%`
+      } else if (totalVotes > 0) {
         const yesPercentage = (yesVotes / totalVotes) * 100
-        
+
         switch (proposal.band.votingMethod) {
           case 'SIMPLE_MAJORITY':
             approved = yesPercentage > 50
@@ -217,12 +255,18 @@ export const proposalVoteRouter = router({
         select: { userId: true },
       })
 
+      const resultMessage = approved
+        ? 'approved'
+        : rejectionReason
+          ? `rejected (${rejectionReason})`
+          : 'rejected'
+
       for (const member of allMembers) {
         await notificationService.create({
           userId: member.userId,
           type: approved ? 'PROPOSAL_APPROVED' : 'PROPOSAL_REJECTED',
           title: approved ? 'Proposal Approved' : 'Proposal Rejected',
-          message: `"${proposal.title}" was ${approved ? 'approved' : 'rejected'}`,
+          message: `"${proposal.title}" was ${resultMessage}`,
           actionUrl: `/bands/${proposal.band.slug}/proposals/${proposal.id}`,
           priority: 'MEDIUM',
           relatedId: proposal.id,
@@ -232,8 +276,15 @@ export const proposalVoteRouter = router({
 
       return {
         success: true,
-        message: `Proposal ${approved ? 'approved' : 'rejected'}`,
+        message: `Proposal ${resultMessage}`,
         proposal: updatedProposal,
+        quorumInfo: {
+          required: quorumPercentage,
+          actual: Math.round(participationPercentage),
+          met: quorumMet,
+          eligibleVoters,
+          totalVoters,
+        },
         executionResult: executionResult || undefined,
       }
     }),

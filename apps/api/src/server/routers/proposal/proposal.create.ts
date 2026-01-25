@@ -63,6 +63,14 @@ export const proposalCreateRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      // ACTION proposals are temporarily disabled - not fully implemented yet
+      if (input.executionType === 'ACTION') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Action proposals are not currently available',
+        })
+      }
+
       // Set integrity flags in audit context if user proceeded with warnings
       if (input.proceedWithFlags && input.flagReasons && input.flagReasons.length > 0) {
         setAuditFlags({
@@ -130,9 +138,9 @@ export const proposalCreateRouter = router({
         }
       }
 
-      // Validate effects if provided
+      // Validate effects if provided (ACTION is disabled, so only check GOVERNANCE)
       let effectsValidatedAt: Date | null = null
-      if (input.effects || executionType === 'GOVERNANCE' || executionType === 'ACTION') {
+      if (input.effects || executionType === 'GOVERNANCE') {
         const validationResult = await proposalEffectsService.validateEffects(
           input.effects,
           executionType,

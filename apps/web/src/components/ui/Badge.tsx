@@ -1,15 +1,22 @@
-import { theme } from '@band-it/shared'
+import { theme, cn } from '@band-it/shared'
 
-type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'neutral'
+export type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'secondary'
 
-interface BadgeProps {
+export interface BadgeProps {
   children: React.ReactNode
   variant?: BadgeVariant
+  className?: string
+  onClick?: () => void
+  title?: string
 }
 
-export function Badge({ children, variant = 'neutral' }: BadgeProps) {
+export function Badge({ children, variant = 'neutral', className, onClick, title }: BadgeProps) {
   return (
-    <span className={theme.components.badge[variant]}>
+    <span
+      className={cn(theme.components.badge[variant], className, onClick && 'cursor-pointer')}
+      onClick={onClick}
+      title={title}
+    >
       {children}
     </span>
   )

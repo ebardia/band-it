@@ -60,12 +60,13 @@ export const proposalQueryRouter = router({
             select: { id: true, name: true },
           },
           band: {
-            select: { 
-              id: true, 
-              name: true, 
+            select: {
+              id: true,
+              name: true,
               slug: true,
               votingMethod: true,
               votingPeriodDays: true,
+              quorumPercentage: true,
             },
           },
           votes: {
@@ -100,6 +101,11 @@ export const proposalQueryRouter = router({
         },
       })
 
+      // Calculate quorum
+      const quorumPercentage = proposal.band.quorumPercentage
+      const participationPercentage = eligibleVoters > 0 ? (totalVotes / eligibleVoters) * 100 : 0
+      const quorumMet = participationPercentage >= quorumPercentage
+
       return {
         success: true,
         proposal,
@@ -111,6 +117,11 @@ export const proposalQueryRouter = router({
           eligibleVoters,
           percentageYes: totalVotes > 0 ? Math.round((yesVotes / totalVotes) * 100) : 0,
           percentageNo: totalVotes > 0 ? Math.round((noVotes / totalVotes) * 100) : 0,
+          quorum: {
+            required: quorumPercentage,
+            actual: Math.round(participationPercentage),
+            met: quorumMet,
+          },
         },
       }
     }),

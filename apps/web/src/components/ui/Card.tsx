@@ -1,13 +1,14 @@
 import { theme, cn } from '@band-it/shared'
 
-interface CardProps {
+export interface CardProps {
   children: React.ReactNode
   className?: string
   hover?: boolean
   onClick?: () => void
+  style?: React.CSSProperties
 }
 
-export function Card({ children, className, hover, onClick }: CardProps) {
+export function Card({ children, className, hover, onClick, style }: CardProps) {
   return (
     <div
       className={cn(
@@ -17,6 +18,7 @@ export function Card({ children, className, hover, onClick }: CardProps) {
         className
       )}
       onClick={onClick}
+      style={style}
     >
       {children}
     </div>

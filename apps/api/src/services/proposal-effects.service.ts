@@ -148,10 +148,16 @@ export async function validateEffects(
     return { valid: errors.length === 0, errors, warnings }
   }
 
-  // For GOVERNANCE and ACTION, effects are required
-  if (effects === null || effects === undefined) {
-    errors.push(`Effects are required for ${executionType} proposals`)
+  // For GOVERNANCE, effects are required
+  // For ACTION, effects are optional (can be just a decision record until ACTION effects are defined)
+  if (executionType === 'GOVERNANCE' && (effects === null || effects === undefined)) {
+    errors.push('Effects are required for GOVERNANCE proposals')
     return { valid: false, errors, warnings }
+  }
+
+  // If no effects provided for ACTION, that's OK - skip further validation
+  if (effects === null || effects === undefined) {
+    return { valid: true, errors, warnings }
   }
 
   // Validate structure

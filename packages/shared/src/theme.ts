@@ -107,9 +107,11 @@ export const theme = {
         hover: 'hover:bg-blue-700',
         disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
         sizes: {
+          xs: 'px-2 py-1 text-xs rounded-md',
           sm: 'px-3 py-1.5 text-sm rounded-lg',
           md: 'px-4 py-3 text-base rounded-lg',
           lg: 'px-8 py-4 text-lg rounded-lg',
+          xl: 'px-10 py-5 text-xl rounded-lg',
         }
       },
       secondary: {
@@ -117,9 +119,11 @@ export const theme = {
         hover: 'hover:bg-blue-50',
         disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
         sizes: {
+          xs: 'px-2 py-1 text-xs rounded-md',
           sm: 'px-3 py-1.5 text-sm rounded-lg',
           md: 'px-4 py-3 text-base rounded-lg',
           lg: 'px-8 py-4 text-lg rounded-lg',
+          xl: 'px-10 py-5 text-xl rounded-lg',
         }
       },
       danger: {
@@ -127,9 +131,11 @@ export const theme = {
         hover: 'hover:bg-red-700',
         disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
         sizes: {
+          xs: 'px-2 py-1 text-xs rounded-md',
           sm: 'px-3 py-1.5 text-sm rounded-lg',
           md: 'px-4 py-3 text-base rounded-lg',
           lg: 'px-8 py-4 text-lg rounded-lg',
+          xl: 'px-10 py-5 text-xl rounded-lg',
         }
       },
       ghost: {
@@ -137,9 +143,11 @@ export const theme = {
         hover: 'hover:bg-gray-100',
         disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
         sizes: {
+          xs: 'px-2 py-1 text-xs rounded-md',
           sm: 'px-3 py-1.5 text-sm rounded-lg',
           md: 'px-4 py-3 text-base rounded-lg',
           lg: 'px-8 py-4 text-lg rounded-lg',
+          xl: 'px-10 py-5 text-xl rounded-lg',
         }
       },
       warning: {
@@ -147,9 +155,23 @@ export const theme = {
         hover: 'hover:bg-yellow-600',
         disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
         sizes: {
+          xs: 'px-2 py-1 text-xs rounded-md',
           sm: 'px-3 py-1.5 text-sm rounded-lg',
           md: 'px-4 py-3 text-base rounded-lg',
           lg: 'px-8 py-4 text-lg rounded-lg',
+          xl: 'px-10 py-5 text-xl rounded-lg',
+        }
+      },
+      success: {
+        base: 'bg-green-600 text-white font-semibold transition',
+        hover: 'hover:bg-green-700',
+        disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+        sizes: {
+          xs: 'px-2 py-1 text-xs rounded-md',
+          sm: 'px-3 py-1.5 text-sm rounded-lg',
+          md: 'px-4 py-3 text-base rounded-lg',
+          lg: 'px-8 py-4 text-lg rounded-lg',
+          xl: 'px-10 py-5 text-xl rounded-lg',
         }
       }
     },
@@ -190,6 +212,7 @@ export const theme = {
       danger: 'bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold',
       info: 'bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold',
       neutral: 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold',
+      secondary: 'bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold',
     },
 
     // Progress indicator

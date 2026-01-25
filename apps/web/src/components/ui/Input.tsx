@@ -1,21 +1,22 @@
+import { forwardRef } from 'react'
 import { theme, cn } from '@band-it/shared'
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
   helperText?: string
 }
 
-export function Input({
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input({
   label,
   error,
   helperText,
   className,
   id,
   ...props
-}: InputProps) {
+}, ref) {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
-  
+
   return (
     <div>
       {label && (
@@ -27,8 +28,9 @@ export function Input({
           {props.required && <span className="text-red-500"> *</span>}
         </label>
       )}
-      
+
       <input
+        ref={ref}
         id={inputId}
         className={cn(
           theme.components.input.base,
@@ -39,14 +41,14 @@ export function Input({
         )}
         {...props}
       />
-      
+
       {helperText && !error && (
         <p className="mt-1 text-xs text-gray-500">{helperText}</p>
       )}
-      
+
       {error && (
         <p className="mt-1 text-xs text-red-600">{error}</p>
       )}
     </div>
   )
-}
+})

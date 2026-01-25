@@ -45,20 +45,20 @@ const BAND_ID_FIELD: Record<string, string | null> = {
 }
 
 // Fields to use as human-readable name
-const NAME_FIELD: Record<string, string> = {
+const NAME_FIELD: Record<string, string | null> = {
   'User': 'email',
   'Band': 'name',
-  'Member': 'id',
+  'Member': null,          // Custom logic - fetches user name
   'Proposal': 'title',
-  'Vote': 'id',
+  'Vote': null,            // Custom logic - fetches proposal title
   'Project': 'name',
   'Task': 'name',
   'ChecklistItem': 'description',
-  'Comment': 'id',
+  'Comment': null,         // Custom logic - shows snippet of content
   'File': 'originalName',
   'Event': 'title',
-  'EventRSVP': 'id',
-  'EventAttendance': 'id',
+  'EventRSVP': null,       // Custom logic - fetches event title
+  'EventAttendance': null, // Custom logic - fetches event title
 }
 
 function computeChanges(before: any, after: any): Record<string, { from: any; to: any }> | null {
@@ -89,6 +89,105 @@ function computeChanges(before: any, after: any): Record<string, { from: any; to
   }
 
   return Object.keys(changes).length > 0 ? changes : null
+}
+
+// Format RSVP status for display
+function formatRsvpStatus(status: string): string {
+  switch (status) {
+    case 'GOING': return 'Going'
+    case 'NOT_GOING': return 'Not Going'
+    case 'MAYBE': return 'Maybe'
+    default: return status
+  }
+}
+
+// Format attendance status for display
+function formatAttendanceStatus(status: string): string {
+  switch (status) {
+    case 'ATTENDED': return 'Attended'
+    case 'ABSENT': return 'Absent'
+    case 'EXCUSED': return 'Excused'
+    default: return status
+  }
+}
+
+// Get meaningful entity name for models that need custom logic
+async function getEntityName(model: string, record: any, prismaClient: PrismaClient): Promise<string | null> {
+  if (!record) return null
+
+  // For Member, fetch user name
+  if (model === 'Member' && record.userId) {
+    try {
+      const user = await prismaClient.user.findUnique({
+        where: { id: record.userId },
+        select: { name: true }
+      })
+      return user?.name || null
+    } catch {
+      return null
+    }
+  }
+
+  // For Vote, fetch proposal title and show vote value
+  if (model === 'Vote' && record.proposalId) {
+    try {
+      const proposal = await prismaClient.proposal.findUnique({
+        where: { id: record.proposalId },
+        select: { title: true }
+      })
+      if (proposal) {
+        const voteValue = record.vote || 'unknown'
+        return `${voteValue} on "${proposal.title}"`
+      }
+    } catch {
+      return record.vote || null
+    }
+  }
+
+  // For Comment, show a snippet of content
+  if (model === 'Comment' && record.content) {
+    const snippet = record.content.slice(0, 50)
+    return snippet.length < record.content.length ? snippet + '...' : snippet
+  }
+
+  // For EventRSVP, fetch event title and combine with status
+  if (model === 'EventRSVP' && record.eventId) {
+    try {
+      const event = await prismaClient.event.findUnique({
+        where: { id: record.eventId },
+        select: { title: true }
+      })
+      if (event) {
+        return `${formatRsvpStatus(record.status)} - ${event.title}`
+      }
+    } catch {
+      // Fallback to just status if event lookup fails
+      return formatRsvpStatus(record.status)
+    }
+  }
+
+  // For EventAttendance, fetch event title and combine with status
+  if (model === 'EventAttendance' && record.eventId) {
+    try {
+      const event = await prismaClient.event.findUnique({
+        where: { id: record.eventId },
+        select: { title: true }
+      })
+      if (event) {
+        return `${formatAttendanceStatus(record.status)} - ${event.title}`
+      }
+    } catch {
+      return formatAttendanceStatus(record.status)
+    }
+  }
+
+  // For other models, use the NAME_FIELD mapping
+  const nameField = NAME_FIELD[model]
+  if (nameField) {
+    return record[nameField] || null
+  }
+
+  return null
 }
 
 async function getBandId(model: string, record: any, prismaClient: PrismaClient): Promise<string | null> {
@@ -203,14 +302,14 @@ export function createAuditMiddleware(prismaClient: PrismaClient): Prisma.Middle
         case 'create':
           auditAction = 'created'
           entityId = result.id
-          entityName = result[NAME_FIELD[model]] || null
+          entityName = await getEntityName(model, result, prismaClient)
           bandId = await getBandId(model, result, prismaClient)
           break
 
         case 'update':
           auditAction = 'updated'
           entityId = result.id
-          entityName = result[NAME_FIELD[model]] || null
+          entityName = await getEntityName(model, result, prismaClient)
           bandId = await getBandId(model, result, prismaClient)
           changes = computeChanges(beforeState, result)
           // Skip if nothing meaningful changed
@@ -220,7 +319,7 @@ export function createAuditMiddleware(prismaClient: PrismaClient): Prisma.Middle
         case 'delete':
           auditAction = 'deleted'
           entityId = beforeState?.id || params.args?.where?.id || 'unknown'
-          entityName = beforeState?.[NAME_FIELD[model]] || null
+          entityName = await getEntityName(model, beforeState, prismaClient)
           bandId = await getBandId(model, beforeState, prismaClient)
           break
 
