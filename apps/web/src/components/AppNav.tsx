@@ -13,6 +13,7 @@ export function AppNav() {
   const pathname = usePathname()
   const { showToast } = useToast()
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -55,28 +56,35 @@ export function AppNav() {
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
 
+  // Close mobile menu when navigating
+  const handleNavClick = (path: string) => {
+    setShowMobileMenu(false)
+    router.push(path)
+  }
+
   return (
     <>
       <AIUsageTicker />
       <nav className={theme.components.nav.container}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4">
         {/* Logo */}
-        <button onClick={() => router.push('/user-dashboard')}>
-          <Image 
-            src="/logo.png" 
-            alt="Band IT Logo" 
-            width={150} 
-            height={150}
+        <button onClick={() => handleNavClick('/user-dashboard')} className="flex-shrink-0">
+          <Image
+            src="/logo.png"
+            alt="Band IT Logo"
+            width={120}
+            height={120}
+            className="w-24 h-auto md:w-[150px]"
             priority
           />
         </button>
 
-        {/* Center Navigation */}
-        <div className="flex items-center gap-6">
+        {/* Center Navigation - Hidden on mobile */}
+        <div className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <button
               key={link.path}
-              onClick={() => router.push(link.path)}
+              onClick={() => handleNavClick(link.path)}
               className={isActive(link.path) ? theme.components.nav.activeLink : theme.components.nav.link}
             >
               {link.label}
@@ -84,36 +92,109 @@ export function AppNav() {
           ))}
         </div>
 
-        {/* Right Side: Bell + Account Dropdown */}
-        <div className="flex items-center gap-4">
+        {/* Right Side: Hamburger (mobile) + Bell + Account Dropdown */}
+        <div className="flex items-center gap-2 md:gap-4">
           {/* Notification Bell with Dropdown */}
           <div className="relative">
             <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
-            <NotificationsDropdown 
-              isOpen={showNotifications} 
-              onClose={() => setShowNotifications(false)} 
+            <NotificationsDropdown
+              isOpen={showNotifications}
+              onClose={() => setShowNotifications(false)}
             />
           </div>
 
-          {/* Account Dropdown */}
-          <Dropdown trigger={<span>Account ▼</span>}>
-            <DropdownItem onClick={() => router.push('/user-dashboard/profile')}>
-              Profile
-            </DropdownItem>
-            {isFounder && (
-              <DropdownItem onClick={() => router.push('/user-dashboard/subscription')}>
-                Subscription
+          {/* Account Dropdown - Hidden on mobile */}
+          <div className="hidden md:block">
+            <Dropdown trigger={<span>Account ▼</span>}>
+              <DropdownItem onClick={() => handleNavClick('/user-dashboard/profile')}>
+                Profile
               </DropdownItem>
-            )}
-            <DropdownItem onClick={() => router.push('/user-dashboard/settings')}>
-              Settings
-            </DropdownItem>
-            <DropdownItem onClick={handleLogout}>
-              Logout
-            </DropdownItem>
-          </Dropdown>
+              {isFounder && (
+                <DropdownItem onClick={() => handleNavClick('/user-dashboard/subscription')}>
+                  Subscription
+                </DropdownItem>
+              )}
+              <DropdownItem onClick={() => handleNavClick('/user-dashboard/settings')}>
+                Settings
+              </DropdownItem>
+              <DropdownItem onClick={handleLogout}>
+                Logout
+              </DropdownItem>
+            </Dropdown>
+          </div>
+
+          {/* Hamburger Menu Button - Visible on mobile */}
+          <button
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <svg
+              className="w-6 h-6 text-gray-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {showMobileMenu ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {showMobileMenu && (
+        <div className="md:hidden border-t border-gray-200 bg-white">
+          <div className="px-4 py-3 space-y-2">
+            {navLinks.map((link) => (
+              <button
+                key={link.path}
+                onClick={() => handleNavClick(link.path)}
+                className={`block w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                  isActive(link.path)
+                    ? 'bg-blue-50 text-blue-600 font-semibold'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {link.label}
+              </button>
+            ))}
+            <hr className="my-2 border-gray-200" />
+            <button
+              onClick={() => handleNavClick('/user-dashboard/profile')}
+              className="block w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Profile
+            </button>
+            {isFounder && (
+              <button
+                onClick={() => handleNavClick('/user-dashboard/subscription')}
+                className="block w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Subscription
+              </button>
+            )}
+            <button
+              onClick={() => handleNavClick('/user-dashboard/settings')}
+              className="block w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Settings
+            </button>
+            <button
+              onClick={() => {
+                setShowMobileMenu(false)
+                handleLogout()
+              }}
+              className="block w-full text-left px-4 py-3 rounded-lg text-red-600 hover:bg-red-50"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
     </>
   )

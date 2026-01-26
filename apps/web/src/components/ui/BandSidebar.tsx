@@ -47,7 +47,7 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
   ].filter(item => item.show)
 
   return (
-    <aside className="w-64 bg-white rounded-lg shadow p-4 flex flex-col">
+    <aside className="hidden md:flex w-64 bg-white rounded-lg shadow p-4 flex-col flex-shrink-0">
       <Stack spacing="lg" className="flex-1">
         {/* Main Navigation */}
         <Stack spacing="sm">
