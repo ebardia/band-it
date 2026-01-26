@@ -1,12 +1,9 @@
-export interface NavButtonProps {
+export interface NavButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode
   active?: boolean
-  onClick?: () => void
-  className?: string
-  disabled?: boolean
 }
 
-export function NavButton({ children, active, onClick, className, disabled }: NavButtonProps) {
+export function NavButton({ children, active, className, disabled, ...props }: NavButtonProps) {
   const baseClasses = 'w-full text-left px-4 py-2 rounded-lg transition'
   const activeClasses = active
     ? 'bg-blue-100 text-blue-600 font-semibold'
@@ -15,9 +12,9 @@ export function NavButton({ children, active, onClick, className, disabled }: Na
 
   return (
     <button
-      onClick={onClick}
       disabled={disabled}
       className={`${baseClasses} ${activeClasses} ${disabledClasses} ${className || ''}`}
+      {...props}
     >
       {children}
     </button>

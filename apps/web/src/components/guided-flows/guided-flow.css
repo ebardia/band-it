@@ -1,0 +1,147 @@
+/* Custom styles for Driver.js guided flows */
+
+/* Override driver.js default styles to match Band IT design */
+.driver-popover {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  max-width: 360px;
+}
+
+.driver-popover-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.driver-popover-description {
+  font-size: 0.9375rem;
+  color: #4B5563;
+  line-height: 1.6;
+}
+
+.driver-popover-progress-text {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+}
+
+/* Navigation buttons */
+.driver-popover-navigation-btns {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.driver-popover-prev-btn,
+.driver-popover-next-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.driver-popover-prev-btn {
+  background-color: #F3F4F6;
+  color: #374151;
+  border: 1px solid #E5E7EB;
+}
+
+.driver-popover-prev-btn:hover {
+  background-color: #E5E7EB;
+}
+
+.driver-popover-next-btn {
+  background-color: #3B82F6;
+  color: white;
+  border: 1px solid #3B82F6;
+}
+
+.driver-popover-next-btn:hover {
+  background-color: #2563EB;
+  border-color: #2563EB;
+}
+
+/* Close button */
+.driver-popover-close-btn {
+  color: #9CA3AF;
+  transition: color 0.15s ease;
+}
+
+.driver-popover-close-btn:hover {
+  color: #4B5563;
+}
+
+/* Highlight stage */
+.driver-active-element {
+  border-radius: 8px;
+}
+
+/* Arrow */
+.driver-popover-arrow {
+  border: none;
+}
+
+.driver-popover-arrow-side-top {
+  border-bottom-color: white;
+}
+
+.driver-popover-arrow-side-bottom {
+  border-top-color: white;
+}
+
+.driver-popover-arrow-side-left {
+  border-right-color: white;
+}
+
+.driver-popover-arrow-side-right {
+  border-left-color: white;
+}
+
+/* Overlay */
+.driver-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .driver-popover {
+    max-width: calc(100vw - 2rem);
+    margin: 1rem;
+  }
+
+  .driver-popover-title {
+    font-size: 1rem;
+  }
+
+  .driver-popover-description {
+    font-size: 0.875rem;
+  }
+
+  .driver-popover-navigation-btns {
+    flex-direction: column;
+  }
+
+  .driver-popover-prev-btn,
+  .driver-popover-next-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Animation for popover appearance */
+@keyframes driver-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.driver-popover {
+  animation: driver-fade-in 0.2s ease-out;
+}

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { jwtDecode } from 'jwt-decode'
 import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown, AIUsageTicker } from '@/components/ui'
+import { HelpButton } from '@/components/guided-flows'
 import { trpc } from '@/lib/trpc'
 import { theme } from '@band-it/shared'
 
@@ -49,9 +50,9 @@ export function AppNav() {
   }
 
   const navLinks = [
-    { label: 'Overview', path: '/user-dashboard' },
-    { label: 'My Bands', path: '/bands/my-bands' },
-    { label: 'Browse Bands', path: '/bands' },
+    { label: 'Overview', path: '/user-dashboard', guide: 'nav-overview' },
+    { label: 'My Bands', path: '/bands/my-bands', guide: 'nav-my-bands' },
+    { label: 'Browse Bands', path: '/bands', guide: 'nav-browse-bands' },
   ]
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
@@ -86,6 +87,7 @@ export function AppNav() {
               key={link.path}
               onClick={() => handleNavClick(link.path)}
               className={isActive(link.path) ? theme.components.nav.activeLink : theme.components.nav.link}
+              data-guide={link.guide}
             >
               {link.label}
             </button>
@@ -94,8 +96,11 @@ export function AppNav() {
 
         {/* Right Side: Hamburger (mobile) + Bell + Account Dropdown */}
         <div className="flex items-center gap-2 md:gap-4">
+          {/* Help Button */}
+          <HelpButton size="sm" data-guide="help-button" />
+
           {/* Notification Bell with Dropdown */}
-          <div className="relative">
+          <div className="relative" data-guide="notification-bell">
             <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
             <NotificationsDropdown
               isOpen={showNotifications}

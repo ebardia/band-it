@@ -21,24 +21,24 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
 
   // Main navigation - always visible
   const mainNav = [
-    { label: `💬 ${bandName} Discussions`, path: `/bands/${bandSlug}` },
-    { label: `ℹ️ ${bandName} About`, path: `/bands/${bandSlug}/about` },
-    { label: `📝 ${bandName} Proposals`, path: `/bands/${bandSlug}/proposals` },
-    { label: `📁 ${bandName} Projects`, path: `/bands/${bandSlug}/projects` },
-    { label: `✅ ${bandName} Tasks`, path: `/bands/${bandSlug}/tasks` },
-    { label: `📅 ${bandName} Events`, path: `/bands/${bandSlug}/events` },
-    { label: `💰 ${bandName} Finance`, path: `/bands/${bandSlug}/finance` },
-    { label: `💳 ${bandName} Billing`, path: `/bands/${bandSlug}/billing` },
-    { label: `📜 ${bandName} Audit Log`, path: `/bands/${bandSlug}/audit` },
+    { label: `💬 ${bandName} Discussions`, path: `/bands/${bandSlug}`, guide: 'band-discussions' },
+    { label: `ℹ️ ${bandName} About`, path: `/bands/${bandSlug}/about`, guide: 'band-about' },
+    { label: `📝 ${bandName} Proposals`, path: `/bands/${bandSlug}/proposals`, guide: 'band-proposals' },
+    { label: `📁 ${bandName} Projects`, path: `/bands/${bandSlug}/projects`, guide: 'band-projects' },
+    { label: `✅ ${bandName} Tasks`, path: `/bands/${bandSlug}/tasks`, guide: 'band-tasks' },
+    { label: `📅 ${bandName} Events`, path: `/bands/${bandSlug}/events`, guide: 'band-events' },
+    { label: `💰 ${bandName} Finance`, path: `/bands/${bandSlug}/finance`, guide: 'band-finance' },
+    { label: `💳 ${bandName} Billing`, path: `/bands/${bandSlug}/billing`, guide: 'band-billing' },
+    { label: `📜 ${bandName} Audit Log`, path: `/bands/${bandSlug}/audit`, guide: 'band-audit' },
   ]
 
   // Member actions
   const memberActions = [
-    { label: `👥 ${bandName} Members`, path: `/bands/${bandSlug}/members`, show: true },
-    { label: '📨 Invite', path: `/bands/${bandSlug}/invite`, show: isMember },
-    { label: '📋 Applications', path: `/bands/${bandSlug}/applications`, show: canApprove },
-    { label: '🛠️ Tools', path: `/bands/${bandSlug}/tools`, show: canAccessAdminTools },
-    { label: '⚙️ Settings', path: `/bands/${bandSlug}/settings`, show: isMember },
+    { label: `👥 ${bandName} Members`, path: `/bands/${bandSlug}/members`, show: true, guide: 'band-members' },
+    { label: '📨 Invite', path: `/bands/${bandSlug}/invite`, show: isMember, guide: 'band-invite' },
+    { label: '📋 Applications', path: `/bands/${bandSlug}/applications`, show: canApprove, guide: 'band-applications' },
+    { label: '🛠️ Tools', path: `/bands/${bandSlug}/tools`, show: canAccessAdminTools, guide: 'band-tools' },
+    { label: '⚙️ Settings', path: `/bands/${bandSlug}/settings`, show: isMember, guide: 'band-settings' },
   ].filter(item => item.show !== false)
 
   // Non-member actions
@@ -56,6 +56,7 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
               key={item.path}
               active={isActive(item.path)}
               onClick={() => router.push(item.path)}
+              data-guide={item.guide}
             >
               {item.label}
             </NavButton>
@@ -73,6 +74,7 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
                 key={item.path}
                 active={isActive(item.path)}
                 onClick={() => router.push(item.path)}
+                data-guide={item.guide}
               >
                 {item.label}
               </NavButton>
