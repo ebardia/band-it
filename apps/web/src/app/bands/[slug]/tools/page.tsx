@@ -50,6 +50,16 @@ const ENTITY_TYPES = [
   'Message',
 ]
 
+// Roles for announcement targeting
+const MEMBER_ROLES = [
+  'FOUNDER',
+  'GOVERNOR',
+  'MODERATOR',
+  'CONDUCTOR',
+  'VOTING_MEMBER',
+  'OBSERVER',
+]
+
 export default function ToolsPage() {
   const router = useRouter()
   const params = useParams()
@@ -297,47 +307,51 @@ export default function ToolsPage() {
       )
     }
 
-    // Handle array type (for entityTypes multi-select)
-    if (param.type === 'array' && param.name === 'entityTypes') {
-      const selectedTypes = (Array.isArray(value) ? value : []) as string[]
+    // Handle array type (for entityTypes and targetRoles multi-select)
+    if (param.type === 'array' && (param.name === 'entityTypes' || param.name === 'targetRoles')) {
+      const selectedItems = (Array.isArray(value) ? value : []) as string[]
+      const options = param.name === 'entityTypes' ? ENTITY_TYPES : MEMBER_ROLES
       return (
         <div key={param.name}>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             {param.description || param.name}
             {param.required && <span className="text-red-500"> *</span>}
+            {param.name === 'targetRoles' && (
+              <span className="text-gray-500 font-normal ml-1">(leave empty for all members)</span>
+            )}
           </label>
           <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto bg-white">
             <div className="grid grid-cols-2 gap-2">
-              {ENTITY_TYPES.map((entityType) => (
-                <label key={entityType} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+              {options.map((item) => (
+                <label key={item} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                   <input
                     type="checkbox"
-                    checked={selectedTypes.includes(entityType)}
+                    checked={selectedItems.includes(item)}
                     onChange={(e) => {
                       const newSelected = e.target.checked
-                        ? [...selectedTypes, entityType]
-                        : selectedTypes.filter(t => t !== entityType)
+                        ? [...selectedItems, item]
+                        : selectedItems.filter(t => t !== item)
                       setParameters(prev => ({ ...prev, [param.name]: newSelected.length > 0 ? newSelected : undefined }))
                     }}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm">{entityType}</span>
+                  <span className="text-sm">{item.replace('_', ' ')}</span>
                 </label>
               ))}
             </div>
           </div>
-          {selectedTypes.length > 0 && (
+          {selectedItems.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
-              {selectedTypes.map((type) => (
+              {selectedItems.map((item) => (
                 <span
-                  key={type}
+                  key={item}
                   className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full"
                 >
-                  {type}
+                  {item.replace('_', ' ')}
                   <button
                     type="button"
                     onClick={() => {
-                      const newSelected = selectedTypes.filter(t => t !== type)
+                      const newSelected = selectedItems.filter(t => t !== item)
                       setParameters(prev => ({ ...prev, [param.name]: newSelected.length > 0 ? newSelected : undefined }))
                     }}
                     className="hover:text-blue-900"
