@@ -143,12 +143,22 @@ export const sendAnnouncementHandler: AdminTaskHandler = {
       bandUrl,
     })
 
-    // Send emails to all members
+    // Send emails to all members with rate limiting (Resend allows 2/sec on free tier)
     let sentCount = 0
     let failedCount = 0
     const failures: string[] = []
 
-    for (const member of members) {
+    // Helper to delay between emails to respect rate limits
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+    for (let i = 0; i < members.length; i++) {
+      const member = members[i]
+
+      // Add delay between emails (600ms = ~1.6 emails/sec, safely under 2/sec limit)
+      if (i > 0) {
+        await delay(600)
+      }
+
       try {
         const result = await emailService.sendEmail({
           to: member.user.email,

@@ -66,6 +66,13 @@ export const emailService = {
           html,
         })
         console.log(`[Email] Resend response for ${to}:`, JSON.stringify(result))
+
+        // Check for error in response (rate limiting returns error in data, not exception)
+        if (result.error) {
+          console.error(`[Email] Resend error for ${to}:`, result.error)
+          return { success: false, error: result.error }
+        }
+
         return { success: true }
       } catch (error) {
         console.error(`[Email] Resend error for ${to}:`, error)
