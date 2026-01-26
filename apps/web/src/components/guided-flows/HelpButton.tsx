@@ -31,16 +31,16 @@ export function HelpButton({
       <button
         onClick={showGoalSelector}
         className={cn(
-          'inline-flex items-center justify-center rounded-full',
+          'inline-flex items-center justify-center px-3 py-1 rounded-lg',
           'bg-blue-100 hover:bg-blue-200 text-blue-600 hover:text-blue-700',
           'transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-          sizeClasses[size],
+          'text-sm font-medium',
           className
         )}
         aria-label="Get help"
         title="Get help"
       >
-        ?
+        Help
       </button>
     )
   }
