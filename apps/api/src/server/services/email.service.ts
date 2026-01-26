@@ -58,15 +58,17 @@ export const emailService = {
     // Try Resend first in production
     if (resend) {
       try {
-        await resend.emails.send({
+        console.log(`[Email] Sending to: ${to}, subject: ${subject.substring(0, 50)}...`)
+        const result = await resend.emails.send({
           from: FROM_EMAIL,
           to,
           subject,
           html,
         })
+        console.log(`[Email] Resend response for ${to}:`, JSON.stringify(result))
         return { success: true }
       } catch (error) {
-        console.error('Resend error:', error)
+        console.error(`[Email] Resend error for ${to}:`, error)
         return { success: false, error }
       }
     }
