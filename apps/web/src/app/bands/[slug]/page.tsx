@@ -35,6 +35,8 @@ export default function BandDiscussionsPage() {
   const [showCreateChannel, setShowCreateChannel] = useState(false)
   const [showChannelSettings, setShowChannelSettings] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+  const [showMobileNav, setShowMobileNav] = useState(false)
+  const [showMobileChannels, setShowMobileChannels] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -109,13 +111,110 @@ export default function BandDiscussionsPage() {
 
   const selectedChannel = channelsData?.channels?.find(c => c.id === selectedChannelId)
 
+  // Mobile navigation items
+  const mobileNavItems = [
+    { label: 'Discussions', path: `/bands/${slug}`, emoji: '💬' },
+    { label: 'About', path: `/bands/${slug}/about`, emoji: 'ℹ️' },
+    { label: 'Proposals', path: `/bands/${slug}/proposals`, emoji: '📝' },
+    { label: 'Projects', path: `/bands/${slug}/projects`, emoji: '📁' },
+    { label: 'Tasks', path: `/bands/${slug}/tasks`, emoji: '✅' },
+    { label: 'Events', path: `/bands/${slug}/events`, emoji: '📅' },
+    { label: 'Finance', path: `/bands/${slug}/finance`, emoji: '💰' },
+    { label: 'Members', path: `/bands/${slug}/members`, emoji: '👥' },
+  ]
+
   return (
     <>
       <AppNav />
       <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto px-4 max-w-[1600px]">
-          {/* Page Header */}
-          <div className="py-2">
+        <div className="mx-auto px-2 md:px-4 max-w-[1600px]">
+          {/* Mobile Header */}
+          <div className="md:hidden py-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg font-bold text-gray-900">Discussion Forum</h1>
+                <Text color="muted" className="text-sm truncate">{band.name}</Text>
+              </div>
+              <Flex gap="sm">
+                {userId && (
+                  <Button variant="ghost" size="sm" onClick={() => setShowSearch(true)}>
+                    🔍
+                  </Button>
+                )}
+              </Flex>
+            </div>
+
+            {/* Mobile Page Navigation */}
+            <div className="relative mb-2">
+              <button
+                onClick={() => setShowMobileNav(!showMobileNav)}
+                className="w-full flex items-center justify-between px-4 py-2 bg-white rounded-lg shadow border border-gray-200 text-sm"
+              >
+                <span className="flex items-center gap-2">
+                  <span>💬</span>
+                  <span className="font-medium">Discussions</span>
+                </span>
+                <svg className={`w-4 h-4 text-gray-500 transition-transform ${showMobileNav ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {showMobileNav && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-64 overflow-y-auto">
+                  {mobileNavItems.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => { setShowMobileNav(false); router.push(item.path) }}
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-left text-sm ${
+                        item.path === `/bands/${slug}` ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span>{item.emoji}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Channel Selector */}
+            <button
+              onClick={() => setShowMobileChannels(!showMobileChannels)}
+              className="w-full flex items-center justify-between px-4 py-2 bg-blue-50 rounded-lg border border-blue-200 text-sm"
+            >
+              <span className="flex items-center gap-2">
+                <span>#</span>
+                <span className="font-medium">{selectedChannel?.name || 'Select channel'}</span>
+              </span>
+              <svg className={`w-4 h-4 text-blue-500 transition-transform ${showMobileChannels ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {showMobileChannels && (
+              <div className="mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-48 overflow-y-auto">
+                {channelsData?.channels?.filter(c => c.hasAccess && !c.isArchived).map((channel) => (
+                  <button
+                    key={channel.id}
+                    onClick={() => {
+                      setSelectedChannelId(channel.id)
+                      setShowMobileChannels(false)
+                      setOpenThreadId(null)
+                    }}
+                    className={`w-full flex items-center gap-2 px-4 py-2 text-left text-sm ${
+                      channel.id === selectedChannelId ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span>#</span>
+                    <span>{channel.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Page Header */}
+          <div className="hidden md:block py-2">
             <Flex gap="md" align="start">
               {/* Spacer for left sidebar */}
               <div className="w-64 flex-shrink-0" />
@@ -160,8 +259,8 @@ export default function BandDiscussionsPage() {
           {/* Billing Banner */}
           {isMember && userId && (
             <div className="pb-2">
-              <Flex gap="md">
-                <div className="w-64 flex-shrink-0" />
+              <Flex gap="md" className="flex-col md:flex-row">
+                <div className="hidden md:block w-64 flex-shrink-0" />
                 <div className="flex-1">
                   <BillingBanner
                     bandId={band.id}
@@ -175,8 +274,8 @@ export default function BandDiscussionsPage() {
 
           {/* Main Content */}
           <div className="pb-4">
-            <Flex gap="md" align="start">
-              {/* Left Sidebar - Band Navigation */}
+            <Flex gap="md" align="start" className="flex-col md:flex-row">
+              {/* Left Sidebar - Band Navigation (hidden on mobile) */}
               <BandSidebar
                 bandSlug={slug}
                 bandName={band.name}
@@ -186,10 +285,10 @@ export default function BandDiscussionsPage() {
               />
 
               {/* Discussion Area */}
-              <div className="flex-1 bg-white rounded-lg shadow" style={{ height: 'calc(100vh - 150px)' }}>
+              <div className="w-full md:flex-1 bg-white rounded-lg shadow" style={{ height: 'calc(100vh - 200px)', minHeight: '400px' }}>
                 <div className="flex h-full">
-                  {/* Channel List */}
-                  <div className="w-56 flex-shrink-0">
+                  {/* Channel List - Hidden on mobile */}
+                  <div className="hidden md:block w-56 flex-shrink-0">
                     <ChannelList
                       bandId={band.id}
                       userId={userId}
@@ -204,7 +303,7 @@ export default function BandDiscussionsPage() {
                   </div>
 
                   {/* Messages Area */}
-                  <div className="flex-1 flex flex-col border-l border-gray-200 min-w-0 overflow-hidden">
+                  <div className="flex-1 flex flex-col border-l-0 md:border-l border-gray-200 min-w-0 overflow-hidden">
                     {selectedChannelId && selectedChannel?.hasAccess ? (
                       <>
                         {/* Pinned Messages Header */}
@@ -248,9 +347,9 @@ export default function BandDiscussionsPage() {
                     )}
                   </div>
 
-                  {/* Thread Panel */}
+                  {/* Thread Panel - Hidden on mobile */}
                   {openThreadId && selectedChannelId && (
-                    <div className="flex-shrink-0">
+                    <div className="hidden lg:block flex-shrink-0">
                       <ThreadView
                         messageId={openThreadId}
                         channelId={selectedChannelId}

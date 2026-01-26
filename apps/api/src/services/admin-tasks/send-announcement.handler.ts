@@ -234,42 +234,66 @@ function buildAnnouncementHtml(options: {
     .join('')
 
   return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background-color: #3B82F6; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-        <h1 style="margin: 0; font-size: 20px;">${escapeHtml(bandName)}</h1>
-        <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Announcement</p>
-      </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${escapeHtml(subject)}</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #F3F4F6; font-family: Arial, sans-serif;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #F3F4F6;">
+        <tr>
+          <td align="center" style="padding: 20px 10px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+              <!-- Header -->
+              <tr>
+                <td style="background-color: #3B82F6; color: white; padding: 24px 20px; border-radius: 8px 8px 0 0;">
+                  <h1 style="margin: 0; font-size: 22px; font-weight: bold;">${escapeHtml(bandName)}</h1>
+                  <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">Announcement</p>
+                </td>
+              </tr>
 
-      <div style="background-color: white; padding: 25px; border: 1px solid #E5E7EB; border-top: none;">
-        <h2 style="margin: 0 0 20px 0; color: #1F2937; font-size: 18px;">
-          ${escapeHtml(subject)}
-        </h2>
+              <!-- Body -->
+              <tr>
+                <td style="background-color: white; padding: 28px 24px; border-left: 1px solid #E5E7EB; border-right: 1px solid #E5E7EB;">
+                  <h2 style="margin: 0 0 20px 0; color: #1F2937; font-size: 20px; line-height: 1.3;">
+                    ${escapeHtml(subject)}
+                  </h2>
+                  <div style="color: #374151; font-size: 16px; line-height: 1.7;">
+                    ${formattedMessage}
+                  </div>
+                  <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #E5E7EB;">
+                    <p style="margin: 0; color: #6B7280; font-size: 14px;">
+                      Sent by <strong>${escapeHtml(senderName)}</strong>
+                    </p>
+                  </div>
+                </td>
+              </tr>
 
-        <div style="color: #374151; font-size: 15px; line-height: 1.6;">
-          ${formattedMessage}
-        </div>
+              <!-- CTA -->
+              <tr>
+                <td style="background-color: #F9FAFB; padding: 20px 24px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px; text-align: center;">
+                  <a href="${bandUrl}" style="display: inline-block; background-color: #3B82F6; color: white; text-decoration: none; font-size: 16px; font-weight: 600; padding: 12px 24px; border-radius: 6px;">
+                    View ${escapeHtml(bandName)}
+                  </a>
+                </td>
+              </tr>
 
-        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #E5E7EB;">
-          <p style="margin: 0; color: #6B7280; font-size: 14px;">
-            Sent by <strong>${escapeHtml(senderName)}</strong>
-          </p>
-        </div>
-      </div>
-
-      <div style="background-color: #F9FAFB; padding: 15px 25px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
-        <p style="margin: 0; text-align: center;">
-          <a href="${bandUrl}" style="color: #3B82F6; text-decoration: none; font-size: 14px;">
-            View ${escapeHtml(bandName)} on Band IT
-          </a>
-        </p>
-      </div>
-
-      <div style="padding: 20px; text-align: center;">
-        <p style="margin: 0; color: #9CA3AF; font-size: 12px;">
-          You received this email because you are a member of ${escapeHtml(bandName)} on Band IT.
-        </p>
-      </div>
-    </div>
+              <!-- Footer -->
+              <tr>
+                <td style="padding: 24px 20px; text-align: center;">
+                  <p style="margin: 0; color: #9CA3AF; font-size: 13px; line-height: 1.5;">
+                    You received this email because you are a member of ${escapeHtml(bandName)} on Band IT.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
   `
 }
 
