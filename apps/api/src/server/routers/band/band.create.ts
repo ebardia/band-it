@@ -19,6 +19,11 @@ export const bandCreateRouter = router({
         whatMembersWillLearn: z.string().min(1, 'Please enter what members will learn'),
         membershipRequirements: z.string().min(10, 'Please describe membership requirements'),
         whoCanApprove: z.array(z.enum(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'])),
+        // Governance settings
+        votingMethod: z.enum(['SIMPLE_MAJORITY', 'SUPERMAJORITY_66', 'SUPERMAJORITY_75', 'UNANIMOUS']).default('SIMPLE_MAJORITY'),
+        votingPeriodDays: z.number().min(1).max(30).default(7),
+        quorumPercentage: z.number().min(1).max(100).default(50),
+        whoCanCreateProposals: z.array(z.enum(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'])).default(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']),
         zipcode: z.preprocess(
           (val) => (val === '' ? undefined : val),
           z.string().length(5, 'Zipcode must be 5 digits').optional()
@@ -59,6 +64,11 @@ export const bandCreateRouter = router({
           whatMembersWillLearn: learnArray,
           membershipRequirements: input.membershipRequirements,
           whoCanApprove: input.whoCanApprove,
+          // Governance settings
+          votingMethod: input.votingMethod,
+          votingPeriodDays: input.votingPeriodDays,
+          quorumPercentage: input.quorumPercentage,
+          whoCanCreateProposals: input.whoCanCreateProposals,
           zipcode: input.zipcode,
           imageUrl: input.imageUrl,
           createdById: input.userId,

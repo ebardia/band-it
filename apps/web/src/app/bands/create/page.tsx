@@ -35,8 +35,13 @@ export default function CreateBandPage() {
     membershipRequirements: '',
     zipcode: '',
     imageUrl: '',
+    // Governance settings
+    votingMethod: 'SIMPLE_MAJORITY' as 'SIMPLE_MAJORITY' | 'SUPERMAJORITY_66' | 'SUPERMAJORITY_75' | 'UNANIMOUS',
+    votingPeriodDays: 7,
+    quorumPercentage: 50,
   })
   const [whoCanApprove, setWhoCanApprove] = useState<string[]>(['FOUNDER'])
+  const [whoCanCreateProposals, setWhoCanCreateProposals] = useState<string[]>(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'])
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -92,6 +97,7 @@ export default function CreateBandPage() {
       userId,
       ...formData,
       whoCanApprove: whoCanApprove as any,
+      whoCanCreateProposals: whoCanCreateProposals as any,
     })
   }
 
@@ -103,7 +109,22 @@ export default function CreateBandPage() {
     }
   }
 
+  const handleProposalRoleToggle = (role: string) => {
+    if (whoCanCreateProposals.includes(role)) {
+      setWhoCanCreateProposals(whoCanCreateProposals.filter(r => r !== role))
+    } else {
+      setWhoCanCreateProposals([...whoCanCreateProposals, role])
+    }
+  }
+
   const roles = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER']
+
+  const votingMethods = [
+    { value: 'SIMPLE_MAJORITY', label: 'Simple Majority (>50%)', description: 'Proposals pass when more than half vote yes' },
+    { value: 'SUPERMAJORITY_66', label: 'Supermajority (>66%)', description: 'Proposals need two-thirds approval' },
+    { value: 'SUPERMAJORITY_75', label: 'Supermajority (>75%)', description: 'Proposals need three-quarters approval' },
+    { value: 'UNANIMOUS', label: 'Unanimous (100%)', description: 'Everyone must agree for proposals to pass' },
+  ]
 
   return (
     <PageWrapper variant="dashboard">
@@ -210,7 +231,7 @@ export default function CreateBandPage() {
 
                 <Box>
                   <Text variant="small" weight="semibold" className="mb-2">Who Can Approve New Members?</Text>
-                  <Text variant="small" variant="muted" className="mb-3">Select the roles that can approve membership applications</Text>
+                  <Text variant="small" color="muted" className="mb-3">Select the roles that can approve membership applications</Text>
                   <Stack spacing="sm">
                     {roles.map((role) => (
                       <label key={role} className="flex items-center gap-2">
@@ -225,6 +246,80 @@ export default function CreateBandPage() {
                     ))}
                   </Stack>
                 </Box>
+
+                {/* Governance Policy Section */}
+                <div className="border-t border-gray-200 pt-6 mt-2">
+                  <Heading level={2} className="mb-4">Governance Policy</Heading>
+                  <Text color="muted" className="mb-6">Define how decisions are made in your band</Text>
+
+                  <Stack spacing="lg">
+                    <Box>
+                      <Text variant="small" weight="semibold" className="mb-2">Voting Method</Text>
+                      <Text variant="small" color="muted" className="mb-3">How should proposals be approved?</Text>
+                      <Stack spacing="sm">
+                        {votingMethods.map((method) => (
+                          <label key={method.value} className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input
+                              type="radio"
+                              name="votingMethod"
+                              value={method.value}
+                              checked={formData.votingMethod === method.value}
+                              onChange={(e) => setFormData({ ...formData, votingMethod: e.target.value as any })}
+                              className="w-4 h-4 mt-0.5"
+                            />
+                            <div>
+                              <Text variant="small" weight="semibold">{method.label}</Text>
+                              <Text variant="small" color="muted">{method.description}</Text>
+                            </div>
+                          </label>
+                        ))}
+                      </Stack>
+                    </Box>
+
+                    <Flex gap="md">
+                      <Box className="flex-1">
+                        <Input
+                          label="Voting Period (Days)"
+                          type="number"
+                          min={1}
+                          max={30}
+                          value={formData.votingPeriodDays}
+                          onChange={(e) => setFormData({ ...formData, votingPeriodDays: parseInt(e.target.value) || 7 })}
+                          helperText="How long members have to vote (1-30 days)"
+                        />
+                      </Box>
+                      <Box className="flex-1">
+                        <Input
+                          label="Quorum (%)"
+                          type="number"
+                          min={1}
+                          max={100}
+                          value={formData.quorumPercentage}
+                          onChange={(e) => setFormData({ ...formData, quorumPercentage: parseInt(e.target.value) || 50 })}
+                          helperText="Minimum % of members that must vote"
+                        />
+                      </Box>
+                    </Flex>
+
+                    <Box>
+                      <Text variant="small" weight="semibold" className="mb-2">Who Can Create Proposals?</Text>
+                      <Text variant="small" color="muted" className="mb-3">Select the roles that can submit proposals for voting</Text>
+                      <Stack spacing="sm">
+                        {roles.map((role) => (
+                          <label key={role} className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={whoCanCreateProposals.includes(role)}
+                              onChange={() => handleProposalRoleToggle(role)}
+                              className="w-4 h-4"
+                            />
+                            <Text variant="small">{role.replace('_', ' ')}</Text>
+                          </label>
+                        ))}
+                      </Stack>
+                    </Box>
+                  </Stack>
+                </div>
 
                 <Input
                   label="Zipcode (Optional)"
