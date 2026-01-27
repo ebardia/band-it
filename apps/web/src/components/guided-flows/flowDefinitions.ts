@@ -3,11 +3,8 @@ import { GuidedFlow } from './GuidedFlowContext'
 /**
  * Guided flow definitions for Band IT
  *
- * These define step-by-step walkthroughs for different user goals.
- * Each flow has a unique ID, steps with element selectors, and instructions.
- *
- * Steps can have a `navigateTo` property to navigate to a different page.
- * When the flow ends, the user is returned to where they started.
+ * Each flow navigates to ONE page and walks through elements on that page.
+ * This keeps flows simple and reliable.
  */
 
 // ============================================================================
@@ -34,29 +31,30 @@ export const appOverviewFlow: GuidedFlow = {
       side: 'bottom',
     },
     {
-      navigateTo: '/bands/my-bands',
+      navigateTo: '/user-dashboard',
       element: '[data-guide="nav-my-bands"]',
       title: 'My Bands',
-      description: 'View all the bands you\'re a member of. A "band" is any group you collaborate with.',
+      description: 'Click here to view all the bands you\'re a member of. A "band" is any group you collaborate with.',
       side: 'bottom',
     },
     {
-      navigateTo: '/bands',
+      navigateTo: '/user-dashboard',
       element: '[data-guide="nav-browse-bands"]',
       title: 'Browse Bands',
-      description: 'Discover public bands you can join, or search for a specific band by name.',
+      description: 'Click here to discover public bands you can join, or search for a specific band by name.',
       side: 'bottom',
     },
     {
-      navigateTo: '/bands',
+      navigateTo: '/user-dashboard',
       element: '[data-guide="notification-bell"]',
       title: 'Notifications',
       description: 'Stay updated! You\'ll see alerts here when someone mentions you, votes on your proposals, or assigns you a task.',
       side: 'bottom',
     },
     {
-      title: 'Ready to go!',
-      description: 'That\'s the basics! You can create your own band, join an existing one, or explore the app. Select another guide to learn more about specific features.',
+      navigateTo: '/user-dashboard',
+      title: 'Ready to explore!',
+      description: 'That\'s the navigation basics! Use the menu to explore different areas. Try the "Create a Band" or "Join a Band" guides to learn more.',
     },
   ],
 }
@@ -114,37 +112,37 @@ export const joinBandFlow: GuidedFlow = {
     {
       navigateTo: '/bands',
       title: 'Find a Band to Join',
-      description: 'You can browse public bands or search for a specific one. If someone invited you, you might have a direct link.',
+      description: 'This page shows public bands you can browse and apply to join. You can also search for a specific band.',
     },
     {
       navigateTo: '/bands',
       element: '[data-guide="band-search"]',
-      title: 'Search',
-      description: 'Know the name of the band? Type it here to find it quickly.',
+      title: 'Search Bands',
+      description: 'Know the name of the band you\'re looking for? Type it here to find it quickly.',
       side: 'bottom',
     },
     {
       navigateTo: '/bands',
       element: '[data-guide="band-list"]',
-      title: 'Browse Bands',
-      description: 'These are public bands you can apply to join. Click on any band to learn more about it.',
+      title: 'Browse Available Bands',
+      description: 'These are public bands accepting new members. Click "View Details" to learn more, or "Apply to Join" to submit an application.',
       side: 'top',
     },
     {
       navigateTo: '/bands',
-      title: 'Apply to Join',
-      description: 'When you find a band you like, click "Apply to Join". The band\'s admins will review your application and either approve or decline it.',
+      title: 'Applying to Join',
+      description: 'When you apply, the band\'s admins will review your application. You\'ll get a notification when they respond.',
     },
     {
       navigateTo: '/bands',
-      title: 'Invitations',
-      description: 'If someone invited you directly, you\'ll see the invitation in your notifications. Click to accept and join immediately!',
+      title: 'Direct Invitations',
+      description: 'If someone invited you directly, check your notifications (the bell icon). You can accept the invitation to join immediately!',
     },
   ],
 }
 
 // ============================================================================
-// BAND MANAGEMENT FLOWS
+// EDUCATIONAL FLOWS (no navigation needed)
 // ============================================================================
 
 export const understandRolesFlow: GuidedFlow = {
@@ -188,10 +186,6 @@ export const understandRolesFlow: GuidedFlow = {
     },
   ],
 }
-
-// ============================================================================
-// PROPOSALS & VOTING FLOWS
-// ============================================================================
 
 export const votingProcessFlow: GuidedFlow = {
   id: 'voting-process',
