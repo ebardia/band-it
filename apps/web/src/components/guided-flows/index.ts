@@ -10,9 +10,6 @@ export {
   appOverviewFlow,
   createBandFlow,
   joinBandFlow,
-  bandNavigationFlow,
   understandRolesFlow,
-  createProposalFlow,
   votingProcessFlow,
-  projectsOverviewFlow,
 } from './flowDefinitions'

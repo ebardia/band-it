@@ -6,8 +6,8 @@ import { GuidedFlow } from './GuidedFlowContext'
  * These define step-by-step walkthroughs for different user goals.
  * Each flow has a unique ID, steps with element selectors, and instructions.
  *
- * Element selectors should match actual DOM elements in the app.
- * Use data-guide="identifier" attributes on elements for reliable targeting.
+ * Steps can have a `navigateTo` property to navigate to a different page.
+ * When the flow ends, the user is returned to where they started.
  */
 
 // ============================================================================
@@ -20,31 +20,35 @@ export const appOverviewFlow: GuidedFlow = {
   description: 'Learn what Band IT is and how it can help your group collaborate.',
   icon: '🎸',
   category: 'getting-started',
-  startUrl: '/user-dashboard',
   steps: [
     {
+      navigateTo: '/user-dashboard',
       title: 'Welcome to Band IT!',
       description: 'Band IT helps groups make decisions together democratically. Whether you\'re running a club, a team, or any organization - we help you stay organized and give everyone a voice.',
     },
     {
+      navigateTo: '/user-dashboard',
       element: '[data-guide="nav-overview"]',
       title: 'Your Dashboard',
       description: 'This is your home base. See your upcoming tasks, recent activity, and quick access to all your bands.',
       side: 'bottom',
     },
     {
+      navigateTo: '/bands/my-bands',
       element: '[data-guide="nav-my-bands"]',
       title: 'My Bands',
       description: 'View all the bands you\'re a member of. A "band" is any group you collaborate with.',
       side: 'bottom',
     },
     {
+      navigateTo: '/bands',
       element: '[data-guide="nav-browse-bands"]',
       title: 'Browse Bands',
       description: 'Discover public bands you can join, or search for a specific band by name.',
       side: 'bottom',
     },
     {
+      navigateTo: '/bands',
       element: '[data-guide="notification-bell"]',
       title: 'Notifications',
       description: 'Stay updated! You\'ll see alerts here when someone mentions you, votes on your proposals, or assigns you a task.',
@@ -63,40 +67,38 @@ export const createBandFlow: GuidedFlow = {
   description: 'Start your own group and invite members to collaborate.',
   icon: '🎵',
   category: 'getting-started',
-  startUrl: '/bands/create',
   steps: [
     {
+      navigateTo: '/bands/create',
       title: 'Create Your Band',
       description: 'A band is your group\'s home. It can be a club, a team, a committee, or any group that makes decisions together.',
     },
     {
+      navigateTo: '/bands/create',
       element: '[data-guide="band-name"]',
       title: 'Band Name',
       description: 'Choose a memorable name for your band. This is how others will find and recognize your group.',
       side: 'bottom',
     },
     {
-      element: '[data-guide="band-slug"]',
-      title: 'Band URL',
-      description: 'This creates a unique web address for your band. It\'s auto-generated from the name but you can customize it.',
+      navigateTo: '/bands/create',
+      element: '[data-guide="band-description"]',
+      title: 'Description',
+      description: 'Explain what your band is about. Tell people about your group\'s story and what makes you unique.',
       side: 'bottom',
     },
     {
-      element: '[data-guide="band-description"]',
-      title: 'Description',
-      description: 'Explain what your band is about. This helps potential members understand your group\'s purpose.',
-      side: 'top',
+      navigateTo: '/bands/create',
+      element: '[data-guide="band-mission"]',
+      title: 'Mission Statement',
+      description: 'What is your band trying to achieve? This helps potential members understand your purpose.',
+      side: 'bottom',
     },
     {
-      element: '[data-guide="band-visibility"]',
-      title: 'Visibility',
-      description: 'Public bands appear in search results and anyone can apply to join. Private bands are invite-only.',
-      side: 'top',
-    },
-    {
+      navigateTo: '/bands/create',
       element: '[data-guide="band-create-button"]',
       title: 'Create Your Band',
-      description: 'Once you\'ve filled in the details, click here to create your band. You\'ll become the Founder with full administrative access.',
+      description: 'Once you\'ve filled in all the details, click here to create your band. You\'ll become the Founder with full administrative access.',
       side: 'top',
     },
   ],
@@ -108,29 +110,33 @@ export const joinBandFlow: GuidedFlow = {
   description: 'Find and join an existing group to start collaborating.',
   icon: '🤝',
   category: 'getting-started',
-  startUrl: '/bands',
   steps: [
     {
+      navigateTo: '/bands',
       title: 'Find a Band to Join',
       description: 'You can browse public bands or search for a specific one. If someone invited you, you might have a direct link.',
     },
     {
+      navigateTo: '/bands',
       element: '[data-guide="band-search"]',
       title: 'Search',
       description: 'Know the name of the band? Type it here to find it quickly.',
       side: 'bottom',
     },
     {
+      navigateTo: '/bands',
       element: '[data-guide="band-list"]',
       title: 'Browse Bands',
       description: 'These are public bands you can apply to join. Click on any band to learn more about it.',
       side: 'top',
     },
     {
+      navigateTo: '/bands',
       title: 'Apply to Join',
       description: 'When you find a band you like, click "Apply to Join". The band\'s admins will review your application and either approve or decline it.',
     },
     {
+      navigateTo: '/bands',
       title: 'Invitations',
       description: 'If someone invited you directly, you\'ll see the invitation in your notifications. Click to accept and join immediately!',
     },
@@ -140,64 +146,6 @@ export const joinBandFlow: GuidedFlow = {
 // ============================================================================
 // BAND MANAGEMENT FLOWS
 // ============================================================================
-
-export const bandNavigationFlow: GuidedFlow = {
-  id: 'band-navigation',
-  name: 'Navigate Your Band',
-  description: 'Learn about the different sections and features within a band.',
-  icon: '🧭',
-  category: 'bands',
-  steps: [
-    {
-      element: '[data-guide="band-discussions"]',
-      title: 'Discussions',
-      description: 'The heart of your band! Chat with members in different channels, share ideas, and have threaded conversations.',
-      side: 'right',
-    },
-    {
-      element: '[data-guide="band-about"]',
-      title: 'About',
-      description: 'See your band\'s description, rules, and general information. Admins can edit this.',
-      side: 'right',
-    },
-    {
-      element: '[data-guide="band-proposals"]',
-      title: 'Proposals',
-      description: 'This is where democracy happens! Create proposals for the band to vote on, and cast your votes on others\' ideas.',
-      side: 'right',
-    },
-    {
-      element: '[data-guide="band-projects"]',
-      title: 'Projects',
-      description: 'Organize work into projects. Projects can come from approved proposals or be created directly.',
-      side: 'right',
-    },
-    {
-      element: '[data-guide="band-tasks"]',
-      title: 'Tasks',
-      description: 'Track to-dos and assignments. See what needs to be done and who\'s doing it.',
-      side: 'right',
-    },
-    {
-      element: '[data-guide="band-events"]',
-      title: 'Events',
-      description: 'Schedule meetings, deadlines, and other important dates. Track RSVPs.',
-      side: 'right',
-    },
-    {
-      element: '[data-guide="band-finance"]',
-      title: 'Finance',
-      description: 'Track your band\'s budget, expenses, and financial transactions.',
-      side: 'right',
-    },
-    {
-      element: '[data-guide="band-members"]',
-      title: 'Members',
-      description: 'See who\'s in the band and their roles. Admins can manage members here.',
-      side: 'right',
-    },
-  ],
-}
 
 export const understandRolesFlow: GuidedFlow = {
   id: 'understand-roles',
@@ -245,54 +193,6 @@ export const understandRolesFlow: GuidedFlow = {
 // PROPOSALS & VOTING FLOWS
 // ============================================================================
 
-export const createProposalFlow: GuidedFlow = {
-  id: 'create-proposal',
-  name: 'Create a Proposal',
-  description: 'Learn how to submit ideas for your band to vote on.',
-  icon: '📝',
-  category: 'proposals',
-  steps: [
-    {
-      title: 'What\'s a Proposal?',
-      description: 'A proposal is a formal suggestion for the band to consider. Members vote on it, and if it passes, it becomes an official decision.',
-    },
-    {
-      element: '[data-guide="create-proposal-button"]',
-      title: 'Start a Proposal',
-      description: 'Click here to begin creating a new proposal for your band to vote on.',
-      side: 'bottom',
-    },
-    {
-      element: '[data-guide="proposal-title"]',
-      title: 'Proposal Title',
-      description: 'Write a clear, concise title that summarizes what you\'re proposing. Good titles help members quickly understand the proposal.',
-      side: 'bottom',
-    },
-    {
-      element: '[data-guide="proposal-description"]',
-      title: 'Description',
-      description: 'Explain your proposal in detail. Include the problem, your solution, and why the band should approve it. Be thorough!',
-      side: 'top',
-    },
-    {
-      element: '[data-guide="proposal-type"]',
-      title: 'Proposal Type',
-      description: 'Different types have different voting thresholds. General proposals might need 50% to pass, while rule changes might need 75%.',
-      side: 'bottom',
-    },
-    {
-      element: '[data-guide="proposal-voting-period"]',
-      title: 'Voting Period',
-      description: 'How long should voting stay open? Give members enough time to review and vote, but not so long that decisions drag on.',
-      side: 'bottom',
-    },
-    {
-      title: 'After Submission',
-      description: 'Once submitted, your proposal enters the voting phase. Members will be notified and can vote Yes, No, or Abstain. Watch for comments and questions!',
-    },
-  ],
-}
-
 export const votingProcessFlow: GuidedFlow = {
   id: 'voting-process',
   name: 'How Voting Works',
@@ -328,42 +228,6 @@ export const votingProcessFlow: GuidedFlow = {
 }
 
 // ============================================================================
-// PROJECTS & TASKS FLOWS
-// ============================================================================
-
-export const projectsOverviewFlow: GuidedFlow = {
-  id: 'projects-overview',
-  name: 'Work with Projects',
-  description: 'Learn how to organize and track work in projects.',
-  icon: '📁',
-  category: 'projects',
-  steps: [
-    {
-      title: 'Projects in Band IT',
-      description: 'Projects help you organize work into manageable chunks. They can come from approved proposals or be created directly by authorized members.',
-    },
-    {
-      element: '[data-guide="project-list"]',
-      title: 'Project List',
-      description: 'See all your band\'s projects at a glance. Filter by status, assignee, or due date.',
-      side: 'bottom',
-    },
-    {
-      title: 'Project Structure',
-      description: 'Each project has a description, status, due date, and can have multiple tasks. Think of projects as the "what" and tasks as the "how".',
-    },
-    {
-      title: 'Tasks',
-      description: 'Break projects into tasks - specific action items that can be assigned to members. Track progress as tasks move from To Do to Done.',
-    },
-    {
-      title: 'From Proposal to Project',
-      description: 'When a proposal passes, it can automatically create a project. This keeps the connection between decisions and execution clear.',
-    },
-  ],
-}
-
-// ============================================================================
 // EXPORT ALL FLOWS
 // ============================================================================
 
@@ -374,15 +238,10 @@ export const allFlows: GuidedFlow[] = [
   joinBandFlow,
 
   // Bands
-  bandNavigationFlow,
   understandRolesFlow,
 
   // Proposals
-  createProposalFlow,
   votingProcessFlow,
-
-  // Projects
-  projectsOverviewFlow,
 ]
 
 // Flows to show for first-time users

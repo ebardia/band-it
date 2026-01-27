@@ -143,6 +143,7 @@ export default function CreateBandPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="The Rockin' Rebels"
+                  data-guide="band-name"
                 />
 
                 <Textarea
@@ -153,6 +154,7 @@ export default function CreateBandPage() {
                   placeholder="Tell people about your band..."
                   rows={4}
                   helperText="At least 10 characters - What kind of music do you play? What's your band's story?"
+                  data-guide="band-description"
                 />
 
                 <Textarea
@@ -163,6 +165,7 @@ export default function CreateBandPage() {
                   placeholder="Our mission is to..."
                   rows={3}
                   helperText="At least 10 characters - What is your band trying to achieve?"
+                  data-guide="band-mission"
                 />
 
                 <Textarea
@@ -249,6 +252,7 @@ export default function CreateBandPage() {
                   size="lg"
                   disabled={createBandMutation.isPending}
                   className="w-full"
+                  data-guide="band-create-button"
                 >
                   {createBandMutation.isPending ? 'Creating Band...' : 'Create Band'}
                 </Button>

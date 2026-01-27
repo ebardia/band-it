@@ -133,10 +133,11 @@ export default function BrowseBandsPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by name, description, or values..."
+                data-guide="band-search"
               />
 
               {filteredBands && filteredBands.length > 0 ? (
-                <Stack spacing="md">
+                <Stack spacing="md" data-guide="band-list">
                   {filteredBands.map((band: any) => (
                     <Card key={band.id} hover>
                       <Stack spacing="md">
