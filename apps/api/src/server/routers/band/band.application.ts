@@ -3,6 +3,7 @@ import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
 import { memberBillingTriggers } from '../../services/member-billing-triggers'
+import { checkAndSetBandActivation } from './band.dissolve'
 
 export const bandApplicationRouter = router({
   /**
@@ -42,7 +43,7 @@ export const bandApplicationRouter = router({
       // Get band and applicant details
       const band = await prisma.band.findUnique({
         where: { id: input.bandId },
-        select: { name: true, slug: true, whoCanApprove: true },
+        select: { name: true, slug: true, whoCanApprove: true, dissolvedAt: true },
       })
 
       const applicant = await prisma.user.findUnique({
@@ -52,6 +53,11 @@ export const bandApplicationRouter = router({
 
       if (!band || !applicant) {
         throw new Error('Band or user not found')
+      }
+
+      // Check if band is dissolved
+      if (band.dissolvedAt) {
+        throw new Error('This band is no longer active')
       }
 
       // Create membership application
@@ -175,6 +181,11 @@ export const bandApplicationRouter = router({
         throw new Error('You do not have permission to approve applications')
       }
 
+      // Check if band is dissolved
+      if (membership.band.dissolvedAt) {
+        throw new Error('This band is no longer active')
+      }
+
       // Approve the application
       const updatedMembership = await prisma.member.update({
         where: { id: input.membershipId },
@@ -220,6 +231,9 @@ export const bandApplicationRouter = router({
           relatedType: 'BAND',
         })
       }
+
+      // Check if band should be activated (reached 3 members)
+      await checkAndSetBandActivation(membership.bandId)
 
       // Trigger billing checks (3rd member, 21st member, etc.)
       await memberBillingTriggers.onMemberActivated(membership.bandId)

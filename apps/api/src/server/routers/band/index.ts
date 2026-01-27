@@ -5,6 +5,7 @@ import { bandApplicationRouter } from './band.application'
 import { bandInviteRouter } from './band.invite'
 import { bandMatchingRouter } from './band.matching'
 import { bandBillingRouter } from './band.billing'
+import { bandDissolveRouter } from './band.dissolve'
 import { getMembers, getMemberProfile, changeRole, proposeRemoval } from './band.members'
 
 export const bandRouter = router({
@@ -51,4 +52,8 @@ export const bandRouter = router({
   transferBillingOwnership: bandBillingRouter.transferBillingOwnership,
   getPaymentStatus: bandBillingRouter.getPaymentStatus,
   getBillingOwnerCandidates: bandBillingRouter.getBillingOwnerCandidates,
+
+  // Dissolution
+  canDissolve: bandDissolveRouter.canDissolve,
+  dissolve: bandDissolveRouter.dissolve,
 })

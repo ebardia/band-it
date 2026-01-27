@@ -5,6 +5,7 @@ import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
 import { emailService } from '../../services/email.service'
 import { memberBillingTriggers } from '../../services/member-billing-triggers'
+import { checkAndSetBandActivation } from './band.dissolve'
 
 // Roles that can invite members
 const CAN_INVITE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -209,7 +210,7 @@ export const bandInviteRouter = router({
     .mutation(async ({ input }) => {
       const membership = await prisma.member.findUnique({
         where: { id: input.membershipId },
-        include: { 
+        include: {
           band: true,
           user: true,
         },
@@ -221,6 +222,11 @@ export const bandInviteRouter = router({
 
       if (membership.status !== 'INVITED') {
         throw new Error('This invitation is no longer valid')
+      }
+
+      // Check if band is dissolved
+      if (membership.band.dissolvedAt) {
+        throw new Error('This band is no longer active')
       }
 
       // Get inviter details
@@ -277,6 +283,9 @@ export const bandInviteRouter = router({
           relatedType: 'BAND',
         })
       }
+
+      // Check if band should be activated (reached 3 members)
+      await checkAndSetBandActivation(membership.bandId)
 
       // Trigger billing checks (3rd member, 21st member, etc.)
       await memberBillingTriggers.onMemberActivated(membership.bandId)

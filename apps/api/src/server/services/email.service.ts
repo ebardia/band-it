@@ -508,4 +508,65 @@ export const emailService = {
       html,
     })
   },
+
+  /**
+   * Send band dissolved notification email
+   */
+  async sendBandDissolvedEmail(options: {
+    email: string
+    userName: string
+    bandName: string
+    reason?: string
+  }) {
+    const { email, userName, bandName, reason } = options
+    const bandsUrl = `${FRONTEND_URL}/bands`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #6B7280;">"${bandName}" Has Been Dissolved</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, the band "${bandName}" has been dissolved by its founder.
+        </p>
+        <div style="background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="font-size: 14px; color: #374151; margin: 0;">
+            Since the band never reached the minimum 3 members needed to operate, the founder has chosen to close it.
+          </p>
+        </div>
+        ${reason ? `
+          <p style="font-size: 14px; color: #374151;">
+            <strong>Reason provided:</strong> ${reason}
+          </p>
+        ` : ''}
+        <p style="font-size: 14px; color: #374151;">
+          You can discover and join other bands on Band IT.
+        </p>
+        <div style="margin: 30px 0;">
+          <a href="${bandsUrl}"
+             style="background-color: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            Browse Bands
+          </a>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          If you have any questions, please contact the founder directly.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 BAND DISSOLVED EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Band: ${bandName}`)
+      console.log(`Reason: ${reason || 'None provided'}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: `"${bandName}" has been dissolved`,
+      html,
+    })
+  },
 }

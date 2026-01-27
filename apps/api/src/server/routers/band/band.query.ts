@@ -4,10 +4,13 @@ import { prisma } from '../../../lib/prisma'
 
 export const bandQueryRouter = router({
   /**
-   * Get all bands
+   * Get all bands (excludes dissolved bands)
    */
   getAll: publicProcedure.query(async () => {
     const bands = await prisma.band.findMany({
+      where: {
+        dissolvedAt: null, // Exclude dissolved bands
+      },
       include: {
         createdBy: {
           select: {
@@ -37,7 +40,7 @@ export const bandQueryRouter = router({
   }),
 
   /**
-   * Get bands for a specific user
+   * Get bands for a specific user (excludes dissolved bands)
    */
   getMyBands: publicProcedure
     .input(
@@ -50,6 +53,9 @@ export const bandQueryRouter = router({
         where: {
           userId: input.userId,
           status: 'ACTIVE',
+          band: {
+            dissolvedAt: null, // Exclude dissolved bands
+          },
         },
         include: {
           band: {
@@ -128,6 +134,11 @@ export const bandQueryRouter = router({
 
       if (!band) {
         throw new Error('Band not found')
+      }
+
+      // Check if band is dissolved
+      if (band.dissolvedAt) {
+        throw new Error('This band has been dissolved')
       }
 
       return {

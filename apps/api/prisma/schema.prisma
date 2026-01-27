@@ -90,6 +90,7 @@ model User {
   checklistItemsAssigned  ChecklistItem[] @relation("ChecklistItemsAssigned")
   pendingInvitesCreated   PendingInvite[] @relation("PendingInvitesCreated")
   bandsAsBillingOwner     Band[] @relation("BandBillingOwner")
+  bandsDissolvedBy        Band[] @relation("BandDissolver")
   eventsCreated           Event[] @relation("EventsCreated")
   eventRSVPs              EventRSVP[] @relation("EventRSVPs")
   eventAttendances        EventAttendance[] @relation("EventAttendances")
@@ -328,7 +329,8 @@ enum NotificationType {
   BAND_MEMBER_JOINED
   BAND_MEMBER_LEFT
   BAND_STATUS_CHANGED
-  
+  BAND_DISSOLVED
+
   // Band updates
   BAND_DETAILS_UPDATED
   
@@ -436,6 +438,12 @@ model Band {
   // Status
   status      BandStatus @default(INACTIVE)
 
+  // Activation & Dissolution
+  activatedAt       DateTime?   // Set when band first reaches 3 members
+  dissolvedAt       DateTime?   // Set when band is dissolved
+  dissolvedById     String?     // User who dissolved the band
+  dissolutionReason String?     // Optional reason for dissolution
+
   // Billing
   billingOwnerId        String?
   stripeCustomerId      String?   @unique
@@ -467,6 +475,7 @@ model Band {
   // Relations
   createdBy User @relation("BandCreator", fields: [createdById], references: [id])
   billingOwner User? @relation("BandBillingOwner", fields: [billingOwnerId], references: [id])
+  dissolvedBy User? @relation("BandDissolver", fields: [dissolvedById], references: [id])
   members   Member[]
   proposals Proposal[]
   projects  Project[]

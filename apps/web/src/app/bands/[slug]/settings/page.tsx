@@ -11,7 +11,8 @@ import {
   Loading,
   Alert,
   BandLayout,
-  BillingSettings
+  BillingSettings,
+  DissolveBandSection
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -110,6 +111,15 @@ export default function BandSettingsPage() {
             <BillingSettings
               bandId={band.id}
               bandSlug={slug}
+              userId={userId}
+            />
+          )}
+
+          {/* Dissolve Band - only shown to founder of unactivated bands */}
+          {userId && currentMember?.role === 'FOUNDER' && (
+            <DissolveBandSection
+              bandId={band.id}
+              bandName={band.name}
               userId={userId}
             />
           )}
