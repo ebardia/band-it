@@ -134,7 +134,7 @@ export default function AuditLogPage() {
   const isMember = !!currentMember
   const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
     const d = new Date(date)
     const now = new Date()
     const isToday = d.toDateString() === now.toDateString()

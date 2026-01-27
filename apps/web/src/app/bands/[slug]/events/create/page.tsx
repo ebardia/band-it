@@ -312,7 +312,7 @@ export default function CreateEventPage() {
                       onChange={(e) => setIsRecurring(e.target.checked)}
                       className="w-4 h-4"
                     />
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="isRecurring" className="mb-0 cursor-pointer">
+                    <label htmlFor="isRecurring" className="mb-0 cursor-pointer text-sm font-medium text-gray-700">
                       This is a recurring event
                     </label>
                   </Flex>

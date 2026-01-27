@@ -4,6 +4,14 @@ import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
 import { Flex, Text, Button, Badge } from '@/components/ui'
 
+interface PinnedMessage {
+  id: string
+  content: string
+  authorId: string
+  authorName: string
+  createdAt: string | Date
+}
+
 interface PinnedMessagesHeaderProps {
   bandId: string
   channelId: string
@@ -19,14 +27,16 @@ export function PinnedMessagesHeader({ bandId, channelId, userId, onMessageClick
     { enabled: !!bandId && !!channelId && !!userId }
   )
 
-  const pinnedMessages = data?.channel?.pinnedMessages || []
+  // Type assertion needed because pinnedMessages is conditionally returned based on access
+  const channel = data?.channel as { pinnedMessages?: PinnedMessage[] } | undefined
+  const pinnedMessages = channel?.pinnedMessages || []
 
   if (pinnedMessages.length === 0) {
     return null
   }
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
+  const formatDate = (dateStr: string | Date) => {
+    const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
   }
 
@@ -49,7 +59,7 @@ export function PinnedMessagesHeader({ bandId, channelId, userId, onMessageClick
 
       {isExpanded && (
         <div className="px-4 pb-3 space-y-2">
-          {pinnedMessages.map((msg) => (
+          {pinnedMessages.map((msg: PinnedMessage) => (
             <button
               key={msg.id}
               onClick={() => onMessageClick(msg.id)}

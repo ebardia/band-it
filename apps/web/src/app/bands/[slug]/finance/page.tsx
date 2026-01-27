@@ -145,7 +145,7 @@ export default function FinancePage() {
       // Check if user can refresh (is founder/governor)
       const member = bandData.band.members.find((m: any) => m.user.id === userId)
       const canRefresh = member && CAN_MANAGE_STRIPE.includes(member.role)
-      fetchStripeStatus(bandData.band.id, canRefresh)
+      fetchStripeStatus(bandData.band.id, canRefresh || false)
     }
   }, [bandData?.band?.id, token, userId, fetchStripeStatus])
 

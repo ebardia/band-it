@@ -233,11 +233,6 @@ export default function ProposalProjectsPage() {
     // Refresh AI usage tracker
     utils.aiUsage.invalidate()
 
-    if (result.message) {
-      showToast(result.message, 'info')
-      return
-    }
-
     if (result.suggestions && result.suggestions.length > 0) {
       // Create all suggested projects
       for (const suggestion of result.suggestions) {
@@ -245,12 +240,6 @@ export default function ProposalProjectsPage() {
           proposalId,
           name: suggestion.name,
           description: suggestion.description,
-          priority: suggestion.priority as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT',
-          estimatedBudget: suggestion.estimatedBudget || undefined,
-          estimatedHours: suggestion.estimatedHours || undefined,
-          deliverables: suggestion.deliverables || undefined,
-          successCriteria: suggestion.successCriteria || undefined,
-          tags: suggestion.tags || undefined,
           orderIndex: suggestion.order,
           userId: userId!,
           aiGenerated: true,

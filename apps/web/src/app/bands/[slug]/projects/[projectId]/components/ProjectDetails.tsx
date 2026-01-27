@@ -21,7 +21,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
           <Text variant="muted">No description provided</Text>
         )}
 
-        <Flex gap="xl" className="flex-wrap">
+        <Flex gap="lg" className="flex-wrap">
           <Stack spacing="sm">
             <Text weight="semibold">Created By</Text>
             <Text>{project.createdBy.name}</Text>

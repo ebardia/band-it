@@ -1,5 +1,5 @@
 interface RightSidebarProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export function RightSidebar({ children }: RightSidebarProps) {

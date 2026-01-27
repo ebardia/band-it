@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { trpc } from '@/lib/trpc'
+import { keepPreviousData } from '@tanstack/react-query'
 import { Modal, Stack, Flex, Text, Button, Input, Select, Loading } from '@/components/ui'
 
 interface SearchResult {
@@ -71,7 +72,7 @@ export function SearchModal({
     },
     {
       enabled: isOpen && query.trim().length >= 1,
-      keepPreviousData: true,
+      placeholderData: keepPreviousData,
     }
   )
 

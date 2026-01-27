@@ -1,7 +1,7 @@
 import { theme } from '@band-it/shared'
 
 interface SidebarProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export function Sidebar({ children }: SidebarProps) {

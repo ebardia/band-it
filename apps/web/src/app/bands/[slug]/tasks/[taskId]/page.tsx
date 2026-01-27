@@ -102,7 +102,7 @@ export default function TaskDetailPage() {
       refetchTask()
       setShowEditModal(false)
     },
-    onError: (error) => {
+    onError: (error: { message: string }) => {
       showToast(error.message, 'error')
     }
   })
@@ -195,10 +195,10 @@ export default function TaskDetailPage() {
       taskId,
       userId,
       name: editName,
-      description: editDescription || undefined,
+      description: editDescription || null,
       priority: editPriority,
       assigneeId: editAssigneeId || undefined,
-      dueDate: editDueDate ? new Date(editDueDate) : undefined,
+      dueDate: editDueDate || undefined,
       estimatedHours: editEstimatedHours || undefined,
     }
 
@@ -213,7 +213,7 @@ export default function TaskDetailPage() {
         bandId: taskData?.task?.bandId || '',
         data: {
           name: editName,
-          description: editDescription || null,
+          description: editDescription || undefined,
         },
         parentId: taskData?.task?.projectId,
       })
@@ -804,7 +804,7 @@ export default function TaskDetailPage() {
                   >
                     {task.verificationStatus}
                   </Badge>
-                  {task.verifiedBy && (
+                  {task.verifiedBy && task.verifiedAt && (
                     <Text variant="small" color="muted">
                       by {task.verifiedBy.name} on {new Date(task.verifiedAt).toLocaleDateString()}
                     </Text>

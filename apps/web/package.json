@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@band-it/shared": "workspace:*",
     "@tanstack/react-query": "^5.56.2",
     "@trpc/client": "^11.0.0-rc.706",
     "@trpc/react-query": "^11.0.0-rc.706",

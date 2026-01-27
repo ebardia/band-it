@@ -159,9 +159,9 @@ export function ProjectInfoCard({ project, bandMembers }: ProjectInfoCardProps) 
               <Stack spacing="xs">
                 <Text variant="small" weight="semibold">Progress</Text>
                 <Flex align="center" gap="sm">
-                  <Card className="flex-1 h-2 p-0 overflow-hidden">
-                    <Card className={`h-full bg-green-500 p-0`} style={{ width: `${progressPercent}%` }} />
-                  </Card>
+                  <div className="flex-1 h-2 bg-gray-200 rounded overflow-hidden">
+                    <div className="h-full bg-green-500 rounded" style={{ width: `${progressPercent}%` }} />
+                  </div>
                   <Text variant="small" color="muted">{progressPercent}%</Text>
                 </Flex>
               </Stack>

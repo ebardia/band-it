@@ -110,8 +110,8 @@ export default function PaymentPage() {
             </Button>
 
             <Center>
-              <Text variant="small" variant="muted">🔒 Secure payment powered by Stripe</Text>
-              <Text variant="small" variant="muted">Cancel anytime</Text>
+              <Text variant="small" color="muted">🔒 Secure payment powered by Stripe</Text>
+              <Text variant="small" color="muted">Cancel anytime</Text>
             </Center>
 
             <Center>

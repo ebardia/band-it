@@ -137,7 +137,7 @@ export default function SubscriptionPage() {
 
         {status === 'ACTIVE' && (
           <Stack spacing="sm">
-            <Text variant="small" variant="muted">
+            <Text variant="small" color="muted">
               You can cancel your subscription at any time. Your access will continue until the end of your billing period.
             </Text>
             <Button
