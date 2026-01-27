@@ -136,7 +136,7 @@ export default function InvitationsPage() {
                       <Button
                         variant="secondary"
                         size="md"
-                        onClick={() => router.push(`/bands/${invitation.band.slug}`)}
+                        onClick={() => router.push(`/bands/${invitation.band.slug}/about`)}
                       >
                         View Band
                       </Button>
