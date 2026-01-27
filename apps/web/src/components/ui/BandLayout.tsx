@@ -172,13 +172,17 @@ export function BandLayout({
 
         {/* Desktop Page Header */}
         <div className="hidden md:block py-6">
-          <Flex justify="between" align="center">
-            {/* Band Name - large, on the left */}
-            <h1 className="text-4xl font-bold text-gray-900">{bandName}</h1>
+          {/* Band Name - large, top level */}
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{bandName}</h1>
 
-            {/* Page Title and Actions - on the right */}
-            <Flex gap="lg" align="center">
-              <h2 className="text-2xl font-semibold text-gray-600">{pageTitle}</h2>
+          {/* Page Title - aligned with main content (after sidebar width) */}
+          <Flex gap="md" align="center">
+            {/* Spacer to match sidebar width */}
+            <div className="w-64 flex-shrink-0" />
+
+            {/* Page title and actions above main content */}
+            <Flex justify="between" align="center" className="flex-1">
+              <h2 className="text-2xl font-semibold text-gray-700">{pageTitle}</h2>
               {actionContent && <div>{actionContent}</div>}
             </Flex>
           </Flex>
