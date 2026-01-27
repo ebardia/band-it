@@ -83,8 +83,17 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
       notificationId: notification.id,
       userId: userId!,
     })
-    if (notification.actionUrl) {
-      router.push(notification.actionUrl)
+
+    // Determine the correct URL to navigate to
+    let targetUrl = notification.actionUrl
+
+    // Fix for BAND_MEMBER_JOINED notifications with old URLs (should go to members page)
+    if (notification.type === 'BAND_MEMBER_JOINED' && notification.metadata?.bandSlug) {
+      targetUrl = `/bands/${notification.metadata.bandSlug}/members`
+    }
+
+    if (targetUrl) {
+      router.push(targetUrl)
       onClose()
     }
   }
