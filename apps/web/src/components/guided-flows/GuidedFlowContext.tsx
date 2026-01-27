@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { driver, Driver, DriveStep, Config } from 'driver.js'
 import 'driver.js/dist/driver.css'
@@ -20,10 +20,6 @@ export interface FlowStep {
   align?: 'start' | 'center' | 'end'
   /** URL to navigate to before showing this step */
   navigateTo?: string
-  /** Action to perform when this step is shown */
-  onShow?: () => void
-  /** Action to perform when moving to next step */
-  onNext?: () => void
 }
 
 // Flow definition
@@ -51,29 +47,17 @@ interface StoredFlowState {
 
 // Context state
 interface GuidedFlowState {
-  /** Currently active flow */
   activeFlow: GuidedFlow | null
-  /** Current step index */
   currentStep: number
-  /** Whether a flow is running */
   isRunning: boolean
-  /** Flows the user has completed */
   completedFlows: string[]
-  /** Start a guided flow */
   startFlow: (flow: GuidedFlow) => void
-  /** Stop the current flow */
   stopFlow: () => void
-  /** Mark a flow as completed */
   markFlowCompleted: (flowId: string) => void
-  /** Check if a flow is completed */
   isFlowCompleted: (flowId: string) => boolean
-  /** Reset all completed flows */
   resetCompletedFlows: () => void
-  /** Show the goal selector modal */
   showGoalSelector: () => void
-  /** Hide the goal selector modal */
   hideGoalSelector: () => void
-  /** Whether goal selector is visible */
   isGoalSelectorOpen: boolean
 }
 
@@ -90,8 +74,9 @@ export function GuidedFlowProvider({ children }: { children: ReactNode }) {
   const [isRunning, setIsRunning] = useState(false)
   const [completedFlows, setCompletedFlows] = useState<string[]>([])
   const [isGoalSelectorOpen, setIsGoalSelectorOpen] = useState(false)
-  const [driverInstance, setDriverInstance] = useState<Driver | null>(null)
-  const [originalUrl, setOriginalUrl] = useState<string | null>(null)
+  const driverRef = useRef<Driver | null>(null)
+  const originalUrlRef = useRef<string>('')
+  const isInitialized = useRef(false)
 
   // Load completed flows from localStorage
   useEffect(() => {
@@ -103,11 +88,14 @@ export function GuidedFlowProvider({ children }: { children: ReactNode }) {
         console.error('Failed to parse completed flows:', e)
       }
     }
+    isInitialized.current = true
   }, [])
 
   // Save completed flows to localStorage
   useEffect(() => {
-    localStorage.setItem(COMPLETED_FLOWS_KEY, JSON.stringify(completedFlows))
+    if (isInitialized.current) {
+      localStorage.setItem(COMPLETED_FLOWS_KEY, JSON.stringify(completedFlows))
+    }
   }, [completedFlows])
 
   const markFlowCompleted = useCallback((flowId: string) => {
@@ -117,40 +105,63 @@ export function GuidedFlowProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  // Return to original URL and clean up
-  const returnToOriginal = useCallback(() => {
-    const stored = sessionStorage.getItem(ACTIVE_FLOW_KEY)
-    if (stored) {
-      try {
-        const state: StoredFlowState = JSON.parse(stored)
-        sessionStorage.removeItem(ACTIVE_FLOW_KEY)
-        if (state.originalUrl && state.originalUrl !== pathname) {
-          router.push(state.originalUrl)
-        }
-      } catch (e) {
-        console.error('Failed to return to original URL:', e)
-      }
-    }
-    sessionStorage.removeItem(ACTIVE_FLOW_KEY)
-  }, [router, pathname])
-
-  const stopFlow = useCallback(() => {
-    if (driverInstance) {
-      driverInstance.destroy()
-      setDriverInstance(null)
+  const cleanupAndReturn = useCallback((shouldReturn: boolean = true) => {
+    if (driverRef.current) {
+      driverRef.current.destroy()
+      driverRef.current = null
     }
     setActiveFlow(null)
     setCurrentStep(0)
     setIsRunning(false)
-    returnToOriginal()
-  }, [driverInstance, returnToOriginal])
 
-  // Run the driver for current step
-  const runDriverFromStep = useCallback((flow: GuidedFlow, stepIndex: number, origUrl: string) => {
-    // Build steps from current index onwards
-    const remainingSteps = flow.steps.slice(stepIndex)
+    const origUrl = originalUrlRef.current
+    sessionStorage.removeItem(ACTIVE_FLOW_KEY)
+    originalUrlRef.current = ''
 
-    const driverSteps: DriveStep[] = remainingSteps.map((step, idx) => ({
+    if (shouldReturn && origUrl && origUrl !== window.location.pathname) {
+      router.push(origUrl)
+    }
+  }, [router])
+
+  const stopFlow = useCallback(() => {
+    cleanupAndReturn(true)
+  }, [cleanupAndReturn])
+
+  // Run driver for a specific step (and subsequent steps on same page)
+  const runFromStep = useCallback((flow: GuidedFlow, stepIdx: number, origUrl: string) => {
+    // Clean up any existing driver
+    if (driverRef.current) {
+      driverRef.current.destroy()
+      driverRef.current = null
+    }
+
+    // Find consecutive steps on current page
+    const currentPath = window.location.pathname
+    const stepsOnThisPage: { step: FlowStep; globalIndex: number }[] = []
+
+    for (let i = stepIdx; i < flow.steps.length; i++) {
+      const step = flow.steps[i]
+      const stepPath = step.navigateTo || currentPath
+      if (stepPath === currentPath) {
+        stepsOnThisPage.push({ step, globalIndex: i })
+      } else {
+        break // Stop at first step that needs navigation
+      }
+    }
+
+    if (stepsOnThisPage.length === 0) {
+      // No steps for this page, need to navigate
+      const nextStep = flow.steps[stepIdx]
+      if (nextStep?.navigateTo) {
+        const state: StoredFlowState = { flow, currentStepIndex: stepIdx, originalUrl: origUrl }
+        sessionStorage.setItem(ACTIVE_FLOW_KEY, JSON.stringify(state))
+        router.push(nextStep.navigateTo)
+      }
+      return
+    }
+
+    // Build driver steps
+    const driverSteps: DriveStep[] = stepsOnThisPage.map(({ step }) => ({
       element: step.element,
       popover: {
         title: step.title,
@@ -160,134 +171,97 @@ export function GuidedFlowProvider({ children }: { children: ReactNode }) {
       },
     }))
 
+    // Calculate if there are more steps after this page
+    const lastStepOnPage = stepsOnThisPage[stepsOnThisPage.length - 1]
+    const hasMoreSteps = lastStepOnPage.globalIndex < flow.steps.length - 1
+    const isLastPage = !hasMoreSteps
+
     const config: Config = {
       showProgress: true,
       steps: driverSteps,
-      onCloseClick: () => {
-        // User clicked X - stop the flow and return to original
-        newDriver.destroy()
-        setIsRunning(false)
-        setActiveFlow(null)
-        setDriverInstance(null)
-        sessionStorage.removeItem(ACTIVE_FLOW_KEY)
-        if (origUrl && origUrl !== window.location.pathname) {
-          router.push(origUrl)
-        }
-      },
-      onDestroyStarted: () => {
-        // Check if we're on the last step
-        const currentDriverStep = newDriver.getActiveIndex()
-        const isLastStep = currentDriverStep === driverSteps.length - 1
-
-        if (isLastStep) {
-          // Completed the flow
-          markFlowCompleted(flow.id)
-          sessionStorage.removeItem(ACTIVE_FLOW_KEY)
-          setIsRunning(false)
-          setActiveFlow(null)
-          // Return to original URL
-          if (origUrl && origUrl !== window.location.pathname) {
-            router.push(origUrl)
-          }
-        }
-      },
-      onNextClick: () => {
-        const currentDriverStep = newDriver.getActiveIndex() || 0
-        const actualStepIndex = stepIndex + currentDriverStep
-        const nextStepIndex = actualStepIndex + 1
-
-        if (nextStepIndex >= flow.steps.length) {
-          // This is the last step - done
-          markFlowCompleted(flow.id)
-          newDriver.destroy()
-          setIsRunning(false)
-          setActiveFlow(null)
-          setDriverInstance(null)
-          sessionStorage.removeItem(ACTIVE_FLOW_KEY)
-          // Return to original URL
-          if (origUrl && origUrl !== window.location.pathname) {
-            router.push(origUrl)
-          }
-          return
-        }
-
-        const nextStep = flow.steps[nextStepIndex]
-
-        // Check if next step needs navigation
-        if (nextStep.navigateTo && nextStep.navigateTo !== window.location.pathname) {
-          // Save state and navigate
-          const state: StoredFlowState = {
-            flow,
-            currentStepIndex: nextStepIndex,
-            originalUrl: origUrl,
-          }
-          sessionStorage.setItem(ACTIVE_FLOW_KEY, JSON.stringify(state))
-          newDriver.destroy()
-          router.push(nextStep.navigateTo)
-        } else {
-          // Same page, continue to next step
-          newDriver.moveNext()
-          setCurrentStep(nextStepIndex)
-        }
-      },
-      onPrevClick: () => {
-        const currentDriverStep = newDriver.getActiveIndex() || 0
-        const actualStepIndex = stepIndex + currentDriverStep
-        const prevStepIndex = actualStepIndex - 1
-
-        if (prevStepIndex < 0) {
-          return
-        }
-
-        const prevStep = flow.steps[prevStepIndex]
-
-        // Check if prev step needs navigation
-        if (prevStep.navigateTo && prevStep.navigateTo !== window.location.pathname) {
-          // Save state and navigate
-          const state: StoredFlowState = {
-            flow,
-            currentStepIndex: prevStepIndex,
-            originalUrl: origUrl,
-          }
-          sessionStorage.setItem(ACTIVE_FLOW_KEY, JSON.stringify(state))
-          newDriver.destroy()
-          router.push(prevStep.navigateTo)
-        } else {
-          // Same page, go to prev step
-          newDriver.movePrevious()
-          setCurrentStep(prevStepIndex)
-        }
-      },
-      progressText: `${stepIndex + 1}-{{current}} of ${flow.steps.length}`,
-      nextBtnText: stepIndex + driverSteps.length >= flow.steps.length ? 'Done' : 'Next',
+      progressText: `Step ${stepIdx + 1}-{{current}} of ${flow.steps.length}`,
+      nextBtnText: 'Next',
       prevBtnText: 'Back',
       doneBtnText: 'Done',
       popoverClass: 'bandit-guided-popover',
       stagePadding: 10,
       stageRadius: 8,
       allowClose: true,
+      onCloseClick: () => {
+        cleanupAndReturn(true)
+      },
+      onNextClick: () => {
+        const driverIndex = newDriver.getActiveIndex() || 0
+        const isLastStepOnPage = driverIndex === driverSteps.length - 1
+
+        if (isLastStepOnPage) {
+          const currentGlobalIndex = stepsOnThisPage[driverIndex].globalIndex
+          const nextGlobalIndex = currentGlobalIndex + 1
+
+          if (nextGlobalIndex >= flow.steps.length) {
+            // Flow complete
+            markFlowCompleted(flow.id)
+            cleanupAndReturn(true)
+          } else {
+            // Navigate to next step
+            const nextStep = flow.steps[nextGlobalIndex]
+            if (nextStep.navigateTo && nextStep.navigateTo !== currentPath) {
+              // Need to navigate
+              const state: StoredFlowState = { flow, currentStepIndex: nextGlobalIndex, originalUrl: origUrl }
+              sessionStorage.setItem(ACTIVE_FLOW_KEY, JSON.stringify(state))
+              newDriver.destroy()
+              driverRef.current = null
+              router.push(nextStep.navigateTo)
+            } else {
+              // Shouldn't happen but handle it
+              newDriver.moveNext()
+            }
+          }
+        } else {
+          newDriver.moveNext()
+        }
+      },
+      onPrevClick: () => {
+        const driverIndex = newDriver.getActiveIndex() || 0
+
+        if (driverIndex === 0) {
+          const currentGlobalIndex = stepsOnThisPage[0].globalIndex
+          const prevGlobalIndex = currentGlobalIndex - 1
+
+          if (prevGlobalIndex >= 0) {
+            const prevStep = flow.steps[prevGlobalIndex]
+            if (prevStep.navigateTo && prevStep.navigateTo !== currentPath) {
+              // Need to navigate back
+              const state: StoredFlowState = { flow, currentStepIndex: prevGlobalIndex, originalUrl: origUrl }
+              sessionStorage.setItem(ACTIVE_FLOW_KEY, JSON.stringify(state))
+              newDriver.destroy()
+              driverRef.current = null
+              router.push(prevStep.navigateTo)
+            } else {
+              newDriver.movePrevious()
+            }
+          }
+        } else {
+          newDriver.movePrevious()
+        }
+      },
     }
 
     const newDriver = driver(config)
-    setDriverInstance(newDriver)
+    driverRef.current = newDriver
     setActiveFlow(flow)
+    setCurrentStep(stepIdx)
     setIsRunning(true)
-    setCurrentStep(stepIndex)
-    setOriginalUrl(origUrl)
+    originalUrlRef.current = origUrl
 
-    // Small delay to ensure DOM is ready
+    // Start after a delay for DOM to be ready
     setTimeout(() => {
       newDriver.drive()
-    }, 300)
-  }, [router, markFlowCompleted])
+    }, 400)
+  }, [router, markFlowCompleted, cleanupAndReturn])
 
   const startFlow = useCallback((flow: GuidedFlow) => {
-    // Stop any existing flow
-    if (driverInstance) {
-      driverInstance.destroy()
-    }
-
-    // Hide goal selector if open
+    // Hide goal selector
     setIsGoalSelectorOpen(false)
 
     // Save original URL
@@ -297,41 +271,40 @@ export function GuidedFlowProvider({ children }: { children: ReactNode }) {
     const firstStep = flow.steps[0]
     if (firstStep.navigateTo && firstStep.navigateTo !== pathname) {
       // Save state and navigate
-      const state: StoredFlowState = {
-        flow,
-        currentStepIndex: 0,
-        originalUrl: origUrl,
-      }
+      const state: StoredFlowState = { flow, currentStepIndex: 0, originalUrl: origUrl }
       sessionStorage.setItem(ACTIVE_FLOW_KEY, JSON.stringify(state))
       router.push(firstStep.navigateTo)
-      return
+    } else {
+      // Start immediately
+      runFromStep(flow, 0, origUrl)
     }
+  }, [pathname, router, runFromStep])
 
-    // Start immediately
-    runDriverFromStep(flow, 0, origUrl)
-  }, [driverInstance, pathname, router, runDriverFromStep])
-
-  // Check for pending flow after navigation
+  // Resume flow after navigation
   useEffect(() => {
-    const stored = sessionStorage.getItem(ACTIVE_FLOW_KEY)
-    if (stored && !isRunning) {
-      try {
-        const state: StoredFlowState = JSON.parse(stored)
-        const currentStepNav = state.flow.steps[state.currentStepIndex]?.navigateTo
+    if (!isInitialized.current) return
+    if (isRunning) return
 
-        // Check if we're on the right page
-        if (!currentStepNav || currentStepNav === pathname) {
-          // We're on the right page, start the driver
-          setTimeout(() => {
-            runDriverFromStep(state.flow, state.currentStepIndex, state.originalUrl)
-          }, 500)
-        }
-      } catch (e) {
-        console.error('Failed to resume flow:', e)
-        sessionStorage.removeItem(ACTIVE_FLOW_KEY)
+    const stored = sessionStorage.getItem(ACTIVE_FLOW_KEY)
+    if (!stored) return
+
+    try {
+      const state: StoredFlowState = JSON.parse(stored)
+      const currentStepNav = state.flow.steps[state.currentStepIndex]?.navigateTo
+
+      // Check if we're on the right page
+      if (!currentStepNav || currentStepNav === pathname) {
+        // Small delay to let page render
+        const timer = setTimeout(() => {
+          runFromStep(state.flow, state.currentStepIndex, state.originalUrl)
+        }, 600)
+        return () => clearTimeout(timer)
       }
+    } catch (e) {
+      console.error('Failed to resume flow:', e)
+      sessionStorage.removeItem(ACTIVE_FLOW_KEY)
     }
-  }, [pathname, isRunning, runDriverFromStep])
+  }, [pathname, isRunning, runFromStep])
 
   const isFlowCompleted = useCallback((flowId: string) => {
     return completedFlows.includes(flowId)
