@@ -19,6 +19,7 @@ import { adminRouter } from './admin'
 import { adminTaskRouter } from './adminTask'
 import { channelRouter } from './channel'
 import { messageRouter } from './message'
+import { manualPaymentRouter } from './manualPayment'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -42,6 +43,7 @@ export const appRouter = router({
   adminTask: adminTaskRouter,
   channel: channelRouter,
   message: messageRouter,
+  manualPayment: manualPaymentRouter,
 })
 
 // Export type definition of API

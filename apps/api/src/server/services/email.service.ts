@@ -569,4 +569,381 @@ export const emailService = {
       html,
     })
   },
+
+  /**
+   * Send manual payment recorded notification email
+   */
+  async sendManualPaymentRecordedEmail(options: {
+    email: string
+    userName: string
+    bandName: string
+    bandSlug: string
+    amount: number
+    payerName: string
+    paymentMethod: string
+    initiatorName: string
+    isForMember: boolean // true if treasurer is notifying member, false if member is notifying treasurer
+  }) {
+    const { email, userName, bandName, bandSlug, amount, payerName, paymentMethod, initiatorName, isForMember } = options
+    const billingUrl = `${FRONTEND_URL}/bands/${bandSlug}/billing?tab=manual`
+    const formattedAmount = `$${(amount / 100).toFixed(2)}`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #3B82F6;">Payment Recorded</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, a manual payment has been recorded ${isForMember ? 'on your behalf' : 'by a member'} in ${bandName}.
+        </p>
+        <div style="background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="font-size: 14px; color: #374151; margin: 0;">
+            <strong>Amount:</strong> ${formattedAmount}<br>
+            <strong>Payment Method:</strong> ${paymentMethod}<br>
+            <strong>Payer:</strong> ${payerName}<br>
+            <strong>Recorded by:</strong> ${initiatorName}
+          </p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">
+          Please review and confirm this payment within 7 days. If you don't take action, the payment will be automatically confirmed.
+        </p>
+        <div style="margin: 30px 0;">
+          <a href="${billingUrl}"
+             style="background-color: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            Review Payment
+          </a>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          You're receiving this because you are a member of ${bandName} on Band IT.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 MANUAL PAYMENT RECORDED EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Amount: ${formattedAmount}`)
+      console.log(`Payer: ${payerName}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: `Payment recorded in "${bandName}" - Action required`,
+      html,
+    })
+  },
+
+  /**
+   * Send manual payment confirmed notification email
+   */
+  async sendManualPaymentConfirmedEmail(options: {
+    email: string
+    userName: string
+    bandName: string
+    bandSlug: string
+    amount: number
+    confirmerName: string
+  }) {
+    const { email, userName, bandName, bandSlug, amount, confirmerName } = options
+    const billingUrl = `${FRONTEND_URL}/bands/${bandSlug}/billing?tab=manual`
+    const formattedAmount = `$${(amount / 100).toFixed(2)}`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #10B981;">Payment Confirmed</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, your recorded payment of ${formattedAmount} in ${bandName} has been confirmed by ${confirmerName}.
+        </p>
+        <div style="background-color: #D1FAE5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10B981;">
+          <p style="font-size: 14px; color: #065F46; margin: 0;">
+            Your payment has been processed and your membership dues are now up to date.
+          </p>
+        </div>
+        <div style="margin: 30px 0;">
+          <a href="${billingUrl}"
+             style="background-color: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            View Billing
+          </a>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          You're receiving this because you are a member of ${bandName} on Band IT.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 MANUAL PAYMENT CONFIRMED EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Amount: ${formattedAmount}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: `Payment confirmed in "${bandName}"`,
+      html,
+    })
+  },
+
+  /**
+   * Send manual payment disputed notification email
+   */
+  async sendManualPaymentDisputedEmail(options: {
+    email: string
+    userName: string
+    bandName: string
+    bandSlug: string
+    amount: number
+    disputerName: string
+    reason: string
+  }) {
+    const { email, userName, bandName, bandSlug, amount, disputerName, reason } = options
+    const billingUrl = `${FRONTEND_URL}/bands/${bandSlug}/billing?tab=manual`
+    const formattedAmount = `$${(amount / 100).toFixed(2)}`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #F59E0B;">Payment Disputed</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, your recorded payment of ${formattedAmount} in ${bandName} has been disputed by ${disputerName}.
+        </p>
+        <div style="background-color: #FEF3C7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #F59E0B;">
+          <p style="font-size: 14px; color: #92400E; margin: 0;">
+            <strong>Reason:</strong><br>
+            ${reason}
+          </p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">
+          A band governor will review and resolve this dispute. You may be contacted for additional information.
+        </p>
+        <div style="margin: 30px 0;">
+          <a href="${billingUrl}"
+             style="background-color: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            View Details
+          </a>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          You're receiving this because you are a member of ${bandName} on Band IT.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 MANUAL PAYMENT DISPUTED EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Amount: ${formattedAmount}`)
+      console.log(`Reason: ${reason}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: `Payment disputed in "${bandName}"`,
+      html,
+    })
+  },
+
+  /**
+   * Send manual payment disputed notification to governors
+   */
+  async sendManualPaymentDisputedToGovernorsEmail(options: {
+    email: string
+    governorName: string
+    bandName: string
+    bandSlug: string
+    amount: number
+    payerName: string
+    disputerName: string
+    reason: string
+  }) {
+    const { email, governorName, bandName, bandSlug, amount, payerName, disputerName, reason } = options
+    const billingUrl = `${FRONTEND_URL}/bands/${bandSlug}/billing?tab=manual`
+    const formattedAmount = `$${(amount / 100).toFixed(2)}`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #EF4444;">Payment Dispute Needs Resolution</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${governorName}, a manual payment dispute in ${bandName} requires your attention.
+        </p>
+        <div style="background-color: #FEE2E2; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #EF4444;">
+          <p style="font-size: 14px; color: #991B1B; margin: 0;">
+            <strong>Amount:</strong> ${formattedAmount}<br>
+            <strong>Payer:</strong> ${payerName}<br>
+            <strong>Disputed by:</strong> ${disputerName}<br>
+            <strong>Reason:</strong> ${reason}
+          </p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">
+          As a governor, you can resolve this dispute by confirming or rejecting the payment.
+        </p>
+        <div style="margin: 30px 0;">
+          <a href="${billingUrl}"
+             style="background-color: #EF4444; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            Resolve Dispute
+          </a>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          You're receiving this because you are a governor of ${bandName} on Band IT.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 PAYMENT DISPUTE TO GOVERNORS EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Amount: ${formattedAmount}`)
+      console.log(`Payer: ${payerName}`)
+      console.log(`Disputed by: ${disputerName}`)
+      console.log(`Reason: ${reason}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: `Payment dispute needs resolution in "${bandName}"`,
+      html,
+    })
+  },
+
+  /**
+   * Send manual payment resolved notification email
+   */
+  async sendManualPaymentResolvedEmail(options: {
+    email: string
+    userName: string
+    bandName: string
+    bandSlug: string
+    amount: number
+    outcome: 'CONFIRMED' | 'REJECTED'
+    resolverName: string
+    note?: string
+  }) {
+    const { email, userName, bandName, bandSlug, amount, outcome, resolverName, note } = options
+    const billingUrl = `${FRONTEND_URL}/bands/${bandSlug}/billing?tab=manual`
+    const formattedAmount = `$${(amount / 100).toFixed(2)}`
+    const isConfirmed = outcome === 'CONFIRMED'
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: ${isConfirmed ? '#10B981' : '#EF4444'};">Payment Dispute Resolved</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, the disputed payment of ${formattedAmount} in ${bandName} has been resolved by ${resolverName}.
+        </p>
+        <div style="background-color: ${isConfirmed ? '#D1FAE5' : '#FEE2E2'}; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${isConfirmed ? '#10B981' : '#EF4444'};">
+          <p style="font-size: 14px; color: ${isConfirmed ? '#065F46' : '#991B1B'}; margin: 0;">
+            <strong>Outcome:</strong> ${isConfirmed ? 'Payment Confirmed' : 'Payment Rejected'}
+            ${note ? `<br><br><strong>Note:</strong> ${note}` : ''}
+          </p>
+        </div>
+        <div style="margin: 30px 0;">
+          <a href="${billingUrl}"
+             style="background-color: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            View Billing
+          </a>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          You're receiving this because you are a member of ${bandName} on Band IT.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 PAYMENT RESOLVED EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Amount: ${formattedAmount}`)
+      console.log(`Outcome: ${outcome}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: `Payment dispute resolved in "${bandName}" - ${isConfirmed ? 'Confirmed' : 'Rejected'}`,
+      html,
+    })
+  },
+
+  /**
+   * Send auto-confirm warning email
+   */
+  async sendManualPaymentAutoConfirmWarningEmail(options: {
+    email: string
+    userName: string
+    bandName: string
+    bandSlug: string
+    payerName: string
+    amount: number
+    paymentMethod: string
+    autoConfirmAt: Date
+  }) {
+    const { email, userName, bandName, bandSlug, payerName, amount, paymentMethod, autoConfirmAt } = options
+    const billingUrl = `${FRONTEND_URL}/bands/${bandSlug}/billing?tab=manual`
+    const formattedAmount = `$${(amount / 100).toFixed(2)}`
+    const formattedDate = autoConfirmAt.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #F59E0B;">Payment Auto-Confirm Warning</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, a payment in ${bandName} will be automatically confirmed in 2 days if not reviewed.
+        </p>
+        <div style="background-color: #FEF3C7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #F59E0B;">
+          <p style="font-size: 14px; color: #92400E; margin: 0;">
+            <strong>Amount:</strong> ${formattedAmount}<br>
+            <strong>Payment Method:</strong> ${paymentMethod}<br>
+            <strong>Payer:</strong> ${payerName}<br>
+            <strong>Auto-confirms on:</strong> ${formattedDate}
+          </p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">
+          Please review and either confirm or dispute this payment before it is automatically confirmed.
+        </p>
+        <div style="margin: 30px 0;">
+          <a href="${billingUrl}"
+             style="background-color: #F59E0B; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            Review Payment Now
+          </a>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          You're receiving this because you are a member of ${bandName} on Band IT.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 PAYMENT AUTO-CONFIRM WARNING EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Amount: ${formattedAmount}`)
+      console.log(`Auto-confirms on: ${formattedDate}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: `Action required: Payment will auto-confirm in 2 days - "${bandName}"`,
+      html,
+    })
+  },
 }

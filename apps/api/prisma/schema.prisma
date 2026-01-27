@@ -110,6 +110,13 @@ model User {
   channelReadStatuses     ChannelReadStatus[] @relation("ChannelReadStatuses")
   messageMentions         MessageMention[] @relation("MessageMentionsReceived")
   messageReactions        MessageReaction[] @relation("MessageReactionsGiven")
+
+  // Manual Payments
+  manualPaymentsAsMember      ManualPayment[] @relation("ManualPaymentMember")
+  manualPaymentsInitiated     ManualPayment[] @relation("ManualPaymentInitiator")
+  manualPaymentsConfirmed     ManualPayment[] @relation("ManualPaymentConfirmer")
+  manualPaymentsDisputed      ManualPayment[] @relation("ManualPaymentDisputer")
+  manualPaymentsResolved      ManualPayment[] @relation("ManualPaymentResolver")
 }
 
 enum SubscriptionStatus {
@@ -319,12 +326,12 @@ enum NotificationType {
   BAND_INVITE_RECEIVED
   BAND_INVITE_ACCEPTED
   BAND_INVITE_DECLINED
-  
+
   // Band applications
   BAND_APPLICATION_RECEIVED
   BAND_APPLICATION_APPROVED
   BAND_APPLICATION_REJECTED
-  
+
   // Band membership
   BAND_MEMBER_JOINED
   BAND_MEMBER_LEFT
@@ -333,18 +340,18 @@ enum NotificationType {
 
   // Band updates
   BAND_DETAILS_UPDATED
-  
+
   // Proposals
   PROPOSAL_CREATED
   PROPOSAL_VOTE_NEEDED
   PROPOSAL_APPROVED
   PROPOSAL_REJECTED
   PROPOSAL_CLOSED
-  
+
   // Projects
   PROJECT_CREATED
   PROJECT_STATUS_CHANGED
-  
+
   // Tasks
   TASK_CREATED
   TASK_ASSIGNED
@@ -364,6 +371,13 @@ enum NotificationType {
   BILLING_OWNER_CLAIMED
   BILLING_SUBSCRIPTION_UPGRADED
   BILLING_SUBSCRIPTION_DOWNGRADED
+
+  // Manual Payments
+  MANUAL_PAYMENT_RECORDED
+  MANUAL_PAYMENT_CONFIRMED
+  MANUAL_PAYMENT_DISPUTED
+  MANUAL_PAYMENT_RESOLVED
+  MANUAL_PAYMENT_AUTO_CONFIRM_WARNING
 
   // Events
   EVENT_CREATED
@@ -492,6 +506,7 @@ model Band {
   duesPlans BandDuesPlan[]
   memberBillings BandMemberBilling[]
   channels  Channel[]
+  manualPayments ManualPayment[]
 
   @@index([createdById])
   @@index([status])
@@ -538,6 +553,7 @@ model Member {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   band Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  manualPayments ManualPayment[]
 
   @@unique([userId, bandId])
   @@index([bandId])
@@ -847,6 +863,90 @@ enum BandMemberBillingStatus {
   ACTIVE     // Subscription exists and current period not ended
   PAST_DUE   // Stripe reports subscription delinquent / payment failed
   CANCELED   // Subscription ended
+}
+
+// ============================================
+// FINANCE - MANUAL PAYMENTS
+// ============================================
+
+model ManualPayment {
+  id                  String   @id @default(cuid())
+  bandId              String
+  memberId            String   // The member who paid (Member.id)
+  memberUserId        String   // The user who paid (for easier lookups)
+
+  amount              Int      // Amount in cents
+  currency            String   @default("usd")
+  paymentMethod       PaymentMethod
+  paymentMethodOther  String?  // If method is OTHER
+  paymentDate         DateTime
+  note                String?  @db.Text
+
+  initiatedById       String   // User who created the record
+  initiatedByRole     InitiatedByRole // TREASURER or MEMBER
+  initiatedAt         DateTime @default(now())
+
+  status              ManualPaymentStatus @default(PENDING)
+
+  confirmedById       String?
+  confirmedAt         DateTime?
+
+  disputedById        String?
+  disputedAt          DateTime?
+  disputeReason       String?  @db.Text
+
+  resolvedById        String?
+  resolvedAt          DateTime?
+  resolutionNote      String?  @db.Text
+  resolutionOutcome   ResolutionOutcome?
+
+  autoConfirmAt       DateTime? // 7 days from initiation
+  autoConfirmWarned   Boolean  @default(false) // Track if 2-day warning sent
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  band                Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  member              Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberUser          User     @relation("ManualPaymentMember", fields: [memberUserId], references: [id])
+  initiatedBy         User     @relation("ManualPaymentInitiator", fields: [initiatedById], references: [id])
+  confirmedBy         User?    @relation("ManualPaymentConfirmer", fields: [confirmedById], references: [id])
+  disputedBy          User?    @relation("ManualPaymentDisputer", fields: [disputedById], references: [id])
+  resolvedBy          User?    @relation("ManualPaymentResolver", fields: [resolvedById], references: [id])
+  files               File[]
+
+  @@index([bandId, status])
+  @@index([memberId, status])
+  @@index([memberUserId])
+  @@index([autoConfirmAt])
+}
+
+enum PaymentMethod {
+  ZELLE
+  VENMO
+  CASHAPP
+  CASH
+  CHECK
+  OTHER
+}
+
+enum InitiatedByRole {
+  TREASURER
+  MEMBER
+}
+
+enum ManualPaymentStatus {
+  PENDING
+  CONFIRMED
+  DISPUTED
+  REJECTED
+  AUTO_CONFIRMED
+}
+
+enum ResolutionOutcome {
+  CONFIRMED
+  REJECTED
 }
 
 model StripeEventReceipt {
@@ -1435,7 +1535,8 @@ model File {
   taskId          String?
   checklistItemId String?
   eventId         String?
-  
+  manualPaymentId String?
+
   // Metadata
   description   String?
   
@@ -1451,6 +1552,7 @@ model File {
   task          Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
   checklistItem ChecklistItem? @relation(fields: [checklistItemId], references: [id], onDelete: Cascade)
   event         Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  manualPayment ManualPayment? @relation(fields: [manualPaymentId], references: [id], onDelete: Cascade)
 
   @@index([uploadedById])
   @@index([bandId])
@@ -1459,6 +1561,7 @@ model File {
   @@index([taskId])
   @@index([checklistItemId])
   @@index([eventId])
+  @@index([manualPaymentId])
   @@index([category])
 }
 

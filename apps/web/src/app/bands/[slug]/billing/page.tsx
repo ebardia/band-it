@@ -20,6 +20,11 @@ import {
   Input,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import {
+  ManualPaymentsList,
+  RecordPaymentModal,
+  PendingConfirmationsBanner,
+} from '@/components/billing'
 
 // Roles that can manage dues
 const CAN_MANAGE_DUES = ['FOUNDER', 'GOVERNOR']
@@ -67,6 +72,12 @@ export default function BillingPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [token, setToken] = useState<string | null>(null)
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'overview' | 'manual'>('overview')
+
+  // Manual payment modal state
+  const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false)
+
   // Dues plan state
   const [duesPlan, setDuesPlan] = useState<DuesPlan | null>(null)
   const [planLoading, setPlanLoading] = useState(true)
@@ -105,10 +116,15 @@ export default function BillingPage() {
     }
   }, [router])
 
-  // Handle URL params for success/error messages
+  // Handle URL params for success/error messages and tab
   useEffect(() => {
     const success = searchParams.get('success')
     const canceled = searchParams.get('canceled')
+    const tab = searchParams.get('tab')
+
+    if (tab === 'manual') {
+      setActiveTab('manual')
+    }
 
     if (success === 'true') {
       showToast('Payment successful! Your dues are now active.', 'success')
@@ -304,6 +320,8 @@ export default function BillingPage() {
   const isMember = !!currentMember
   const canManageDues = currentMember && CAN_MANAGE_DUES.includes(currentMember.role)
   const canViewAllBilling = currentMember && (CAN_VIEW_ALL_BILLING.includes(currentMember.role) || currentMember.isTreasurer)
+  const isGovernor = currentMember && CAN_VIEW_ALL_BILLING.includes(currentMember.role)
+  const isTreasurer = currentMember?.isTreasurer || (isGovernor && !band.members.some((m: any) => m.isTreasurer && m.status === 'ACTIVE'))
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -333,7 +351,43 @@ export default function BillingPage() {
         isMember={isMember}
       >
         <Stack spacing="xl">
-          {/* Dues Plan Section */}
+          {/* Tab Navigation */}
+          <Flex gap="sm" className="border-b">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+                activeTab === 'overview'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('manual')}
+              className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+                activeTab === 'manual'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Manual Payments
+            </button>
+          </Flex>
+
+          {/* Pending Confirmations Banner - show on both tabs */}
+          {userId && (
+            <PendingConfirmationsBanner
+              bandId={band.id}
+              userId={userId}
+              onViewClick={() => setActiveTab('manual')}
+            />
+          )}
+
+          {/* Overview Tab Content */}
+          {activeTab === 'overview' && (
+            <>
+              {/* Dues Plan Section */}
           <Card>
             <Stack spacing="lg">
               <Flex justify="between" align="center">
@@ -540,19 +594,70 @@ export default function BillingPage() {
             </Card>
           )}
 
-          {/* Info Card */}
-          <Card className="bg-blue-50 border-blue-200">
-            <Stack spacing="sm">
-              <Heading level={3}>About Band Dues</Heading>
-              <Text variant="small">
-                Membership dues are paid directly to the band's connected Stripe account.
-                Band-It does not take any fees from dues payments. All funds go directly to your band.
-              </Text>
-              <Text variant="small" color="muted">
-                Subscriptions are managed by Stripe. You can cancel anytime from your Stripe customer portal.
-              </Text>
-            </Stack>
-          </Card>
+              {/* Info Card */}
+              <Card className="bg-blue-50 border-blue-200">
+                <Stack spacing="sm">
+                  <Heading level={3}>About Band Dues</Heading>
+                  <Text variant="small">
+                    Membership dues are paid directly to the band's connected Stripe account.
+                    Band-It does not take any fees from dues payments. All funds go directly to your band.
+                  </Text>
+                  <Text variant="small" color="muted">
+                    Subscriptions are managed by Stripe. You can cancel anytime from your Stripe customer portal.
+                  </Text>
+                </Stack>
+              </Card>
+            </>
+          )}
+
+          {/* Manual Payments Tab Content */}
+          {activeTab === 'manual' && userId && (
+            <>
+              <Card>
+                <Stack spacing="lg">
+                  <Flex justify="between" align="center">
+                    <Stack spacing="sm">
+                      <Heading level={2}>Manual Payments</Heading>
+                      <Text color="muted">
+                        Track payments made outside of Stripe (Zelle, Venmo, Cash, etc.)
+                      </Text>
+                    </Stack>
+                    <Button
+                      variant="primary"
+                      onClick={() => setShowRecordPaymentModal(true)}
+                    >
+                      Record Payment
+                    </Button>
+                  </Flex>
+
+                  <ManualPaymentsList
+                    bandId={band.id}
+                    userId={userId}
+                    canViewAll={canViewAllBilling || false}
+                    isGovernor={isGovernor || false}
+                    isTreasurer={isTreasurer || false}
+                    bandSlug={slug}
+                  />
+                </Stack>
+              </Card>
+
+              {/* Manual Payments Info Card */}
+              <Card className="bg-gray-50">
+                <Stack spacing="sm">
+                  <Heading level={3}>How Manual Payments Work</Heading>
+                  <Text variant="small">
+                    Manual payments require two-party confirmation to prevent fraud:
+                  </Text>
+                  <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                    <li>If a member records a payment, the treasurer must confirm it</li>
+                    <li>If the treasurer records a payment for a member, the member must confirm it</li>
+                    <li>Payments auto-confirm after 7 days if not disputed</li>
+                    <li>Disputed payments are reviewed by band governors</li>
+                  </ul>
+                </Stack>
+              </Card>
+            </>
+          )}
         </Stack>
 
         {/* Edit Dues Plan Modal */}
@@ -621,6 +726,17 @@ export default function BillingPage() {
             </Flex>
           </Stack>
         </Modal>
+
+        {/* Record Manual Payment Modal */}
+        {userId && (
+          <RecordPaymentModal
+            isOpen={showRecordPaymentModal}
+            onClose={() => setShowRecordPaymentModal(false)}
+            bandId={band.id}
+            userId={userId}
+            isTreasurer={isTreasurer || false}
+          />
+        )}
       </BandLayout>
     </>
   )
