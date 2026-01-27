@@ -40,17 +40,23 @@ export const bandInviteRouter = router({
         take: 10,
       })
 
+      console.log(`[searchUsers] Query: "${input.query}", Found ${users.length} users total`)
+
       // Filter out users who are already members
       const existingMembers = await prisma.member.findMany({
         where: {
           bandId: input.bandId,
           userId: { in: users.map(u => u.id) },
         },
-        select: { userId: true },
+        select: { userId: true, status: true },
       })
+
+      console.log(`[searchUsers] ${existingMembers.length} are already members:`, existingMembers.map(m => m.status))
 
       const existingMemberIds = new Set(existingMembers.map(m => m.userId))
       const availableUsers = users.filter(u => !existingMemberIds.has(u.id))
+
+      console.log(`[searchUsers] Returning ${availableUsers.length} available users`)
 
       return {
         success: true,
