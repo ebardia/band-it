@@ -275,7 +275,7 @@ export const bandInviteRouter = router({
         await notificationService.create({
           userId: member.userId,
           type: 'BAND_MEMBER_JOINED',
-          actionUrl: `/bands/${membership.band.slug}`,
+          actionUrl: `/bands/${membership.band.slug}/members`,
           priority: 'LOW',
           metadata: {
             userName: membership.user.name,
