@@ -169,7 +169,7 @@ async function checkLowMemberCount() {
           type: 'BAND_STATUS_CHANGED',
           title: 'Low Member Count Warning',
           message: `${band.name} has fewer than 3 members. The band will be deactivated at the end of the billing cycle unless more members join.`,
-          actionUrl: `/bands/${band.slug}`,
+          actionUrl: `/bands/${band.slug}/members`,
           priority: 'HIGH',
           metadata: { bandId: band.id, bandName: band.name, memberCount: band.members.length },
           relatedId: band.id,

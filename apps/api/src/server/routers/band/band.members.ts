@@ -319,7 +319,7 @@ export const changeRole = publicProcedure
       message: `Your role in ${band.name} has been changed to ${newRole.replace('_', ' ')}`,
       relatedId: bandId,
       relatedType: 'band',
-      actionUrl: `/bands/${band.slug}`,
+      actionUrl: `/bands/${band.slug}/members`,
     })
 
     return { member: updatedMember }
