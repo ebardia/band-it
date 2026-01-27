@@ -87,21 +87,13 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
     // Determine the correct URL to navigate to
     let targetUrl = notification.actionUrl
 
-    // DEBUG - remove after fixing
-    console.log('Notification:', JSON.stringify(notification, null, 2))
-    console.log('Type:', notification.type)
-    console.log('Original actionUrl:', notification.actionUrl)
-
     // Fix for BAND_MEMBER_JOINED notifications - always go to members page
     if (notification.type === 'BAND_MEMBER_JOINED' && targetUrl) {
-      // Extract band slug from actionUrl (e.g., /bands/my-band or /bands/my-band/members)
       const match = targetUrl.match(/^\/bands\/([^\/]+)/)
       if (match) {
         targetUrl = `/bands/${match[1]}/members`
       }
     }
-
-    console.log('Final targetUrl:', targetUrl)
 
     if (targetUrl) {
       router.push(targetUrl)
