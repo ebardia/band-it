@@ -85,10 +85,9 @@ export default function BandAboutPage() {
         <AppNav />
         <BandLayout
           bandSlug={slug}
-          bandName=""
-          pageTitle="Loading..."
+          bandName="Loading..."
+          pageTitle="About"
           isMember={false}
-          wide={true}
         >
           <Loading message="Loading band..." />
         </BandLayout>
@@ -105,7 +104,6 @@ export default function BandAboutPage() {
           bandName=""
           pageTitle="Band Not Found"
           isMember={false}
-          wide={true}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -129,12 +127,11 @@ export default function BandAboutPage() {
       <AppNav />
       <BandLayout
         bandSlug={slug}
-        bandName=""
-        pageTitle={`About ${band.name}`}
+        bandName={band.name}
+        pageTitle="About"
         canApprove={canApprove}
         isMember={isMember}
         canAccessAdminTools={canAccessAdminTools}
-        wide={false}
         action={
           canLeave ? (
             <Button variant="danger" size="md" onClick={() => setShowLeaveModal(true)}>

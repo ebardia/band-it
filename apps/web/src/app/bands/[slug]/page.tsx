@@ -130,10 +130,10 @@ export default function BandDiscussionsPage() {
         <div className="mx-auto px-2 md:px-4 max-w-[1600px]">
           {/* Mobile Header */}
           <div className="md:hidden py-3">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex-1 min-w-0">
-                <h1 className="text-lg font-bold text-gray-900">Discussion Forum</h1>
-                <Text color="muted" className="text-sm truncate">{band.name}</Text>
+                <h1 className="text-2xl font-bold text-gray-900 truncate">{band.name}</h1>
+                <Text color="muted" className="text-sm truncate">Discussions</Text>
               </div>
               <Flex gap="sm">
                 {userId && (
@@ -214,45 +214,47 @@ export default function BandDiscussionsPage() {
           </div>
 
           {/* Desktop Page Header */}
-          <div className="hidden md:block py-2">
-            <Flex gap="md" align="start">
-              {/* Spacer for left sidebar */}
+          <div className="hidden md:block py-6">
+            {/* Band Name - large, top level */}
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">{band.name}</h1>
+
+            {/* Page Title - aligned with main content (after sidebar width) */}
+            <Flex gap="md" align="center">
+              {/* Spacer to match sidebar width */}
               <div className="w-64 flex-shrink-0" />
 
-              {/* Header content */}
-              <div className="flex-1">
-                <Flex justify="between" align="center">
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Discussion Forum</h1>
-                    {selectedChannel && (
-                      <Text color="muted" className="mt-1">
-                        # {selectedChannel.name}
-                        {selectedChannel.description && ` — ${selectedChannel.description}`}
-                      </Text>
-                    )}
-                  </div>
-                  <Flex gap="sm">
-                    {userId && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowSearch(true)}
-                      >
-                        🔍 Search
-                      </Button>
-                    )}
-                    {selectedChannel && selectedChannel.hasAccess && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowChannelSettings(true)}
-                      >
-                        ⚙️ Settings
-                      </Button>
-                    )}
-                  </Flex>
+              {/* Page title and actions above main content */}
+              <Flex justify="between" align="center" className="flex-1">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-700">Discussions</h2>
+                  {selectedChannel && (
+                    <Text color="muted" className="mt-1">
+                      # {selectedChannel.name}
+                      {selectedChannel.description && ` — ${selectedChannel.description}`}
+                    </Text>
+                  )}
+                </div>
+                <Flex gap="sm">
+                  {userId && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSearch(true)}
+                    >
+                      🔍 Search
+                    </Button>
+                  )}
+                  {selectedChannel && selectedChannel.hasAccess && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowChannelSettings(true)}
+                    >
+                      ⚙️ Settings
+                    </Button>
+                  )}
                 </Flex>
-              </div>
+              </Flex>
             </Flex>
           </div>
 
