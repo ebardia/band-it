@@ -162,7 +162,7 @@ export const bandInviteRouter = router({
     }),
 
   /**
-   * Get invitations for a user
+   * Get invitations for a user (excludes dissolved bands)
    */
   getMyInvitations: publicProcedure
     .input(
@@ -175,6 +175,9 @@ export const bandInviteRouter = router({
         where: {
           userId: input.userId,
           status: 'INVITED',
+          band: {
+            dissolvedAt: null, // Exclude dissolved bands
+          },
         },
         include: {
           band: {
