@@ -104,7 +104,7 @@ export function MessageComposer({
   const isSubmitting = createMutation.isPending
 
   return (
-    <div className="border-t border-gray-200 p-4 bg-white relative">
+    <div className="border-t border-gray-200 p-4 bg-white relative" data-guide="message-composer">
       <Flex gap="sm" align="end">
         <div className="flex-1 relative">
           <textarea

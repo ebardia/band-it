@@ -30,13 +30,15 @@ export function DashboardSidebar({
       label: 'My Bands',
       path: '/bands/my-bands',
       count: bandCount,
-      available: true
+      available: true,
+      guide: 'dashboard-my-bands'
     },
     {
       label: 'My Proposals',
       path: '/my-proposals',
       count: proposalCount,
-      available: true
+      available: true,
+      guide: 'dashboard-proposals'
     },
     {
       label: 'My Projects',
@@ -44,13 +46,15 @@ export function DashboardSidebar({
       count: projectCount,
       subCount: projectTaskCount,
       subLabel: 'tasks',
-      available: true
+      available: true,
+      guide: 'dashboard-projects'
     },
     {
       label: 'Assigned Tasks',
       path: '/my-tasks',
       count: effectiveAssignedTaskCount,
-      available: true
+      available: true,
+      guide: 'dashboard-tasks'
     },
     { 
       label: 'Messages', 
@@ -91,6 +95,7 @@ export function DashboardSidebar({
                 active={isActive(item.path)}
                 onClick={() => item.available && router.push(item.path)}
                 disabled={!item.available}
+                data-guide={item.guide}
               >
                 <div className="flex items-center justify-between w-full">
                   <span className={!item.available ? 'text-gray-400' : ''}>

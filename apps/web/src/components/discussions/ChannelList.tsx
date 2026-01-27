@@ -50,7 +50,7 @@ export function ChannelList({
   const archivedChannels = channels.filter(c => c.isArchived)
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 border-r border-gray-200">
+    <div className="h-full flex flex-col bg-gray-50 border-r border-gray-200" data-guide="channel-list">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <Flex justify="between" align="center">

@@ -420,7 +420,7 @@ export default function OverviewDashboard() {
           </div>
 
           {/* Right Sidebar - Activity */}
-          <aside className="w-80 bg-white rounded-lg shadow p-4">
+          <aside className="w-80 bg-white rounded-lg shadow p-4" data-guide="dashboard-activity">
             <Stack spacing="lg">
               <Heading level={3}>Recent Activity</Heading>
               
