@@ -64,8 +64,8 @@ export function BandLayout({
           {/* Band Name and Page Selector */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold text-gray-900 truncate">{pageTitle}</h1>
-              <Text color="muted" className="text-sm truncate">{bandName}</Text>
+              <h1 className="text-2xl font-bold text-gray-900 truncate">{bandName}</h1>
+              <Text color="muted" className="text-sm truncate">{pageTitle}</Text>
             </div>
             {actionContent && <div className="ml-2 flex-shrink-0">{actionContent}</div>}
           </div>
@@ -172,23 +172,15 @@ export function BandLayout({
 
         {/* Desktop Page Header */}
         <div className="hidden md:block py-6">
-          <Flex gap="md" align="start">
-            {/* Spacer to match sidebar width */}
-            <div className="w-64 flex-shrink-0" />
+          <Flex justify="between" align="center">
+            {/* Band Name - large, on the left */}
+            <h1 className="text-4xl font-bold text-gray-900">{bandName}</h1>
 
-            {/* Header content aligned with main content */}
-            <div className="flex-1">
-              <Flex justify="between" align="center">
-                <Stack spacing="xs">
-                  <h1 className="text-3xl font-bold text-gray-900">{pageTitle}</h1>
-                  <Text color="muted">{bandName}</Text>
-                </Stack>
-                {actionContent && <div>{actionContent}</div>}
-              </Flex>
-            </div>
-
-            {/* Spacer for right sidebar if present */}
-            {rightSidebar && <div className="w-80 flex-shrink-0" />}
+            {/* Page Title and Actions - on the right */}
+            <Flex gap="lg" align="center">
+              <h2 className="text-2xl font-semibold text-gray-600">{pageTitle}</h2>
+              {actionContent && <div>{actionContent}</div>}
+            </Flex>
           </Flex>
         </div>
 

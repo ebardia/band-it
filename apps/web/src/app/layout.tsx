@@ -5,7 +5,7 @@ import { ToastProvider } from "@/components/ui"
 import { GuidedFlowProvider } from "@/components/guided-flows"
 
 export const metadata: Metadata = {
-  title: "Band IT - Decentralized Governance",
+  title: "",
   description: "Governance platform for bands and collectives",
 }
 

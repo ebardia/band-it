@@ -21,20 +21,20 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
 
   // Main navigation - always visible
   const mainNav = [
-    { label: `💬 ${bandName} Discussions`, path: `/bands/${bandSlug}`, guide: 'band-discussions' },
-    { label: `ℹ️ ${bandName} About`, path: `/bands/${bandSlug}/about`, guide: 'band-about' },
-    { label: `📝 ${bandName} Proposals`, path: `/bands/${bandSlug}/proposals`, guide: 'band-proposals' },
-    { label: `📁 ${bandName} Projects`, path: `/bands/${bandSlug}/projects`, guide: 'band-projects' },
-    { label: `✅ ${bandName} Tasks`, path: `/bands/${bandSlug}/tasks`, guide: 'band-tasks' },
-    { label: `📅 ${bandName} Events`, path: `/bands/${bandSlug}/events`, guide: 'band-events' },
-    { label: `💰 ${bandName} Finance`, path: `/bands/${bandSlug}/finance`, guide: 'band-finance' },
-    { label: `💳 ${bandName} Billing`, path: `/bands/${bandSlug}/billing`, guide: 'band-billing' },
-    { label: `📜 ${bandName} Audit Log`, path: `/bands/${bandSlug}/audit`, guide: 'band-audit' },
+    { label: '💬 Discussions', path: `/bands/${bandSlug}`, guide: 'band-discussions' },
+    { label: 'ℹ️ About', path: `/bands/${bandSlug}/about`, guide: 'band-about' },
+    { label: '📝 Proposals', path: `/bands/${bandSlug}/proposals`, guide: 'band-proposals' },
+    { label: '📁 Projects', path: `/bands/${bandSlug}/projects`, guide: 'band-projects' },
+    { label: '✅ Tasks', path: `/bands/${bandSlug}/tasks`, guide: 'band-tasks' },
+    { label: '📅 Events', path: `/bands/${bandSlug}/events`, guide: 'band-events' },
+    { label: '💰 Finance', path: `/bands/${bandSlug}/finance`, guide: 'band-finance' },
+    { label: '💳 Billing', path: `/bands/${bandSlug}/billing`, guide: 'band-billing' },
+    { label: '📜 Audit Log', path: `/bands/${bandSlug}/audit`, guide: 'band-audit' },
   ]
 
   // Member actions
   const memberActions = [
-    { label: `👥 ${bandName} Members`, path: `/bands/${bandSlug}/members`, show: true, guide: 'band-members' },
+    { label: '👥 Members', path: `/bands/${bandSlug}/members`, show: true, guide: 'band-members' },
     { label: '📨 Invite', path: `/bands/${bandSlug}/invite`, show: isMember, guide: 'band-invite' },
     { label: '📋 Applications', path: `/bands/${bandSlug}/applications`, show: canApprove, guide: 'band-applications' },
     { label: '🛠️ Tools', path: `/bands/${bandSlug}/tools`, show: canAccessAdminTools, guide: 'band-tools' },
