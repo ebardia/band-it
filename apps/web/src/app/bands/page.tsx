@@ -40,7 +40,10 @@ export default function BrowseBandsPage() {
     }
   }, [router])
 
-  const { data: bandsData, isLoading } = trpc.band.getAll.useQuery()
+  const { data: bandsData, isLoading } = trpc.band.getAll.useQuery(
+    { excludeUserId: userId || undefined },
+    { enabled: !!userId }
+  )
 
   // Fetch counts for sidebar
   const { data: myBandsData } = trpc.band.getMyBands.useQuery(

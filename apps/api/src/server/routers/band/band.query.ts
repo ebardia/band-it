@@ -5,11 +5,29 @@ import { prisma } from '../../../lib/prisma'
 export const bandQueryRouter = router({
   /**
    * Get all bands (excludes dissolved bands)
+   * Optionally exclude bands where a specific user is already a member
    */
-  getAll: publicProcedure.query(async () => {
+  getAll: publicProcedure
+    .input(
+      z.object({
+        excludeUserId: z.string().optional(),
+      }).optional()
+    )
+    .query(async ({ input }) => {
+    // Get band IDs where user is a member (if excludeUserId provided)
+    let excludeBandIds: string[] = []
+    if (input?.excludeUserId) {
+      const userMemberships = await prisma.member.findMany({
+        where: { userId: input.excludeUserId },
+        select: { bandId: true },
+      })
+      excludeBandIds = userMemberships.map(m => m.bandId)
+    }
+
     const bands = await prisma.band.findMany({
       where: {
         dissolvedAt: null, // Exclude dissolved bands
+        ...(excludeBandIds.length > 0 && { id: { notIn: excludeBandIds } }),
       },
       include: {
         createdBy: {
