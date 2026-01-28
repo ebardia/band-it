@@ -97,13 +97,13 @@ export default function MemberActionsPage() {
   })
 
   const proposeRemovalMutation = trpc.band.proposeRemoval.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: { proposal: { id: string } }) => {
       showToast('Removal proposal created. Members will vote on it.', 'success')
       setShowRemoveModal(false)
       setRemovalReason('')
       router.push(`/bands/${slug}/proposals/${data.proposal.id}`)
     },
-    onError: (error) => {
+    onError: (error: { message: string }) => {
       showToast(error.message, 'error')
     }
   })
