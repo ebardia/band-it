@@ -321,7 +321,7 @@ export const bandMatchingRouter = router({
         return {
           recommendations: fallbackBands,
           hasProfile: false,
-          message: 'Complete your profile to get personalized recommendations',
+          message: 'Complete your profile (zipcode, strengths, passions, learning goals) to get personalized recommendations.',
         }
       }
 
@@ -373,7 +373,7 @@ export const bandMatchingRouter = router({
         return {
           recommendations: fallbackBands,
           hasProfile: true,
-          message: 'No strong matches found. Showing popular bands.',
+          message: 'No strong matches found based on your location, skills, learning goals, and passions. Showing popular bands instead.',
         }
       }
 
