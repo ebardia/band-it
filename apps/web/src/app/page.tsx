@@ -36,6 +36,7 @@ export default function HomePage() {
                 Once active, explore discussions, proposals, projects, tasks, and more. Please join the{' '}
                 <strong>Band It Development</strong>{' '}
                 band to report bugs and share suggestions in the discussions.
+                This site does not currently adapt well to mobile devices; it is best accessed on laptop/desktop.
               </div>
               <button
                 onClick={() => setShowBanner(false)}
