@@ -58,12 +58,11 @@ export default function OverviewDashboard() {
     { enabled: !!userId }
   )
 
-  const { data: notificationsData } = trpc.notification.getMyNotifications.useQuery(
-    { userId: userId!, limit: 10 },
+  // Fetch recommended bands
+  const { data: recommendationsData } = trpc.band.getRecommendedBands.useQuery(
+    { userId: userId!, limit: 6 },
     { enabled: !!userId }
   )
-
-  const { data: allBandsData } = trpc.band.getAll.useQuery()
 
   // Fetch user's proposals, projects, and tasks
   const { data: myProposalsData } = trpc.proposal.getMyProposals.useQuery(
@@ -85,12 +84,6 @@ export default function OverviewDashboard() {
     { userId: userId! },
     { enabled: !!userId }
   )
-
-  // Calculate recommended bands (bands user is NOT a member of)
-  const myBandIds = new Set(myBandsData?.bands.map((b: any) => b.id) || [])
-  const recommendedBands = allBandsData?.bands.filter((band: any) => 
-    !myBandIds.has(band.id)
-  ).slice(0, 3) || []
 
   // Mutations
   const acceptInviteMutation = trpc.band.acceptInvitation.useMutation({
@@ -152,12 +145,6 @@ export default function OverviewDashboard() {
   const assignedTaskCount = myTasksData?.tasks.length || 0
   const projectTaskCount = myProjectTasksData?.tasks.length || 0
   const pendingBands = myBandsData?.bands.filter((b: any) => b.status === 'PENDING') || []
-  const newBandsThisWeek = allBandsData?.bands.filter((band: any) => {
-    const createdDate = new Date(band.createdAt)
-    const weekAgo = new Date()
-    weekAgo.setDate(weekAgo.getDate() - 7)
-    return createdDate > weekAgo
-  }) || []
 
   return (
     <PageWrapper variant="dashboard">
@@ -310,37 +297,71 @@ export default function OverviewDashboard() {
                 )}
               </Stack>
 
-              {/* Discovery Feed */}
+              {/* Recommended Bands for You */}
               <Stack spacing="lg">
-                <Heading level={2}>📊 Discovery Feed</Heading>
+                <Heading level={2}>✨ Recommended Bands for You</Heading>
+
+                {/* Message if no profile or no strong matches */}
+                {recommendationsData?.message && (
+                  <Alert variant="info">
+                    <Flex justify="between" align="center">
+                      <Text variant="small">{recommendationsData.message}</Text>
+                      {!recommendationsData.hasProfile && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => router.push('/profile')}
+                        >
+                          Update Profile
+                        </Button>
+                      )}
+                    </Flex>
+                  </Alert>
+                )}
 
                 {/* Recommended Bands */}
-                {recommendedBands.length > 0 && (
+                {recommendationsData?.recommendations && recommendationsData.recommendations.length > 0 ? (
                   <Stack spacing="md">
-                    <Heading level={3}>Recommended Bands</Heading>
-                    {recommendedBands.map((band: any) => (
-                      <Card key={band.id}>
-                        <Flex justify="between">
-                          <Stack spacing="sm">
-                            <Heading level={4}>{band.name}</Heading>
-                            <Text variant="small" color="muted">{band.description}</Text>
+                    {recommendationsData.recommendations.map((rec: any) => (
+                      <Card key={rec.band.id}>
+                        <Flex justify="between" align="start">
+                          <Stack spacing="sm" className="flex-1">
+                            <Flex justify="between" align="center">
+                              <Heading level={4}>{rec.band.name}</Heading>
+                              {rec.matchScore > 0 && (
+                                <Badge variant="success">{rec.matchScore}% match</Badge>
+                              )}
+                            </Flex>
+                            <Text variant="small" color="muted">{rec.band.description}</Text>
+
+                            {/* Match Reasons */}
+                            {rec.matchReasons && rec.matchReasons.length > 0 && (
+                              <Stack spacing="xs">
+                                {rec.matchReasons.map((reason: string, idx: number) => (
+                                  <Text key={idx} variant="small" className="text-green-700">
+                                    {reason}
+                                  </Text>
+                                ))}
+                              </Stack>
+                            )}
+
                             <Flex gap="sm">
-                              <Badge variant="info">{band._count.members} members</Badge>
-                              <Badge variant={band.status === 'ACTIVE' ? 'success' : 'warning'}>{band.status}</Badge>
+                              <Badge variant="info">{rec.band.memberCount} members</Badge>
+                              <Badge variant="success">{rec.band.status}</Badge>
                             </Flex>
                           </Stack>
-                          <Flex gap="sm">
+                          <Flex gap="sm" className="ml-4">
                             <Button
                               variant="secondary"
                               size="sm"
-                              onClick={() => router.push(`/bands/${band.slug}`)}
+                              onClick={() => router.push(`/bands/${rec.band.slug}`)}
                             >
                               View
                             </Button>
                             <Button
                               variant="primary"
                               size="sm"
-                              onClick={() => router.push(`/bands/${band.slug}/apply`)}
+                              onClick={() => router.push(`/bands/${rec.band.slug}/apply`)}
                             >
                               Apply
                             </Button>
@@ -349,33 +370,37 @@ export default function OverviewDashboard() {
                       </Card>
                     ))}
                   </Stack>
+                ) : (
+                  <Card className="bg-gray-50 border-dashed border-2 border-gray-200">
+                    <Stack spacing="sm" className="text-center py-4">
+                      <Text color="muted">No band recommendations available.</Text>
+                      <Text variant="small" color="muted">
+                        You may already be a member of all available bands, or there are no active bands yet.
+                      </Text>
+                    </Stack>
+                  </Card>
                 )}
 
-                {/* New Bands This Week */}
-                {newBandsThisWeek.length > 0 && (
-                  <Stack spacing="md">
-                    <Heading level={3}>New Bands This Week</Heading>
-                    {newBandsThisWeek.slice(0, 3).map((band: any) => (
-                      <Card key={band.id}>
-                        <Flex justify="between">
-                          <Stack spacing="sm">
-                            <Heading level={4}>{band.name}</Heading>
-                            <Text variant="small" color="muted">{band.description}</Text>
-                            <Badge variant="info">{band._count.members} members</Badge>
-                          </Stack>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => router.push(`/bands/${band.slug}`)}
-                          >
-                            View Band
-                          </Button>
-                        </Flex>
-                      </Card>
-                    ))}
-                  </Stack>
+                {/* Prompt to update profile for better matches */}
+                {recommendationsData?.hasProfile === false && (
+                  <Card className="bg-blue-50 border border-blue-200">
+                    <Flex justify="between" align="center">
+                      <Stack spacing="xs">
+                        <Text weight="semibold">Get Better Recommendations</Text>
+                        <Text variant="small" color="muted">
+                          Complete your profile to help us find bands that match your interests and skills.
+                        </Text>
+                      </Stack>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => router.push('/profile')}
+                      >
+                        Update Profile
+                      </Button>
+                    </Flex>
+                  </Card>
                 )}
-
               </Stack>
             </Stack>
           </div>

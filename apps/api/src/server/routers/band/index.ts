@@ -37,6 +37,7 @@ export const bandRouter = router({
 
   // Matching
   getRecommendedUsers: bandMatchingRouter.getRecommendedUsers,
+  getRecommendedBands: bandMatchingRouter.getRecommendedBands,
 
   // Members
   getMembers: getMembers,
