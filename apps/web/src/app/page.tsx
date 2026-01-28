@@ -34,9 +34,7 @@ export default function HomePage() {
                 or create your own. Creating a band requires 3 members to activate. To complete
                 activation, use Stripe test card <code className="bg-amber-200 px-1 rounded">4242 4242 4242 4242</code> for payment.
                 Once active, explore discussions, proposals, projects, tasks, and more. Please join the{' '}
-                <Link href="/bands/band-it-development" className="underline font-semibold hover:text-amber-700">
-                  Band It Development
-                </Link>{' '}
+                <strong>Band It Development</strong>{' '}
                 band to report bugs and share suggestions in the discussions.
               </div>
               <button
