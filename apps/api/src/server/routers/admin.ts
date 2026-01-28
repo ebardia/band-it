@@ -834,6 +834,136 @@ export const adminRouter = router({
     }),
 
   // ============================================
+  // FAQ MANAGEMENT
+  // ============================================
+
+  /**
+   * Get all FAQ entries for admin management
+   */
+  getFaqEntries: publicProcedure
+    .input(
+      z.object({
+        adminUserId: z.string(),
+        search: z.string().optional(),
+        category: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      await requireAdmin(input.adminUserId)
+
+      const where: any = {}
+
+      if (input.search) {
+        where.OR = [
+          { question: { contains: input.search, mode: 'insensitive' } },
+          { answer: { contains: input.search, mode: 'insensitive' } },
+        ]
+      }
+
+      if (input.category) {
+        where.category = input.category
+      }
+
+      const entries = await prisma.faqEntry.findMany({
+        where,
+        orderBy: [
+          { category: 'asc' },
+          { sortOrder: 'asc' },
+        ],
+      })
+
+      // Get unique categories
+      const categories = await prisma.faqEntry.findMany({
+        select: { category: true },
+        distinct: ['category'],
+        orderBy: { category: 'asc' },
+      })
+
+      return {
+        entries,
+        categories: categories.map(c => c.category),
+      }
+    }),
+
+  /**
+   * Create a new FAQ entry
+   */
+  createFaqEntry: publicProcedure
+    .input(
+      z.object({
+        adminUserId: z.string(),
+        category: z.string().min(1),
+        question: z.string().min(1).max(500),
+        answer: z.string().min(1).max(5000),
+        keywords: z.array(z.string()),
+        relatedPages: z.array(z.string()).default([]),
+        sortOrder: z.number().int().default(1),
+        isPublished: z.boolean().default(true),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.adminUserId)
+
+      const { adminUserId, ...data } = input
+
+      const entry = await prisma.faqEntry.create({
+        data,
+      })
+
+      return { entry }
+    }),
+
+  /**
+   * Update an existing FAQ entry
+   */
+  updateFaqEntry: publicProcedure
+    .input(
+      z.object({
+        adminUserId: z.string(),
+        entryId: z.string(),
+        category: z.string().min(1).optional(),
+        question: z.string().min(1).max(500).optional(),
+        answer: z.string().min(1).max(5000).optional(),
+        keywords: z.array(z.string()).optional(),
+        relatedPages: z.array(z.string()).optional(),
+        sortOrder: z.number().int().optional(),
+        isPublished: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.adminUserId)
+
+      const { adminUserId, entryId, ...updateData } = input
+
+      const entry = await prisma.faqEntry.update({
+        where: { id: entryId },
+        data: updateData,
+      })
+
+      return { entry }
+    }),
+
+  /**
+   * Delete a FAQ entry
+   */
+  deleteFaqEntry: publicProcedure
+    .input(
+      z.object({
+        adminUserId: z.string(),
+        entryId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.adminUserId)
+
+      await prisma.faqEntry.delete({
+        where: { id: input.entryId },
+      })
+
+      return { success: true }
+    }),
+
+  // ============================================
   // FLAGGED CONTENT MODERATION QUEUE
   // ============================================
 

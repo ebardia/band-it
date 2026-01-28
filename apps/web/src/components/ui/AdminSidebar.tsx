@@ -21,6 +21,10 @@ export function AdminSidebar() {
     { label: '🚫 Blocked Terms', path: '/admin/blocked-terms' },
   ]
 
+  const contentNav = [
+    { label: '❓ FAQ Management', path: '/admin/faq' },
+  ]
+
   const systemNav = [
     { label: '📜 Audit Log', path: '/admin/audit' },
     { label: '⚙️ Settings', path: '/admin/settings' },
@@ -51,6 +55,22 @@ export function AdminSidebar() {
             Moderation
           </Text>
           {moderationNav.map((item) => (
+            <NavButton
+              key={item.path}
+              active={isActive(item.path)}
+              onClick={() => router.push(item.path)}
+            >
+              {item.label}
+            </NavButton>
+          ))}
+        </Stack>
+
+        {/* Content */}
+        <Stack spacing="sm">
+          <Text variant="small" weight="semibold" className="text-gray-500 uppercase text-xs px-2">
+            Content
+          </Text>
+          {contentNav.map((item) => (
             <NavButton
               key={item.path}
               active={isActive(item.path)}
