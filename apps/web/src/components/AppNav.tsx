@@ -5,7 +5,6 @@ import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { jwtDecode } from 'jwt-decode'
 import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown, AIUsageTicker } from '@/components/ui'
-import { HelpButton } from '@/components/guided-flows'
 import { trpc } from '@/lib/trpc'
 import { theme } from '@band-it/shared'
 
@@ -96,9 +95,6 @@ export function AppNav() {
 
         {/* Right Side: Hamburger (mobile) + Bell + Account Dropdown */}
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Help Button */}
-          <HelpButton size="sm" data-guide="help-button" />
-
           {/* Notification Bell with Dropdown */}
           <div className="relative" data-guide="notification-bell">
             <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
