@@ -27,9 +27,10 @@ export type AIOperationType =
   | 'project_suggestions'
   | 'task_suggestions'
   | 'checklist_suggestions'
+  | 'help_question'
 
 // Entity types for context
-export type AIEntityType = 'proposal' | 'project' | 'task' | 'checklist' | 'band'
+export type AIEntityType = 'proposal' | 'project' | 'task' | 'checklist' | 'band' | 'help'
 
 // Context for AI calls
 export interface AICallContext {

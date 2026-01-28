@@ -3,6 +3,7 @@ import "./globals.css"
 import { TRPCProvider } from "@/lib/trpc-provider"
 import { ToastProvider } from "@/components/ui"
 import { GuidedFlowProvider } from "@/components/guided-flows"
+import { HelpPanel } from "@/components/help/HelpPanel"
 
 export const metadata: Metadata = {
   title: "",
@@ -21,6 +22,7 @@ export default function RootLayout({
           <ToastProvider>
             <GuidedFlowProvider>
               {children}
+              <HelpPanel />
             </GuidedFlowProvider>
           </ToastProvider>
         </TRPCProvider>

@@ -117,6 +117,9 @@ model User {
   manualPaymentsConfirmed     ManualPayment[] @relation("ManualPaymentConfirmer")
   manualPaymentsDisputed      ManualPayment[] @relation("ManualPaymentDisputer")
   manualPaymentsResolved      ManualPayment[] @relation("ManualPaymentResolver")
+
+  // Help
+  helpInteractions            HelpInteraction[]
 }
 
 enum SubscriptionStatus {
@@ -1872,4 +1875,76 @@ model AdminTaskExecution {
   @@index([executedById])
   @@index([status])
   @@index([taskType])
+}
+
+// ==========================================
+// HELP SYSTEM
+// ==========================================
+
+model FaqEntry {
+  id              String   @id @default(cuid())
+  question        String
+  answer          String   @db.Text
+  category        String   // GETTING_STARTED, BANDS, PROPOSALS, DISCUSSIONS, BILLING, ACCOUNT
+  keywords        String[]
+  relatedPages    String[]
+  sortOrder       Int      @default(0)
+  isPublished     Boolean  @default(true)
+  viewCount       Int      @default(0)
+  helpfulCount    Int      @default(0)
+  notHelpfulCount Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  interactions    HelpInteraction[]
+
+  @@index([category])
+  @@index([isPublished])
+}
+
+model AiHelpCache {
+  id                  String   @id @default(cuid())
+  questionHash        String   @unique
+  questionNormalized  String
+  questionOriginal    String
+  answer              String   @db.Text
+  category            String?
+  hitCount            Int      @default(1)
+  lastUsedAt          DateTime @default(now())
+  createdAt           DateTime @default(now())
+  expiresAt           DateTime
+
+  interactions        HelpInteraction[]
+
+  @@index([questionHash])
+  @@index([expiresAt])
+}
+
+model HelpInteraction {
+  id            String    @id @default(cuid())
+  userId        String
+  question      String
+  source        String    // FAQ, CACHE, AI, RATE_LIMITED
+  faqEntryId    String?
+  cacheEntryId  String?
+  answer        String    @db.Text
+  currentPage   String?
+  wasHelpful    Boolean?
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+  faqEntry      FaqEntry? @relation(fields: [faqEntryId], references: [id])
+  cacheEntry    AiHelpCache? @relation(fields: [cacheEntryId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([source])
+}
+
+model HelpRateLimit {
+  id              String   @id @default(cuid())
+  userId          String
+  date            String   // YYYY-MM-DD format
+  aiRequestCount  Int      @default(0)
+
+  @@unique([userId, date])
 }
