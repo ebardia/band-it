@@ -177,38 +177,6 @@ export default function OverviewDashboard() {
           {/* Center Content */}
           <div className="flex-1">
             <Stack spacing="xl">
-              <Heading level={1}>Overview</Heading>
-
-              {/* Quick Stats */}
-              <Flex gap="md">
-                <Card>
-                  <Stack spacing="sm">
-                    <Text variant="small" color="muted">My Bands</Text>
-                    <Heading level={2}>{bandCount}</Heading>
-                  </Stack>
-                </Card>
-                <Card>
-                  <Stack spacing="sm">
-                    <Text variant="small" color="muted">Pending Invites</Text>
-                    <Heading level={2}>{inviteCount}</Heading>
-                  </Stack>
-                </Card>
-                <Card>
-                  <Stack spacing="sm">
-                    <Text variant="small" color="muted">To Review</Text>
-                    <Heading level={2}>{applicationCount}</Heading>
-                  </Stack>
-                </Card>
-                <Card>
-                  <Stack spacing="sm">
-                    <Text variant="small" color="muted">Total Members</Text>
-                    <Heading level={2}>
-                      {myBandsData?.bands.reduce((sum: number, band: any) => sum + band._count.members, 0) || 0}
-                    </Heading>
-                  </Stack>
-                </Card>
-              </Flex>
-
               {/* Action Required Section */}
               <Stack spacing="lg">
                 <Heading level={2}>🔴 Action Required</Heading>
@@ -408,60 +376,10 @@ export default function OverviewDashboard() {
                   </Stack>
                 )}
 
-                {/* Placeholders */}
-                <Card>
-                  <Stack spacing="sm">
-                    <Heading level={4}>Grant Opportunities</Heading>
-                    <Text variant="small" color="muted">Coming soon - We'll show grant opportunities matched to your interests</Text>
-                  </Stack>
-                </Card>
               </Stack>
             </Stack>
           </div>
 
-          {/* Right Sidebar - Activity */}
-          <aside className="w-80 bg-white rounded-lg shadow p-4" data-guide="dashboard-activity">
-            <Stack spacing="lg">
-              <Heading level={3}>Recent Activity</Heading>
-              
-              {notificationsData?.notifications && notificationsData.notifications.length > 0 ? (
-                <Stack spacing="sm">
-                  {notificationsData.notifications.slice(0, 5).map((notification: any) => (
-                    <div key={notification.id} className="p-3 bg-gray-50 rounded-lg">
-                      <Stack spacing="sm">
-                        <Text variant="small" weight="semibold">{notification.title}</Text>
-                        {notification.message && (
-                          <Text variant="small" color="muted">{notification.message}</Text>
-                        )}
-                        <Text variant="small" color="muted">
-                          {new Date(notification.createdAt).toLocaleString()}
-                        </Text>
-                      </Stack>
-                    </div>
-                  ))}
-                </Stack>
-              ) : (
-                <Text variant="small" color="muted">No recent activity</Text>
-              )}
-
-              {/* Quick Stats */}
-              <Stack spacing="md">
-                <Heading level={4}>Quick Stats</Heading>
-                <Text variant="small">🎸 {bandCount} Bands</Text>
-                <Text variant="small">👥 {myBandsData?.bands.reduce((sum: number, band: any) => sum + band._count.members, 0) || 0} Total Members</Text>
-                <Text variant="small">✉️ {inviteCount} Pending Invites</Text>
-                <Text variant="small">📋 {applicationCount} To Review</Text>
-              </Stack>
-
-              {/* Placeholders */}
-              <Card>
-                <Stack spacing="sm">
-                  <Heading level={4}>Messages</Heading>
-                  <Text variant="small" color="muted">Coming soon</Text>
-                </Stack>
-              </Card>
-            </Stack>
-          </aside>
         </Flex>
       </DashboardContainer>
     </PageWrapper>
