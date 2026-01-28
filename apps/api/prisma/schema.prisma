@@ -542,8 +542,9 @@ model Member {
   id        String   @id @default(cuid())
   userId    String
   bandId    String
-  role      MemberRole
-  status    MemberStatus @default(PENDING)
+  role          MemberRole
+  requestedRole MemberRole?  // Role requested during application
+  status        MemberStatus @default(PENDING)
 
   // Finance role
   isTreasurer Boolean @default(false)

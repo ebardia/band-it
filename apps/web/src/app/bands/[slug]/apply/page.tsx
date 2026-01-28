@@ -14,6 +14,7 @@ import {
   Card,
   Alert,
   Loading,
+  Select,
   BandLayout
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
@@ -25,6 +26,7 @@ export default function ApplyToBandPage() {
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
   const [notes, setNotes] = useState('')
+  const [requestedRole, setRequestedRole] = useState('VOTING_MEMBER')
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -85,6 +87,7 @@ export default function ApplyToBandPage() {
       userId,
       bandId: bandData.band.id,
       notes,
+      requestedRole: requestedRole as any,
     })
   }
 
@@ -196,6 +199,19 @@ export default function ApplyToBandPage() {
 
           <form onSubmit={handleSubmit}>
             <Stack spacing="lg">
+              <Select
+                label="Preferred Role"
+                value={requestedRole}
+                onChange={(e) => setRequestedRole(e.target.value)}
+                helperText="Select the role you'd like to fill. The approver will make the final decision."
+              >
+                <option value="OBSERVER">Observer</option>
+                <option value="VOTING_MEMBER">Voting Member</option>
+                <option value="CONDUCTOR">Conductor</option>
+                <option value="MODERATOR">Moderator</option>
+                <option value="GOVERNOR">Governor</option>
+              </Select>
+
               <Textarea
                 label="Why do you want to join this band?"
                 required

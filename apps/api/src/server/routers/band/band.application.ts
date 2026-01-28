@@ -15,6 +15,7 @@ export const bandApplicationRouter = router({
         userId: z.string(),
         bandId: z.string(),
         notes: z.string().min(10, 'Please write at least 10 characters about why you want to join'),
+        requestedRole: z.enum(['GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER']).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -66,6 +67,7 @@ export const bandApplicationRouter = router({
           userId: input.userId,
           bandId: input.bandId,
           role: 'VOTING_MEMBER', // Default role for applicants
+          requestedRole: input.requestedRole,
           status: 'PENDING',
           notes: input.notes,
         },
@@ -151,13 +153,14 @@ export const bandApplicationRouter = router({
       z.object({
         membershipId: z.string(),
         approverId: z.string(),
+        role: z.enum(['GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER']).optional(),
       })
     )
     .mutation(async ({ input }) => {
       // Get the membership
       const membership = await prisma.member.findUnique({
         where: { id: input.membershipId },
-        include: { 
+        include: {
           band: true,
           user: true,
         },
@@ -186,10 +189,13 @@ export const bandApplicationRouter = router({
         throw new Error('This band is no longer active')
       }
 
-      // Approve the application
+      // Approve the application with the specified role (defaults to VOTING_MEMBER)
       const updatedMembership = await prisma.member.update({
         where: { id: input.membershipId },
-        data: { status: 'ACTIVE' },
+        data: {
+          status: 'ACTIVE',
+          role: input.role || 'VOTING_MEMBER',
+        },
       })
 
       // Notify applicant

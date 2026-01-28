@@ -15,6 +15,7 @@ import {
   Alert,
   Loading,
   Badge,
+  Select,
   List,
   ListItem,
   BandLayout
@@ -27,6 +28,7 @@ export default function BandApplicationsPage() {
   const { showToast } = useToast()
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
+  const [approveRoles, setApproveRoles] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -73,9 +75,13 @@ export default function BandApplicationsPage() {
     },
   })
 
-  const handleApprove = (membershipId: string) => {
+  const getApproveRole = (application: any) => {
+    return approveRoles[application.id] || application.requestedRole || 'VOTING_MEMBER'
+  }
+
+  const handleApprove = (membershipId: string, role: string) => {
     if (!userId) return
-    approveMutation.mutate({ membershipId, approverId: userId })
+    approveMutation.mutate({ membershipId, approverId: userId, role: role as any })
   }
 
   const handleReject = (membershipId: string) => {
@@ -126,7 +132,14 @@ export default function BandApplicationsPage() {
                   <Stack spacing="md">
                     <Flex justify="between">
                       <Heading level={3}>{application.user.name}</Heading>
-                      <Badge variant="warning">Pending</Badge>
+                      <Flex gap="sm">
+                        <Badge variant="warning">Pending</Badge>
+                        {application.requestedRole && (
+                          <Badge variant="info">
+                            Requested: {application.requestedRole.replace('_', ' ')}
+                          </Badge>
+                        )}
+                      </Flex>
                     </Flex>
 
                     <Stack spacing="sm">
@@ -167,11 +180,24 @@ export default function BandApplicationsPage() {
                       </Stack>
                     )}
 
-                    <Flex gap="md">
+                    <Flex gap="md" align="end">
+                      <Select
+                        label="Assign Role"
+                        value={getApproveRole(application)}
+                        onChange={(e) =>
+                          setApproveRoles((prev) => ({ ...prev, [application.id]: e.target.value }))
+                        }
+                      >
+                        <option value="OBSERVER">Observer</option>
+                        <option value="VOTING_MEMBER">Voting Member</option>
+                        <option value="CONDUCTOR">Conductor</option>
+                        <option value="MODERATOR">Moderator</option>
+                        <option value="GOVERNOR">Governor</option>
+                      </Select>
                       <Button
                         variant="primary"
                         size="md"
-                        onClick={() => handleApprove(application.id)}
+                        onClick={() => handleApprove(application.id, getApproveRole(application))}
                         disabled={approveMutation.isPending || rejectMutation.isPending}
                       >
                         {approveMutation.isPending ? 'Approving...' : 'Approve'}
