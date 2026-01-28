@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { jwtDecode } from 'jwt-decode'
 import { trpc } from '@/lib/trpc'
 import { Spinner } from '@/components/ui'
+import { useHelp } from './HelpContext'
 
 const CATEGORY_LABELS: Record<string, string> = {
   GETTING_STARTED: 'Getting Started',
@@ -23,7 +24,7 @@ const SOURCE_LABELS: Record<string, string> = {
 }
 
 export function HelpPanel() {
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, close } = useHelp()
   const [question, setQuestion] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'ask' | 'faq'>('ask')
@@ -39,6 +40,7 @@ export function HelpPanel() {
   const inputRef = useRef<HTMLInputElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
+  const utils = trpc.useUtils()
 
   // Get userId from token
   useEffect(() => {
@@ -55,8 +57,8 @@ export function HelpPanel() {
 
   // Close panel on navigation
   useEffect(() => {
-    setIsOpen(false)
-  }, [pathname])
+    close()
+  }, [pathname, close])
 
   // Focus input when panel opens
   useEffect(() => {
@@ -69,11 +71,11 @@ export function HelpPanel() {
   useEffect(() => {
     if (!isOpen) return
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false)
+      if (e.key === 'Escape') close()
     }
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
-  }, [isOpen])
+  }, [isOpen, close])
 
   // FAQ query
   const { data: faqData } = trpc.help.getFaq.useQuery(undefined, {
@@ -97,6 +99,11 @@ export function HelpPanel() {
         remaining: data.remaining,
       })
       setFeedbackGiven(null)
+
+      // Refresh AI usage ticker if an AI call was made
+      if (data.source === 'AI') {
+        utils.aiUsage.getPlatformUsage.invalidate()
+      }
     },
   })
 
@@ -160,32 +167,13 @@ export function HelpPanel() {
     }
   }
 
-  // Don't show on login/register pages
-  if (pathname === '/login' || pathname === '/register') {
-    return null
-  }
-
   return (
     <>
-      {/* Floating Help Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white text-xl font-bold transition-all duration-200 ${
-          isOpen
-            ? 'bg-gray-600 hover:bg-gray-700 rotate-45'
-            : 'bg-blue-600 hover:bg-blue-700 hover:scale-110'
-        }`}
-        aria-label={isOpen ? 'Close help' : 'Open help'}
-        title={isOpen ? 'Close help' : 'Need help?'}
-      >
-        {isOpen ? '+' : '?'}
-      </button>
-
       {/* Backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-20 z-40"
-          onClick={() => setIsOpen(false)}
+          onClick={close}
         />
       )}
 
@@ -207,7 +195,7 @@ export function HelpPanel() {
             )}
           </div>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={close}
             className="text-gray-400 hover:text-gray-600 p-1"
             aria-label="Close help panel"
           >

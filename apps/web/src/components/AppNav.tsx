@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { jwtDecode } from 'jwt-decode'
 import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown, AIUsageTicker } from '@/components/ui'
+import { useHelp } from '@/components/help/HelpContext'
 import { trpc } from '@/lib/trpc'
 import { theme } from '@band-it/shared'
 
@@ -12,6 +13,7 @@ export function AppNav() {
   const router = useRouter()
   const pathname = usePathname()
   const { showToast } = useToast()
+  const { toggle: toggleHelp } = useHelp()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
@@ -95,6 +97,16 @@ export function AppNav() {
 
         {/* Right Side: Hamburger (mobile) + Bell + Account Dropdown */}
         <div className="flex items-center gap-2 md:gap-4">
+          {/* Help Button */}
+          <button
+            onClick={toggleHelp}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 hover:text-blue-800 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            title="Help Center"
+          >
+            <span>?</span>
+            <span>Help</span>
+          </button>
+
           {/* Notification Bell with Dropdown */}
           <div className="relative" data-guide="notification-bell">
             <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
