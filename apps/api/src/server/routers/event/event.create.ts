@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
+import { requireGoodStanding } from '../../../lib/dues-enforcement'
 
 // Roles that can create events
 const CAN_CREATE_EVENTS = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -37,6 +38,9 @@ export const createEvent = publicProcedure
     reminderHours: z.array(z.number().int().positive()).optional(),
   }))
   .mutation(async ({ input }) => {
+    // Check dues standing
+    await requireGoodStanding(input.bandId, input.userId)
+
     const {
       bandId, userId, title, description, eventType,
       startTime, endTime, timezone,

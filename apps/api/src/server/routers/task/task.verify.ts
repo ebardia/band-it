@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
+import { requireGoodStanding, getBandIdFromTask } from '../../../lib/dues-enforcement'
 
 // Roles that can verify tasks
 const CAN_VERIFY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
@@ -125,6 +126,10 @@ export const verifyTask = publicProcedure
     verificationNotes: z.string().optional(),
   }))
   .mutation(async ({ input }) => {
+    // Check dues standing
+    const enforcementBandId = await getBandIdFromTask(input.taskId)
+    await requireGoodStanding(enforcementBandId, input.userId)
+
     const { taskId, userId, approved, verificationNotes } = input
 
     // Get task

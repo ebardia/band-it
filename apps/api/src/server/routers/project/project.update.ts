@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
+import { requireGoodStanding, getBandIdFromProject } from '../../../lib/dues-enforcement'
 
 // Roles that can update projects
 const CAN_UPDATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -32,6 +33,10 @@ export const updateProject = publicProcedure
     flagDetails: z.any().optional(),
   }))
   .mutation(async ({ input }) => {
+    // Check dues standing
+    const bandId = await getBandIdFromProject(input.projectId)
+    await requireGoodStanding(bandId, input.userId)
+
     const {
       projectId, userId, name, description, status, priority,
       startDate, targetDate, estimatedBudget, estimatedHours,

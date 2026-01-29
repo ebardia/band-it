@@ -3,6 +3,7 @@ import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { bandBillingService } from '../../services/band-billing.service'
 import { TRPCError } from '@trpc/server'
+import { checkGoodStanding } from '../../../lib/dues-enforcement'
 
 export const bandBillingRouter = router({
   /**
@@ -297,5 +298,19 @@ export const bandBillingRouter = router({
           isBillingOwner: m.user.id === band?.billingOwnerId,
         })),
       }
+    }),
+
+  /**
+   * Get the current user's dues standing for a band
+   */
+  getMyStanding: publicProcedure
+    .input(
+      z.object({
+        bandId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      return checkGoodStanding(input.bandId, input.userId)
     }),
 })

@@ -4,6 +4,7 @@ import { ReactNode, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { Text, Flex, Stack } from '.'
 import { BandSidebar } from './BandSidebar'
+import { DuesBanner } from './DuesBanner'
 
 export interface BandLayoutProps {
   children: ReactNode
@@ -18,6 +19,8 @@ export interface BandLayoutProps {
   actions?: ReactNode // Alias for action
   rightSidebar?: ReactNode
   wide?: boolean
+  bandId?: string    // For dues enforcement banner
+  userId?: string    // For dues enforcement banner
 }
 
 export function BandLayout({
@@ -33,6 +36,8 @@ export function BandLayout({
   actions,
   rightSidebar,
   wide = false,
+  bandId,
+  userId,
 }: BandLayoutProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -203,6 +208,9 @@ export function BandLayout({
 
             {/* Main Content */}
             <div className="w-full md:flex-1 bg-white rounded-lg shadow p-4 md:p-8">
+              {bandId && userId && (
+                <DuesBanner bandId={bandId} bandSlug={bandSlug} userId={userId} />
+              )}
               {children}
             </div>
 

@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
+import { requireGoodStanding, getBandIdFromTask } from '../../../lib/dues-enforcement'
 
 // Roles that can update any task
 const CAN_UPDATE_ANY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -33,6 +34,10 @@ export const updateTask = publicProcedure
     flagDetails: z.any().optional(),
   }))
   .mutation(async ({ input }) => {
+    // Check dues standing
+    const enforcementBandId = await getBandIdFromTask(input.taskId)
+    await requireGoodStanding(enforcementBandId, input.userId)
+
     const {
       taskId, userId, name, description, status, priority,
       assigneeId, assigneeType, dueDate, estimatedHours, actualHours,

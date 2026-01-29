@@ -60,6 +60,8 @@ export default function BandProjectsPage() {
           pageTitle="Band Projects"
           isMember={false}
           wide={true}
+          bandId={bandData?.band?.id}
+          userId={userId || undefined}
         >
           <Loading message="Loading projects..." />
         </BandLayout>
@@ -77,6 +79,8 @@ export default function BandProjectsPage() {
           pageTitle="Band Projects"
           isMember={false}
           wide={true}
+          bandId={bandData?.band?.id}
+          userId={userId || undefined}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -136,6 +140,8 @@ export default function BandProjectsPage() {
         canApprove={canApprove}
         isMember={isMember}
         wide={true}
+        bandId={bandData?.band?.id}
+        userId={userId || undefined}
       >
         <Stack spacing="xl">
           {/* Summary Stats */}

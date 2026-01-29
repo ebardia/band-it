@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 import { checkMultipleFields, saveFlaggedContent } from '../../../services/content-moderation.service'
+import { requireGoodStanding, getBandIdFromProject } from '../../../lib/dues-enforcement'
 
 // Roles that can create tasks
 const CAN_CREATE_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -31,6 +32,10 @@ export const createTask = publicProcedure
     flagDetails: z.any().optional(),
   }))
   .mutation(async ({ input }) => {
+    // Check dues standing
+    const bandId = await getBandIdFromProject(input.projectId)
+    await requireGoodStanding(bandId, input.userId)
+
     const {
       projectId, name, description, priority, assigneeId, assigneeType,
       dueDate, estimatedHours, estimatedCost, requiresVerification,

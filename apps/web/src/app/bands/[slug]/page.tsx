@@ -9,7 +9,8 @@ import {
   Flex,
   Loading,
   Alert,
-  BillingBanner
+  BillingBanner,
+  DuesBanner
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { BandSidebar } from '@/components/ui/BandSidebar'
@@ -265,6 +266,11 @@ export default function BandDiscussionsPage() {
                 <div className="hidden md:block w-64 flex-shrink-0" />
                 <div className="flex-1">
                   <BillingBanner
+                    bandId={band.id}
+                    bandSlug={slug}
+                    userId={userId}
+                  />
+                  <DuesBanner
                     bandId={band.id}
                     bandSlug={slug}
                     userId={userId}

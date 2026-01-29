@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../services/notification.service'
 import { checkContent, saveFlaggedContent } from '../../services/content-moderation.service'
+import { requireGoodStanding } from '../../lib/dues-enforcement'
 
 export const commentRouter = router({
   // Get comments for an entity
@@ -103,6 +104,24 @@ export const commentRouter = router({
       const author = await prisma.user.findUnique({ where: { id: authorId } })
       if (!author) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
+      }
+
+      // Check dues standing - resolve bandId from input
+      let enforcementBandId: string | undefined = bandId
+      if (!enforcementBandId && proposalId) {
+        const proposal = await prisma.proposal.findUnique({ where: { id: proposalId }, select: { bandId: true } })
+        enforcementBandId = proposal?.bandId
+      }
+      if (!enforcementBandId && projectId) {
+        const project = await prisma.project.findUnique({ where: { id: projectId }, select: { bandId: true } })
+        enforcementBandId = project?.bandId
+      }
+      if (!enforcementBandId && taskId) {
+        const task = await prisma.task.findUnique({ where: { id: taskId }, select: { bandId: true } })
+        enforcementBandId = task?.bandId
+      }
+      if (enforcementBandId) {
+        await requireGoodStanding(enforcementBandId, authorId)
       }
 
       // If reply, verify parent exists

@@ -65,6 +65,8 @@ export default function BandTasksPage() {
           pageTitle="Band Tasks"
           isMember={false}
           wide={true}
+          bandId={bandData?.band?.id}
+          userId={userId || undefined}
         >
           <Loading message="Loading tasks..." />
         </BandLayout>
@@ -82,6 +84,8 @@ export default function BandTasksPage() {
           pageTitle="Band Tasks"
           isMember={false}
           wide={true}
+          bandId={bandData?.band?.id}
+          userId={userId || undefined}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -158,6 +162,8 @@ export default function BandTasksPage() {
         canApprove={canApprove}
         isMember={isMember}
         wide={true}
+        bandId={bandData?.band?.id}
+        userId={userId || undefined}
       >
         <Stack spacing="xl">
           {/* Summary Stats */}

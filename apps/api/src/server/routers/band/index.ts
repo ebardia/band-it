@@ -53,6 +53,7 @@ export const bandRouter = router({
   transferBillingOwnership: bandBillingRouter.transferBillingOwnership,
   getPaymentStatus: bandBillingRouter.getPaymentStatus,
   getBillingOwnerCandidates: bandBillingRouter.getBillingOwnerCandidates,
+  getMyStanding: bandBillingRouter.getMyStanding,
 
   // Dissolution
   canDissolve: bandDissolveRouter.canDissolve,

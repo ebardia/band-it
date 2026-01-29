@@ -7,6 +7,7 @@ import { checkMultipleFields, saveFlaggedContent } from '../../../services/conte
 import { proposalEffectsService } from '../../../services/proposal-effects.service'
 import { canCreateFinanceBucketGovernanceProposal } from '../../../services/effects/finance-bucket-governance.effects'
 import { TRPCError } from '@trpc/server'
+import { requireGoodStanding } from '../../../lib/dues-enforcement'
 
 // Roles that can create proposals
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -63,6 +64,9 @@ export const proposalCreateRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      // Check dues standing
+      await requireGoodStanding(input.bandId, input.userId)
+
       // ACTION proposals are temporarily disabled - not fully implemented yet
       if (input.executionType === 'ACTION') {
         throw new TRPCError({

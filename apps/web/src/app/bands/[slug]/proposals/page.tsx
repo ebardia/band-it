@@ -63,6 +63,8 @@ export default function ProposalsPage() {
           pageTitle="Band Proposals"
           isMember={false}
           wide={true}
+          bandId={bandData?.band?.id}
+          userId={userId || undefined}
         >
           <Loading message="Loading proposals..." />
         </BandLayout>
@@ -80,6 +82,8 @@ export default function ProposalsPage() {
           pageTitle="Band Proposals"
           isMember={false}
           wide={true}
+          bandId={bandData?.band?.id}
+          userId={userId || undefined}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -126,6 +130,8 @@ export default function ProposalsPage() {
         canAccessAdminTools={canAccessAdminTools}
         wide={true}
         canCreateProposal={canCreateProposal}
+        bandId={bandData?.band?.id}
+        userId={userId || undefined}
         action={
           canCreateProposal ? (
             <Button

@@ -2,12 +2,13 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
-import { 
-  storageService, 
-  isAllowedType, 
-  getFileSizeLimit, 
-  getCategoryFromMimeType 
+import {
+  storageService,
+  isAllowedType,
+  getFileSizeLimit,
+  getCategoryFromMimeType
 } from '../../services/storage.service'
+import { requireGoodStanding } from '../../lib/dues-enforcement'
 
 export const fileRouter = router({
   upload: publicProcedure
@@ -48,6 +49,11 @@ export const fileRouter = router({
           code: 'BAD_REQUEST',
           message: `File too large. Maximum size: ${Math.round(sizeLimit / 1024 / 1024)}MB`,
         })
+      }
+
+      // Check dues standing (if uploading to a band context)
+      if (bandId) {
+        await requireGoodStanding(bandId, userId)
       }
 
       const user = await prisma.user.findUnique({ where: { id: userId } })

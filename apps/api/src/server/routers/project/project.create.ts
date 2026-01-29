@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
+import { requireGoodStanding, getBandIdFromProposal } from '../../../lib/dues-enforcement'
 
 // Roles that can create projects from approved proposals
 const CAN_CREATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -32,6 +33,10 @@ export const createProject = publicProcedure
     flagDetails: z.any().optional(),
   }))
   .mutation(async ({ input }) => {
+    // Check dues standing
+    const bandId = await getBandIdFromProposal(input.proposalId)
+    await requireGoodStanding(bandId, input.userId)
+
     const {
       proposalId, name, description, priority, startDate, targetDate,
       estimatedBudget, estimatedHours, deliverables, successCriteria,

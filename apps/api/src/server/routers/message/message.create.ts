@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { canAccessChannel } from '../channel'
 import { processMentions } from './message.mention'
+import { requireGoodStanding } from '../../../lib/dues-enforcement'
 
 /**
  * Create a new message in a channel
@@ -63,6 +64,9 @@ export const createMessage = publicProcedure
         message: 'You do not have access to this channel',
       })
     }
+
+    // Check dues standing
+    await requireGoodStanding(channel.band.id, userId)
 
     // If replying, verify the parent message exists and is in the same channel
     if (threadId) {

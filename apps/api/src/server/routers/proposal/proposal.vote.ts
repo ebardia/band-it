@@ -3,6 +3,7 @@ import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
 import { proposalEffectsService } from '../../../services/proposal-effects.service'
+import { requireGoodStanding } from '../../../lib/dues-enforcement'
 
 // Roles that can vote
 const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
@@ -56,6 +57,9 @@ export const proposalVoteRouter = router({
       if (!CAN_VOTE.includes(membership.role)) {
         throw new Error('Your role does not have permission to vote')
       }
+
+      // Check dues standing
+      await requireGoodStanding(proposal.bandId, input.userId)
 
       // Check if already voted
       const existingVote = await prisma.vote.findUnique({

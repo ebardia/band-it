@@ -1,5 +1,31 @@
 import { prisma } from '../lib/prisma'
 import { NotificationType, NotificationPriority } from '@prisma/client'
+import { isInGoodStanding } from '../lib/dues-enforcement'
+
+// Band activity notification types that should be suppressed for unpaid members
+const BAND_ACTIVITY_TYPES: NotificationType[] = [
+  'PROPOSAL_CREATED',
+  'PROPOSAL_VOTE_NEEDED',
+  'PROPOSAL_APPROVED',
+  'PROPOSAL_REJECTED',
+  'PROPOSAL_CLOSED',
+  'PROJECT_CREATED',
+  'PROJECT_STATUS_CHANGED',
+  'TASK_CREATED',
+  'TASK_ASSIGNED',
+  'TASK_STATUS_CHANGED',
+  'TASK_COMPLETED',
+  'TASK_VERIFICATION_NEEDED',
+  'TASK_VERIFIED',
+  'TASK_REJECTED',
+  'EVENT_CREATED',
+  'EVENT_UPDATED',
+  'EVENT_CANCELLED',
+  'EVENT_REMINDER',
+  'EVENT_RSVP_RECEIVED',
+  'EVENT_ATTENDANCE_MARKED',
+  'BAND_DETAILS_UPDATED',
+]
 
 interface CreateNotificationParams {
   userId: string
@@ -11,6 +37,7 @@ interface CreateNotificationParams {
   metadata?: any
   relatedId?: string
   relatedType?: string
+  bandId?: string // When provided, suppresses band activity notifications for unpaid members
 }
 
 export const notificationService = {
@@ -31,6 +58,14 @@ export const notificationService = {
     // If user has disabled this notification type in-app, don't create it
     if (preference && !preference.inApp) {
       return null
+    }
+
+    // Suppress band activity notifications for members not in good standing
+    if (params.bandId && BAND_ACTIVITY_TYPES.includes(params.type)) {
+      const goodStanding = await isInGoodStanding(params.bandId, params.userId)
+      if (!goodStanding) {
+        return null
+      }
     }
 
     // Get template if title/message not provided

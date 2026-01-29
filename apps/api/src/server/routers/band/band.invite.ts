@@ -6,6 +6,7 @@ import { notificationService } from '../../../services/notification.service'
 import { emailService } from '../../services/email.service'
 import { memberBillingTriggers } from '../../services/member-billing-triggers'
 import { checkAndSetBandActivation } from './band.dissolve'
+import { requireGoodStanding } from '../../../lib/dues-enforcement'
 
 // Roles that can invite members
 const CAN_INVITE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -71,6 +72,9 @@ export const bandInviteRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      // Check dues standing
+      await requireGoodStanding(input.bandId, input.inviterId)
+
       // Check if inviter is a member
       const inviterMembership = await prisma.member.findUnique({
         where: {
@@ -447,6 +451,9 @@ export const bandInviteRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      // Check dues standing
+      await requireGoodStanding(input.bandId, input.inviterId)
+
       const { bandId, inviterId, email, notes } = input
       const normalizedEmail = email.toLowerCase().trim()
 

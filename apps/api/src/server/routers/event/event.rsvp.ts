@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
+import { requireGoodStanding } from '../../../lib/dues-enforcement'
 
 export const setRSVP = publicProcedure
   .input(z.object({
@@ -41,6 +42,9 @@ export const setRSVP = publicProcedure
         message: 'Cannot RSVP to a cancelled event'
       })
     }
+
+    // Check dues standing
+    await requireGoodStanding(event.bandId, userId)
 
     // Check user is a band member
     const member = event.band.members.find(m => m.userId === userId)

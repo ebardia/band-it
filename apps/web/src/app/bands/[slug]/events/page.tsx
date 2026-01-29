@@ -73,6 +73,8 @@ export default function BandEventsPage() {
           pageTitle="Events"
           isMember={false}
           wide={true}
+          bandId={bandData?.band?.id}
+          userId={userId || undefined}
         >
           <Loading message="Loading events..." />
         </BandLayout>
@@ -90,6 +92,8 @@ export default function BandEventsPage() {
           pageTitle="Events"
           isMember={false}
           wide={true}
+          bandId={bandData?.band?.id}
+          userId={userId || undefined}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -163,6 +167,8 @@ export default function BandEventsPage() {
         isMember={isMember}
         canAccessAdminTools={canAccessAdminTools}
         wide={true}
+        bandId={bandData?.band?.id}
+        userId={userId || undefined}
         actions={
           canCreateEvent && (
             <Button
