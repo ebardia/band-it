@@ -88,6 +88,7 @@ export default function BandAboutPage() {
           bandName="Loading..."
           pageTitle="About"
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading band..." />
         </BandLayout>
@@ -104,6 +105,7 @@ export default function BandAboutPage() {
           bandName=""
           pageTitle="Band Not Found"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -132,6 +134,7 @@ export default function BandAboutPage() {
         canApprove={canApprove}
         isMember={isMember}
         canAccessAdminTools={canAccessAdminTools}
+        wide={true}
         action={
           canLeave ? (
             <Button variant="danger" size="md" onClick={() => setShowLeaveModal(true)}>
