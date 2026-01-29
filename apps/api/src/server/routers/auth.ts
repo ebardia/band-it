@@ -376,6 +376,23 @@ export const authRouter = router({
         throw new Error('Password is incorrect')
       }
 
+      // Check if user created any active (non-dissolved) bands
+      const activeBandsCreated = await prisma.band.findMany({
+        where: {
+          createdById: input.userId,
+          dissolvedAt: null,
+        },
+        select: { id: true, name: true, slug: true },
+      })
+
+      if (activeBandsCreated.length > 0) {
+        const bandNames = activeBandsCreated.map(b => b.name).join(', ')
+        throw new Error(
+          `Cannot delete account. You are the creator of active band(s): ${bandNames}. ` +
+          `Please transfer ownership or dissolve these bands first.`
+        )
+      }
+
       // Delete all related records in correct order to avoid FK constraints
       await prisma.$transaction(async (tx) => {
         const userId = input.userId
@@ -518,6 +535,14 @@ export const authRouter = router({
         await tx.band.updateMany({
           where: { dissolvedById: userId },
           data: { dissolvedById: null },
+        })
+
+        // Delete dissolved bands created by user (active bands are blocked above)
+        await tx.band.deleteMany({
+          where: {
+            createdById: userId,
+            dissolvedAt: { not: null },
+          },
         })
 
         // Delete files uploaded
