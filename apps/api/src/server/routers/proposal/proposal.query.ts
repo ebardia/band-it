@@ -13,7 +13,7 @@ export const proposalQueryRouter = router({
     .input(
       z.object({
         bandId: z.string(),
-        status: z.enum(['OPEN', 'CLOSED', 'APPROVED', 'REJECTED']).optional(),
+        status: z.enum(['DRAFT', 'PENDING_REVIEW', 'OPEN', 'CLOSED', 'APPROVED', 'REJECTED', 'WITHDRAWN']).optional(),
         type: z.enum(['GENERAL', 'BUDGET', 'PROJECT', 'POLICY', 'MEMBERSHIP']).optional(),
       })
     )
@@ -59,6 +59,9 @@ export const proposalQueryRouter = router({
           createdBy: {
             select: { id: true, name: true },
           },
+          reviewedBy: {
+            select: { id: true, name: true },
+          },
           band: {
             select: {
               id: true,
@@ -67,6 +70,7 @@ export const proposalQueryRouter = router({
               votingMethod: true,
               votingPeriodDays: true,
               quorumPercentage: true,
+              requireProposalReview: true,
             },
           },
           votes: {

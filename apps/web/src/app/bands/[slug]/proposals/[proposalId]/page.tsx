@@ -31,6 +31,7 @@ import { AppNav } from '@/components/AppNav'
 const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
 const CAN_CREATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 const CAN_UPDATE_ANY = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
+const CAN_REVIEW = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
 
 const TYPE_LABELS: Record<string, string> = {
   GENERAL: 'General',
@@ -134,6 +135,57 @@ export default function ProposalDetailPage() {
 
   // Integrity Guard validation mutation
   const validationMutation = trpc.validation.check.useMutation()
+
+  // Review state
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState('')
+
+  // Review mutations
+  const approveMutation = trpc.proposal.approveProposal.useMutation({
+    onSuccess: () => {
+      showToast('Proposal approved and sent to voting!', 'success')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
+  const rejectMutation = trpc.proposal.rejectProposal.useMutation({
+    onSuccess: () => {
+      showToast('Proposal rejected', 'success')
+      setShowRejectModal(false)
+      setRejectionReason('')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
+  const withdrawMutation = trpc.proposal.withdraw.useMutation({
+    onSuccess: () => {
+      showToast('Proposal withdrawn', 'success')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
+  const submitForReviewMutation = trpc.proposal.submitForReview.useMutation({
+    onSuccess: (data) => {
+      if (data.reviewRequired) {
+        showToast('Proposal submitted for review', 'success')
+      } else {
+        showToast('Proposal submitted and open for voting!', 'success')
+      }
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
 
   useEffect(() => {
     if (proposalData?.proposal && userId) {
@@ -295,25 +347,48 @@ export default function ProposalDetailPage() {
                    currentMember?.role === 'FOUNDER' || 
                    currentMember?.role === 'GOVERNOR'
   
-  // Can edit if creator or admin role, and proposal is still open
+  // Can edit if creator or admin role, and proposal is draft or open
   const isCreator = proposal.createdById === userId
   const canUpdateAny = currentMember && CAN_UPDATE_ANY.includes(currentMember.role)
-  const canEdit = proposal.status === 'OPEN' && (isCreator || canUpdateAny)
+  const canEdit = (proposal.status === 'OPEN' || proposal.status === 'DRAFT') && (isCreator || canUpdateAny)
+
+  // Can review if has reviewer role and is not the author
+  const canReview = currentMember &&
+    CAN_REVIEW.includes(currentMember.role) &&
+    !isCreator &&
+    proposal.status === 'PENDING_REVIEW'
+
+  // Can withdraw if author and proposal is pending review
+  const canWithdraw = isCreator && proposal.status === 'PENDING_REVIEW'
+
+  // Can submit if author and proposal is draft
+  const canSubmit = isCreator && proposal.status === 'DRAFT'
+
+  // Can resubmit if author and proposal is rejected or withdrawn (and under limit)
+  const canResubmit = isCreator &&
+    ['REJECTED', 'WITHDRAWN'].includes(proposal.status) &&
+    (proposal.submissionCount || 0) < 3
 
   const hasVoted = proposal.votes.some((v: any) => v.user.id === userId)
   const isOpen = proposal.status === 'OPEN'
-  const votingEnded = new Date() > new Date(proposal.votingEndsAt)
+  const votingEnded = proposal.votingEndsAt ? new Date() > new Date(proposal.votingEndsAt) : false
 
   const getStatusBadge = (status: string) => {
     switch (status) {
+      case 'DRAFT':
+        return <Badge variant="neutral">📝 Draft</Badge>
+      case 'PENDING_REVIEW':
+        return <Badge variant="warning">⏳ Pending Review</Badge>
       case 'OPEN':
-        return <Badge variant="info">Open</Badge>
+        return <Badge variant="info">🗳️ Voting</Badge>
       case 'APPROVED':
-        return <Badge variant="success">Approved</Badge>
+        return <Badge variant="success">✅ Passed</Badge>
       case 'REJECTED':
-        return <Badge variant="danger">Rejected</Badge>
+        return <Badge variant="danger">❌ Failed</Badge>
       case 'CLOSED':
         return <Badge variant="neutral">Closed</Badge>
+      case 'WITHDRAWN':
+        return <Badge variant="neutral">↩️ Withdrawn</Badge>
       default:
         return <Badge variant="neutral">{status}</Badge>
     }
@@ -393,8 +468,111 @@ export default function ProposalDetailPage() {
               <Text color="muted">
                 Proposed by {proposal.createdBy.name} on {new Date(proposal.createdAt).toLocaleDateString()}
               </Text>
+              {proposal.submissionCount > 1 && (
+                <Text variant="small" color="muted">
+                  Submission #{proposal.submissionCount} of 3
+                </Text>
+              )}
             </Stack>
           </Card>
+
+          {/* Rejection Feedback (for rejected proposals) */}
+          {proposal.status === 'REJECTED' && proposal.rejectionReason && (
+            <Alert variant="danger">
+              <Stack spacing="sm">
+                <Text weight="semibold">Reviewer Feedback</Text>
+                <Text style={{ whiteSpace: 'pre-wrap' }}>{proposal.rejectionReason}</Text>
+                {proposal.reviewedBy && (
+                  <Text variant="small" color="muted">
+                    Reviewed by {proposal.reviewedBy.name} on{' '}
+                    {proposal.reviewedAt ? new Date(proposal.reviewedAt).toLocaleDateString() : 'N/A'}
+                  </Text>
+                )}
+              </Stack>
+            </Alert>
+          )}
+
+          {/* Author Actions for Draft */}
+          {canSubmit && (
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Submit for Review</Heading>
+                <Text variant="small" color="muted">
+                  This proposal is a draft. Submit it to be reviewed by a moderator before it can go to voting.
+                </Text>
+                <Button
+                  variant="primary"
+                  onClick={() => submitForReviewMutation.mutate({ proposalId, userId: userId! })}
+                  disabled={submitForReviewMutation.isPending}
+                >
+                  {submitForReviewMutation.isPending ? 'Submitting...' : 'Submit for Review'}
+                </Button>
+              </Stack>
+            </Card>
+          )}
+
+          {/* Author Actions for Pending Review */}
+          {canWithdraw && (
+            <Alert variant="info">
+              <Flex justify="between" align="center">
+                <Text>Your proposal is waiting for moderator review.</Text>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => withdrawMutation.mutate({ proposalId, userId: userId! })}
+                  disabled={withdrawMutation.isPending}
+                >
+                  {withdrawMutation.isPending ? 'Withdrawing...' : 'Withdraw'}
+                </Button>
+              </Flex>
+            </Alert>
+          )}
+
+          {/* Author Actions for Rejected/Withdrawn */}
+          {canResubmit && (
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Resubmit Proposal</Heading>
+                <Text variant="small" color="muted">
+                  You can edit and resubmit this proposal. ({3 - (proposal.submissionCount || 0)} attempts remaining)
+                </Text>
+                <Button
+                  variant="primary"
+                  onClick={handleOpenEditModal}
+                >
+                  Edit & Resubmit
+                </Button>
+              </Stack>
+            </Card>
+          )}
+
+          {/* Reviewer Actions */}
+          {canReview && (
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Review Proposal</Heading>
+                <Text variant="small" color="muted">
+                  As a reviewer, you can approve this proposal to send it to voting, or reject it with feedback.
+                </Text>
+                <Flex gap="md">
+                  <Button
+                    variant="primary"
+                    onClick={() => approveMutation.mutate({ proposalId, userId: userId! })}
+                    disabled={approveMutation.isPending || rejectMutation.isPending}
+                  >
+                    {approveMutation.isPending ? 'Approving...' : '✅ Approve for Voting'}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => setShowRejectModal(true)}
+                    disabled={approveMutation.isPending || rejectMutation.isPending}
+                  >
+                    ❌ Reject
+                  </Button>
+                </Flex>
+              </Stack>
+            </Card>
+          )}
 
           {/* Description */}
           <Card>
@@ -513,54 +691,60 @@ export default function ProposalDetailPage() {
             </Card>
           )}
 
-          {/* Voting Info */}
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Voting Information</Heading>
-              <Flex gap="lg">
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">Method</Text>
-                  <Text variant="small">{band.votingMethod?.replace(/_/g, ' ')}</Text>
-                </Stack>
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">Voting Ends</Text>
-                  <Text variant="small">{new Date(proposal.votingEndsAt).toLocaleString()}</Text>
-                </Stack>
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">Eligible Voters</Text>
-                  <Text variant="small">{voteSummary.eligibleVoters}</Text>
-                </Stack>
-              </Flex>
-            </Stack>
-          </Card>
+          {/* Voting Info - only show when proposal is in voting or completed */}
+          {['OPEN', 'APPROVED', 'REJECTED', 'CLOSED'].includes(proposal.status) && proposal.votingEndsAt && (
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Voting Information</Heading>
+                <Flex gap="lg">
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">Method</Text>
+                    <Text variant="small">{band.votingMethod?.replace(/_/g, ' ')}</Text>
+                  </Stack>
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">Voting Ends</Text>
+                    <Text variant="small">{new Date(proposal.votingEndsAt).toLocaleString()}</Text>
+                  </Stack>
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">Eligible Voters</Text>
+                    <Text variant="small">{voteSummary.eligibleVoters}</Text>
+                  </Stack>
+                </Flex>
+              </Stack>
+            </Card>
+          )}
 
-          {/* Vote Results */}
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Current Results</Heading>
-              <Flex gap="lg">
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">Yes</Text>
-                  <Heading level={2}>{voteSummary.yes}</Heading>
-                  <Text variant="small" color="muted">{voteSummary.percentageYes}%</Text>
-                </Stack>
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">No</Text>
-                  <Heading level={2}>{voteSummary.no}</Heading>
-                  <Text variant="small" color="muted">{voteSummary.percentageNo}%</Text>
-                </Stack>
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">Abstain</Text>
-                  <Heading level={2}>{voteSummary.abstain}</Heading>
-                </Stack>
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">Total Votes</Text>
-                  <Heading level={2}>{voteSummary.total}</Heading>
-                  <Text variant="small" color="muted">of {voteSummary.eligibleVoters}</Text>
-                </Stack>
-              </Flex>
-            </Stack>
-          </Card>
+          {/* Vote Results - only show when proposal has been/is in voting */}
+          {['OPEN', 'APPROVED', 'REJECTED', 'CLOSED'].includes(proposal.status) && (
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>
+                  {proposal.status === 'OPEN' ? 'Current Results' : 'Final Results'}
+                </Heading>
+                <Flex gap="lg">
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">Yes</Text>
+                    <Heading level={2}>{voteSummary.yes}</Heading>
+                    <Text variant="small" color="muted">{voteSummary.percentageYes}%</Text>
+                  </Stack>
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">No</Text>
+                    <Heading level={2}>{voteSummary.no}</Heading>
+                    <Text variant="small" color="muted">{voteSummary.percentageNo}%</Text>
+                  </Stack>
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">Abstain</Text>
+                    <Heading level={2}>{voteSummary.abstain}</Heading>
+                  </Stack>
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">Total Votes</Text>
+                    <Heading level={2}>{voteSummary.total}</Heading>
+                    <Text variant="small" color="muted">of {voteSummary.eligibleVoters}</Text>
+                  </Stack>
+                </Flex>
+              </Stack>
+            </Card>
+          )}
 
           {/* Voting Section */}
           {isOpen && canVote && !votingEnded && (
@@ -799,6 +983,61 @@ export default function ProposalDetailPage() {
           issues={validationIssues}
           isProceeding={updateMutation.isPending}
         />
+
+        {/* Reject Modal */}
+        <Modal
+          isOpen={showRejectModal}
+          onClose={() => {
+            setShowRejectModal(false)
+            setRejectionReason('')
+          }}
+          title="Reject Proposal"
+        >
+          <Stack spacing="md">
+            <Text>
+              Provide feedback explaining why this proposal cannot proceed to voting.
+              The author can use this feedback to revise and resubmit.
+            </Text>
+            <Textarea
+              label="Rejection Reason"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Explain what needs to be changed..."
+              rows={4}
+            />
+            <Flex gap="sm" justify="end">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowRejectModal(false)
+                  setRejectionReason('')
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  if (userId && rejectionReason.trim().length >= 10) {
+                    rejectMutation.mutate({
+                      proposalId,
+                      userId,
+                      reason: rejectionReason,
+                    })
+                  }
+                }}
+                disabled={rejectMutation.isPending || rejectionReason.trim().length < 10}
+              >
+                {rejectMutation.isPending ? 'Rejecting...' : 'Reject Proposal'}
+              </Button>
+            </Flex>
+            {rejectionReason.trim().length > 0 && rejectionReason.trim().length < 10 && (
+              <Text variant="small" color="muted">
+                Reason must be at least 10 characters
+              </Text>
+            )}
+          </Stack>
+        </Modal>
       </BandLayout>
     </>
   )

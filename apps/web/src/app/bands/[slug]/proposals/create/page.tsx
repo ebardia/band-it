@@ -825,6 +825,16 @@ export default function CreateProposalPage() {
                 </>
               )}
 
+              {/* Review Info */}
+              {band.requireProposalReview && (
+                <Alert variant="info">
+                  <Text>
+                    This band requires proposals to be reviewed by a moderator before they go to voting.
+                    You can save as draft to continue editing later, or submit for review when ready.
+                  </Text>
+                </Alert>
+              )}
+
               {/* Submit */}
               <Flex gap="md">
                 <Button
@@ -833,7 +843,45 @@ export default function CreateProposalPage() {
                   size="lg"
                   disabled={createMutation.isPending || validationMutation.isPending}
                 >
-                  {createMutation.isPending || validationMutation.isPending ? 'Creating...' : 'Create Proposal'}
+                  {createMutation.isPending || validationMutation.isPending
+                    ? 'Submitting...'
+                    : band.requireProposalReview
+                      ? 'Submit for Review'
+                      : 'Create Proposal'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="lg"
+                  disabled={createMutation.isPending}
+                  onClick={() => {
+                    if (!userId || !bandData?.band) return
+                    const linksArray = externalLinks.split('\n').map(l => l.trim()).filter(l => l.length > 0)
+                    createMutation.mutate({
+                      bandId: bandData.band.id,
+                      userId,
+                      title,
+                      description,
+                      type,
+                      priority,
+                      executionType,
+                      executionSubtype: executionSubtype || undefined,
+                      effects: financeEffects.length > 0 ? financeEffects : undefined,
+                      problemStatement: problemStatement || undefined,
+                      expectedOutcome: expectedOutcome || undefined,
+                      risksAndConcerns: risksAndConcerns || undefined,
+                      budgetRequested: budgetRequested ? parseFloat(budgetRequested) : undefined,
+                      budgetBreakdown: budgetBreakdown || undefined,
+                      fundingSource: fundingSource || undefined,
+                      proposedStartDate: proposedStartDate || undefined,
+                      proposedEndDate: proposedEndDate || undefined,
+                      milestones: milestones || undefined,
+                      externalLinks: linksArray.length > 0 ? linksArray : undefined,
+                      saveAsDraft: true,
+                    })
+                  }}
+                >
+                  Save as Draft
                 </Button>
                 <Button
                   type="button"

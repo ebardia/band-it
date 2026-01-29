@@ -36,7 +36,7 @@ export const proposalVoteRouter = router({
         throw new Error('This proposal is no longer open for voting')
       }
 
-      if (new Date() > proposal.votingEndsAt) {
+      if (!proposal.votingEndsAt || new Date() > proposal.votingEndsAt) {
         throw new Error('Voting period has ended')
       }
 
@@ -150,7 +150,7 @@ export const proposalVoteRouter = router({
 
       // Check if voting deadline has passed
       const now = new Date()
-      const deadlinePassed = now > proposal.votingEndsAt
+      const deadlinePassed = proposal.votingEndsAt ? now > proposal.votingEndsAt : false
 
       if (!deadlinePassed) {
         if (input.forceClose && isFounder) {
@@ -158,7 +158,7 @@ export const proposalVoteRouter = router({
         } else if (input.forceClose) {
           throw new Error('Only founders can force close a proposal before the deadline')
         } else {
-          throw new Error('Voting period has not ended yet. The deadline is ' + proposal.votingEndsAt.toLocaleDateString())
+          throw new Error('Voting period has not ended yet. The deadline is ' + (proposal.votingEndsAt?.toLocaleDateString() || 'unknown'))
         }
       }
 

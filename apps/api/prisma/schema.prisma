@@ -120,6 +120,10 @@ model User {
 
   // Help
   helpInteractions            HelpInteraction[]
+
+  // Proposal Reviews
+  proposalsReviewed           Proposal[] @relation("ProposalReviewer")
+  proposalReviewHistory       ProposalReviewHistory[]
 }
 
 enum SubscriptionStatus {
@@ -483,6 +487,9 @@ model Band {
 
   // Role Management Configuration
   whoCanChangeRoles     MemberRole[] @default([FOUNDER])
+
+  // Proposal Review Configuration
+  requireProposalReview Boolean @default(false)  // If true, proposals need moderator approval before voting
 
   // Metadata
   createdById String
@@ -1030,11 +1037,19 @@ model Proposal {
 
   // Voting
   status        ProposalStatus @default(OPEN)
-  votingEndsAt  DateTime
+  votingEndsAt  DateTime?
+  votingStartedAt DateTime?
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   closedAt      DateTime?
+
+  // Review (for bands with requireProposalReview enabled)
+  submittedAt       DateTime?       // When submitted for review
+  reviewedById      String?         // User ID of reviewer
+  reviewedAt        DateTime?       // When reviewed
+  rejectionReason   String? @db.Text  // If rejected by reviewer, why
+  submissionCount   Int @default(0) // Track resubmissions (max 3)
 
   // AI
   aiValidation  Json?
@@ -1042,12 +1057,14 @@ model Proposal {
   // Relations
   band          Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
   createdBy     User @relation("ProposalCreator", fields: [createdById], references: [id])
+  reviewedBy    User? @relation("ProposalReviewer", fields: [reviewedById], references: [id])
   votes         Vote[]
   projects      Project[]
   files         File[]
   comments      Comment[]
   executionLogs ProposalExecutionLog[]
   bucketsCreated Bucket[] @relation("BucketCreatedByProposal")
+  reviewHistory ProposalReviewHistory[]
 
   @@index([bandId])
   @@index([createdById])
@@ -1102,6 +1119,23 @@ model ProposalExecutionLog {
   @@index([executedAt])
 }
 
+// Track history of proposal reviews (for audit trail)
+model ProposalReviewHistory {
+  id          String   @id @default(cuid())
+  proposalId  String
+  reviewerId  String
+  action      ProposalReviewAction
+  reason      String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  // Relations
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  reviewer    User     @relation(fields: [reviewerId], references: [id])
+
+  @@index([proposalId])
+  @@index([reviewerId])
+}
+
 enum ProposalPriority {
   LOW
   MEDIUM
@@ -1110,8 +1144,16 @@ enum ProposalPriority {
 }
 
 enum ProposalStatus {
-  OPEN
-  CLOSED
+  DRAFT           // Author is still editing, not submitted
+  PENDING_REVIEW  // Submitted, waiting for moderator review
+  OPEN            // Approved by reviewer (or review not required), open for voting
+  CLOSED          // Voting ended without reaching threshold
+  APPROVED        // Passed
+  REJECTED        // Failed vote OR rejected by reviewer
+  WITHDRAWN       // Author withdrew from review
+}
+
+enum ProposalReviewAction {
   APPROVED
   REJECTED
 }

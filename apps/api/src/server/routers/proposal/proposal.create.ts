@@ -8,6 +8,7 @@ import { proposalEffectsService } from '../../../services/proposal-effects.servi
 import { canCreateFinanceBucketGovernanceProposal } from '../../../services/effects/finance-bucket-governance.effects'
 import { TRPCError } from '@trpc/server'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
+import { getEligibleReviewers } from '../../../lib/proposal-review'
 
 // Roles that can create proposals
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -61,6 +62,9 @@ export const proposalCreateRouter = router({
         proceedWithFlags: z.boolean().optional(),
         flagReasons: z.array(z.string()).optional(),
         flagDetails: z.any().optional(),
+
+        // Draft mode - save without submitting
+        saveAsDraft: z.boolean().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -167,9 +171,27 @@ export const proposalCreateRouter = router({
         effectsValidatedAt = new Date()
       }
 
-      // Calculate voting end date
-      const votingEndsAt = new Date()
-      votingEndsAt.setDate(votingEndsAt.getDate() + membership.band.votingPeriodDays)
+      // Determine status and voting dates based on draft mode and review requirement
+      let status: 'DRAFT' | 'PENDING_REVIEW' | 'OPEN' = 'OPEN'
+      let votingEndsAt: Date | null = null
+      let votingStartedAt: Date | null = null
+      let submittedAt: Date | null = null
+
+      if (input.saveAsDraft) {
+        // Save as draft - no voting dates, no notifications
+        status = 'DRAFT'
+      } else if (membership.band.requireProposalReview) {
+        // Band requires review - go to PENDING_REVIEW
+        status = 'PENDING_REVIEW'
+        submittedAt = new Date()
+      } else {
+        // No review required - go straight to OPEN
+        status = 'OPEN'
+        votingStartedAt = new Date()
+        votingEndsAt = new Date()
+        votingEndsAt.setDate(votingEndsAt.getDate() + membership.band.votingPeriodDays)
+        submittedAt = new Date()
+      }
 
       // Create proposal
       const proposal = await prisma.proposal.create({
@@ -196,14 +218,19 @@ export const proposalCreateRouter = router({
           proposedEndDate: input.proposedEndDate ? new Date(input.proposedEndDate) : null,
           milestones: input.milestones,
           externalLinks: input.externalLinks || [],
+          // Status and review fields
+          status,
           votingEndsAt,
+          votingStartedAt,
+          submittedAt,
+          submissionCount: input.saveAsDraft ? 0 : 1,
         },
         include: {
           createdBy: {
             select: { name: true },
           },
           band: {
-            select: { name: true, slug: true },
+            select: { name: true, slug: true, requireProposalReview: true },
           },
         },
       })
@@ -241,34 +268,61 @@ export const proposalCreateRouter = router({
         }
       }
 
-      // Notify all voting members
-      const votingMembers = await prisma.member.findMany({
-        where: {
-          bandId: input.bandId,
-          status: 'ACTIVE',
-          role: { in: CAN_VOTE as any },
-          userId: { not: input.userId },
-        },
-        select: { userId: true },
-      })
-
       // Type assertion for included relations
       const proposalWithRelations = proposal as typeof proposal & {
         createdBy: { name: string }
-        band: { name: string; slug: string }
+        band: { name: string; slug: string; requireProposalReview: boolean }
       }
 
-      for (const member of votingMembers) {
-        await notificationService.create({
-          userId: member.userId,
-          type: 'PROPOSAL_CREATED',
-          title: 'New Proposal',
-          message: `${proposalWithRelations.createdBy.name} created "${proposal.title}" in ${proposalWithRelations.band.name}`,
-          actionUrl: `/bands/${proposalWithRelations.band.slug}/proposals/${proposal.id}`,
-          priority: input.priority === 'URGENT' ? 'HIGH' : 'MEDIUM',
-          relatedId: proposal.id,
-          relatedType: 'PROPOSAL',
+      // Handle notifications based on status
+      if (status === 'DRAFT') {
+        // No notifications for drafts
+      } else if (status === 'PENDING_REVIEW') {
+        // Notify eligible reviewers
+        const eligibleReviewers = await getEligibleReviewers(
+          input.bandId,
+          input.userId,
+          membership.role
+        )
+
+        for (const reviewer of eligibleReviewers) {
+          await notificationService.create({
+            userId: reviewer.userId,
+            type: 'PROPOSAL_VOTE_NEEDED',
+            title: 'Proposal Needs Review',
+            message: `${proposalWithRelations.createdBy.name} submitted "${proposal.title}" for review in ${proposalWithRelations.band.name}`,
+            actionUrl: `/bands/${proposalWithRelations.band.slug}/proposals/${proposal.id}`,
+            priority: 'HIGH',
+            relatedId: proposal.id,
+            relatedType: 'PROPOSAL',
+            bandId: input.bandId,
+          })
+        }
+      } else {
+        // Status is OPEN - notify all voting members
+        const votingMembers = await prisma.member.findMany({
+          where: {
+            bandId: input.bandId,
+            status: 'ACTIVE',
+            role: { in: CAN_VOTE as any },
+            userId: { not: input.userId },
+          },
+          select: { userId: true },
         })
+
+        for (const member of votingMembers) {
+          await notificationService.create({
+            userId: member.userId,
+            type: 'PROPOSAL_CREATED',
+            title: 'New Proposal',
+            message: `${proposalWithRelations.createdBy.name} created "${proposal.title}" in ${proposalWithRelations.band.name}`,
+            actionUrl: `/bands/${proposalWithRelations.band.slug}/proposals/${proposal.id}`,
+            priority: input.priority === 'URGENT' ? 'HIGH' : 'MEDIUM',
+            relatedId: proposal.id,
+            relatedType: 'PROPOSAL',
+            bandId: input.bandId,
+          })
+        }
       }
 
       // Clear flags to prevent leaking to other operations
