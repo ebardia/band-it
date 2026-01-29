@@ -58,4 +58,7 @@ export const bandRouter = router({
   // Dissolution
   canDissolve: bandDissolveRouter.canDissolve,
   dissolve: bandDissolveRouter.dissolve,
+  createDissolutionProposal: bandDissolveRouter.createDissolutionProposal,
+  getArchivedBands: bandDissolveRouter.getArchivedBands,
+  getArchivedBandDetails: bandDissolveRouter.getArchivedBandDetails,
 })

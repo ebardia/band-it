@@ -115,10 +115,11 @@ export default function BandSettingsPage() {
             />
           )}
 
-          {/* Dissolve Band - only shown to founder of unactivated bands */}
-          {userId && currentMember?.role === 'FOUNDER' && (
+          {/* Dissolve Band - shown to any member who can dissolve */}
+          {userId && (
             <DissolveBandSection
               bandId={band.id}
+              bandSlug={slug}
               bandName={band.name}
               userId={userId}
             />

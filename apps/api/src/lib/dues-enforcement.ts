@@ -1,6 +1,21 @@
 import { prisma } from './prisma'
 import { TRPCError } from '@trpc/server'
 
+/**
+ * Check if a band has an active dissolution vote.
+ * Used to freeze dues and membership changes during the vote.
+ */
+export async function hasActiveDissolutionVote(bandId: string): Promise<boolean> {
+  const dissolution = await prisma.proposal.findFirst({
+    where: {
+      bandId,
+      type: 'DISSOLUTION',
+      status: 'OPEN', // Only when voting is active
+    },
+  })
+  return !!dissolution
+}
+
 export interface StandingResult {
   inGoodStanding: boolean
   exempt: boolean
@@ -20,6 +35,12 @@ export async function checkGoodStanding(
   bandId: string,
   userId: string
 ): Promise<StandingResult> {
+  // 0. Check if there's an active dissolution vote (dues frozen during vote)
+  const dissolutionVoteActive = await hasActiveDissolutionVote(bandId)
+  if (dissolutionVoteActive) {
+    return { inGoodStanding: true, exempt: false }
+  }
+
   // 1. Check if band has an active dues plan
   const duesPlan = await prisma.bandDuesPlan.findFirst({
     where: { bandId, isActive: true },

@@ -6,7 +6,7 @@ import { notificationService } from '../../../services/notification.service'
 import { emailService } from '../../services/email.service'
 import { memberBillingTriggers } from '../../services/member-billing-triggers'
 import { checkAndSetBandActivation } from './band.dissolve'
-import { requireGoodStanding } from '../../../lib/dues-enforcement'
+import { requireGoodStanding, hasActiveDissolutionVote } from '../../../lib/dues-enforcement'
 
 // Roles that can invite members
 const CAN_INVITE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -91,6 +91,17 @@ export const bandInviteRouter = router({
 
       if (!inviterMembership) {
         throw new Error('You are not a member of this band')
+      }
+
+      // Check if band is dissolved
+      if (inviterMembership.band.dissolvedAt) {
+        throw new Error('This band is no longer active')
+      }
+
+      // Check if there's an active dissolution vote (membership frozen)
+      const dissolutionVoteActive = await hasActiveDissolutionVote(input.bandId)
+      if (dissolutionVoteActive) {
+        throw new Error('This band has a dissolution vote in progress. Invitations are temporarily frozen.')
       }
 
       // Check if user is already a member or invited
@@ -234,6 +245,12 @@ export const bandInviteRouter = router({
       // Check if band is dissolved
       if (membership.band.dissolvedAt) {
         throw new Error('This band is no longer active')
+      }
+
+      // Check if there's an active dissolution vote (membership frozen)
+      const dissolutionVoteActive = await hasActiveDissolutionVote(membership.bandId)
+      if (dissolutionVoteActive) {
+        throw new Error('This band has a dissolution vote in progress. Accepting invitations is temporarily frozen.')
       }
 
       // Get inviter details
@@ -397,6 +414,12 @@ export const bandInviteRouter = router({
       // Check if user is the founder
       if (membership.role === 'FOUNDER') {
         throw new Error('Founders cannot leave the band. Please transfer ownership or dissolve the band first.')
+      }
+
+      // Check if there's an active dissolution vote (membership frozen)
+      const dissolutionVoteActive = await hasActiveDissolutionVote(input.bandId)
+      if (dissolutionVoteActive) {
+        throw new Error('This band has a dissolution vote in progress. Leaving is temporarily frozen until the vote concludes.')
       }
 
       // Delete membership

@@ -39,6 +39,7 @@ const TYPE_LABELS: Record<string, string> = {
   PROJECT: 'Project',
   POLICY: 'Policy',
   MEMBERSHIP: 'Membership',
+  DISSOLUTION: 'Dissolution',
 }
 
 const PRIORITY_VARIANTS: Record<string, string> = {
@@ -48,7 +49,7 @@ const PRIORITY_VARIANTS: Record<string, string> = {
   URGENT: 'danger',
 }
 
-type ProposalType = 'GENERAL' | 'BUDGET' | 'PROJECT' | 'POLICY' | 'MEMBERSHIP'
+type ProposalType = 'GENERAL' | 'BUDGET' | 'PROJECT' | 'POLICY' | 'MEMBERSHIP' | 'DISSOLUTION'
 type ProposalPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 
 export default function ProposalDetailPage() {
@@ -751,7 +752,18 @@ export default function ProposalDetailPage() {
             <Card>
               <Stack spacing="md">
                 <Heading level={3}>{hasVoted ? 'Change Your Vote' : 'Cast Your Vote'}</Heading>
-                
+
+                {/* Dissolution proposal warning */}
+                {proposal.type === 'DISSOLUTION' && (
+                  <Alert variant="danger">
+                    <Text weight="semibold">⚠️ Dissolution Vote</Text>
+                    <Text variant="small">
+                      This proposal requires unanimous approval. If ANY voting member votes NO, the band will NOT be dissolved.
+                      Non-voters are excluded from the count.
+                    </Text>
+                  </Alert>
+                )}
+
                 <Textarea
                   label="Comment (optional)"
                   value={comment}
@@ -777,14 +789,17 @@ export default function ProposalDetailPage() {
                   >
                     👎 No
                   </Button>
-                  <Button
-                    variant={selectedVote === 'ABSTAIN' ? 'ghost' : 'secondary'}
-                    size="lg"
-                    onClick={() => handleVote('ABSTAIN')}
-                    disabled={voteMutation.isPending}
-                  >
-                    🤷 Abstain
-                  </Button>
+                  {/* Hide abstain for dissolution proposals */}
+                  {proposal.type !== 'DISSOLUTION' && (
+                    <Button
+                      variant={selectedVote === 'ABSTAIN' ? 'ghost' : 'secondary'}
+                      size="lg"
+                      onClick={() => handleVote('ABSTAIN')}
+                      disabled={voteMutation.isPending}
+                    >
+                      🤷 Abstain
+                    </Button>
+                  )}
                 </Flex>
               </Stack>
             </Card>

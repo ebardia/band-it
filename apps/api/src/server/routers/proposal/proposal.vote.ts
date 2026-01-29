@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
 import { proposalEffectsService } from '../../../services/proposal-effects.service'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
+import { executeDissolution, checkDissolutionVotePassed } from '../../../lib/band-dissolution'
 
 // Roles that can vote
 const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
@@ -60,6 +61,11 @@ export const proposalVoteRouter = router({
 
       // Check dues standing
       await requireGoodStanding(proposal.bandId, input.userId)
+
+      // Dissolution proposals don't allow abstain
+      if (proposal.type === 'DISSOLUTION' && input.vote === 'ABSTAIN') {
+        throw new Error('Abstaining is not allowed on dissolution proposals. You must vote YES or NO.')
+      }
 
       // Check if already voted
       const existingVote = await prisma.vote.findUnique({
@@ -186,7 +192,21 @@ export const proposalVoteRouter = router({
       let approved = false
       let rejectionReason: string | null = null
 
-      if (!quorumMet) {
+      // DISSOLUTION proposals have special voting rules
+      if (proposal.type === 'DISSOLUTION') {
+        // Unanimous among those who voted (non-voters are excluded)
+        // At least one person must have voted
+        if (totalVoters === 0) {
+          approved = false
+          rejectionReason = 'No votes were cast'
+        } else if (noVotes > 0) {
+          approved = false
+          rejectionReason = `Dissolution requires unanimous YES votes. ${noVotes} member(s) voted NO.`
+        } else {
+          // All voters said YES
+          approved = true
+        }
+      } else if (!quorumMet) {
         // Quorum not met - proposal fails
         approved = false
         rejectionReason = `Quorum not met: ${totalVoters} of ${eligibleVoters} eligible voters participated (${participationPercentage.toFixed(0)}%), needed ${quorumPercentage}%`
@@ -218,35 +238,56 @@ export const proposalVoteRouter = router({
         },
       })
 
-      // If approved, execute based on execution type
-      let executionResult: { success: boolean; error?: string } | null = null
+      // If approved, execute based on proposal type and execution type
+      let executionResult: { success: boolean; error?: string; stripeErrors?: string[] } | null = null
       if (approved) {
-        switch (proposal.executionType) {
-          case 'GOVERNANCE':
-          case 'ACTION':
-            // Execute declarative effects
-            if (proposal.effects) {
-              executionResult = await proposalEffectsService.executeAndLogEffects(
-                {
-                  id: proposal.id,
-                  bandId: proposal.bandId,
-                  executionSubtype: proposal.executionSubtype,
-                  effects: proposal.effects,
-                },
-                input.userId
-              )
+        // Handle DISSOLUTION proposals specially
+        if (proposal.type === 'DISSOLUTION') {
+          try {
+            const dissolutionResult = await executeDissolution(
+              proposal.bandId,
+              proposal.createdById, // The person who created the dissolution proposal
+              proposal.description, // The reason
+              'PROPOSAL'
+            )
+            executionResult = {
+              success: true,
+              stripeErrors: dissolutionResult.stripeErrors,
             }
-            break
+          } catch (error) {
+            executionResult = {
+              success: false,
+              error: error instanceof Error ? error.message : 'Failed to execute dissolution',
+            }
+          }
+        } else {
+          switch (proposal.executionType) {
+            case 'GOVERNANCE':
+            case 'ACTION':
+              // Execute declarative effects
+              if (proposal.effects) {
+                executionResult = await proposalEffectsService.executeAndLogEffects(
+                  {
+                    id: proposal.id,
+                    bandId: proposal.bandId,
+                    executionSubtype: proposal.executionSubtype,
+                    effects: proposal.effects,
+                  },
+                  input.userId
+                )
+              }
+              break
 
-          case 'PROJECT':
-            // Create project from proposal (existing behavior)
-            // This is handled separately via the project creation flow
-            // The frontend typically prompts to create a project after approval
-            break
+            case 'PROJECT':
+              // Create project from proposal (existing behavior)
+              // This is handled separately via the project creation flow
+              // The frontend typically prompts to create a project after approval
+              break
 
-          case 'RESOLUTION':
-            // Just a recorded decision - nothing to execute
-            break
+            case 'RESOLUTION':
+              // Just a recorded decision - nothing to execute
+              break
+          }
         }
       }
 

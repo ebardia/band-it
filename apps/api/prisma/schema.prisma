@@ -463,7 +463,8 @@ model Band {
   activatedAt       DateTime?   // Set when band first reaches 3 members
   dissolvedAt       DateTime?   // Set when band is dissolved
   dissolvedById     String?     // User who dissolved the band
-  dissolutionReason String?     // Optional reason for dissolution
+  dissolutionMethod DissolutionMethod? // How the band was dissolved
+  dissolutionReason String? @db.Text   // Required reason for dissolution
 
   // Billing
   billingOwnerId        String?
@@ -528,6 +529,11 @@ enum BandStatus {
   PENDING    // DEPRECATED - do not use, kept for migration compatibility
   ACTIVE
   INACTIVE
+}
+
+enum DissolutionMethod {
+  DIRECT    // Founder dissolved directly (< 3 members)
+  PROPOSAL  // Dissolved via unanimous vote
 }
 
 enum BillingStatus {
@@ -1080,6 +1086,7 @@ enum ProposalType {
   PROJECT
   POLICY
   MEMBERSHIP
+  DISSOLUTION
 }
 
 // What happens when a proposal is approved
@@ -1734,6 +1741,10 @@ model PendingInvite {
   expiresAt   DateTime
   notes       String?  @db.Text
 
+  // Invalidation (for dissolution, revocation, etc.)
+  invalidatedAt     DateTime?
+  invalidationReason InviteInvalidationReason?
+
   createdAt   DateTime @default(now())
 
   band        Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
@@ -1744,6 +1755,12 @@ model PendingInvite {
   @@index([bandId])
   @@index([token])
   @@index([expiresAt])
+}
+
+enum InviteInvalidationReason {
+  BAND_DISSOLVED
+  EXPIRED
+  REVOKED
 }
 
 // ============================================

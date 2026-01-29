@@ -106,8 +106,8 @@ export default function AdminBandsPage() {
       <AppNav />
       <AdminLayout pageTitle="Bands" subtitle="Manage platform bands">
         <Stack spacing="lg">
-          {/* Search */}
-          <Flex gap="md">
+          {/* Search and Actions */}
+          <Flex gap="md" align="center">
             <Input
               placeholder="Search by name or slug..."
               value={search}
@@ -117,6 +117,13 @@ export default function AdminBandsPage() {
               }}
               className="flex-1"
             />
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/admin/archived-bands')}
+            >
+              View Archived
+            </Button>
           </Flex>
 
           {/* Bands List */}

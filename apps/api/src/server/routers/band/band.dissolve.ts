@@ -1,8 +1,12 @@
 import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
-import { notificationService } from '../../../services/notification.service'
-import { emailService } from '../../services/email.service'
+import { TRPCError } from '@trpc/server'
+import {
+  checkDissolutionEligibility,
+  hasActiveDissolutionProposal,
+  executeDissolution,
+} from '../../../lib/band-dissolution'
 
 /**
  * Check and set activatedAt when band reaches 3 active members
@@ -41,7 +45,7 @@ export async function checkAndSetBandActivation(bandId: string): Promise<boolean
 
 export const bandDissolveRouter = router({
   /**
-   * Check if band can be dissolved
+   * Check if band can be dissolved and by what method
    */
   canDissolve: publicProcedure
     .input(
@@ -51,162 +55,273 @@ export const bandDissolveRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const band = await prisma.band.findUnique({
-        where: { id: input.bandId },
-        include: {
-          members: {
-            where: { status: 'ACTIVE' },
-            select: { userId: true, role: true },
-          },
-        },
-      })
+      const eligibility = await checkDissolutionEligibility(input.bandId, input.userId)
 
-      if (!band) {
-        return { canDissolve: false, reason: 'Band not found' }
+      // Also check for active dissolution proposal
+      let hasActiveProposal = false
+      if (eligibility.method === 'PROPOSAL') {
+        hasActiveProposal = await hasActiveDissolutionProposal(input.bandId)
       }
 
-      // Check if user is the founder
-      const founderMember = band.members.find(m => m.role === 'FOUNDER')
-      if (!founderMember || founderMember.userId !== input.userId) {
-        return { canDissolve: false, reason: 'Only the founder can dissolve the band' }
+      return {
+        ...eligibility,
+        hasActiveProposal,
       }
-
-      // Check if already dissolved
-      if (band.dissolvedAt) {
-        return { canDissolve: false, reason: 'Band is already dissolved' }
-      }
-
-      // Check if activated (reached 3 members at some point)
-      if (band.activatedAt) {
-        return { canDissolve: false, reason: 'Active bands cannot be dissolved this way. Create a proposal instead.' }
-      }
-
-      return { canDissolve: true }
     }),
 
   /**
-   * Dissolve an inactive band
+   * Direct dissolution by founder when band has < 3 members
    */
   dissolve: publicProcedure
     .input(
       z.object({
         bandId: z.string(),
         userId: z.string(),
-        reason: z.string().optional(),
+        reason: z.string().min(10, 'Reason must be at least 10 characters').max(1000),
       })
     )
     .mutation(async ({ input }) => {
+      // Check eligibility
+      const eligibility = await checkDissolutionEligibility(input.bandId, input.userId)
+
+      if (!eligibility.canDissolve) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: eligibility.reason || 'Cannot dissolve band',
+        })
+      }
+
+      if (eligibility.method !== 'DIRECT') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'This band has 3 or more members. You must create a dissolution proposal instead.',
+        })
+      }
+
+      // Execute dissolution
+      const result = await executeDissolution(
+        input.bandId,
+        input.userId,
+        input.reason,
+        'DIRECT'
+      )
+
+      return {
+        success: true,
+        message: 'Band has been dissolved',
+        stripeErrors: result.stripeErrors,
+        deletedContent: result.deletedContent,
+      }
+    }),
+
+  /**
+   * Create a dissolution proposal (for bands with 3+ members)
+   */
+  createDissolutionProposal: publicProcedure
+    .input(
+      z.object({
+        bandId: z.string(),
+        userId: z.string(),
+        reason: z.string().min(10, 'Reason must be at least 10 characters').max(2000),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Check eligibility
+      const eligibility = await checkDissolutionEligibility(input.bandId, input.userId)
+
+      if (!eligibility.canDissolve) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: eligibility.reason || 'Cannot create dissolution proposal',
+        })
+      }
+
+      if (eligibility.method !== 'PROPOSAL') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Bands with fewer than 3 members can be dissolved directly by the founder.',
+        })
+      }
+
+      // Check for existing dissolution proposal
+      const hasActive = await hasActiveDissolutionProposal(input.bandId)
+      if (hasActive) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'A dissolution proposal is already in progress.',
+        })
+      }
+
+      // Get band settings
+      const band = await prisma.band.findUnique({
+        where: { id: input.bandId },
+        select: {
+          requireProposalReview: true,
+          votingPeriodDays: true,
+        },
+      })
+
+      if (!band) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Band not found',
+        })
+      }
+
+      // Create the proposal
+      // Status depends on whether the band requires proposal review
+      const initialStatus = band.requireProposalReview ? 'PENDING_REVIEW' : 'OPEN'
+      const now = new Date()
+
+      const proposal = await prisma.proposal.create({
+        data: {
+          bandId: input.bandId,
+          createdById: input.userId,
+          type: 'DISSOLUTION',
+          title: 'Proposal to Dissolve Band',
+          description: input.reason,
+          status: initialStatus,
+          submittedAt: now,
+          submissionCount: 1,
+          // For OPEN status, set voting period
+          ...(initialStatus === 'OPEN' && {
+            votingStartedAt: now,
+            votingEndsAt: new Date(now.getTime() + band.votingPeriodDays * 24 * 60 * 60 * 1000),
+          }),
+        },
+      })
+
+      return {
+        success: true,
+        proposalId: proposal.id,
+        status: initialStatus,
+        message: initialStatus === 'PENDING_REVIEW'
+          ? 'Dissolution proposal submitted for review'
+          : 'Dissolution proposal created and voting has begun',
+      }
+    }),
+
+  /**
+   * Get archived/dissolved bands (admin only)
+   */
+  getArchivedBands: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        limit: z.number().min(1).max(100).default(20),
+        cursor: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      // Check if user is admin
+      const user = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { isAdmin: true },
+      })
+
+      if (!user?.isAdmin) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Admin access required',
+        })
+      }
+
+      const bands = await prisma.band.findMany({
+        where: {
+          dissolvedAt: { not: null },
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          dissolvedAt: true,
+          dissolutionMethod: true,
+          dissolutionReason: true,
+          dissolvedBy: {
+            select: { id: true, name: true },
+          },
+          _count: {
+            select: { members: true },
+          },
+        },
+        orderBy: { dissolvedAt: 'desc' },
+        take: input.limit + 1,
+        ...(input.cursor && {
+          cursor: { id: input.cursor },
+          skip: 1,
+        }),
+      })
+
+      let nextCursor: string | undefined
+      if (bands.length > input.limit) {
+        const nextItem = bands.pop()
+        nextCursor = nextItem?.id
+      }
+
+      return {
+        bands,
+        nextCursor,
+      }
+    }),
+
+  /**
+   * Get archived band details (admin only)
+   */
+  getArchivedBandDetails: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        bandId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      // Check if user is admin
+      const user = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { isAdmin: true },
+      })
+
+      if (!user?.isAdmin) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Admin access required',
+        })
+      }
+
       const band = await prisma.band.findUnique({
         where: { id: input.bandId },
         include: {
           members: {
-            where: { status: 'ACTIVE' },
             include: {
               user: {
                 select: { id: true, name: true, email: true },
               },
             },
           },
+          dissolvedBy: {
+            select: { id: true, name: true, email: true },
+          },
+          auditLogs: {
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+          },
         },
       })
 
       if (!band) {
-        throw new Error('Band not found')
-      }
-
-      // Check if user is the founder
-      const founderMember = band.members.find(m => m.role === 'FOUNDER')
-      if (!founderMember || founderMember.userId !== input.userId) {
-        throw new Error('Only the founder can dissolve the band')
-      }
-
-      // Check if already dissolved
-      if (band.dissolvedAt) {
-        throw new Error('Band is already dissolved')
-      }
-
-      // Check if activated
-      if (band.activatedAt) {
-        throw new Error('Active bands cannot be dissolved this way. Create a proposal instead.')
-      }
-
-      // Perform dissolution in a transaction
-      await prisma.$transaction(async (tx) => {
-        // 1. Mark band as dissolved
-        await tx.band.update({
-          where: { id: input.bandId },
-          data: {
-            dissolvedAt: new Date(),
-            dissolvedById: input.userId,
-            dissolutionReason: input.reason,
-          },
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Band not found',
         })
-
-        // 2. Reject all pending applications (status: PENDING)
-        await tx.member.updateMany({
-          where: {
-            bandId: input.bandId,
-            status: 'PENDING',
-          },
-          data: {
-            status: 'REJECTED',
-          },
-        })
-
-        // 3. Reject all pending invitations (status: INVITED)
-        await tx.member.updateMany({
-          where: {
-            bandId: input.bandId,
-            status: 'INVITED',
-          },
-          data: {
-            status: 'REJECTED',
-          },
-        })
-
-        // 4. Delete all pending email invites (PendingInvite records)
-        await tx.pendingInvite.deleteMany({
-          where: {
-            bandId: input.bandId,
-          },
-        })
-      })
-
-      // 5. Notify other active members (not the founder) via email and in-app
-      const otherMembers = band.members.filter(m => m.userId !== input.userId)
-
-      for (const member of otherMembers) {
-        // In-app notification
-        await notificationService.create({
-          userId: member.userId,
-          type: 'BAND_DISSOLVED',
-          actionUrl: '/bands',
-          priority: 'HIGH',
-          metadata: {
-            bandName: band.name,
-            reason: input.reason || 'No reason provided',
-          },
-          relatedId: input.bandId,
-          relatedType: 'BAND',
-        })
-
-        // Email notification
-        try {
-          await emailService.sendBandDissolvedEmail({
-            email: member.user.email,
-            userName: member.user.name,
-            bandName: band.name,
-            reason: input.reason,
-          })
-        } catch (error) {
-          // Log but don't fail if email fails
-          console.error(`Failed to send dissolution email to ${member.user.email}:`, error)
-        }
       }
 
-      return {
-        success: true,
-        message: 'Band has been dissolved',
+      if (!band.dissolvedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'This band is not dissolved',
+        })
       }
+
+      return { band }
     }),
 })

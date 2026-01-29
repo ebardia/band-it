@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
 import { memberBillingTriggers } from '../../services/member-billing-triggers'
 import { checkAndSetBandActivation } from './band.dissolve'
+import { hasActiveDissolutionVote } from '../../../lib/dues-enforcement'
 
 export const bandApplicationRouter = router({
   /**
@@ -59,6 +60,12 @@ export const bandApplicationRouter = router({
       // Check if band is dissolved
       if (band.dissolvedAt) {
         throw new Error('This band is no longer active')
+      }
+
+      // Check if there's an active dissolution vote (membership frozen)
+      const dissolutionVoteActive = await hasActiveDissolutionVote(input.bandId)
+      if (dissolutionVoteActive) {
+        throw new Error('This band has a dissolution vote in progress. New applications are temporarily frozen.')
       }
 
       // Create membership application
@@ -187,6 +194,12 @@ export const bandApplicationRouter = router({
       // Check if band is dissolved
       if (membership.band.dissolvedAt) {
         throw new Error('This band is no longer active')
+      }
+
+      // Check if there's an active dissolution vote (membership frozen)
+      const dissolutionVoteActive = await hasActiveDissolutionVote(membership.bandId)
+      if (dissolutionVoteActive) {
+        throw new Error('This band has a dissolution vote in progress. Approvals are temporarily frozen.')
       }
 
       // Approve the application with the specified role (defaults to VOTING_MEMBER)
