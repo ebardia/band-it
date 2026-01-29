@@ -94,7 +94,7 @@ export const memberBillingTriggers = {
     // === 21st member joined - upgrade subscription ===
     if (activeCount === 21 && band.stripeSubscriptionId && band.billingStatus === 'ACTIVE') {
       const currentPriceId = band.stripePriceId
-      const largePriceId = process.env.STRIPE_PRICE_LARGE
+      const largePriceId = process.env.STRIPE_PRICE_100
 
       if (currentPriceId !== largePriceId) {
         try {
@@ -186,7 +186,7 @@ export const memberBillingTriggers = {
 
     // === Below 21 members - schedule downgrade ===
     if (activeCount < 21 && band.stripeSubscriptionId && band.billingStatus === 'ACTIVE') {
-      const smallPriceId = process.env.STRIPE_PRICE_SMALL
+      const smallPriceId = process.env.STRIPE_PRICE_20
 
       if (band.stripePriceId !== smallPriceId) {
         try {
