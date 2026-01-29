@@ -53,7 +53,12 @@ export function MessageList({ bandId, channelId, userId, userRole, onOpenThread 
     { enabled: !!channelId && !!userId }
   )
 
-  const markAsReadMutation = trpc.message.markAsRead.useMutation()
+  const markAsReadMutation = trpc.message.markAsRead.useMutation({
+    onSuccess: () => {
+      // Invalidate channel list to update unread counts in sidebar
+      utils.channel.list.invalidate({ bandId })
+    },
+  })
 
   // Mark channel as read when viewing
   useEffect(() => {
