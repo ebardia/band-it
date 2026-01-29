@@ -12,7 +12,8 @@ import {
   Alert,
   BandLayout,
   BillingSettings,
-  DissolveBandSection
+  DissolveBandSection,
+  GovernanceSettings
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -105,6 +106,14 @@ export default function BandSettingsPage() {
       >
         <Stack spacing="lg">
           <Heading level={2}>Band Settings</Heading>
+
+          {/* Governance Settings */}
+          {userId && (
+            <GovernanceSettings
+              bandId={band.id}
+              userId={userId}
+            />
+          )}
 
           {/* Billing Settings */}
           {userId && (

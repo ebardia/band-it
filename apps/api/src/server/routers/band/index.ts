@@ -6,6 +6,7 @@ import { bandInviteRouter } from './band.invite'
 import { bandMatchingRouter } from './band.matching'
 import { bandBillingRouter } from './band.billing'
 import { bandDissolveRouter } from './band.dissolve'
+import { bandGovernanceRouter } from './band.governance'
 import { getMembers, getMemberProfile, changeRole, proposeRemoval } from './band.members'
 
 export const bandRouter = router({
@@ -61,4 +62,8 @@ export const bandRouter = router({
   createDissolutionProposal: bandDissolveRouter.createDissolutionProposal,
   getArchivedBands: bandDissolveRouter.getArchivedBands,
   getArchivedBandDetails: bandDissolveRouter.getArchivedBandDetails,
+
+  // Governance
+  getGovernanceSettings: bandGovernanceRouter.getGovernanceSettings,
+  updateGovernanceSettings: bandGovernanceRouter.updateGovernanceSettings,
 })
