@@ -376,9 +376,165 @@ export const authRouter = router({
         throw new Error('Password is incorrect')
       }
 
-      // Delete user (cascade will delete sessions, memberships, etc.)
-      await prisma.user.delete({
-        where: { id: input.userId },
+      // Delete all related records in correct order to avoid FK constraints
+      await prisma.$transaction(async (tx) => {
+        const userId = input.userId
+
+        // Delete help interactions
+        await tx.helpInteraction.deleteMany({ where: { userId } })
+
+        // Delete proposal review history
+        await tx.proposalReviewHistory.deleteMany({ where: { reviewerId: userId } })
+
+        // Nullify proposal reviewer references
+        await tx.proposal.updateMany({
+          where: { reviewedById: userId },
+          data: { reviewedById: null },
+        })
+
+        // Delete message reactions
+        await tx.messageReaction.deleteMany({ where: { userId } })
+
+        // Delete message mentions
+        await tx.messageMention.deleteMany({ where: { userId } })
+
+        // Delete message edits
+        await tx.messageEdit.deleteMany({ where: { editedById: userId } })
+
+        // Delete channel read statuses
+        await tx.channelReadStatus.deleteMany({ where: { userId } })
+
+        // Delete messages authored (this will cascade to edits, mentions, reactions on those messages)
+        await tx.message.deleteMany({ where: { authorId: userId } })
+
+        // Delete comments authored
+        await tx.comment.deleteMany({ where: { authorId: userId } })
+
+        // Delete reactions given
+        await tx.reaction.deleteMany({ where: { userId } })
+
+        // Delete mentions received
+        await tx.mention.deleteMany({ where: { userId } })
+
+        // Nullify checklist items completed/assigned references (both are optional fields)
+        await tx.checklistItem.updateMany({
+          where: { completedById: userId },
+          data: { completedById: null },
+        })
+        await tx.checklistItem.updateMany({
+          where: { assigneeId: userId },
+          data: { assigneeId: null },
+        })
+
+        // Delete votes (has onDelete: Cascade on User relation)
+        await tx.vote.deleteMany({ where: { userId } })
+
+        // Delete event RSVPs
+        await tx.eventRSVP.deleteMany({ where: { userId } })
+
+        // Delete event attendances for this user
+        await tx.eventAttendance.deleteMany({ where: { userId } })
+        // markedById is required, so delete attendances marked by this user
+        await tx.eventAttendance.deleteMany({ where: { markedById: userId } })
+
+        // Delete warnings received/issued
+        await tx.warning.deleteMany({ where: { userId } })
+        await tx.warning.deleteMany({ where: { issuedById: userId } })
+
+        // Nullify flagged content reviewer references (optional fields)
+        await tx.flaggedContent.updateMany({
+          where: { reviewedById: userId },
+          data: { reviewedById: null },
+        })
+        await tx.flaggedContent.updateMany({
+          where: { appealReviewedById: userId },
+          data: { appealReviewedById: null },
+        })
+
+        // Delete flagged content authored
+        await tx.flaggedContent.deleteMany({ where: { authorId: userId } })
+
+        // Delete blocked terms created by user
+        await tx.blockedTerm.deleteMany({ where: { createdById: userId } })
+
+        // Delete band member billings
+        await tx.bandMemberBilling.deleteMany({ where: { memberUserId: userId } })
+
+        // Delete manual payments where user is the member
+        await tx.manualPayment.deleteMany({ where: { memberUserId: userId } })
+        // Nullify optional user references on remaining manual payments
+        await tx.manualPayment.updateMany({
+          where: { confirmedById: userId },
+          data: { confirmedById: null },
+        })
+        await tx.manualPayment.updateMany({
+          where: { disputedById: userId },
+          data: { disputedById: null },
+        })
+        await tx.manualPayment.updateMany({
+          where: { resolvedById: userId },
+          data: { resolvedById: null },
+        })
+        // initiatedById is required, so delete any remaining payments initiated by user
+        await tx.manualPayment.deleteMany({ where: { initiatedById: userId } })
+
+        // Nullify optional user references on tasks (assigneeId and verifiedById are optional)
+        await tx.task.updateMany({
+          where: { assigneeId: userId },
+          data: { assigneeId: null },
+        })
+        await tx.task.updateMany({
+          where: { verifiedById: userId },
+          data: { verifiedById: null },
+        })
+        // createdById is required, so delete tasks created by user
+        await tx.task.deleteMany({ where: { createdById: userId } })
+
+        // Nullify optional user references on projects (leadId is optional)
+        await tx.project.updateMany({
+          where: { leadId: userId },
+          data: { leadId: null },
+        })
+        // createdById is required, so delete projects created by user
+        await tx.project.deleteMany({ where: { createdById: userId } })
+
+        // createdById is required on proposals, so delete proposals created by user
+        await tx.proposal.deleteMany({ where: { createdById: userId } })
+
+        // createdById is required on events, so delete events created by user
+        await tx.event.deleteMany({ where: { createdById: userId } })
+
+        // createdById is required on channels, so delete channels created by user
+        await tx.channel.deleteMany({ where: { createdById: userId } })
+
+        // Delete pending invites created by user (invitedById is required)
+        await tx.pendingInvite.deleteMany({ where: { invitedById: userId } })
+
+        // Handle bands - nullify billing owner and dissolver (both optional)
+        await tx.band.updateMany({
+          where: { billingOwnerId: userId },
+          data: { billingOwnerId: null },
+        })
+        await tx.band.updateMany({
+          where: { dissolvedById: userId },
+          data: { dissolvedById: null },
+        })
+
+        // Delete files uploaded
+        await tx.file.deleteMany({ where: { uploadedById: userId } })
+
+        // Delete notifications and preferences
+        await tx.notification.deleteMany({ where: { userId } })
+        await tx.notificationPreference.deleteMany({ where: { userId } })
+
+        // Delete memberships
+        await tx.member.deleteMany({ where: { userId } })
+
+        // Delete sessions
+        await tx.session.deleteMany({ where: { userId } })
+
+        // Finally delete the user
+        await tx.user.delete({ where: { id: userId } })
       })
 
       return {
