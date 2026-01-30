@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { Stack, NavButton, Text } from '@/components/ui'
 
 interface BandSidebarProps {
@@ -14,7 +14,6 @@ interface BandSidebarProps {
 }
 
 export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMember = false, canCreateProposal = false, canAccessAdminTools = false, onLeaveBand }: BandSidebarProps) {
-  const router = useRouter()
   const pathname = usePathname()
 
   const isActive = (path: string) => {
@@ -62,7 +61,7 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
             <NavButton
               key={item.path}
               active={isActive(item.path)}
-              onClick={() => router.push(item.path)}
+              href={item.path}
               data-guide={item.guide}
             >
               {item.label}
@@ -80,7 +79,7 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
               <NavButton
                 key={item.path}
                 active={isActive(item.path)}
-                onClick={() => router.push(item.path)}
+                href={item.path}
                 data-guide={item.guide}
               >
                 {item.label}
@@ -96,7 +95,7 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
               <NavButton
                 key={item.path}
                 active={isActive(item.path)}
-                onClick={() => router.push(item.path)}
+                href={item.path}
               >
                 {item.label}
               </NavButton>
