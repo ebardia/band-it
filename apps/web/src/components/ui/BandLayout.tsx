@@ -54,6 +54,7 @@ export function BandLayout({
     { label: 'Projects', path: `/bands/${bandSlug}/projects`, emoji: '📁' },
     { label: 'Tasks', path: `/bands/${bandSlug}/tasks`, emoji: '✅' },
     { label: 'Events', path: `/bands/${bandSlug}/events`, emoji: '📅' },
+    { label: 'Forum', path: `/bands/${bandSlug}/forum`, emoji: '📰' },
     { label: 'Finance', path: `/bands/${bandSlug}/finance`, emoji: '💰' },
     { label: 'Members', path: `/bands/${bandSlug}/members`, emoji: '👥' },
   ]

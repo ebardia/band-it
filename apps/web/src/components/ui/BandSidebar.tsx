@@ -27,6 +27,7 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
     { label: '📁 Projects', path: `/bands/${bandSlug}/projects`, guide: 'band-projects' },
     { label: '✅ Tasks', path: `/bands/${bandSlug}/tasks`, guide: 'band-tasks' },
     { label: '📅 Events', path: `/bands/${bandSlug}/events`, guide: 'band-events' },
+    { label: '📰 Forum', path: `/bands/${bandSlug}/forum`, guide: 'band-forum' },
     { label: '💰 Finance', path: `/bands/${bandSlug}/finance`, guide: 'band-finance' },
     { label: '💳 Billing', path: `/bands/${bandSlug}/billing`, guide: 'band-billing' },
     { label: '📜 Audit Log', path: `/bands/${bandSlug}/audit`, guide: 'band-audit' },

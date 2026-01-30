@@ -128,6 +128,11 @@ model User {
   // Proposal Edits
   proposalsLastEdited         Proposal[] @relation("ProposalLastEditor")
   proposalEditHistory         ProposalEditHistory[] @relation("ProposalEditsAuthored")
+
+  // Forum
+  forumCategoriesCreated      ForumCategory[] @relation("ForumCategoriesCreated")
+  forumPostsAuthored          ForumPost[] @relation("ForumPostsAuthored")
+  forumResponsesAuthored      ForumResponse[] @relation("ForumResponsesAuthored")
 }
 
 enum SubscriptionStatus {
@@ -404,6 +409,11 @@ enum NotificationType {
   MODERATION_WARNING
   MODERATION_SUSPENSION
   MODERATION_BAN
+
+  // Forum
+  FORUM_POST_CREATED
+  FORUM_RESPONSE_RECEIVED
+  FORUM_MENTIONED
 }
 
 enum NotificationPriority {
@@ -524,6 +534,8 @@ model Band {
   memberBillings BandMemberBilling[]
   channels  Channel[]
   manualPayments ManualPayment[]
+  forumCategories ForumCategory[]
+  forumPosts      ForumPost[]
 
   @@index([createdById])
   @@index([status])
@@ -2054,4 +2066,110 @@ model HelpRateLimit {
   aiRequestCount  Int      @default(0)
 
   @@unique([userId, date])
+}
+
+// ============================================
+// FORUM - LONG-FORM DISCUSSIONS
+// ============================================
+
+enum ForumCategoryVisibility {
+  PUBLIC      // All band members can view
+  MODERATOR   // Moderators, Governors, Founders only
+  GOVERNANCE  // Governors, Founders only
+}
+
+model ForumCategory {
+  id          String   @id @default(cuid())
+  bandId      String
+  name        String   @db.VarChar(80)
+  slug        String   @db.VarChar(100)
+  description String?  @db.VarChar(500)
+  visibility  ForumCategoryVisibility @default(PUBLIC)
+  sortOrder   Int      @default(0)
+  isArchived  Boolean  @default(false)
+
+  // Denormalized for performance
+  postCount       Int      @default(0)
+  lastPostAt      DateTime?
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  band        Band          @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  createdBy   User          @relation("ForumCategoriesCreated", fields: [createdById], references: [id])
+  posts       ForumPost[]
+
+  @@unique([bandId, slug])
+  @@index([bandId, isArchived])
+  @@index([bandId, visibility])
+  @@index([bandId, sortOrder])
+}
+
+model ForumPost {
+  id          String   @id @default(cuid())
+  categoryId  String
+  bandId      String   // Denormalized for easier queries
+  authorId    String
+
+  title       String   @db.VarChar(200)
+  slug        String   @db.VarChar(250)
+  content     String   @db.Text  // Markdown content
+
+  isPinned    Boolean  @default(false)
+  isLocked    Boolean  @default(false)  // Prevents new responses
+  isEdited    Boolean  @default(false)
+  editedAt    DateTime?
+
+  // Denormalized for performance
+  responseCount   Int      @default(0)
+  lastResponseAt  DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?  // Soft delete
+
+  // Relations
+  category    ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  band        Band          @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  author      User          @relation("ForumPostsAuthored", fields: [authorId], references: [id])
+  responses   ForumResponse[]
+
+  @@unique([bandId, slug])
+  @@index([categoryId, createdAt])
+  @@index([categoryId, isPinned, createdAt])
+  @@index([bandId, createdAt])
+  @@index([authorId])
+  @@index([deletedAt])
+}
+
+model ForumResponse {
+  id          String   @id @default(cuid())
+  postId      String
+  authorId    String
+
+  content     String   @db.Text  // Markdown content
+
+  // Threading (depth limit = 3)
+  parentId    String?  // null = direct response to post
+  depth       Int      @default(1)  // 1 = response to post, 2 = reply to response, 3 = max
+
+  isEdited    Boolean  @default(false)
+  editedAt    DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?  // Soft delete
+
+  // Relations
+  post        ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author      User            @relation("ForumResponsesAuthored", fields: [authorId], references: [id])
+  parent      ForumResponse?  @relation("ForumResponseReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     ForumResponse[] @relation("ForumResponseReplies")
+
+  @@index([postId, createdAt])
+  @@index([parentId])
+  @@index([authorId])
+  @@index([deletedAt])
 }
