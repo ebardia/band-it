@@ -16,8 +16,9 @@ export const proposalRouter = router({
   getMyPendingVotes: proposalQueryRouter.getMyPendingVotes,
   getMyProposals: proposalQueryRouter.getMyProposals,
 
-  // Update
-  update: proposalUpdateRouter.update,
+  // Update/Edit
+  edit: proposalUpdateRouter.edit,
+  getEditHistory: proposalUpdateRouter.getEditHistory,
 
   // Vote
   vote: proposalVoteRouter.vote,

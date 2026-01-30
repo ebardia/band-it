@@ -71,6 +71,8 @@ export default function ProposalDetailPage() {
   const [editProblemStatement, setEditProblemStatement] = useState('')
   const [editExpectedOutcome, setEditExpectedOutcome] = useState('')
   const [editRisksAndConcerns, setEditRisksAndConcerns] = useState('')
+  const [editReason, setEditReason] = useState('')
+  const [showVoteResetWarning, setShowVoteResetWarning] = useState(false)
 
   // Integrity Guard state
   const [validationIssues, setValidationIssues] = useState<any[]>([])
@@ -123,10 +125,12 @@ export default function ProposalDetailPage() {
     },
   })
 
-  const updateMutation = trpc.proposal.update.useMutation({
+  const editMutation = trpc.proposal.edit.useMutation({
     onSuccess: (data) => {
       showToast(data.message, 'success')
       setShowEditModal(false)
+      setShowVoteResetWarning(false)
+      setEditReason('')
       refetch()
     },
     onError: (error) => {
@@ -214,6 +218,21 @@ export default function ProposalDetailPage() {
   const handleSaveEdit = async () => {
     if (!userId || !editTitle.trim() || !editDescription.trim()) return
 
+    const proposal = proposalData?.proposal
+    if (!proposal) return
+
+    // If editing during voting, show warning first (unless already confirmed)
+    if (proposal.status === 'OPEN' && !showVoteResetWarning) {
+      setShowVoteResetWarning(true)
+      return
+    }
+
+    // Require edit reason when editing during voting
+    if (proposal.status === 'OPEN' && editReason.trim().length < 10) {
+      showToast('Please provide an edit reason (minimum 10 characters)', 'error')
+      return
+    }
+
     const editData = {
       proposalId,
       userId,
@@ -224,6 +243,7 @@ export default function ProposalDetailPage() {
       problemStatement: editProblemStatement || null,
       expectedOutcome: editExpectedOutcome || null,
       risksAndConcerns: editRisksAndConcerns || null,
+      editReason: proposal.status === 'OPEN' ? editReason.trim() : undefined,
     }
 
     // Store data for potential later use
@@ -234,7 +254,7 @@ export default function ProposalDetailPage() {
       const validation = await validationMutation.mutateAsync({
         entityType: 'Proposal',
         action: 'update',
-        bandId: proposalData?.proposal?.band?.id || '',
+        bandId: proposal.band?.id || '',
         data: {
           title: editTitle,
           description: editDescription,
@@ -258,10 +278,10 @@ export default function ProposalDetailPage() {
         return
       }
 
-      // All clear - update proposal normally
-      updateMutation.mutate(editData)
+      // All clear - edit proposal
+      editMutation.mutate(editData)
     } catch (error) {
-      // Validation failed - show error but don't update
+      // Validation failed - show error but don't edit
       console.error('Validation error:', error)
       showToast('Unable to validate content. Please try again.', 'error')
     }
@@ -271,12 +291,7 @@ export default function ProposalDetailPage() {
   const handleProceedWithWarnings = () => {
     if (!pendingEditData) return
 
-    updateMutation.mutate({
-      ...pendingEditData,
-      proceedWithFlags: true,
-      flagReasons: validationIssues.map(i => `${i.type}_mismatch`),
-      flagDetails: validationIssues,
-    })
+    editMutation.mutate(pendingEditData)
 
     // Close modal and clear state
     setShowWarningModal(false)
@@ -348,10 +363,10 @@ export default function ProposalDetailPage() {
                    currentMember?.role === 'FOUNDER' || 
                    currentMember?.role === 'GOVERNOR'
   
-  // Can edit if creator or admin role, and proposal is draft or open
+  // Can edit if creator and proposal is not APPROVED/CLOSED
   const isCreator = proposal.createdById === userId
-  const canUpdateAny = currentMember && CAN_UPDATE_ANY.includes(currentMember.role)
-  const canEdit = (proposal.status === 'OPEN' || proposal.status === 'DRAFT') && (isCreator || canUpdateAny)
+  const editableStatuses = ['DRAFT', 'PENDING_REVIEW', 'OPEN', 'REJECTED', 'WITHDRAWN']
+  const canEdit = isCreator && editableStatuses.includes(proposal.status)
 
   // Can review if has reviewer role and is not the author
   const canReview = currentMember &&
@@ -458,13 +473,28 @@ export default function ProposalDetailPage() {
             </Button>
           </Flex>
 
+          {/* Recently Edited Notice */}
+          {proposal.editCount > 0 && proposal.lastEditedAt && (
+            <Alert variant="info">
+              <Flex gap="sm" align="center">
+                <Text variant="small">
+                  This proposal was edited {proposal.editCount} time{proposal.editCount > 1 ? 's' : ''}.
+                  Last edited on {new Date(proposal.lastEditedAt).toLocaleDateString()}.
+                </Text>
+              </Flex>
+            </Alert>
+          )}
+
           {/* Header */}
           <Card>
             <Stack spacing="md">
-              <Flex gap="sm">
+              <Flex gap="sm" className="flex-wrap">
                 {getStatusBadge(proposal.status)}
                 <Badge variant="neutral">{TYPE_LABELS[proposal.type] || proposal.type}</Badge>
                 <Badge variant={PRIORITY_VARIANTS[proposal.priority] as any}>{proposal.priority}</Badge>
+                {proposal.editCount > 0 && (
+                  <Badge variant="warning">Edited</Badge>
+                )}
               </Flex>
               <Text color="muted">
                 Proposed by {proposal.createdBy.name} on {new Date(proposal.createdAt).toLocaleDateString()}
@@ -969,16 +999,42 @@ export default function ProposalDetailPage() {
               />
             </Stack>
 
+            {/* Vote Reset Warning - shown when editing during voting */}
+            {proposal.status === 'OPEN' && showVoteResetWarning && (
+              <Alert variant="warning">
+                <Stack spacing="sm">
+                  <Text weight="semibold">This will reset all {proposal.votes.length} vote(s)</Text>
+                  <Text variant="small">
+                    Editing a proposal during voting will delete all existing votes and restart the voting period.
+                    All voters will be notified of this change.
+                  </Text>
+                  <Stack spacing="sm">
+                    <Text variant="small" weight="semibold">Edit Reason (required)</Text>
+                    <Textarea
+                      value={editReason}
+                      onChange={(e) => setEditReason(e.target.value)}
+                      placeholder="Explain why you're editing this proposal (minimum 10 characters)"
+                      rows={2}
+                    />
+                  </Stack>
+                </Stack>
+              </Alert>
+            )}
+
             <Flex gap="sm" justify="end">
-              <Button variant="ghost" onClick={() => setShowEditModal(false)}>
+              <Button variant="ghost" onClick={() => {
+                setShowEditModal(false)
+                setShowVoteResetWarning(false)
+                setEditReason('')
+              }}>
                 Cancel
               </Button>
               <Button
-                variant="primary"
+                variant={proposal.status === 'OPEN' && showVoteResetWarning ? 'danger' : 'primary'}
                 onClick={handleSaveEdit}
-                disabled={updateMutation.isPending || validationMutation.isPending || !editTitle.trim() || !editDescription.trim()}
+                disabled={editMutation.isPending || validationMutation.isPending || !editTitle.trim() || !editDescription.trim() || (proposal.status === 'OPEN' && showVoteResetWarning && editReason.trim().length < 10)}
               >
-                {validationMutation.isPending ? 'Checking...' : updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                {validationMutation.isPending ? 'Checking...' : editMutation.isPending ? 'Saving...' : proposal.status === 'OPEN' && showVoteResetWarning ? 'Confirm Edit & Reset Votes' : 'Save Changes'}
               </Button>
             </Flex>
           </Stack>
@@ -996,7 +1052,7 @@ export default function ProposalDetailPage() {
           onClose={handleCancelWarning}
           onProceed={handleProceedWithWarnings}
           issues={validationIssues}
-          isProceeding={updateMutation.isPending}
+          isProceeding={editMutation.isPending}
         />
 
         {/* Reject Modal */}

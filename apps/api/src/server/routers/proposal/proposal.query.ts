@@ -62,6 +62,9 @@ export const proposalQueryRouter = router({
           reviewedBy: {
             select: { id: true, name: true },
           },
+          lastEditedBy: {
+            select: { id: true, name: true },
+          },
           band: {
             select: {
               id: true,

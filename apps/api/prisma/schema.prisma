@@ -124,6 +124,10 @@ model User {
   // Proposal Reviews
   proposalsReviewed           Proposal[] @relation("ProposalReviewer")
   proposalReviewHistory       ProposalReviewHistory[]
+
+  // Proposal Edits
+  proposalsLastEdited         Proposal[] @relation("ProposalLastEditor")
+  proposalEditHistory         ProposalEditHistory[] @relation("ProposalEditsAuthored")
 }
 
 enum SubscriptionStatus {
@@ -354,6 +358,8 @@ enum NotificationType {
   PROPOSAL_APPROVED
   PROPOSAL_REJECTED
   PROPOSAL_CLOSED
+  PROPOSAL_EDITED           // Proposal was edited (for reviewers)
+  PROPOSAL_VOTES_RESET      // Votes were reset due to edit (for voters)
 
   // Projects
   PROJECT_CREATED
@@ -1057,6 +1063,11 @@ model Proposal {
   rejectionReason   String? @db.Text  // If rejected by reviewer, why
   submissionCount   Int @default(0) // Track resubmissions (max 3)
 
+  // Edit tracking
+  editCount         Int @default(0)  // Number of edits (excluding draft edits)
+  lastEditedAt      DateTime?        // When last edited
+  lastEditedById    String?          // Who last edited
+
   // AI
   aiValidation  Json?
 
@@ -1064,6 +1075,7 @@ model Proposal {
   band          Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
   createdBy     User @relation("ProposalCreator", fields: [createdById], references: [id])
   reviewedBy    User? @relation("ProposalReviewer", fields: [reviewedById], references: [id])
+  lastEditedBy  User? @relation("ProposalLastEditor", fields: [lastEditedById], references: [id])
   votes         Vote[]
   projects      Project[]
   files         File[]
@@ -1071,6 +1083,7 @@ model Proposal {
   executionLogs ProposalExecutionLog[]
   bucketsCreated Bucket[] @relation("BucketCreatedByProposal")
   reviewHistory ProposalReviewHistory[]
+  editHistory   ProposalEditHistory[]
 
   @@index([bandId])
   @@index([createdById])
@@ -1141,6 +1154,35 @@ model ProposalReviewHistory {
 
   @@index([proposalId])
   @@index([reviewerId])
+}
+
+// Track history of proposal edits
+model ProposalEditHistory {
+  id          String   @id @default(cuid())
+  proposalId  String
+  editorId    String
+
+  // What status was the proposal in when edited
+  statusAtEdit    ProposalStatus
+
+  // Edit reason (required when votes are reset)
+  reason          String?  @db.Text
+
+  // Snapshot of changes (JSON with old and new values for changed fields)
+  changes         Json
+
+  // How many votes were reset (0 if not in voting)
+  votesReset      Int @default(0)
+
+  createdAt       DateTime @default(now())
+
+  // Relations
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  editor      User     @relation("ProposalEditsAuthored", fields: [editorId], references: [id])
+
+  @@index([proposalId])
+  @@index([editorId])
+  @@index([createdAt])
 }
 
 enum ProposalPriority {
