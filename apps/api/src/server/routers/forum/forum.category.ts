@@ -480,3 +480,63 @@ export const unarchiveCategory = publicProcedure
 
     return { category: updated }
   })
+
+/**
+ * Delete a category (only if empty)
+ */
+export const deleteCategory = publicProcedure
+  .input(z.object({
+    categoryId: z.string(),
+    userId: z.string(),
+  }))
+  .mutation(async ({ input }) => {
+    const { categoryId, userId } = input
+
+    const category = await prisma.forumCategory.findUnique({
+      where: { id: categoryId },
+      select: { bandId: true, postCount: true, name: true },
+    })
+
+    if (!category) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Category not found',
+      })
+    }
+
+    // Get user's membership
+    const membership = await prisma.member.findUnique({
+      where: {
+        userId_bandId: { userId, bandId: category.bandId },
+      },
+      select: { role: true, status: true },
+    })
+
+    if (!membership || membership.status !== 'ACTIVE') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You must be an active band member',
+      })
+    }
+
+    if (!canCreateCategory(membership.role)) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You do not have permission to delete categories',
+      })
+    }
+
+    // Only allow deletion if category is empty
+    if (category.postCount > 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Cannot delete category "${category.name}" because it contains ${category.postCount} post(s). Please delete or move all posts first.`,
+      })
+    }
+
+    await prisma.forumCategory.delete({
+      where: { id: categoryId },
+    })
+
+    return { success: true }
+  })

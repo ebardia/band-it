@@ -6,6 +6,7 @@ import {
   updateCategory,
   archiveCategory,
   unarchiveCategory,
+  deleteCategory,
 } from './forum.category'
 import {
   listPosts,
@@ -30,6 +31,7 @@ export const forumRouter = router({
   updateCategory,
   archiveCategory,
   unarchiveCategory,
+  deleteCategory,
 
   // Posts
   listPosts,

@@ -14,7 +14,12 @@ import {
   Badge,
   Loading,
   Alert,
-  BandLayout
+  BandLayout,
+  Modal,
+  Input,
+  Textarea,
+  Select,
+  useToast
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -22,7 +27,23 @@ export default function ForumPage() {
   const router = useRouter()
   const params = useParams()
   const slug = params.slug as string
+  const { showToast } = useToast()
   const [userId, setUserId] = useState<string | null>(null)
+
+  // Modal states
+  const [createModal, setCreateModal] = useState(false)
+  const [editModal, setEditModal] = useState<{ category: any } | null>(null)
+  const [deleteModal, setDeleteModal] = useState<{ category: any } | null>(null)
+
+  // Form states for create
+  const [newName, setNewName] = useState('')
+  const [newDescription, setNewDescription] = useState('')
+  const [newVisibility, setNewVisibility] = useState<'PUBLIC' | 'MODERATOR' | 'GOVERNANCE'>('PUBLIC')
+
+  // Form states for edit
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editVisibility, setEditVisibility] = useState<'PUBLIC' | 'MODERATOR' | 'GOVERNANCE'>('PUBLIC')
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -44,10 +65,46 @@ export default function ForumPage() {
     { enabled: !!slug }
   )
 
-  const { data: categoriesData, isLoading: categoriesLoading } = trpc.forum.listCategories.useQuery(
+  const { data: categoriesData, isLoading: categoriesLoading, refetch } = trpc.forum.listCategories.useQuery(
     { bandId: bandData?.band?.id || '', userId: userId || '' },
     { enabled: !!bandData?.band?.id && !!userId }
   )
+
+  const createMutation = trpc.forum.createCategory.useMutation({
+    onSuccess: () => {
+      showToast('Category created!', 'success')
+      setCreateModal(false)
+      setNewName('')
+      setNewDescription('')
+      setNewVisibility('PUBLIC')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
+  const updateMutation = trpc.forum.updateCategory.useMutation({
+    onSuccess: () => {
+      showToast('Category updated!', 'success')
+      setEditModal(null)
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
+  const deleteMutation = trpc.forum.deleteCategory.useMutation({
+    onSuccess: () => {
+      showToast('Category deleted.', 'success')
+      setDeleteModal(null)
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
 
   if (bandLoading || categoriesLoading) {
     return (
@@ -94,8 +151,7 @@ export default function ForumPage() {
   const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
   const isMember = !!currentMember
   const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
-  const canCreateCategory = categoriesData?.canCreateCategory || false
-  const canCreatePost = categoriesData?.canCreatePost || false
+  const canManageCategories = categoriesData?.canCreateCategory || false
 
   const getVisibilityBadge = (visibility: string) => {
     switch (visibility) {
@@ -115,6 +171,49 @@ export default function ForumPage() {
 
   const categories = categoriesData?.categories || []
 
+  const handleCreate = () => {
+    if (!newName.trim()) return
+    createMutation.mutate({
+      bandId: band.id,
+      userId: userId!,
+      name: newName.trim(),
+      description: newDescription.trim() || undefined,
+      visibility: newVisibility,
+    })
+  }
+
+  const handleEdit = () => {
+    if (!editModal || !editName.trim()) return
+    updateMutation.mutate({
+      categoryId: editModal.category.id,
+      userId: userId!,
+      name: editName.trim(),
+      description: editDescription.trim() || null,
+      visibility: editVisibility,
+    })
+  }
+
+  const handleDelete = () => {
+    if (!deleteModal) return
+    deleteMutation.mutate({
+      categoryId: deleteModal.category.id,
+      userId: userId!,
+    })
+  }
+
+  const openEditModal = (category: any, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditName(category.name)
+    setEditDescription(category.description || '')
+    setEditVisibility(category.visibility)
+    setEditModal({ category })
+  }
+
+  const openDeleteModal = (category: any, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDeleteModal({ category })
+  }
+
   return (
     <>
       <AppNav />
@@ -129,14 +228,11 @@ export default function ForumPage() {
         bandId={bandData?.band?.id}
         userId={userId || undefined}
         action={
-          canCreateCategory ? (
+          canManageCategories ? (
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => {
-                // TODO: Implement create category modal
-                alert('Create category coming soon')
-              }}
+              onClick={() => setCreateModal(true)}
             >
               New Category
             </Button>
@@ -187,24 +283,189 @@ export default function ForumPage() {
                         </Text>
                       )}
                     </Stack>
-                    {category.hasAccess && (
-                      <div style={{ textAlign: 'right' }}>
-                        <Stack spacing="xs">
-                          <Text variant="small" weight="semibold">
-                            {category.postCount} {category.postCount === 1 ? 'post' : 'posts'}
-                          </Text>
-                          <Text variant="small" color="muted">
-                            Last activity: {formatDate(category.lastPostAt)}
-                          </Text>
-                        </Stack>
-                      </div>
-                    )}
+                    <Flex align="center" gap="md">
+                      {category.hasAccess && (
+                        <div style={{ textAlign: 'right' }}>
+                          <Stack spacing="xs">
+                            <Text variant="small" weight="semibold">
+                              {category.postCount} {category.postCount === 1 ? 'post' : 'posts'}
+                            </Text>
+                            <Text variant="small" color="muted">
+                              Last activity: {formatDate(category.lastPostAt)}
+                            </Text>
+                          </Stack>
+                        </div>
+                      )}
+                      {canManageCategories && (
+                        <Flex gap="xs">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => openEditModal(category, e)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => openDeleteModal(category, e)}
+                            disabled={category.postCount > 0}
+                          >
+                            Delete
+                          </Button>
+                        </Flex>
+                      )}
+                    </Flex>
                   </Flex>
                 </Card>
               ))}
             </Stack>
           )}
         </Stack>
+
+        {/* Create Category Modal */}
+        <Modal
+          isOpen={createModal}
+          onClose={() => setCreateModal(false)}
+          title="Create New Category"
+        >
+          <Stack spacing="md">
+            <Stack spacing="xs">
+              <Text weight="semibold">Name</Text>
+              <Input
+                placeholder="Category name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                maxLength={80}
+              />
+            </Stack>
+
+            <Stack spacing="xs">
+              <Text weight="semibold">Description (optional)</Text>
+              <Textarea
+                placeholder="Brief description of this category"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                rows={2}
+              />
+            </Stack>
+
+            <Stack spacing="xs">
+              <Text weight="semibold">Visibility</Text>
+              <Select
+                value={newVisibility}
+                onChange={(e) => setNewVisibility(e.target.value as any)}
+              >
+                <option value="PUBLIC">Public - All members</option>
+                <option value="MODERATOR">Moderators+ only</option>
+                <option value="GOVERNANCE">Governors+ only</option>
+              </Select>
+            </Stack>
+
+            <Flex justify="end" gap="sm">
+              <Button variant="ghost" onClick={() => setCreateModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleCreate}
+                disabled={!newName.trim() || createMutation.isPending}
+              >
+                {createMutation.isPending ? 'Creating...' : 'Create'}
+              </Button>
+            </Flex>
+          </Stack>
+        </Modal>
+
+        {/* Edit Category Modal */}
+        <Modal
+          isOpen={!!editModal}
+          onClose={() => setEditModal(null)}
+          title="Edit Category"
+        >
+          <Stack spacing="md">
+            <Stack spacing="xs">
+              <Text weight="semibold">Name</Text>
+              <Input
+                placeholder="Category name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                maxLength={80}
+              />
+            </Stack>
+
+            <Stack spacing="xs">
+              <Text weight="semibold">Description (optional)</Text>
+              <Textarea
+                placeholder="Brief description of this category"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={2}
+              />
+            </Stack>
+
+            <Stack spacing="xs">
+              <Text weight="semibold">Visibility</Text>
+              <Select
+                value={editVisibility}
+                onChange={(e) => setEditVisibility(e.target.value as any)}
+              >
+                <option value="PUBLIC">Public - All members</option>
+                <option value="MODERATOR">Moderators+ only</option>
+                <option value="GOVERNANCE">Governors+ only</option>
+              </Select>
+            </Stack>
+
+            <Flex justify="end" gap="sm">
+              <Button variant="ghost" onClick={() => setEditModal(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleEdit}
+                disabled={!editName.trim() || updateMutation.isPending}
+              >
+                {updateMutation.isPending ? 'Saving...' : 'Save'}
+              </Button>
+            </Flex>
+          </Stack>
+        </Modal>
+
+        {/* Delete Category Modal */}
+        <Modal
+          isOpen={!!deleteModal}
+          onClose={() => setDeleteModal(null)}
+          title="Delete Category"
+        >
+          <Stack spacing="md">
+            {deleteModal && deleteModal.category.postCount > 0 ? (
+              <Alert variant="warning">
+                <Text>
+                  Cannot delete "{deleteModal.category.name}" because it contains {deleteModal.category.postCount} post(s).
+                  Please delete all posts first.
+                </Text>
+              </Alert>
+            ) : (
+              <Text>
+                Are you sure you want to delete the category "{deleteModal?.category.name}"?
+                This action cannot be undone.
+              </Text>
+            )}
+
+            <Flex justify="end" gap="sm">
+              <Button variant="ghost" onClick={() => setDeleteModal(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending || (deleteModal?.category.postCount > 0)}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </Flex>
+          </Stack>
+        </Modal>
       </BandLayout>
     </>
   )
