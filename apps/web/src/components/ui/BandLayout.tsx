@@ -49,14 +49,14 @@ export function BandLayout({
   // Mobile navigation items
   const mobileNavItems = [
     { label: 'Discussions', path: `/bands/${bandSlug}`, emoji: '💬' },
-    { label: 'About', path: `/bands/${bandSlug}/about`, emoji: 'ℹ️' },
+    { label: 'Forum', path: `/bands/${bandSlug}/forum`, emoji: '📰' },
     { label: 'Proposals', path: `/bands/${bandSlug}/proposals`, emoji: '📝' },
     { label: 'Projects', path: `/bands/${bandSlug}/projects`, emoji: '📁' },
     { label: 'Tasks', path: `/bands/${bandSlug}/tasks`, emoji: '✅' },
     { label: 'Events', path: `/bands/${bandSlug}/events`, emoji: '📅' },
-    { label: 'Forum', path: `/bands/${bandSlug}/forum`, emoji: '📰' },
     { label: 'Finance', path: `/bands/${bandSlug}/finance`, emoji: '💰' },
     { label: 'Members', path: `/bands/${bandSlug}/members`, emoji: '👥' },
+    { label: 'About', path: `/bands/${bandSlug}/about`, emoji: 'ℹ️' },
   ]
 
   // Current page for mobile dropdown
