@@ -39,6 +39,11 @@ export default function BandDiscussionsPage() {
   const [showMobileNav, setShowMobileNav] = useState(false)
   const [showMobileChannels, setShowMobileChannels] = useState(false)
 
+  // Scroll to top on mount for consistent behavior with other pages
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {

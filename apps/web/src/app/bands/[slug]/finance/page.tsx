@@ -248,6 +248,7 @@ export default function FinancePage() {
           bandName="Loading..."
           pageTitle="Finance"
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading finance..." />
         </BandLayout>
@@ -264,6 +265,7 @@ export default function FinancePage() {
           bandName=""
           pageTitle="Finance"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -325,6 +327,9 @@ export default function FinancePage() {
         pageTitle="Finance"
         canApprove={canApprove}
         isMember={isMember}
+        wide={true}
+        bandId={band.id}
+        userId={userId || undefined}
       >
         <Stack spacing="xl">
           {/* Stripe Connect Section */}

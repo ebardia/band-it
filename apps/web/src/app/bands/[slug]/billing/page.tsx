@@ -294,7 +294,7 @@ export default function BillingPage() {
     return (
       <>
         <AppNav />
-        <BandLayout bandSlug={slug} bandName="Loading..." pageTitle="Billing" isMember={false}>
+        <BandLayout bandSlug={slug} bandName="Loading..." pageTitle="Billing" isMember={false} wide={true}>
           <Loading message="Loading billing..." />
         </BandLayout>
       </>
@@ -305,7 +305,7 @@ export default function BillingPage() {
     return (
       <>
         <AppNav />
-        <BandLayout bandSlug={slug} bandName="" pageTitle="Billing" isMember={false}>
+        <BandLayout bandSlug={slug} bandName="" pageTitle="Billing" isMember={false} wide={true}>
           <Alert variant="danger">
             <Text>Band not found</Text>
           </Alert>
@@ -349,6 +349,9 @@ export default function BillingPage() {
         pageTitle="Billing"
         canApprove={canApprove}
         isMember={isMember}
+        wide={true}
+        bandId={band.id}
+        userId={userId || undefined}
       >
         <Stack spacing="xl">
           {/* Tab Navigation */}
