@@ -44,7 +44,13 @@ export function BandLayout({
   const [showMobileNav, setShowMobileNav] = useState(false)
   const actionContent = action || actions
 
-  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
+  const isActive = (path: string) => {
+    // Special case: Discussions is the band root, only match exactly
+    if (path === `/bands/${bandSlug}`) {
+      return pathname === path
+    }
+    return pathname === path || pathname.startsWith(path + '/')
+  }
 
   // Mobile navigation items
   const mobileNavItems = [

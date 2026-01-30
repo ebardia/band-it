@@ -17,7 +17,13 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
   const router = useRouter()
   const pathname = usePathname()
 
-  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
+  const isActive = (path: string) => {
+    // Special case: Discussions is the band root, only match exactly
+    if (path === `/bands/${bandSlug}`) {
+      return pathname === path
+    }
+    return pathname === path || pathname.startsWith(path + '/')
+  }
 
   // Main navigation - always visible
   const mainNav = [
