@@ -48,6 +48,7 @@ export default function BandSettingsPage() {
           bandName=""
           pageTitle="Loading..."
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading settings..." />
         </BandLayout>
@@ -64,6 +65,7 @@ export default function BandSettingsPage() {
           bandName=""
           pageTitle="Band Not Found"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -86,6 +88,7 @@ export default function BandSettingsPage() {
           bandName={band.name}
           pageTitle="Settings"
           isMember={false}
+          wide={true}
         >
           <Alert variant="warning">
             <Text>You must be a member of this band to view settings.</Text>
@@ -103,6 +106,9 @@ export default function BandSettingsPage() {
         bandName={band.name}
         pageTitle="Settings"
         isMember={isMember}
+        wide={true}
+        bandId={band.id}
+        userId={userId || undefined}
       >
         <Stack spacing="lg">
           <Heading level={2}>Band Settings</Heading>

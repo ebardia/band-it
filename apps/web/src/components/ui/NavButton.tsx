@@ -20,6 +20,7 @@ export function NavButton({ children, active, className, disabled, href, onClick
       <Link
         href={href}
         className={combinedClasses}
+        scroll={false}
         {...(props as any)}
       >
         {children}
