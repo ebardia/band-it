@@ -138,6 +138,7 @@ export default function InviteMembersPage() {
   const currentMember = bandData?.band?.members.find((m: any) => m.user.id === userId)
   const canApprove = currentMember && bandData?.band?.whoCanApprove.includes(currentMember.role)
   const isMember = !!currentMember
+  const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
   if (!bandData?.band) {
     return (
@@ -165,7 +166,10 @@ export default function InviteMembersPage() {
         pageTitle="Invite Members"
         canApprove={canApprove}
         isMember={isMember}
+        canAccessAdminTools={canAccessAdminTools}
         wide={true}
+        bandId={bandData.band.id}
+        userId={userId || undefined}
       >
         <Stack spacing="xl">
           {/* Invite by Email */}

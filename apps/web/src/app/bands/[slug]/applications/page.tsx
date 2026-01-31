@@ -93,6 +93,7 @@ export default function BandApplicationsPage() {
   const currentMember = bandData?.band?.members.find((m: any) => m.user.id === userId)
   const canApprove = currentMember && bandData?.band?.whoCanApprove.includes(currentMember.role)
   const isMember = !!currentMember
+  const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
   if (isLoading) {
     return (
@@ -120,7 +121,10 @@ export default function BandApplicationsPage() {
         pageTitle="Pending Applications"
         canApprove={canApprove}
         isMember={isMember}
+        canAccessAdminTools={canAccessAdminTools}
         wide={true}
+        bandId={bandData?.band?.id}
+        userId={userId || undefined}
       >
         <Stack spacing="xl">
           <Text color="muted">Review and manage membership applications for {bandData?.band?.name}</Text>

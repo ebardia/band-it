@@ -147,6 +147,7 @@ export default function ToolsPage() {
           bandName="Loading..."
           pageTitle="Tools"
           isMember={false}
+          wide={true}
         >
           <Loading message="Loading..." />
         </BandLayout>
@@ -163,6 +164,7 @@ export default function ToolsPage() {
           bandName=""
           pageTitle="Tools"
           isMember={false}
+          wide={true}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -189,6 +191,9 @@ export default function ToolsPage() {
           canApprove={canApprove}
           isMember={isMember}
           canAccessAdminTools={false}
+          wide={true}
+          bandId={band.id}
+          userId={userId || undefined}
         >
           <Alert variant="danger">
             <Text>You do not have permission to access admin tools.</Text>
@@ -436,6 +441,9 @@ export default function ToolsPage() {
         canApprove={canApprove}
         isMember={isMember}
         canAccessAdminTools={canAccessAdminTools}
+        wide={true}
+        bandId={band.id}
+        userId={userId || undefined}
         action={
           <Button variant="secondary" onClick={() => setShowHistory(true)}>
             View History

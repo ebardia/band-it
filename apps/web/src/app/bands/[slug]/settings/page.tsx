@@ -78,6 +78,8 @@ export default function BandSettingsPage() {
   const band = bandData.band
   const currentMember = band.members.find((m: any) => m.user.id === userId)
   const isMember = !!currentMember
+  const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
+  const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
   if (!isMember) {
     return (
@@ -105,7 +107,9 @@ export default function BandSettingsPage() {
         bandSlug={slug}
         bandName={band.name}
         pageTitle="Settings"
+        canApprove={canApprove}
         isMember={isMember}
+        canAccessAdminTools={canAccessAdminTools}
         wide={true}
         bandId={band.id}
         userId={userId || undefined}
