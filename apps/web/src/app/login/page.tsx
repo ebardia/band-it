@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   Button, 
   Input, 
@@ -20,6 +20,7 @@ import {
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { showToast } = useToast()
   const [formData, setFormData] = useState({
     email: '',
@@ -27,19 +28,28 @@ export default function LoginPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
 
+  // Get returnTo URL from query params (for quick action pages)
+  const returnTo = searchParams.get('returnTo')
+
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
-      
+
       if (!data.user.emailVerified) {
         showToast('Please verify your email before continuing.', 'warning')
         router.push('/verify-email')
         return
       }
-      
+
       showToast(`Welcome back, ${data.user.name}!`, 'success')
-      router.push('/user-dashboard')
+
+      // Redirect to returnTo URL if provided (validate it's a safe internal path)
+      if (returnTo && returnTo.startsWith('/')) {
+        router.push(returnTo)
+      } else {
+        router.push('/user-dashboard')
+      }
     },
     onError: (error) => {
       showToast(error.message, 'error')

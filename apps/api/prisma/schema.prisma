@@ -943,6 +943,8 @@ model ManualPayment {
   autoConfirmAt       DateTime? // 7 days from initiation
   autoConfirmWarned   Boolean  @default(false) // Track if 2-day warning sent
 
+  confirmationToken   String?  // Token for secure micro-page confirmation links
+
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 

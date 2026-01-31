@@ -1,8 +1,16 @@
 import { z } from 'zod'
+import { randomBytes } from 'crypto'
 import { router, publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../services/notification.service'
+
+/**
+ * Generate a secure random token for payment confirmation links
+ */
+function generateConfirmationToken(): string {
+  return randomBytes(32).toString('hex')
+}
 
 // Roles that can view all billing and confirm payments as treasurer
 const TREASURER_ELIGIBLE_ROLES = ['FOUNDER', 'GOVERNOR']
@@ -174,6 +182,9 @@ export const manualPaymentRouter = router({
       const autoConfirmAt = new Date()
       autoConfirmAt.setDate(autoConfirmAt.getDate() + 7)
 
+      // Generate confirmation token for quick confirm page
+      const confirmationToken = generateConfirmationToken()
+
       // Create the manual payment
       const payment = await prisma.manualPayment.create({
         data: {
@@ -190,6 +201,7 @@ export const manualPaymentRouter = router({
           initiatedByRole,
           status: 'PENDING',
           autoConfirmAt,
+          confirmationToken,
         },
         include: {
           member: {
@@ -223,13 +235,13 @@ export const manualPaymentRouter = router({
           })
         }
       } else {
-        // Treasurer initiated, notify the member
+        // Treasurer initiated, notify the member with quick confirm link
         await notificationService.create({
           userId: member.userId,
           type: 'MANUAL_PAYMENT_RECORDED',
           title: 'Payment Recorded',
           message: `${currentMember.user.name} has recorded a payment of $${(amount / 100).toFixed(2)} on your behalf. Please review and confirm.`,
-          actionUrl: `/bands/${band.slug}/billing?tab=manual`,
+          actionUrl: `/quick/confirm-payment/${payment.id}?token=${confirmationToken}`,
           priority: 'MEDIUM',
           metadata: {
             bandId,
