@@ -67,9 +67,21 @@ export function MessageList({ bandId, channelId, userId, userRole, onOpenThread 
     }
   }, [channelId, userId])
 
+  // Track if this is initial load for this channel
+  const isInitialLoad = useRef(true)
+
+  // Reset initial load flag when channel changes
+  useEffect(() => {
+    isInitialLoad.current = true
+  }, [channelId])
+
   // Scroll to bottom on load and new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // Use instant scroll on initial load, smooth scroll for new messages
+    messagesEndRef.current?.scrollIntoView({
+      behavior: isInitialLoad.current ? 'auto' : 'smooth'
+    })
+    isInitialLoad.current = false
   }, [data?.messages])
 
   // Set up polling for new messages
