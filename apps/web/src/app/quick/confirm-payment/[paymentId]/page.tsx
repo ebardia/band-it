@@ -126,11 +126,11 @@ export default function QuickConfirmPaymentPage() {
     return (
       <QuickLayout
         bandName={band.name}
-        title="Payment Confirmed"
+        title="Done!"
       >
         <QuickCard>
-          <div className="text-center py-6">
-            <div className="text-4xl mb-4">✅</div>
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">✅</div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Payment Confirmed
             </h2>
@@ -141,14 +141,10 @@ export default function QuickConfirmPaymentPage() {
           </div>
         </QuickCard>
 
-        <div className="mt-6">
-          <QuickButton
-            variant="primary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/billing?tab=manual`)}
-          >
-            View All Payments
-          </QuickButton>
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            You can close this page now.
+          </p>
         </div>
       </QuickLayout>
     )
@@ -172,8 +168,8 @@ export default function QuickConfirmPaymentPage() {
         title="Payment Status"
       >
         <QuickCard>
-          <div className="text-center py-6">
-            <div className="text-4xl mb-4">
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">
               {payment.status === 'CONFIRMED' || payment.status === 'AUTO_CONFIRMED' ? '✅' : '⚠️'}
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -188,14 +184,10 @@ export default function QuickConfirmPaymentPage() {
           </div>
         </QuickCard>
 
-        <div className="mt-6">
-          <QuickButton
-            variant="secondary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/billing?tab=manual`)}
-          >
-            View All Payments
-          </QuickButton>
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            You can close this page now.
+          </p>
         </div>
       </QuickLayout>
     )
@@ -289,28 +281,12 @@ export default function QuickConfirmPaymentPage() {
         >
           {isConfirming ? 'Confirming...' : 'Confirm Payment'}
         </QuickButton>
-
-        <QuickButton
-          variant="secondary"
-          fullWidth
-          onClick={() => router.push(`/bands/${band.slug}/billing?tab=manual`)}
-          disabled={isConfirming}
-        >
-          View Full Details
-        </QuickButton>
       </div>
 
       {/* Dispute notice */}
       <div className="mt-6 text-center">
         <p className="text-xs text-gray-500">
-          If this payment is incorrect, please{' '}
-          <button
-            onClick={() => router.push(`/bands/${band.slug}/billing?tab=manual`)}
-            className="text-blue-600 hover:underline"
-          >
-            view full details
-          </button>{' '}
-          to dispute it.
+          If this payment is incorrect, please dispute it on the full site.
         </p>
       </div>
     </QuickLayout>

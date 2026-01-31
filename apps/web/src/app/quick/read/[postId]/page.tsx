@@ -92,7 +92,6 @@ export default function QuickReadPage() {
   return (
     <QuickLayout
       bandName={band.name}
-      bandSlug={band.slug}
       title="Post"
     >
       {/* Post header */}
@@ -170,54 +169,14 @@ export default function QuickReadPage() {
           <p className="text-sm text-yellow-800">
             {permissions.duesReason || 'Please pay your dues to participate in discussions.'}
           </p>
-          <QuickButton
-            variant="secondary"
-            fullWidth
-            className="mt-3"
-            onClick={() => router.push(`/bands/${band.slug}/billing`)}
-          >
-            Go to Billing
-          </QuickButton>
         </div>
       )}
 
-      {/* Action buttons */}
-      <div className="mt-6 space-y-3">
-        <QuickButton
-          variant="primary"
-          fullWidth
-          onClick={() => router.push(`/bands/${band.slug}/posts/${category.slug}/${post.slug}`)}
-        >
-          View Full Post & Responses
-        </QuickButton>
-
-        {permissions.canEdit && (
-          <QuickButton
-            variant="secondary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/posts/${category.slug}/${post.slug}`)}
-          >
-            Edit Post
-          </QuickButton>
-        )}
-
-        <QuickButton
-          variant="secondary"
-          fullWidth
-          onClick={() => router.push(`/bands/${band.slug}/posts/${category.slug}`)}
-        >
-          Back to {category.name}
-        </QuickButton>
-      </div>
-
-      {/* Link to full site */}
-      <div className="mt-6 text-center">
-        <button
-          onClick={() => router.push(`/bands/${band.slug}`)}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          Go to {band.name}
-        </button>
+      {/* Done message */}
+      <div className="mt-8 text-center">
+        <p className="text-gray-500 text-sm">
+          You can close this page now.
+        </p>
       </div>
     </QuickLayout>
   )

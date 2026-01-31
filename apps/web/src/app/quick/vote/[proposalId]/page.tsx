@@ -127,12 +127,11 @@ export default function QuickVotePage() {
     return (
       <QuickLayout
         bandName={band.name}
-        bandSlug={band.slug}
-        title="Vote Submitted"
+        title="Done!"
       >
         <QuickCard>
-          <div className="text-center py-6">
-            <div className="text-4xl mb-4">
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">
               {selectedVote === 'YES' && '👍'}
               {selectedVote === 'NO' && '👎'}
               {selectedVote === 'ABSTAIN' && '🤷'}
@@ -146,21 +145,10 @@ export default function QuickVotePage() {
           </div>
         </QuickCard>
 
-        <div className="mt-6 space-y-3">
-          <QuickButton
-            variant="primary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/proposals/${proposalId}`)}
-          >
-            View Full Proposal
-          </QuickButton>
-          <QuickButton
-            variant="secondary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/proposals`)}
-          >
-            All Proposals
-          </QuickButton>
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            You can close this page now.
+          </p>
         </div>
       </QuickLayout>
     )
@@ -171,36 +159,31 @@ export default function QuickVotePage() {
     return (
       <QuickLayout
         bandName={band.name}
-        bandSlug={band.slug}
         title="Already Voted"
       >
         <QuickCard>
-          <div className="text-center py-4">
-            <div className="text-3xl mb-3">
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">
               {userVote.vote === 'YES' && '👍'}
               {userVote.vote === 'NO' && '👎'}
               {userVote.vote === 'ABSTAIN' && '🤷'}
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
               You voted {userVote.vote}
             </h2>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-600 text-sm mb-2">
               on "{proposal.title}"
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-400">
               {new Date(userVote.createdAt).toLocaleDateString()}
             </p>
           </div>
         </QuickCard>
 
-        <div className="mt-6">
-          <QuickButton
-            variant="primary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/proposals/${proposalId}`)}
-          >
-            View Full Proposal
-          </QuickButton>
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            You can close this page now.
+          </p>
         </div>
       </QuickLayout>
     )
@@ -211,12 +194,11 @@ export default function QuickVotePage() {
     return (
       <QuickLayout
         bandName={band.name}
-        bandSlug={band.slug}
         title="Voting Closed"
       >
         <QuickCard>
-          <div className="text-center py-6">
-            <div className="text-4xl mb-4">🗳️</div>
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">🗳️</div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Voting has ended
             </h2>
@@ -231,14 +213,10 @@ export default function QuickVotePage() {
           </div>
         </QuickCard>
 
-        <div className="mt-6">
-          <QuickButton
-            variant="primary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/proposals/${proposalId}`)}
-          >
-            View Results
-          </QuickButton>
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            You can close this page now.
+          </p>
         </div>
       </QuickLayout>
     )
@@ -249,12 +227,11 @@ export default function QuickVotePage() {
     return (
       <QuickLayout
         bandName={band.name}
-        bandSlug={band.slug}
         title="Dues Required"
       >
         <QuickCard>
-          <div className="text-center py-6">
-            <div className="text-4xl mb-4">💳</div>
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">💳</div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Dues Payment Required
             </h2>
@@ -264,21 +241,10 @@ export default function QuickVotePage() {
           </div>
         </QuickCard>
 
-        <div className="mt-6 space-y-3">
-          <QuickButton
-            variant="primary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/billing`)}
-          >
-            Go to Billing
-          </QuickButton>
-          <QuickButton
-            variant="secondary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/proposals/${proposalId}`)}
-          >
-            View Proposal
-          </QuickButton>
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            Please pay your dues on the full site to continue.
+          </p>
         </div>
       </QuickLayout>
     )
@@ -288,7 +254,6 @@ export default function QuickVotePage() {
   return (
     <QuickLayout
       bandName={band.name}
-      bandSlug={band.slug}
       title="Vote on Proposal"
     >
       {/* Proposal info */}
@@ -381,16 +346,6 @@ export default function QuickVotePage() {
         >
           {isSubmitting && selectedVote === 'ABSTAIN' ? 'Submitting...' : '🤷 Abstain'}
         </QuickButton>
-      </div>
-
-      {/* Link to full proposal */}
-      <div className="mt-6 text-center">
-        <button
-          onClick={() => router.push(`/bands/${band.slug}/proposals/${proposalId}`)}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          View full proposal details
-        </button>
       </div>
     </QuickLayout>
   )

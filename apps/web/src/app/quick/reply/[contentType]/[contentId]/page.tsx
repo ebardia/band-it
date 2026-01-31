@@ -161,20 +161,14 @@ export default function QuickReplyPage() {
 
   // Show success state after replying
   if (replySubmitted) {
-    let destinationUrl = `/bands/${band.slug}`
-    if (isPostResponseContext) {
-      destinationUrl = `/bands/${band.slug}/posts/${context.category.slug}/${context.post.slug}`
-    }
-
     return (
       <QuickLayout
         bandName={band.name}
-        bandSlug={band.slug}
-        title="Reply Sent"
+        title="Done!"
       >
         <QuickCard>
-          <div className="text-center py-6">
-            <div className="text-4xl mb-4">✅</div>
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">✅</div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Reply Sent
             </h2>
@@ -184,21 +178,10 @@ export default function QuickReplyPage() {
           </div>
         </QuickCard>
 
-        <div className="mt-6 space-y-3">
-          <QuickButton
-            variant="primary"
-            fullWidth
-            onClick={() => router.push(destinationUrl)}
-          >
-            {isMessageContext ? 'Go to Discussions' : 'View Post'}
-          </QuickButton>
-          <QuickButton
-            variant="secondary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}`)}
-          >
-            Back to {band.name}
-          </QuickButton>
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            You can close this page now.
+          </p>
         </div>
       </QuickLayout>
     )
@@ -209,12 +192,11 @@ export default function QuickReplyPage() {
     return (
       <QuickLayout
         bandName={band.name}
-        bandSlug={band.slug}
         title="Dues Required"
       >
         <QuickCard>
-          <div className="text-center py-6">
-            <div className="text-4xl mb-4">💳</div>
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">💳</div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Dues Payment Required
             </h2>
@@ -224,14 +206,10 @@ export default function QuickReplyPage() {
           </div>
         </QuickCard>
 
-        <div className="mt-6 space-y-3">
-          <QuickButton
-            variant="primary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}/billing`)}
-          >
-            Go to Billing
-          </QuickButton>
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            Please pay your dues on the full site to continue.
+          </p>
         </div>
       </QuickLayout>
     )
@@ -249,12 +227,11 @@ export default function QuickReplyPage() {
     return (
       <QuickLayout
         bandName={band.name}
-        bandSlug={band.slug}
         title="Cannot Reply"
       >
         <QuickCard>
-          <div className="text-center py-6">
-            <div className="text-4xl mb-4">🚫</div>
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">🚫</div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               {reason}
             </h2>
@@ -266,14 +243,10 @@ export default function QuickReplyPage() {
           </div>
         </QuickCard>
 
-        <div className="mt-6">
-          <QuickButton
-            variant="secondary"
-            fullWidth
-            onClick={() => router.push(`/bands/${band.slug}`)}
-          >
-            Back to {band.name}
-          </QuickButton>
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            You can close this page now.
+          </p>
         </div>
       </QuickLayout>
     )
@@ -283,7 +256,6 @@ export default function QuickReplyPage() {
   return (
     <QuickLayout
       bandName={band.name}
-      bandSlug={band.slug}
       title="Reply"
     >
       {/* Original content */}
@@ -330,7 +302,7 @@ export default function QuickReplyPage() {
       </QuickCard>
 
       {/* Action buttons */}
-      <div className="mt-6 space-y-3">
+      <div className="mt-6">
         <QuickButton
           variant="primary"
           fullWidth
@@ -338,15 +310,6 @@ export default function QuickReplyPage() {
           disabled={isSubmitting || !replyText.trim()}
         >
           {isSubmitting ? 'Sending...' : 'Send Reply'}
-        </QuickButton>
-
-        <QuickButton
-          variant="secondary"
-          fullWidth
-          onClick={() => router.back()}
-          disabled={isSubmitting}
-        >
-          Cancel
         </QuickButton>
       </div>
     </QuickLayout>
