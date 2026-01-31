@@ -316,7 +316,7 @@ export const proposalCreateRouter = router({
             type: 'PROPOSAL_CREATED',
             title: 'New Proposal',
             message: `${proposalWithRelations.createdBy.name} created "${proposal.title}" in ${proposalWithRelations.band.name}`,
-            actionUrl: `/bands/${proposalWithRelations.band.slug}/proposals/${proposal.id}`,
+            actionUrl: `/quick/vote/${proposal.id}`,
             priority: input.priority === 'URGENT' ? 'HIGH' : 'MEDIUM',
             relatedId: proposal.id,
             relatedType: 'PROPOSAL',

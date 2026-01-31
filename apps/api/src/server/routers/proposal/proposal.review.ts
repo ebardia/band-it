@@ -765,7 +765,7 @@ async function notifyVotingOpen(proposal: {
       type: 'PROPOSAL_CREATED',
       title: 'New Proposal Open for Voting',
       message: `${proposal.createdBy.name} created "${proposal.title}" in ${proposal.band.name}`,
-      actionUrl: `/bands/${proposal.band.slug}/proposals/${proposal.id}`,
+      actionUrl: `/quick/vote/${proposal.id}`,
       priority: 'MEDIUM',
       relatedId: proposal.id,
       relatedType: 'PROPOSAL',
