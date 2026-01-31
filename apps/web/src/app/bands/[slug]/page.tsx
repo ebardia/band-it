@@ -321,13 +321,7 @@ export default function BandDiscussionsPage() {
                           userId={userId}
                           onMessageClick={setOpenThreadId}
                         />
-                        <MessageList
-                          bandId={band.id}
-                          channelId={selectedChannelId}
-                          userId={userId}
-                          userRole={userRole}
-                          onOpenThread={setOpenThreadId}
-                        />
+                        {/* Message Composer - at top for mobile accessibility */}
                         {!selectedChannel?.isArchived && (
                           <MessageComposer
                             channelId={selectedChannelId}
@@ -335,10 +329,17 @@ export default function BandDiscussionsPage() {
                           />
                         )}
                         {selectedChannel?.isArchived && (
-                          <div className="p-4 bg-gray-100 border-t text-center">
+                          <div className="p-4 bg-gray-100 border-b text-center">
                             <Text color="muted">This channel is archived. Messages are read-only.</Text>
                           </div>
                         )}
+                        <MessageList
+                          bandId={band.id}
+                          channelId={selectedChannelId}
+                          userId={userId}
+                          userRole={userRole}
+                          onOpenThread={setOpenThreadId}
+                        />
                       </>
                     ) : selectedChannel && !selectedChannel.hasAccess ? (
                       <div className="flex-1 flex items-center justify-center">
