@@ -18,7 +18,7 @@ import {
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
-export default function ForumCategoryPage() {
+export default function PostCategoryPage() {
   const router = useRouter()
   const params = useParams()
   const slug = params.slug as string
@@ -45,12 +45,12 @@ export default function ForumCategoryPage() {
     { enabled: !!slug }
   )
 
-  const { data: categoryData, isLoading: categoryLoading } = trpc.forum.getCategory.useQuery(
+  const { data: categoryData, isLoading: categoryLoading } = trpc.posts.getCategory.useQuery(
     { bandId: bandData?.band?.id || '', categorySlug, userId: userId || '' },
     { enabled: !!bandData?.band?.id && !!userId && !!categorySlug }
   )
 
-  const { data: postsData, isLoading: postsLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = trpc.forum.listPosts.useInfiniteQuery(
+  const { data: postsData, isLoading: postsLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = trpc.posts.listPosts.useInfiniteQuery(
     { bandId: bandData?.band?.id || '', categoryId: categoryData?.category?.id || '', userId: userId || '', limit: 20 },
     {
       enabled: !!bandData?.band?.id && !!categoryData?.category?.id && !!userId,
@@ -65,7 +65,7 @@ export default function ForumCategoryPage() {
         <BandLayout
           bandSlug={slug}
           bandName="Loading..."
-          pageTitle="Forum"
+          pageTitle="Posts"
           isMember={false}
           wide={true}
           bandId={bandData?.band?.id}
@@ -84,7 +84,7 @@ export default function ForumCategoryPage() {
         <BandLayout
           bandSlug={slug}
           bandName=""
-          pageTitle="Forum"
+          pageTitle="Posts"
           isMember={false}
           wide={true}
           bandId={bandData?.band?.id}
@@ -105,7 +105,7 @@ export default function ForumCategoryPage() {
         <BandLayout
           bandSlug={slug}
           bandName={bandData.band.name}
-          pageTitle="Forum"
+          pageTitle="Posts"
           isMember={false}
           wide={true}
           bandId={bandData?.band?.id}
@@ -160,7 +160,7 @@ export default function ForumCategoryPage() {
             <Button
               variant="primary"
               size="md"
-              onClick={() => router.push(`/bands/${slug}/forum/${categorySlug}/new`)}
+              onClick={() => router.push(`/bands/${slug}/posts/${categorySlug}/new`)}
             >
               New Post
             </Button>
@@ -172,9 +172,9 @@ export default function ForumCategoryPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`/bands/${slug}/forum`)}
+              onClick={() => router.push(`/bands/${slug}/posts`)}
             >
-              &larr; Back to Forum
+              &larr; Back to Posts
             </Button>
           </Flex>
 
@@ -196,7 +196,7 @@ export default function ForumCategoryPage() {
                 <Card
                   key={post.id}
                   style={{ cursor: 'pointer' }}
-                  onClick={() => router.push(`/bands/${slug}/forum/${categorySlug}/${post.slug}`)}
+                  onClick={() => router.push(`/bands/${slug}/posts/${categorySlug}/${post.slug}`)}
                 >
                   <Flex justify="between" align="center">
                     <Stack spacing="xs">

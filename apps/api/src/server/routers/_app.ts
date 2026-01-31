@@ -21,7 +21,7 @@ import { channelRouter } from './channel'
 import { messageRouter } from './message'
 import { manualPaymentRouter } from './manualPayment'
 import { helpRouter } from './help'
-import { forumRouter } from './forum'
+import { postsRouter } from './posts'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -47,7 +47,7 @@ export const appRouter = router({
   message: messageRouter,
   manualPayment: manualPaymentRouter,
   help: helpRouter,
-  forum: forumRouter,
+  posts: postsRouter,
 })
 
 // Export type definition of API

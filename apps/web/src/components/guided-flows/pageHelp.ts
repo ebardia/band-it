@@ -152,7 +152,7 @@ export const pageHelpDefinitions: Record<string, PageHelp> = {
 
   // Band Discussion Page (main band page)
   '/bands/[slug]': {
-    pageTitle: 'Discussion Forum',
+    pageTitle: 'Discussions',
     pageDescription: 'Chat with your band members in organized channels.',
     steps: [
       {

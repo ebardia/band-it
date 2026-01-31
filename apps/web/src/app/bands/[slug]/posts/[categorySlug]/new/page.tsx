@@ -20,7 +20,7 @@ import {
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
-export default function NewForumPostPage() {
+export default function NewPostPage() {
   const router = useRouter()
   const params = useParams()
   const slug = params.slug as string
@@ -51,15 +51,15 @@ export default function NewForumPostPage() {
     { enabled: !!slug }
   )
 
-  const { data: categoryData, isLoading: categoryLoading } = trpc.forum.getCategory.useQuery(
+  const { data: categoryData, isLoading: categoryLoading } = trpc.posts.getCategory.useQuery(
     { bandId: bandData?.band?.id || '', categorySlug, userId: userId || '' },
     { enabled: !!bandData?.band?.id && !!userId && !!categorySlug }
   )
 
-  const createPostMutation = trpc.forum.createPost.useMutation({
+  const createPostMutation = trpc.posts.createPost.useMutation({
     onSuccess: (data) => {
       showToast('Post created!', 'success')
-      router.push(`/bands/${slug}/forum/${categorySlug}/${data.post.slug}`)
+      router.push(`/bands/${slug}/posts/${categorySlug}/${data.post.slug}`)
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -191,7 +191,7 @@ export default function NewForumPostPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`/bands/${slug}/forum/${categorySlug}`)}
+              onClick={() => router.push(`/bands/${slug}/posts/${categorySlug}`)}
             >
               &larr; Back to {category.name}
             </Button>
@@ -242,7 +242,7 @@ export default function NewForumPostPage() {
               <Flex justify="end" gap="sm">
                 <Button
                   variant="ghost"
-                  onClick={() => router.push(`/bands/${slug}/forum/${categorySlug}`)}
+                  onClick={() => router.push(`/bands/${slug}/posts/${categorySlug}`)}
                 >
                   Cancel
                 </Button>

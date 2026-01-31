@@ -137,7 +137,7 @@ function ResponseThread({
   )
 }
 
-export default function ForumPostPage() {
+export default function PostDetailPage() {
   const router = useRouter()
   const params = useParams()
   const slug = params.slug as string
@@ -173,12 +173,12 @@ export default function ForumPostPage() {
     { enabled: !!slug }
   )
 
-  const { data: postData, isLoading: postLoading, refetch: refetchPost } = trpc.forum.getPost.useQuery(
+  const { data: postData, isLoading: postLoading, refetch: refetchPost } = trpc.posts.getPost.useQuery(
     { bandId: bandData?.band?.id || '', postSlug, userId: userId || '' },
     { enabled: !!bandData?.band?.id && !!userId && !!postSlug }
   )
 
-  const createResponseMutation = trpc.forum.createResponse.useMutation({
+  const createResponseMutation = trpc.posts.createResponse.useMutation({
     onSuccess: () => {
       showToast('Response posted!', 'success')
       setReplyContent('')
@@ -190,7 +190,7 @@ export default function ForumPostPage() {
     },
   })
 
-  const updateResponseMutation = trpc.forum.updateResponse.useMutation({
+  const updateResponseMutation = trpc.posts.updateResponse.useMutation({
     onSuccess: () => {
       showToast('Response updated!', 'success')
       setEditModal(null)
@@ -201,7 +201,7 @@ export default function ForumPostPage() {
     },
   })
 
-  const deleteResponseMutation = trpc.forum.deleteResponse.useMutation({
+  const deleteResponseMutation = trpc.posts.deleteResponse.useMutation({
     onSuccess: () => {
       showToast('Response deleted.', 'success')
       setDeleteModal(null)
@@ -212,7 +212,7 @@ export default function ForumPostPage() {
     },
   })
 
-  const togglePinMutation = trpc.forum.togglePinPost.useMutation({
+  const togglePinMutation = trpc.posts.togglePinPost.useMutation({
     onSuccess: () => {
       refetchPost()
     },
@@ -221,7 +221,7 @@ export default function ForumPostPage() {
     },
   })
 
-  const toggleLockMutation = trpc.forum.toggleLockPost.useMutation({
+  const toggleLockMutation = trpc.posts.toggleLockPost.useMutation({
     onSuccess: () => {
       refetchPost()
     },
@@ -237,7 +237,7 @@ export default function ForumPostPage() {
         <BandLayout
           bandSlug={slug}
           bandName="Loading..."
-          pageTitle="Forum"
+          pageTitle="Posts"
           isMember={false}
           wide={true}
           bandId={bandData?.band?.id}
@@ -256,7 +256,7 @@ export default function ForumPostPage() {
         <BandLayout
           bandSlug={slug}
           bandName=""
-          pageTitle="Forum"
+          pageTitle="Posts"
           isMember={false}
           wide={true}
           bandId={bandData?.band?.id}
@@ -277,7 +277,7 @@ export default function ForumPostPage() {
         <BandLayout
           bandSlug={slug}
           bandName={bandData.band.name}
-          pageTitle="Forum"
+          pageTitle="Posts"
           isMember={false}
           wide={true}
           bandId={bandData?.band?.id}
@@ -354,7 +354,7 @@ export default function ForumPostPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`/bands/${slug}/forum/${categorySlug}`)}
+              onClick={() => router.push(`/bands/${slug}/posts/${categorySlug}`)}
             >
               &larr; Back to {category.name}
             </Button>

@@ -3,7 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { MemberRole } from '@prisma/client'
-import { canAccessForumCategory, canCreatePost } from './forum.category'
+import { canAccessPostCategory, canCreatePost } from './posts.category'
 
 // Roles that can moderate responses
 const CAN_MODERATE: MemberRole[] = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
@@ -25,7 +25,7 @@ export const createResponse = publicProcedure
     const { postId, userId, content, parentId } = input
 
     // Get post with category info
-    const post = await prisma.forumPost.findUnique({
+    const post = await prisma.post.findUnique({
       where: { id: postId },
       select: {
         bandId: true,
@@ -80,7 +80,7 @@ export const createResponse = publicProcedure
       })
     }
 
-    if (!canAccessForumCategory(membership.role, post.category.visibility)) {
+    if (!canAccessPostCategory(membership.role, post.category.visibility)) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'You do not have access to this category',
@@ -91,7 +91,7 @@ export const createResponse = publicProcedure
     let depth = 1
 
     if (parentId) {
-      const parentResponse = await prisma.forumResponse.findUnique({
+      const parentResponse = await prisma.postResponse.findUnique({
         where: { id: parentId },
         select: { postId: true, depth: true, deletedAt: true },
       })
@@ -122,7 +122,7 @@ export const createResponse = publicProcedure
 
     // Create response and update post stats
     const response = await prisma.$transaction(async (tx) => {
-      const newResponse = await tx.forumResponse.create({
+      const newResponse = await tx.postResponse.create({
         data: {
           postId,
           authorId: userId,
@@ -138,7 +138,7 @@ export const createResponse = publicProcedure
       })
 
       // Update post stats
-      await tx.forumPost.update({
+      await tx.post.update({
         where: { id: postId },
         data: {
           responseCount: { increment: 1 },
@@ -175,7 +175,7 @@ export const updateResponse = publicProcedure
   .mutation(async ({ input }) => {
     const { responseId, userId, content } = input
 
-    const response = await prisma.forumResponse.findUnique({
+    const response = await prisma.postResponse.findUnique({
       where: { id: responseId },
       select: {
         authorId: true,
@@ -208,7 +208,7 @@ export const updateResponse = publicProcedure
       })
     }
 
-    const updated = await prisma.forumResponse.update({
+    const updated = await prisma.postResponse.update({
       where: { id: responseId },
       data: {
         content,
@@ -236,7 +236,7 @@ export const deleteResponse = publicProcedure
   .mutation(async ({ input }) => {
     const { responseId, userId } = input
 
-    const response = await prisma.forumResponse.findUnique({
+    const response = await prisma.postResponse.findUnique({
       where: { id: responseId },
       select: {
         authorId: true,
@@ -289,12 +289,12 @@ export const deleteResponse = publicProcedure
 
     // Soft delete and update post stats
     await prisma.$transaction(async (tx) => {
-      await tx.forumResponse.update({
+      await tx.postResponse.update({
         where: { id: responseId },
         data: { deletedAt: new Date() },
       })
 
-      await tx.forumPost.update({
+      await tx.post.update({
         where: { id: response.postId },
         data: {
           responseCount: { decrement: 1 },

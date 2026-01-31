@@ -2,10 +2,10 @@ import { z } from 'zod'
 import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
-import { MemberRole, ForumCategoryVisibility } from '@prisma/client'
+import { MemberRole, PostCategoryVisibility } from '@prisma/client'
 
 // Role hierarchy for category visibility (same as channels)
-const VISIBILITY_ROLES: Record<ForumCategoryVisibility, MemberRole[]> = {
+const VISIBILITY_ROLES: Record<PostCategoryVisibility, MemberRole[]> = {
   PUBLIC: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'],
   MODERATOR: ['FOUNDER', 'GOVERNOR', 'MODERATOR'],
   GOVERNANCE: ['FOUNDER', 'GOVERNOR'],
@@ -17,7 +17,7 @@ const CAN_CREATE_CATEGORY: MemberRole[] = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
 // Roles that can create posts (based on spec + clarification)
 const CAN_CREATE_POST: MemberRole[] = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
 
-export function canAccessForumCategory(role: MemberRole, visibility: ForumCategoryVisibility): boolean {
+export function canAccessPostCategory(role: MemberRole, visibility: PostCategoryVisibility): boolean {
   return VISIBILITY_ROLES[visibility].includes(role)
 }
 
@@ -49,13 +49,13 @@ const DEFAULT_CATEGORIES = [
  * Create default categories for a band
  */
 export async function createDefaultCategories(bandId: string, createdById: string) {
-  const existingCategories = await prisma.forumCategory.count({ where: { bandId } })
+  const existingCategories = await prisma.postCategory.count({ where: { bandId } })
 
   if (existingCategories > 0) {
     return // Categories already exist
   }
 
-  await prisma.forumCategory.createMany({
+  await prisma.postCategory.createMany({
     data: DEFAULT_CATEGORIES.map(cat => ({
       bandId,
       name: cat.name,
@@ -91,7 +91,7 @@ export const listCategories = publicProcedure
     if (!membership || membership.status !== 'ACTIVE') {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'You must be an active band member to view the forum',
+        message: 'You must be an active band member to view posts',
       })
     }
 
@@ -101,7 +101,7 @@ export const listCategories = publicProcedure
     await createDefaultCategories(bandId, userId)
 
     // Get all categories
-    const categories = await prisma.forumCategory.findMany({
+    const categories = await prisma.postCategory.findMany({
       where: {
         bandId,
         ...(includeArchived ? {} : { isArchived: false }),
@@ -119,7 +119,7 @@ export const listCategories = publicProcedure
 
     // Process with access info
     const processedCategories = categories.map((category) => {
-      const hasAccess = canAccessForumCategory(userRole, category.visibility)
+      const hasAccess = canAccessPostCategory(userRole, category.visibility)
 
       return {
         id: category.id,
@@ -167,13 +167,13 @@ export const getCategory = publicProcedure
     if (!membership || membership.status !== 'ACTIVE') {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'You must be an active band member to view the forum',
+        message: 'You must be an active band member to view posts',
       })
     }
 
     const userRole = membership.role
 
-    const category = await prisma.forumCategory.findFirst({
+    const category = await prisma.postCategory.findFirst({
       where: {
         bandId,
         slug: categorySlug,
@@ -192,7 +192,7 @@ export const getCategory = publicProcedure
       })
     }
 
-    const hasAccess = canAccessForumCategory(userRole, category.visibility)
+    const hasAccess = canAccessPostCategory(userRole, category.visibility)
 
     if (!hasAccess) {
       throw new TRPCError({
@@ -259,7 +259,7 @@ export const createCategory = publicProcedure
     let slug = generateSlug(name)
 
     // Check for existing slug and make unique if needed
-    const existing = await prisma.forumCategory.findFirst({
+    const existing = await prisma.postCategory.findFirst({
       where: { bandId, slug },
     })
 
@@ -268,13 +268,13 @@ export const createCategory = publicProcedure
     }
 
     // Get next sort order
-    const maxSort = await prisma.forumCategory.aggregate({
+    const maxSort = await prisma.postCategory.aggregate({
       where: { bandId },
       _max: { sortOrder: true },
     })
     const sortOrder = (maxSort._max.sortOrder || 0) + 1
 
-    const category = await prisma.forumCategory.create({
+    const category = await prisma.postCategory.create({
       data: {
         bandId,
         name,
@@ -309,7 +309,7 @@ export const updateCategory = publicProcedure
   .mutation(async ({ input }) => {
     const { categoryId, userId, ...updates } = input
 
-    const category = await prisma.forumCategory.findUnique({
+    const category = await prisma.postCategory.findUnique({
       where: { id: categoryId },
       select: { bandId: true },
     })
@@ -349,7 +349,7 @@ export const updateCategory = publicProcedure
       updateData.slug = generateSlug(updates.name)
 
       // Check for conflicts
-      const existing = await prisma.forumCategory.findFirst({
+      const existing = await prisma.postCategory.findFirst({
         where: {
           bandId: category.bandId,
           slug: updateData.slug,
@@ -362,7 +362,7 @@ export const updateCategory = publicProcedure
       }
     }
 
-    const updated = await prisma.forumCategory.update({
+    const updated = await prisma.postCategory.update({
       where: { id: categoryId },
       data: updateData,
       include: {
@@ -386,7 +386,7 @@ export const archiveCategory = publicProcedure
   .mutation(async ({ input }) => {
     const { categoryId, userId } = input
 
-    const category = await prisma.forumCategory.findUnique({
+    const category = await prisma.postCategory.findUnique({
       where: { id: categoryId },
       select: { bandId: true },
     })
@@ -420,7 +420,7 @@ export const archiveCategory = publicProcedure
       })
     }
 
-    const updated = await prisma.forumCategory.update({
+    const updated = await prisma.postCategory.update({
       where: { id: categoryId },
       data: { isArchived: true },
     })
@@ -439,7 +439,7 @@ export const unarchiveCategory = publicProcedure
   .mutation(async ({ input }) => {
     const { categoryId, userId } = input
 
-    const category = await prisma.forumCategory.findUnique({
+    const category = await prisma.postCategory.findUnique({
       where: { id: categoryId },
       select: { bandId: true },
     })
@@ -473,7 +473,7 @@ export const unarchiveCategory = publicProcedure
       })
     }
 
-    const updated = await prisma.forumCategory.update({
+    const updated = await prisma.postCategory.update({
       where: { id: categoryId },
       data: { isArchived: false },
     })
@@ -492,7 +492,7 @@ export const deleteCategory = publicProcedure
   .mutation(async ({ input }) => {
     const { categoryId, userId } = input
 
-    const category = await prisma.forumCategory.findUnique({
+    const category = await prisma.postCategory.findUnique({
       where: { id: categoryId },
       select: { bandId: true, postCount: true, name: true },
     })
@@ -534,7 +534,7 @@ export const deleteCategory = publicProcedure
       })
     }
 
-    await prisma.forumCategory.delete({
+    await prisma.postCategory.delete({
       where: { id: categoryId },
     })
 

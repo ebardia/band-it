@@ -3,7 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { MemberRole } from '@prisma/client'
-import { canAccessForumCategory, canCreatePost } from './forum.category'
+import { canAccessPostCategory, canCreatePost } from './posts.category'
 
 // Roles that can pin/lock posts
 const CAN_MODERATE: MemberRole[] = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
@@ -42,14 +42,14 @@ export const listPosts = publicProcedure
     if (!membership || membership.status !== 'ACTIVE') {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'You must be an active band member to view the forum',
+        message: 'You must be an active band member to view posts',
       })
     }
 
     const userRole = membership.role
 
     // Get category to check access
-    const category = await prisma.forumCategory.findUnique({
+    const category = await prisma.postCategory.findUnique({
       where: { id: categoryId },
       select: { visibility: true, isArchived: true, name: true, slug: true },
     })
@@ -61,7 +61,7 @@ export const listPosts = publicProcedure
       })
     }
 
-    if (!canAccessForumCategory(userRole, category.visibility)) {
+    if (!canAccessPostCategory(userRole, category.visibility)) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'You do not have access to this category',
@@ -69,7 +69,7 @@ export const listPosts = publicProcedure
     }
 
     // Get posts with pagination
-    const posts = await prisma.forumPost.findMany({
+    const posts = await prisma.post.findMany({
       where: {
         categoryId,
         deletedAt: null,
@@ -142,13 +142,13 @@ export const getPost = publicProcedure
     if (!membership || membership.status !== 'ACTIVE') {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'You must be an active band member to view the forum',
+        message: 'You must be an active band member to view posts',
       })
     }
 
     const userRole = membership.role
 
-    const post = await prisma.forumPost.findFirst({
+    const post = await prisma.post.findFirst({
       where: {
         bandId,
         slug: postSlug,
@@ -180,7 +180,7 @@ export const getPost = publicProcedure
       })
     }
 
-    if (!canAccessForumCategory(userRole, post.category.visibility)) {
+    if (!canAccessPostCategory(userRole, post.category.visibility)) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'You do not have access to this category',
@@ -280,7 +280,7 @@ export const createPost = publicProcedure
     }
 
     // Get category to check access
-    const category = await prisma.forumCategory.findUnique({
+    const category = await prisma.postCategory.findUnique({
       where: { id: categoryId },
       select: { bandId: true, visibility: true, isArchived: true },
     })
@@ -299,7 +299,7 @@ export const createPost = publicProcedure
       })
     }
 
-    if (!canAccessForumCategory(membership.role, category.visibility)) {
+    if (!canAccessPostCategory(membership.role, category.visibility)) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'You do not have access to this category',
@@ -317,7 +317,7 @@ export const createPost = publicProcedure
     let slug = generateSlug(title)
 
     // Check for existing slug and make unique if needed
-    const existing = await prisma.forumPost.findFirst({
+    const existing = await prisma.post.findFirst({
       where: { bandId, slug },
     })
 
@@ -327,7 +327,7 @@ export const createPost = publicProcedure
 
     // Create post and update category stats in transaction
     const post = await prisma.$transaction(async (tx) => {
-      const newPost = await tx.forumPost.create({
+      const newPost = await tx.post.create({
         data: {
           categoryId,
           bandId,
@@ -347,7 +347,7 @@ export const createPost = publicProcedure
       })
 
       // Update category stats
-      await tx.forumCategory.update({
+      await tx.postCategory.update({
         where: { id: categoryId },
         data: {
           postCount: { increment: 1 },
@@ -374,7 +374,7 @@ export const updatePost = publicProcedure
   .mutation(async ({ input }) => {
     const { postId, userId, title, content } = input
 
-    const post = await prisma.forumPost.findUnique({
+    const post = await prisma.post.findUnique({
       where: { id: postId },
       select: { authorId: true, bandId: true, deletedAt: true },
     })
@@ -404,7 +404,7 @@ export const updatePost = publicProcedure
       updateData.title = title
       // Update slug too
       let slug = generateSlug(title)
-      const existing = await prisma.forumPost.findFirst({
+      const existing = await prisma.post.findFirst({
         where: { bandId: post.bandId, slug, id: { not: postId } },
       })
       if (existing) {
@@ -417,7 +417,7 @@ export const updatePost = publicProcedure
       updateData.content = content
     }
 
-    const updated = await prisma.forumPost.update({
+    const updated = await prisma.post.update({
       where: { id: postId },
       data: updateData,
       include: {
@@ -444,7 +444,7 @@ export const deletePost = publicProcedure
   .mutation(async ({ input }) => {
     const { postId, userId } = input
 
-    const post = await prisma.forumPost.findUnique({
+    const post = await prisma.post.findUnique({
       where: { id: postId },
       select: { authorId: true, bandId: true, categoryId: true, deletedAt: true },
     })
@@ -483,12 +483,12 @@ export const deletePost = publicProcedure
 
     // Soft delete and update category stats
     await prisma.$transaction(async (tx) => {
-      await tx.forumPost.update({
+      await tx.post.update({
         where: { id: postId },
         data: { deletedAt: new Date() },
       })
 
-      await tx.forumCategory.update({
+      await tx.postCategory.update({
         where: { id: post.categoryId },
         data: {
           postCount: { decrement: 1 },
@@ -510,7 +510,7 @@ export const togglePinPost = publicProcedure
   .mutation(async ({ input }) => {
     const { postId, userId } = input
 
-    const post = await prisma.forumPost.findUnique({
+    const post = await prisma.post.findUnique({
       where: { id: postId },
       select: { bandId: true, isPinned: true, deletedAt: true },
     })
@@ -544,7 +544,7 @@ export const togglePinPost = publicProcedure
       })
     }
 
-    const updated = await prisma.forumPost.update({
+    const updated = await prisma.post.update({
       where: { id: postId },
       data: { isPinned: !post.isPinned },
     })
@@ -563,7 +563,7 @@ export const toggleLockPost = publicProcedure
   .mutation(async ({ input }) => {
     const { postId, userId } = input
 
-    const post = await prisma.forumPost.findUnique({
+    const post = await prisma.post.findUnique({
       where: { id: postId },
       select: { bandId: true, isLocked: true, deletedAt: true },
     })
@@ -597,7 +597,7 @@ export const toggleLockPost = publicProcedure
       })
     }
 
-    const updated = await prisma.forumPost.update({
+    const updated = await prisma.post.update({
       where: { id: postId },
       data: { isLocked: !post.isLocked },
     })

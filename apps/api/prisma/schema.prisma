@@ -129,10 +129,10 @@ model User {
   proposalsLastEdited         Proposal[] @relation("ProposalLastEditor")
   proposalEditHistory         ProposalEditHistory[] @relation("ProposalEditsAuthored")
 
-  // Forum
-  forumCategoriesCreated      ForumCategory[] @relation("ForumCategoriesCreated")
-  forumPostsAuthored          ForumPost[] @relation("ForumPostsAuthored")
-  forumResponsesAuthored      ForumResponse[] @relation("ForumResponsesAuthored")
+  // Posts
+  postCategoriesCreated       PostCategory[] @relation("PostCategoriesCreated")
+  postsAuthored               Post[] @relation("PostsAuthored")
+  postResponsesAuthored       PostResponse[] @relation("PostResponsesAuthored")
 }
 
 enum SubscriptionStatus {
@@ -410,10 +410,10 @@ enum NotificationType {
   MODERATION_SUSPENSION
   MODERATION_BAN
 
-  // Forum
-  FORUM_POST_CREATED
-  FORUM_RESPONSE_RECEIVED
-  FORUM_MENTIONED
+  // Posts
+  POST_CREATED
+  POST_RESPONSE_RECEIVED
+  POST_MENTIONED
 }
 
 enum NotificationPriority {
@@ -534,8 +534,8 @@ model Band {
   memberBillings BandMemberBilling[]
   channels  Channel[]
   manualPayments ManualPayment[]
-  forumCategories ForumCategory[]
-  forumPosts      ForumPost[]
+  postCategories  PostCategory[]
+  posts           Post[]
 
   @@index([createdById])
   @@index([status])
@@ -2069,22 +2069,22 @@ model HelpRateLimit {
 }
 
 // ============================================
-// FORUM - LONG-FORM DISCUSSIONS
+// POSTS - LONG-FORM DISCUSSIONS
 // ============================================
 
-enum ForumCategoryVisibility {
+enum PostCategoryVisibility {
   PUBLIC      // All band members can view
   MODERATOR   // Moderators, Governors, Founders only
   GOVERNANCE  // Governors, Founders only
 }
 
-model ForumCategory {
+model PostCategory {
   id          String   @id @default(cuid())
   bandId      String
   name        String   @db.VarChar(80)
   slug        String   @db.VarChar(100)
   description String?  @db.VarChar(500)
-  visibility  ForumCategoryVisibility @default(PUBLIC)
+  visibility  PostCategoryVisibility @default(PUBLIC)
   sortOrder   Int      @default(0)
   isArchived  Boolean  @default(false)
 
@@ -2098,8 +2098,8 @@ model ForumCategory {
 
   // Relations
   band        Band          @relation(fields: [bandId], references: [id], onDelete: Cascade)
-  createdBy   User          @relation("ForumCategoriesCreated", fields: [createdById], references: [id])
-  posts       ForumPost[]
+  createdBy   User          @relation("PostCategoriesCreated", fields: [createdById], references: [id])
+  posts       Post[]
 
   @@unique([bandId, slug])
   @@index([bandId, isArchived])
@@ -2107,7 +2107,7 @@ model ForumCategory {
   @@index([bandId, sortOrder])
 }
 
-model ForumPost {
+model Post {
   id          String   @id @default(cuid())
   categoryId  String
   bandId      String   // Denormalized for easier queries
@@ -2131,10 +2131,10 @@ model ForumPost {
   deletedAt   DateTime?  // Soft delete
 
   // Relations
-  category    ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category    PostCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   band        Band          @relation(fields: [bandId], references: [id], onDelete: Cascade)
-  author      User          @relation("ForumPostsAuthored", fields: [authorId], references: [id])
-  responses   ForumResponse[]
+  author      User          @relation("PostsAuthored", fields: [authorId], references: [id])
+  responses   PostResponse[]
 
   @@unique([bandId, slug])
   @@index([categoryId, createdAt])
@@ -2144,7 +2144,7 @@ model ForumPost {
   @@index([deletedAt])
 }
 
-model ForumResponse {
+model PostResponse {
   id          String   @id @default(cuid())
   postId      String
   authorId    String
@@ -2163,10 +2163,10 @@ model ForumResponse {
   deletedAt   DateTime?  // Soft delete
 
   // Relations
-  post        ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author      User            @relation("ForumResponsesAuthored", fields: [authorId], references: [id])
-  parent      ForumResponse?  @relation("ForumResponseReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies     ForumResponse[] @relation("ForumResponseReplies")
+  post        Post            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author      User            @relation("PostResponsesAuthored", fields: [authorId], references: [id])
+  parent      PostResponse?   @relation("PostResponseReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     PostResponse[]  @relation("PostResponseReplies")
 
   @@index([postId, createdAt])
   @@index([parentId])

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
-export default function ForumPage() {
+export default function PostsPage() {
   const router = useRouter()
   const params = useParams()
   const slug = params.slug as string
@@ -65,12 +65,12 @@ export default function ForumPage() {
     { enabled: !!slug }
   )
 
-  const { data: categoriesData, isLoading: categoriesLoading, refetch } = trpc.forum.listCategories.useQuery(
+  const { data: categoriesData, isLoading: categoriesLoading, refetch } = trpc.posts.listCategories.useQuery(
     { bandId: bandData?.band?.id || '', userId: userId || '' },
     { enabled: !!bandData?.band?.id && !!userId }
   )
 
-  const createMutation = trpc.forum.createCategory.useMutation({
+  const createMutation = trpc.posts.createCategory.useMutation({
     onSuccess: () => {
       showToast('Category created!', 'success')
       setCreateModal(false)
@@ -84,7 +84,7 @@ export default function ForumPage() {
     },
   })
 
-  const updateMutation = trpc.forum.updateCategory.useMutation({
+  const updateMutation = trpc.posts.updateCategory.useMutation({
     onSuccess: () => {
       showToast('Category updated!', 'success')
       setEditModal(null)
@@ -95,7 +95,7 @@ export default function ForumPage() {
     },
   })
 
-  const deleteMutation = trpc.forum.deleteCategory.useMutation({
+  const deleteMutation = trpc.posts.deleteCategory.useMutation({
     onSuccess: () => {
       showToast('Category deleted.', 'success')
       setDeleteModal(null)
@@ -113,13 +113,13 @@ export default function ForumPage() {
         <BandLayout
           bandSlug={slug}
           bandName="Loading..."
-          pageTitle="Forum"
+          pageTitle="Posts"
           isMember={false}
           wide={true}
           bandId={bandData?.band?.id}
           userId={userId || undefined}
         >
-          <Loading message="Loading forum..." />
+          <Loading message="Loading posts..." />
         </BandLayout>
       </>
     )
@@ -132,7 +132,7 @@ export default function ForumPage() {
         <BandLayout
           bandSlug={slug}
           bandName=""
-          pageTitle="Forum"
+          pageTitle="Posts"
           isMember={false}
           wide={true}
           bandId={bandData?.band?.id}
@@ -220,7 +220,7 @@ export default function ForumPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
-        pageTitle="Forum"
+        pageTitle="Posts"
         canApprove={canApprove}
         isMember={isMember}
         canAccessAdminTools={canAccessAdminTools}
@@ -248,7 +248,7 @@ export default function ForumPage() {
 
           {categories.length === 0 ? (
             <Alert variant="info">
-              <Text>No forum categories yet. Check back later!</Text>
+              <Text>No post categories yet. Check back later!</Text>
             </Alert>
           ) : (
             <Stack spacing="md">
@@ -261,7 +261,7 @@ export default function ForumPage() {
                   }}
                   onClick={() => {
                     if (category.hasAccess) {
-                      router.push(`/bands/${slug}/forum/${category.slug}`)
+                      router.push(`/bands/${slug}/posts/${category.slug}`)
                     }
                   }}
                 >

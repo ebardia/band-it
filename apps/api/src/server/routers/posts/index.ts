@@ -7,7 +7,7 @@ import {
   archiveCategory,
   unarchiveCategory,
   deleteCategory,
-} from './forum.category'
+} from './posts.category'
 import {
   listPosts,
   getPost,
@@ -16,14 +16,14 @@ import {
   deletePost,
   togglePinPost,
   toggleLockPost,
-} from './forum.post'
+} from './posts.post'
 import {
   createResponse,
   updateResponse,
   deleteResponse,
-} from './forum.response'
+} from './posts.response'
 
-export const forumRouter = router({
+export const postsRouter = router({
   // Categories
   listCategories,
   getCategory,
@@ -49,4 +49,4 @@ export const forumRouter = router({
 })
 
 // Re-export helpers
-export { canAccessForumCategory, createDefaultCategories } from './forum.category'
+export { canAccessPostCategory, createDefaultCategories } from './posts.category'
