@@ -75,13 +75,16 @@ export function MessageList({ bandId, channelId, userId, userRole, onOpenThread 
     isInitialLoad.current = true
   }, [channelId])
 
-  // Scroll to bottom on load and new messages
+  // Scroll to bottom only when new messages arrive (not on initial page load)
   useEffect(() => {
-    // Use instant scroll on initial load, smooth scroll for new messages
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false
+      return
+    }
+    // Smooth scroll for new messages after initial load
     messagesEndRef.current?.scrollIntoView({
-      behavior: isInitialLoad.current ? 'auto' : 'smooth'
+      behavior: 'smooth'
     })
-    isInitialLoad.current = false
   }, [data?.messages])
 
   // Set up polling for new messages
