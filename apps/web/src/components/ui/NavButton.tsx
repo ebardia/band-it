@@ -16,12 +16,19 @@ export function NavButton({ children, active, className, disabled, href, onClick
 
   // Render as Link if href is provided
   if (href && !disabled) {
+    // Only pass Link-compatible props (data-* attributes)
+    const linkProps: Record<string, any> = {}
+    Object.keys(props).forEach(key => {
+      if (key.startsWith('data-')) {
+        linkProps[key] = (props as any)[key]
+      }
+    })
+
     return (
       <Link
         href={href}
         className={combinedClasses}
-        scroll={false}
-        {...(props as any)}
+        {...linkProps}
       >
         {children}
       </Link>
