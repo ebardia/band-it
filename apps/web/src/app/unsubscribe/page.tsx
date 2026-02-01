@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { trpc } from '@/lib/trpc'
 import { Heading, Text, Stack, Button, Alert, Spinner } from '@/components/ui'
 
-export default function UnsubscribePage() {
+function UnsubscribeContent() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
@@ -90,5 +90,22 @@ export default function UnsubscribePage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function UnsubscribePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
+            <Spinner size="lg" />
+            <Text className="mt-4">Loading...</Text>
+          </div>
+        </div>
+      }
+    >
+      <UnsubscribeContent />
+    </Suspense>
   )
 }
