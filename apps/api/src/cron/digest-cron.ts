@@ -5,8 +5,11 @@ import { prisma } from '../lib/prisma'
 import { getQuickActionsForUser } from '../lib/quickActions'
 import { sendDigestEmail } from '../server/services/digest-email.service'
 
-// Concurrency limit for sending emails
-const limit = pLimit(10)
+// Concurrency limit for sending emails (Resend allows 2 req/sec on free tier)
+const limit = pLimit(1)
+
+// Delay between emails to respect rate limits
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 /**
  * Initialize the digest email cron job
@@ -82,14 +85,19 @@ async function sendDigestEmails(): Promise<{ sent: number; skipped: number; fail
 
     if (users.length === 0) break
 
-    // Process batch concurrently with limit
+    // Process batch sequentially with delay to respect Resend rate limits (2/sec)
     const results = await Promise.all(
       users.map((user) =>
         limit(async () => {
           try {
             const result = await sendDigestToUser(user)
-            if (result === 'sent') sent++
-            else if (result === 'skipped') skipped++
+            if (result === 'sent') {
+              sent++
+              // Wait 600ms between sent emails to stay under 2/sec limit
+              await delay(600)
+            } else if (result === 'skipped') {
+              skipped++
+            }
             return result
           } catch (error) {
             console.error(`[DIGEST] Failed for ${user.id}:`, error)
