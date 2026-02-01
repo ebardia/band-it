@@ -181,9 +181,12 @@ export async function processMentions(
 
   // Process user mentions
   for (const username of userMentions) {
-    const member = members.find(m =>
-      m.user.name.toLowerCase() === username.toLowerCase()
-    )
+    // Match against full name OR first word of name (for "John Smith" -> @John)
+    const member = members.find(m => {
+      const fullName = m.user.name.toLowerCase()
+      const firstName = fullName.split(/\s+/)[0]
+      return fullName === username.toLowerCase() || firstName === username.toLowerCase()
+    })
 
     if (member && canAccessChannel(member.role, channelVisibility)) {
       // Don't notify the author if they mention themselves
