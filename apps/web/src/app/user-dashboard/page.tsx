@@ -151,23 +151,35 @@ export default function OverviewDashboard() {
     <PageWrapper variant="dashboard">
       <AppNav />
 
-      <DashboardContainer wide>
-        <Flex gap="md" align="start">
-          {/* Left Sidebar */}
-          <DashboardSidebar
-            bandCount={bandCount}
-            proposalCount={proposalCount}
-            projectCount={projectCount}
-            assignedTaskCount={assignedTaskCount}
-            projectTaskCount={projectTaskCount}
-          />
+      {/* Mobile View - Quick Actions Only */}
+      <div className="md:hidden min-h-screen bg-gray-50 px-4 py-4">
+        <QuickActionsWidget userId={userId} />
+        <div className="text-center mt-8">
+          <Text color="muted" className="text-sm">
+            For full dashboard, use a larger screen
+          </Text>
+        </div>
+      </div>
 
-          {/* Center Content */}
-          <div className="flex-1">
-            {/* Quick Actions Widget - at the top for immediate visibility */}
-            <QuickActionsWidget userId={userId} />
+      {/* Desktop View - Full Dashboard */}
+      <div className="hidden md:block">
+        <DashboardContainer wide>
+          <Flex gap="md" align="start">
+            {/* Left Sidebar */}
+            <DashboardSidebar
+              bandCount={bandCount}
+              proposalCount={proposalCount}
+              projectCount={projectCount}
+              assignedTaskCount={assignedTaskCount}
+              projectTaskCount={projectTaskCount}
+            />
 
-            <Stack spacing="xl">
+            {/* Center Content */}
+            <div className="flex-1">
+              {/* Quick Actions Widget - at the top for immediate visibility */}
+              <QuickActionsWidget userId={userId} />
+
+              <Stack spacing="xl">
               {/* Action Required Section */}
               <Stack spacing="lg">
                 <Heading level={2}>🔴 Action Required</Heading>
@@ -409,8 +421,9 @@ export default function OverviewDashboard() {
             </Stack>
           </div>
 
-        </Flex>
-      </DashboardContainer>
+          </Flex>
+        </DashboardContainer>
+      </div>
     </PageWrapper>
   )
 }
