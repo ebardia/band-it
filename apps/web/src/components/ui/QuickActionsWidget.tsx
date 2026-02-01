@@ -97,9 +97,11 @@ function ActionCard({ action, onClick }: ActionCardProps) {
         return '🗳️'
       case 'CONFIRM_PAYMENT':
         return '💳'
-      case 'REVIEW':
-        return '📋'
-      case 'REPLY':
+      case 'EVENT_RSVP':
+        return '📅'
+      case 'BAND_INVITE':
+        return '✉️'
+      case 'MENTION':
         return '💬'
       default:
         return '📌'
@@ -112,10 +114,12 @@ function ActionCard({ action, onClick }: ActionCardProps) {
         return 'Vote'
       case 'CONFIRM_PAYMENT':
         return 'Confirm Payment'
-      case 'REVIEW':
-        return 'Review Proposal'
-      case 'REPLY':
-        return 'Reply'
+      case 'EVENT_RSVP':
+        return 'RSVP'
+      case 'BAND_INVITE':
+        return 'Invitation'
+      case 'MENTION':
+        return 'Mention'
       default:
         return action.type
     }
@@ -157,6 +161,10 @@ function ActionCard({ action, onClick }: ActionCardProps) {
             <p className="text-gray-900 font-medium truncate">
               {action.type === 'CONFIRM_PAYMENT' && action.meta.from
                 ? `${action.title} from ${action.meta.from}`
+                : action.type === 'MENTION' && action.meta.channelName
+                ? `in #${action.meta.channelName}`
+                : action.type === 'BAND_INVITE'
+                ? action.title
                 : `"${action.title}"`}
             </p>
             <p className="text-sm text-gray-500 truncate">{action.bandName}</p>

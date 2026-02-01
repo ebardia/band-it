@@ -1,10 +1,11 @@
 import { prisma } from './prisma'
+import { addDays } from 'date-fns'
 
 // Roles that can vote
 export const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
 
 // Quick action types
-export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT'
+export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION'
 export type Urgency = 'high' | 'medium' | 'low'
 
 export interface QuickAction {
@@ -48,7 +49,7 @@ export async function getQuickActionsForUser(
   const now = new Date()
 
   // Run queries in parallel for better performance
-  const [pendingVotes, pendingPayments] = await Promise.all([
+  const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions] = await Promise.all([
     // 1. Pending votes - proposals open for voting where user hasn't voted
     prisma.proposal.findMany({
       where: {
@@ -89,6 +90,78 @@ export async function getQuickActionsForUser(
         initiatedBy: { select: { id: true, name: true } },
       },
       take: limit,
+    }),
+
+    // 3. Events needing RSVP - upcoming events (within 7 days) user hasn't RSVPed to
+    prisma.event.findMany({
+      where: {
+        startTime: {
+          gt: now,
+          lte: addDays(now, 7),
+        },
+        band: {
+          members: {
+            some: {
+              userId,
+              status: 'ACTIVE',
+            },
+          },
+        },
+        rsvps: {
+          none: { userId },
+        },
+      },
+      include: {
+        band: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { startTime: 'asc' },
+      take: limit,
+    }),
+
+    // 4. Pending band invitations (Member records with INVITED status)
+    prisma.member.findMany({
+      where: {
+        userId,
+        status: 'INVITED',
+      },
+      include: {
+        band: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    }),
+
+    // 5. Unread @mentions in messages (last 7 days)
+    prisma.message.findMany({
+      where: {
+        content: { contains: `@` },
+        createdAt: { gte: addDays(now, -7) },
+        deletedAt: null,
+        channel: {
+          band: {
+            members: {
+              some: {
+                userId,
+                status: 'ACTIVE',
+              },
+            },
+          },
+        },
+        // Exclude own messages
+        NOT: { authorId: userId },
+      },
+      include: {
+        author: { select: { id: true, name: true } },
+        channel: {
+          select: {
+            id: true,
+            name: true,
+            band: { select: { id: true, name: true, slug: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit * 2, // Get more since we'll filter
     }),
   ])
 
@@ -136,6 +209,80 @@ export async function getQuickActionsForUser(
         autoConfirmAt: payment.autoConfirmAt,
       },
     })
+  }
+
+  // Process pending event RSVPs
+  for (const event of pendingEventRsvps) {
+    const eventDate = new Date(event.startTime)
+    const hoursUntil = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60)
+
+    actions.push({
+      type: 'EVENT_RSVP',
+      id: event.id,
+      title: event.title,
+      bandName: event.band.name,
+      bandId: event.band.id,
+      url: `/bands/${event.band.slug}/events/${event.id}`,
+      urgency: hoursUntil < 24 ? 'high' : hoursUntil < 48 ? 'medium' : 'low',
+      meta: {
+        startTime: event.startTime,
+        location: event.location,
+        timeRemaining: formatTimeRemaining(eventDate),
+      },
+    })
+  }
+
+  // Process pending band invitations
+  for (const invitation of pendingInvitations) {
+    actions.push({
+      type: 'BAND_INVITE',
+      id: invitation.id,
+      title: `Join ${invitation.band.name}`,
+      bandName: invitation.band.name,
+      bandId: invitation.band.id,
+      url: `/bands/${invitation.band.slug}`,
+      urgency: 'medium',
+      meta: {
+        createdAt: invitation.createdAt,
+      },
+    })
+  }
+
+  // Process unread mentions - filter to only messages that actually mention this user
+  // We need to get the user's name/email to check for mentions
+  const currentUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, email: true },
+  })
+
+  if (currentUser) {
+    const userName = currentUser.name?.toLowerCase() || ''
+    const userEmail = currentUser.email?.toLowerCase() || ''
+
+    for (const message of unreadMentions) {
+      const content = message.content.toLowerCase()
+      // Check if message mentions this user by name or email
+      if (
+        (userName && content.includes(`@${userName}`)) ||
+        (userEmail && content.includes(`@${userEmail}`))
+      ) {
+        actions.push({
+          type: 'MENTION',
+          id: message.id,
+          title: `${message.author.name} mentioned you`,
+          bandName: message.channel.band.name,
+          bandId: message.channel.band.id,
+          url: `/bands/${message.channel.band.slug}`,
+          urgency: 'low',
+          meta: {
+            channelName: message.channel.name,
+            authorName: message.author.name,
+            preview: message.content.substring(0, 100),
+            createdAt: message.createdAt,
+          },
+        })
+      }
+    }
   }
 
   // Sort by urgency (high first)

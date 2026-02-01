@@ -71,6 +71,12 @@ function getActionDetails(type: QuickAction['type']): { icon: string; typeLabel:
       return { icon: '🗳️', typeLabel: 'Vote', buttonLabel: 'Vote Now' }
     case 'CONFIRM_PAYMENT':
       return { icon: '💳', typeLabel: 'Confirm Payment', buttonLabel: 'Confirm' }
+    case 'EVENT_RSVP':
+      return { icon: '📅', typeLabel: 'Event', buttonLabel: 'RSVP' }
+    case 'BAND_INVITE':
+      return { icon: '✉️', typeLabel: 'Invitation', buttonLabel: 'Respond' }
+    case 'MENTION':
+      return { icon: '💬', typeLabel: 'Mention', buttonLabel: 'View' }
     default:
       return { icon: '📌', typeLabel: type, buttonLabel: 'View' }
   }
