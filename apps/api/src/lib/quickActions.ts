@@ -131,37 +131,33 @@ export async function getQuickActionsForUser(
       take: limit,
     }),
 
-    // 5. Unread @mentions in messages (last 7 days)
-    prisma.message.findMany({
+    // 5. Unread @mentions - query MessageMention table for accurate results
+    prisma.messageMention.findMany({
       where: {
-        content: { contains: `@` },
-        createdAt: { gte: addDays(now, -7) },
-        deletedAt: null,
-        channel: {
-          band: {
-            members: {
-              some: {
-                userId,
-                status: 'ACTIVE',
+        userId,
+        message: {
+          createdAt: { gte: addDays(now, -7) },
+          deletedAt: null,
+          // Exclude own messages
+          NOT: { authorId: userId },
+        },
+      },
+      include: {
+        message: {
+          include: {
+            author: { select: { id: true, name: true } },
+            channel: {
+              select: {
+                id: true,
+                name: true,
+                band: { select: { id: true, name: true, slug: true } },
               },
             },
           },
         },
-        // Exclude own messages
-        NOT: { authorId: userId },
       },
-      include: {
-        author: { select: { id: true, name: true } },
-        channel: {
-          select: {
-            id: true,
-            name: true,
-            band: { select: { id: true, name: true, slug: true } },
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit * 2, // Get more since we'll filter
+      orderBy: { message: { createdAt: 'desc' } },
+      take: limit,
     }),
   ])
 
@@ -248,41 +244,24 @@ export async function getQuickActionsForUser(
     })
   }
 
-  // Process unread mentions - filter to only messages that actually mention this user
-  // We need to get the user's name/email to check for mentions
-  const currentUser = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { name: true, email: true },
-  })
-
-  if (currentUser) {
-    const userName = currentUser.name?.toLowerCase() || ''
-    const userEmail = currentUser.email?.toLowerCase() || ''
-
-    for (const message of unreadMentions) {
-      const content = message.content.toLowerCase()
-      // Check if message mentions this user by name or email
-      if (
-        (userName && content.includes(`@${userName}`)) ||
-        (userEmail && content.includes(`@${userEmail}`))
-      ) {
-        actions.push({
-          type: 'MENTION',
-          id: message.id,
-          title: `${message.author.name} mentioned you`,
-          bandName: message.channel.band.name,
-          bandId: message.channel.band.id,
-          url: `/bands/${message.channel.band.slug}`,
-          urgency: 'low',
-          meta: {
-            channelName: message.channel.name,
-            authorName: message.author.name,
-            preview: message.content.substring(0, 100),
-            createdAt: message.createdAt,
-          },
-        })
-      }
-    }
+  // Process unread mentions from MessageMention table
+  for (const mention of unreadMentions) {
+    const message = mention.message
+    actions.push({
+      type: 'MENTION',
+      id: message.id,
+      title: `${message.author.name} mentioned you`,
+      bandName: message.channel.band.name,
+      bandId: message.channel.band.id,
+      url: `/bands/${message.channel.band.slug}`,
+      urgency: 'low',
+      meta: {
+        channelName: message.channel.name,
+        authorName: message.author.name,
+        preview: message.content.substring(0, 100),
+        createdAt: message.createdAt,
+      },
+    })
   }
 
   // Sort by urgency (high first)
