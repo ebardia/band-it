@@ -66,7 +66,10 @@ export function AppNav() {
 
   return (
     <>
-      <AIUsageTicker />
+      {/* AI Usage Ticker - Hidden on mobile */}
+      <div className="hidden md:block">
+        <AIUsageTicker />
+      </div>
       <nav className={theme.components.nav.container}>
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4">
         {/* Logo */}
@@ -158,44 +161,10 @@ export function AppNav() {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Dropdown - Only Logout */}
       {showMobileMenu && (
         <div className="md:hidden border-t border-gray-200 bg-white">
-          <div className="px-4 py-3 space-y-2">
-            {navLinks.map((link) => (
-              <button
-                key={link.path}
-                onClick={() => handleNavClick(link.path)}
-                className={`block w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                  isActive(link.path)
-                    ? 'bg-blue-50 text-blue-600 font-semibold'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {link.label}
-              </button>
-            ))}
-            <hr className="my-2 border-gray-200" />
-            <button
-              onClick={() => handleNavClick('/user-dashboard/profile')}
-              className="block w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              Profile
-            </button>
-            {isFounder && (
-              <button
-                onClick={() => handleNavClick('/user-dashboard/subscription')}
-                className="block w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                Subscription
-              </button>
-            )}
-            <button
-              onClick={() => handleNavClick('/user-dashboard/settings')}
-              className="block w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              Settings
-            </button>
+          <div className="px-4 py-3">
             <button
               onClick={() => {
                 setShowMobileMenu(false)
