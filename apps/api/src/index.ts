@@ -9,6 +9,7 @@ import { auditStorage, AuditContext } from './lib/auditContext'
 import { handleStripeWebhook } from './webhooks/stripe'
 import { handleStripeConnectWebhook } from './webhooks/stripe-connect'
 import { initBillingCron } from './cron/billing-cron'
+import { initDigestCron } from './cron/digest-cron'
 import { initializeEffectHandlers } from './services/effects'
 import stripeConnectRoutes from './routes/stripe-connect'
 import bandDuesRoutes from './routes/band-dues'
@@ -108,4 +109,8 @@ app.listen(PORT, () => {
   // Initialize billing cron jobs
   initBillingCron()
   console.log(`⏰ Billing cron jobs scheduled`)
+
+  // Initialize digest email cron job
+  initDigestCron()
+  console.log(`📧 Digest email cron job scheduled`)
 })

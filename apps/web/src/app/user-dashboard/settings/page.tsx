@@ -15,7 +15,8 @@ import {
   Alert,
   Modal,
   Flex,
-  Card
+  Card,
+  Select
 } from '@/components/ui'
 
 export default function SettingsPage() {
@@ -32,6 +33,10 @@ export default function SettingsPage() {
   })
 
   const [deletePassword, setDeletePassword] = useState('')
+
+  // Digest preferences state
+  const [digestFrequency, setDigestFrequency] = useState<string>('DAILY')
+  const [digestWeeklyDay, setDigestWeeklyDay] = useState<number>(1) // Monday
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -52,6 +57,22 @@ export default function SettingsPage() {
   )
 
   const unacknowledgedWarnings = warningsData?.warnings.filter(w => !w.acknowledged) || []
+
+  // Get digest preferences
+  const { data: digestData } = trpc.digest.getPreferences.useQuery(
+    { userId: userId! },
+    { enabled: !!userId }
+  )
+
+  // Initialize digest preferences when data loads
+  useEffect(() => {
+    if (digestData) {
+      setDigestFrequency(digestData.frequency)
+      if (digestData.weeklyDay !== null) {
+        setDigestWeeklyDay(digestData.weeklyDay)
+      }
+    }
+  }, [digestData])
 
   const changePasswordMutation = trpc.auth.changePassword.useMutation({
     onSuccess: () => {
@@ -86,6 +107,16 @@ export default function SettingsPage() {
     onSuccess: () => {
       utils.auth.getMyWarnings.invalidate()
       showToast('Warnings acknowledged', 'success')
+    },
+  })
+
+  const updateDigestMutation = trpc.digest.updatePreferences.useMutation({
+    onSuccess: () => {
+      showToast('Digest preferences updated!', 'success')
+      utils.digest.getPreferences.invalidate()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
     },
   })
 
@@ -124,6 +155,15 @@ export default function SettingsPage() {
   const handleAcknowledgeAll = () => {
     if (!userId) return
     acknowledgeAllMutation.mutate({ userId })
+  }
+
+  const handleSaveDigestPreferences = () => {
+    if (!userId) return
+    updateDigestMutation.mutate({
+      userId,
+      frequency: digestFrequency as 'DAILY' | 'EVERY_OTHER_DAY' | 'WEEKLY' | 'NEVER',
+      weeklyDay: digestFrequency === 'WEEKLY' ? digestWeeklyDay : undefined,
+    })
   }
 
   return (
@@ -208,6 +248,96 @@ export default function SettingsPage() {
             </Stack>
           </Stack>
         )}
+
+        {/* Email Notifications Section */}
+        <Stack spacing="lg">
+          <Heading level={2}>Email Notifications</Heading>
+          <Card>
+            <Stack spacing="md">
+              <Text weight="semibold">Quick Actions Digest</Text>
+              <Text variant="small" color="muted">
+                How often would you like reminders about pending actions?
+              </Text>
+
+              <Stack spacing="sm">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="digestFrequency"
+                    value="DAILY"
+                    checked={digestFrequency === 'DAILY'}
+                    onChange={(e) => setDigestFrequency(e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <span>Daily</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="digestFrequency"
+                    value="EVERY_OTHER_DAY"
+                    checked={digestFrequency === 'EVERY_OTHER_DAY'}
+                    onChange={(e) => setDigestFrequency(e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <span>Every other day</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="digestFrequency"
+                    value="WEEKLY"
+                    checked={digestFrequency === 'WEEKLY'}
+                    onChange={(e) => setDigestFrequency(e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <span>Weekly</span>
+                </label>
+
+                {digestFrequency === 'WEEKLY' && (
+                  <div className="ml-6">
+                    <Select
+                      label="On"
+                      value={digestWeeklyDay.toString()}
+                      onChange={(e) => setDigestWeeklyDay(parseInt(e.target.value))}
+                    >
+                      <option value="0">Sunday</option>
+                      <option value="1">Monday</option>
+                      <option value="2">Tuesday</option>
+                      <option value="3">Wednesday</option>
+                      <option value="4">Thursday</option>
+                      <option value="5">Friday</option>
+                      <option value="6">Saturday</option>
+                    </Select>
+                  </div>
+                )}
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="digestFrequency"
+                    value="NEVER"
+                    checked={digestFrequency === 'NEVER'}
+                    onChange={(e) => setDigestFrequency(e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <span>Never</span>
+                </label>
+              </Stack>
+
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleSaveDigestPreferences}
+                disabled={updateDigestMutation.isPending}
+              >
+                {updateDigestMutation.isPending ? 'Saving...' : 'Save Preferences'}
+              </Button>
+            </Stack>
+          </Card>
+        </Stack>
 
         {/* Change Password Section */}
         <Stack spacing="lg">

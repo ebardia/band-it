@@ -23,6 +23,7 @@ import { manualPaymentRouter } from './manualPayment'
 import { helpRouter } from './help'
 import { postsRouter } from './posts'
 import { quickRouter } from './quick'
+import { digestRouter } from './digest'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -50,6 +51,7 @@ export const appRouter = router({
   help: helpRouter,
   posts: postsRouter,
   quick: quickRouter,
+  digest: digestRouter,
 })
 
 // Export type definition of API

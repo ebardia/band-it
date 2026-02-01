@@ -64,7 +64,12 @@ model User {
 
   // Notification Settings
   emailNotificationFrequency EmailFrequency @default(DAILY)
-  
+
+  // Digest Email Settings
+  digestFrequency   String    @default("DAILY")  // DAILY, EVERY_OTHER_DAY, WEEKLY, NEVER
+  digestWeeklyDay   Int?      // 0-6 (Sunday-Saturday), only used if WEEKLY
+  digestLastSentAt  DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
