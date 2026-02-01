@@ -3,6 +3,7 @@ import { router, publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { verifyUnsubscribeToken } from '../../lib/digest-token'
+import { runDigestJob } from '../../cron/digest-cron'
 
 export const digestRouter = router({
   /**
@@ -109,4 +110,12 @@ export const digestRouter = router({
         message: 'You have been unsubscribed from digest emails',
       }
     }),
+
+  /**
+   * Manually trigger digest job (for testing)
+   */
+  trigger: publicProcedure.mutation(async () => {
+    const result = await runDigestJob()
+    return result
+  }),
 })
