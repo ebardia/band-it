@@ -16,7 +16,8 @@ import {
   Card,
   Badge,
   Loading,
-  Alert
+  Alert,
+  QuickActionsWidget
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { DashboardSidebar } from '@/components/DashboardSidebar'
@@ -163,6 +164,9 @@ export default function OverviewDashboard() {
 
           {/* Center Content */}
           <div className="flex-1">
+            {/* Quick Actions Widget - at the top for immediate visibility */}
+            <QuickActionsWidget userId={userId} />
+
             <Stack spacing="xl">
               {/* Action Required Section */}
               <Stack spacing="lg">
