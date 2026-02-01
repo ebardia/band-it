@@ -48,6 +48,14 @@ export async function getQuickActionsForUser(
   const actions: QuickAction[] = []
   const now = new Date()
 
+  // Get user's last digest timestamp to filter mentions
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { digestLastSentAt: true },
+  })
+  // Only show mentions since last digest (or last 7 days if never sent)
+  const mentionsSince = user?.digestLastSentAt || addDays(now, -7)
+
   // Run queries in parallel for better performance
   const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions] = await Promise.all([
     // 1. Pending votes - proposals open for voting where user hasn't voted
@@ -131,12 +139,12 @@ export async function getQuickActionsForUser(
       take: limit,
     }),
 
-    // 5. Unread @mentions - query MessageMention table for accurate results
+    // 5. Unread @mentions - only since last digest was sent
     prisma.messageMention.findMany({
       where: {
         userId,
         message: {
-          createdAt: { gte: addDays(now, -7) },
+          createdAt: { gt: mentionsSince },
           deletedAt: null,
           // Exclude own messages
           NOT: { authorId: userId },
