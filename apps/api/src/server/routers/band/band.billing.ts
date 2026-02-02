@@ -4,7 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { bandBillingService } from '../../services/band-billing.service'
 import { TRPCError } from '@trpc/server'
 import { checkGoodStanding } from '../../../lib/dues-enforcement'
-import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
+import { MIN_MEMBERS_TO_ACTIVATE, REQUIRE_PAYMENT_TO_ACTIVATE } from '@band-it/shared'
 
 export const bandBillingRouter = router({
   /**
@@ -208,10 +208,11 @@ export const bandBillingRouter = router({
 
       const isBillingOwner = band.billingOwnerId === input.userId
       const memberCount = band.members.length
-      const needsPayment = band.billingStatus === 'PENDING'
-      const isPastDue = band.billingStatus === 'PAST_DUE'
+      // In test mode (REQUIRE_PAYMENT_TO_ACTIVATE=false), payment is never required
+      const needsPayment = REQUIRE_PAYMENT_TO_ACTIVATE && band.billingStatus === 'PENDING'
+      const isPastDue = REQUIRE_PAYMENT_TO_ACTIVATE && band.billingStatus === 'PAST_DUE'
       const isInactive = band.status === 'INACTIVE'
-      const noBillingOwner = !band.billingOwnerId && memberCount >= MIN_MEMBERS_TO_ACTIVATE
+      const noBillingOwner = REQUIRE_PAYMENT_TO_ACTIVATE && !band.billingOwnerId && memberCount >= MIN_MEMBERS_TO_ACTIVATE
 
       let gracePeriodDaysLeft = null
       if (band.gracePeriodEndsAt) {

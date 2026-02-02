@@ -14,9 +14,11 @@ bands:
   what: Groups/organizations on the platform. Each band has members with different roles, channels for discussion, and proposals for decision-making.
   activation:
     - Requires at least the minimum members (currently 1 for testing, normally 3) to activate
-    - Once minimum reached, founder must pay subscription to complete activation
-    - Band status changes from PENDING to ACTIVE after payment
+    - In test mode, bands auto-activate when minimum members reached (no payment required)
+    - In production mode, founder must pay subscription after reaching minimum members
+    - Band status changes from PENDING to ACTIVE after activation
   subscription:
+    note: "Subscriptions are disabled in test mode"
     tier_1:
       members: "Up to 20 members"
       price: "$20/month"
@@ -26,19 +28,19 @@ bands:
     notes:
       - Auto-upgrades when reaching 21 members
       - Auto-downgrades when going below 21 members
-      - Founder is responsible for subscription payment
+      - Founder is responsible for subscription payment (when enabled)
   statuses:
-    ACTIVE: Band is operational with paid subscription
-    INACTIVE: Subscription lapsed or cancelled
+    ACTIVE: Band is operational
+    INACTIVE: Band does not have minimum members
   roles:
-    FOUNDER: Created the band, full control, pays subscription
+    FOUNDER: Created the band, full control
     GOVERNOR: Leadership role, can manage most settings and review proposals
     MODERATOR: Can moderate discussions, members, and review proposals
     CONDUCTOR: Can lead projects and tasks, but cannot review proposals
     VOTING_MEMBER: Standard participation with voting rights
     OBSERVER: Can view content but cannot vote or post
   workflows:
-    create: "Overview → Create Band → Fill details (name, mission, values) → Invite members → Reach minimum members → Pay subscription → Band is Active"
+    create: "Overview → Create Band → Fill details (name, mission, values) → Invite members → Reach minimum members → Band is Active (in test mode, no payment needed)"
     join: "Discover Bands → Browse/search → Click Apply → Wait for approval → See band in Overview"
     dissolve:
       under_minimum_members: "Only founder can dissolve directly"
@@ -98,8 +100,9 @@ discussions:
     post_message: "Select channel → Type message → Send (or use @ to mention)"
 
 billing:
+  note: "Band subscriptions are disabled in test mode - bands auto-activate without payment"
   band_subscription:
-    what: Monthly fee paid by founder to keep band active
+    what: Monthly fee paid by founder to keep band active (when enabled)
     who_pays: Founder
     pricing: "$20/month (up to 20 members) or $100/month (21+ members)"
   member_dues:
@@ -173,7 +176,7 @@ common_questions:
   how_do_i_create_a_proposal: "Go to band's Proposals section → Click 'New Proposal' → Select type → Fill in details → Set voting period → Submit"
   why_cant_i_vote: "You may not have voting rights (Observer role), or you're not an active member of the band, or the voting period has ended"
   why_cant_i_post: "Check your role permissions and channel visibility. Observers cannot post. Some channels are restricted to certain roles"
-  why_is_my_band_not_active: "Bands require the minimum member count to activate. Once you reach it, the founder must pay the subscription"
+  why_is_my_band_not_active: "Bands require the minimum member count to activate. In test mode, bands auto-activate when reaching the minimum members. In production, the founder must also pay the subscription."
   how_do_i_pay_dues: "Go to band's Billing section → Click 'Pay Dues' → Complete payment via Stripe, or use manual payment if your band accepts it"
   how_do_i_confirm_a_payment: "Go to band's Billing → Manual Payments tab → Find the pending payment → Click Confirm"
   what_are_the_different_roles: "Founder (full control), Governor (leadership), Moderator (moderate discussions), Conductor (lead projects), Voting Member (standard participation), Observer (view only)"

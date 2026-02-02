@@ -33,7 +33,7 @@ const FAQ_ENTRIES = [
   {
     category: 'BANDS',
     question: 'How many members do I need to activate a band?',
-    answer: 'You need to meet the minimum member requirement (currently 1 for testing, normally 3) to activate a band. Once you reach the minimum, you\'ll be prompted to pay the subscription fee to complete activation.',
+    answer: 'You need to meet the minimum member requirement (currently 1 for testing, normally 3) to activate a band. In test mode, bands auto-activate when they reach the minimum members - no payment required. In production mode, you\'ll be prompted to pay the subscription fee to complete activation.',
     keywords: ['members', 'activate', 'three', 'minimum', 'requirement'],
     relatedPages: ['/bands/create'],
     sortOrder: 1,
@@ -41,7 +41,7 @@ const FAQ_ENTRIES = [
   {
     category: 'BANDS',
     question: 'How much does a band subscription cost?',
-    answer: 'Band subscriptions are:\n- **$20/month** for small bands (up to 20 members)\n- **$100/month** for large bands (21+ members)\n\nThe subscription is auto-upgraded when you reach 21 members and auto-downgraded if you go below.\n\nIn test mode, use the card number `4242 4242 4242 4242` to test payments.',
+    answer: 'Band subscriptions are currently **disabled in test mode** - bands auto-activate without payment.\n\nWhen enabled in production:\n- **$20/month** for small bands (up to 20 members)\n- **$100/month** for large bands (21+ members)\n\nThe subscription is auto-upgraded when you reach 21 members and auto-downgraded if you go below.',
     keywords: ['cost', 'price', 'subscription', 'payment', 'fee', 'money'],
     relatedPages: ['/bands'],
     sortOrder: 2,

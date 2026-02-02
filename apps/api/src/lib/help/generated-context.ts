@@ -1,5 +1,5 @@
 // AUTO-GENERATED from docs/help-context.yaml - DO NOT EDIT DIRECTLY
-// Generated at: 2026-02-02T16:39:50.088Z
+// Generated at: 2026-02-02T16:55:50.890Z
 // To update, edit docs/help-context.yaml and run: npm run generate-help-context
 
 export const PLATFORM_CONTEXT = `
@@ -11,18 +11,19 @@ Groups/organizations on the platform. Each band has members with different roles
 
 ### Activation Requirements
 - Requires at least the minimum members (currently 1 for testing, normally 3) to activate
-- Once minimum reached, founder must pay subscription to complete activation
-- Band status changes from PENDING to ACTIVE after payment
+- In test mode, bands auto-activate when minimum members reached (no payment required)
+- In production mode, founder must pay subscription after reaching minimum members
+- Band status changes from PENDING to ACTIVE after activation
 
 ### Subscription Pricing
 - Up to 20 members: $20/month
 - 21+ members: $100/month
 - Auto-upgrades when reaching 21 members
 - Auto-downgrades when going below 21 members
-- Founder is responsible for subscription payment
+- Founder is responsible for subscription payment (when enabled)
 
 ### Roles (highest to lowest authority)
-- FOUNDER: Created the band, full control, pays subscription
+- FOUNDER: Created the band, full control
 - GOVERNOR: Leadership role, can manage most settings and review proposals
 - MODERATOR: Can moderate discussions, members, and review proposals
 - CONDUCTOR: Can lead projects and tasks, but cannot review proposals
@@ -30,7 +31,7 @@ Groups/organizations on the platform. Each band has members with different roles
 - OBSERVER: Can view content but cannot vote or post
 
 ### Key Workflows
-- Create a band: Overview → Create Band → Fill details (name, mission, values) → Invite members → Reach minimum members → Pay subscription → Band is Active
+- Create a band: Overview → Create Band → Fill details (name, mission, values) → Invite members → Reach minimum members → Band is Active (in test mode, no payment needed)
 - Join a band: Discover Bands → Browse/search → Click Apply → Wait for approval → See band in Overview
 - Dissolve (under minimum members): Only founder can dissolve directly
 - Dissolve (at or above minimum members): Requires a dissolution proposal with unanimous approval from all voting members
@@ -91,7 +92,7 @@ Communication within bands happens in channels. Supports threaded conversations,
 ## BILLING
 
 ### Band Subscription
-- What: Monthly fee paid by founder to keep band active
+- What: Monthly fee paid by founder to keep band active (when enabled)
 - Who pays: Founder
 - Pricing: $20/month (up to 20 members) or $100/month (21+ members)
 
@@ -161,7 +162,7 @@ You may not have voting rights (Observer role), or you're not an active member o
 Check your role permissions and channel visibility. Observers cannot post. Some channels are restricted to certain roles
 
 ### Why is my band not active?
-Bands require the minimum member count to activate. Once you reach it, the founder must pay the subscription
+Bands require the minimum member count to activate. In test mode, bands auto-activate when reaching the minimum members. In production, the founder must also pay the subscription.
 
 ### How do I pay dues?
 Go to band's Billing section → Click 'Pay Dues' → Complete payment via Stripe, or use manual payment if your band accepts it

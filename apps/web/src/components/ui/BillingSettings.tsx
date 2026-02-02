@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button, Text, Heading, Stack, Card, Badge, Modal } from '@/components/ui'
 import { trpc } from '@/lib/trpc'
-import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
+import { MIN_MEMBERS_TO_ACTIVATE, REQUIRE_PAYMENT_TO_ACTIVATE } from '@band-it/shared'
 
 interface BillingSettingsProps {
   bandId: string
@@ -47,6 +47,28 @@ export function BillingSettings({ bandId, bandSlug, userId }: BillingSettingsPro
         <Stack spacing="md">
           <Heading level={3}>Billing Settings</Heading>
           <Text variant="muted">Unable to load billing information.</Text>
+        </Stack>
+      </Card>
+    )
+  }
+
+  // In test mode, show a simplified message
+  if (!REQUIRE_PAYMENT_TO_ACTIVATE) {
+    return (
+      <Card>
+        <Stack spacing="md">
+          <Heading level={3}>Billing Settings</Heading>
+          <div className="bg-green-50 p-3 rounded-lg">
+            <Text variant="small" className="text-green-700">
+              Billing is currently disabled (test mode). Bands are automatically activated when they reach {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'}.
+            </Text>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Text variant="small" className="text-gray-500">Members</Text>
+              <Text weight="semibold">{billingInfo.memberCount}</Text>
+            </div>
+          </div>
         </Stack>
       </Card>
     )

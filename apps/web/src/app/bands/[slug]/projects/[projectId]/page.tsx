@@ -101,6 +101,7 @@ export default function ProjectDetailPage() {
     { enabled: !!projectId }
   )
 
+  // @ts-ignore - tRPC type instantiation depth issue
   const updateProjectMutation = trpc.project.update.useMutation({
     onSuccess: () => {
       showToast('Project updated!', 'success')

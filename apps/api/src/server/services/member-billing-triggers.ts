@@ -1,7 +1,7 @@
 import { prisma } from '../../lib/prisma'
 import { bandBillingService } from './band-billing.service'
 import { notificationService } from '../../services/notification.service'
-import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
+import { MIN_MEMBERS_TO_ACTIVATE, REQUIRE_PAYMENT_TO_ACTIVATE } from '@band-it/shared'
 
 /**
  * Centralized service for handling billing-related triggers when member count changes
@@ -38,7 +38,7 @@ export const memberBillingTriggers = {
 
     console.log(`Band ${band.name}: ${activeCount} active members`)
 
-    // === Minimum members reached - require payment ===
+    // === Minimum members reached ===
     if (activeCount === MIN_MEMBERS_TO_ACTIVATE && band.billingStatus === 'NONE') {
       // Find the founder to be initial billing owner
       const founder = await prisma.member.findFirst({
@@ -48,47 +48,82 @@ export const memberBillingTriggers = {
 
       const billingOwnerId = founder?.userId || band.createdById
 
-      await prisma.band.update({
-        where: { id: bandId },
-        data: {
-          billingStatus: 'PENDING',
-          billingOwnerId,
-        },
-      })
+      if (REQUIRE_PAYMENT_TO_ACTIVATE) {
+        // Production mode: Require payment to activate
+        await prisma.band.update({
+          where: { id: bandId },
+          data: {
+            billingStatus: 'PENDING',
+            billingOwnerId,
+          },
+        })
 
-      console.log(`Band ${band.name}: Billing status set to PENDING, owner: ${billingOwnerId}`)
+        console.log(`Band ${band.name}: Billing status set to PENDING, owner: ${billingOwnerId}`)
 
-      // Notify billing owner that payment is required
-      await notificationService.create({
-        userId: billingOwnerId,
-        type: 'BILLING_PAYMENT_REQUIRED',
-        title: 'Payment Required',
-        message: `${band.name} now has ${MIN_MEMBERS_TO_ACTIVATE} members! Please set up payment to activate the band.`,
-        actionUrl: `/bands/${band.slug}/settings`,
-        priority: 'URGENT',
-        metadata: { bandId: band.id, bandName: band.name, memberCount: activeCount },
-        relatedId: band.id,
-        relatedType: 'Band',
-      })
-
-      // Notify other members that payment is pending
-      const otherMembers = await prisma.member.findMany({
-        where: { bandId, status: 'ACTIVE', userId: { not: billingOwnerId } },
-        select: { userId: true },
-      })
-
-      for (const member of otherMembers) {
+        // Notify billing owner that payment is required
         await notificationService.create({
-          userId: member.userId,
+          userId: billingOwnerId,
           type: 'BILLING_PAYMENT_REQUIRED',
-          title: 'Payment Pending',
-          message: `${band.name} has ${MIN_MEMBERS_TO_ACTIVATE} members! Waiting for billing owner to complete payment.`,
-          actionUrl: `/bands/${band.slug}`,
-          priority: 'HIGH',
+          title: 'Payment Required',
+          message: `${band.name} now has ${MIN_MEMBERS_TO_ACTIVATE} members! Please set up payment to activate the band.`,
+          actionUrl: `/bands/${band.slug}/settings`,
+          priority: 'URGENT',
           metadata: { bandId: band.id, bandName: band.name, memberCount: activeCount },
           relatedId: band.id,
           relatedType: 'Band',
         })
+
+        // Notify other members that payment is pending
+        const otherMembers = await prisma.member.findMany({
+          where: { bandId, status: 'ACTIVE', userId: { not: billingOwnerId } },
+          select: { userId: true },
+        })
+
+        for (const member of otherMembers) {
+          await notificationService.create({
+            userId: member.userId,
+            type: 'BILLING_PAYMENT_REQUIRED',
+            title: 'Payment Pending',
+            message: `${band.name} has ${MIN_MEMBERS_TO_ACTIVATE} members! Waiting for billing owner to complete payment.`,
+            actionUrl: `/bands/${band.slug}`,
+            priority: 'HIGH',
+            metadata: { bandId: band.id, bandName: band.name, memberCount: activeCount },
+            relatedId: band.id,
+            relatedType: 'Band',
+          })
+        }
+      } else {
+        // Test mode: Auto-activate without payment
+        await prisma.band.update({
+          where: { id: bandId },
+          data: {
+            status: 'ACTIVE',
+            activatedAt: new Date(),
+            billingOwnerId,
+          },
+        })
+
+        console.log(`Band ${band.name}: Auto-activated (payment not required in test mode)`)
+
+        // Notify all members that band is now active
+        const allMembers = await prisma.member.findMany({
+          where: { bandId, status: 'ACTIVE' },
+          select: { userId: true },
+        })
+
+        for (const member of allMembers) {
+          await notificationService.create({
+            userId: member.userId,
+            type: 'BAND_STATUS_CHANGED',
+            title: 'Band Activated!',
+            message: `${band.name} is now active! You can start collaborating.`,
+            actionUrl: `/bands/${band.slug}`,
+            priority: 'HIGH',
+            metadata: { bandId: band.id, bandName: band.name, memberCount: activeCount },
+            relatedId: band.id,
+            relatedType: 'Band',
+          })
+        }
       }
     }
 

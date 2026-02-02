@@ -2,7 +2,7 @@
 
 import { Button, Text, Heading, Stack } from '@/components/ui'
 import { trpc } from '@/lib/trpc'
-import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
+import { MIN_MEMBERS_TO_ACTIVATE, REQUIRE_PAYMENT_TO_ACTIVATE } from '@band-it/shared'
 
 interface BillingBannerProps {
   bandId: string
@@ -157,9 +157,12 @@ export function BillingBanner({ bandId, bandSlug, userId }: BillingBannerProps) 
         <Stack spacing="sm">
           <Heading level={3} className="text-gray-800">Band Inactive</Heading>
           <Text variant="small" className="text-gray-700">
-            This band is currently inactive. To reactivate, the band needs at least {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} and an active subscription.
+            {REQUIRE_PAYMENT_TO_ACTIVATE
+              ? `This band is currently inactive. To reactivate, the band needs at least ${MIN_MEMBERS_TO_ACTIVATE} member${MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} and an active subscription.`
+              : `This band is currently inactive. To reactivate, the band needs at least ${MIN_MEMBERS_TO_ACTIVATE} member${MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'}.`
+            }
           </Text>
-          {isBillingOwner && billingStatus === 'INACTIVE' && (
+          {REQUIRE_PAYMENT_TO_ACTIVATE && isBillingOwner && billingStatus === 'INACTIVE' && (
             <Button
               variant="primary"
               size="sm"
@@ -169,7 +172,7 @@ export function BillingBanner({ bandId, bandSlug, userId }: BillingBannerProps) 
               {createCheckout.isPending ? 'Loading...' : 'Reactivate Band'}
             </Button>
           )}
-          {noBillingOwner && (
+          {REQUIRE_PAYMENT_TO_ACTIVATE && noBillingOwner && (
             <Button
               variant="secondary"
               size="sm"
