@@ -3,6 +3,7 @@ import { router, publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { callAI } from '../../lib/ai-client'
 import crypto from 'crypto'
+import { PLATFORM_CONTEXT } from '../../lib/help/generated-context'
 
 // ==========================================
 // HELPERS
@@ -155,27 +156,9 @@ async function incrementRateLimit(userId: string) {
 // AI CALL
 // ==========================================
 
-const HELP_SYSTEM_PROMPT = `You are a helpful assistant for Band It, a transparency-focused platform for community organizations like PACs, advocacy groups, clubs, and committees.
+const HELP_SYSTEM_PROMPT = `You are a helpful assistant for Band It.
 
-CORE CONCEPTS:
-
-1. BANDS - A band is a group/organization. Requires 3 members to activate. After activation, founder pays subscription ($20/month for 3-20 members, $100/month for 21+). Roles: Founder, Governor, Moderator, Conductor, Voting Member, Observer.
-
-2. DISCUSSIONS - Communication happens in channels (public, moderator-only, governance-only). Threaded conversations supported.
-
-3. PROPOSALS - Members create proposals for decisions. Types: Governance (changes settings), Project (creates project), Resolution (records decision). Members vote, approved proposals execute.
-
-4. PROJECTS & TASKS - Approved project proposals create projects containing tasks. Tasks are assignable and trackable.
-
-5. BILLING - Stripe for automated payments. Manual payment recording (Zelle, Venmo, cash) with two-party confirmation.
-
-COMMON WORKFLOWS:
-
-Creating a Band: Click "Create Band" from Overview > Fill details > Invite members > Get 3 members > Pay subscription > Band is Active.
-
-Joining a Band: Go to "Discover Bands" > Find a band > Click "Apply" > Wait for approval.
-
-Creating a Proposal: Go to Proposals > New Proposal > Select type > Fill details > Submit for voting.
+${PLATFORM_CONTEXT}
 
 CURRENT PAGE CONTEXT: The user is on: {currentPage}
 
@@ -184,7 +167,8 @@ GUIDELINES:
 - Give step-by-step instructions when appropriate
 - If unsure about their specific account, tell them where to look
 - Never make up features that don't exist
-- For billing issues, suggest contacting band leadership`
+- For billing issues, suggest contacting band leadership
+- Use the knowledge above to answer accurately - don't guess or make things up`
 
 async function getAiHelpResponse(question: string, currentPage?: string, userId?: string): Promise<string> {
   const systemPrompt = HELP_SYSTEM_PROMPT.replace(
