@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { jwtDecode } from 'jwt-decode'
+import Link from 'next/link'
 import { Modal } from '@/components/ui/Modal'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { useToast, Button, Text, Stack } from '@/components/ui'
@@ -123,6 +124,17 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     <Modal isOpen={isOpen} onClose={onClose} size="lg" title="Send Feedback">
       <form onSubmit={handleSubmit}>
         <Stack spacing="md">
+          {/* Link to feedback page */}
+          <div className="text-center pb-2 border-b">
+            <Link
+              href="/feedback"
+              className="text-blue-600 hover:text-blue-800 text-sm underline"
+              onClick={onClose}
+            >
+              View all feedback & suggestions
+            </Link>
+          </div>
+
           {/* Category Selection */}
           <div>
             <Text variant="small" weight="semibold" className="mb-2 block">Category</Text>
