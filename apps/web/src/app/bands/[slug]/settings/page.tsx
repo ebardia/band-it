@@ -11,6 +11,7 @@ import {
   Loading,
   Alert,
   BandLayout,
+  BandDetailsSettings,
   BillingSettings,
   DissolveBandSection,
   GovernanceSettings
@@ -116,6 +117,27 @@ export default function BandSettingsPage() {
       >
         <Stack spacing="lg">
           <Heading level={2}>Band Settings</Heading>
+
+          {/* Band Details */}
+          {userId && (
+            <BandDetailsSettings
+              bandId={band.id}
+              bandSlug={slug}
+              userId={userId}
+              userRole={currentMember?.role}
+              initialData={{
+                name: band.name,
+                description: band.description,
+                mission: band.mission,
+                values: band.values || [],
+                skillsLookingFor: band.skillsLookingFor || [],
+                whatMembersWillLearn: band.whatMembersWillLearn || [],
+                membershipRequirements: band.membershipRequirements,
+                zipcode: band.zipcode,
+                imageUrl: band.imageUrl,
+              }}
+            />
+          )}
 
           {/* Governance Settings */}
           {userId && (

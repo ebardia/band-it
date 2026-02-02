@@ -132,9 +132,14 @@ export default function BandDiscussionsPage() {
           {/* Mobile Header */}
           <div className="md:hidden py-3">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl font-bold text-gray-900 truncate">{band.name}</h1>
-                <Text color="muted" className="text-sm truncate">Discussions</Text>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {band.imageUrl && (
+                  <img src={band.imageUrl} alt={band.name} className="w-10 h-10 object-cover rounded-lg flex-shrink-0" />
+                )}
+                <div className="min-w-0">
+                  <h1 className="text-2xl font-bold text-gray-900 truncate">{band.name}</h1>
+                  <Text color="muted" className="text-sm truncate">Discussions</Text>
+                </div>
               </div>
               <Flex gap="sm">
                 {userId && (
@@ -216,8 +221,13 @@ export default function BandDiscussionsPage() {
 
           {/* Desktop Page Header */}
           <div className="hidden md:block py-6">
-            {/* Band Name - large, top level */}
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{band.name}</h1>
+            {/* Band Name and Image - large, top level */}
+            <Flex gap="md" align="center" className="mb-4">
+              {band.imageUrl && (
+                <img src={band.imageUrl} alt={band.name} className="w-16 h-16 object-cover rounded-lg" />
+              )}
+              <h1 className="text-4xl font-bold text-gray-900">{band.name}</h1>
+            </Flex>
 
             {/* Page Title - aligned with main content (after sidebar width) */}
             <Flex gap="md" align="center">

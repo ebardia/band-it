@@ -7,6 +7,7 @@ import { bandMatchingRouter } from './band.matching'
 import { bandBillingRouter } from './band.billing'
 import { bandDissolveRouter } from './band.dissolve'
 import { bandGovernanceRouter } from './band.governance'
+import { bandUpdateRouter } from './band.update'
 import { getMembers, getMemberProfile, changeRole, proposeRemoval } from './band.members'
 
 export const bandRouter = router({
@@ -66,4 +67,7 @@ export const bandRouter = router({
   // Governance
   getGovernanceSettings: bandGovernanceRouter.getGovernanceSettings,
   updateGovernanceSettings: bandGovernanceRouter.updateGovernanceSettings,
+
+  // Update
+  updateDetails: bandUpdateRouter.updateDetails,
 })

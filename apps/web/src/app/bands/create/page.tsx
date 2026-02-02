@@ -18,7 +18,8 @@ import {
   TopNav,
   DashboardContainer,
   Flex,
-  Box
+  Box,
+  FileUpload
 } from '@/components/ui'
 import Image from 'next/image'
 
@@ -43,6 +44,8 @@ export default function CreateBandPage() {
   })
   const [whoCanApprove, setWhoCanApprove] = useState<string[]>(['FOUNDER'])
   const [whoCanCreateProposals, setWhoCanCreateProposals] = useState<string[]>(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'])
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [uploadedImageName, setUploadedImageName] = useState<string | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -58,6 +61,33 @@ export default function CreateBandPage() {
       router.push('/login')
     }
   }, [router])
+
+  const uploadFileMutation = trpc.file.upload.useMutation()
+
+  const handleImageUpload = async (fileData: { fileName: string; mimeType: string; base64Data: string }) => {
+    if (!userId) return
+
+    setIsUploadingImage(true)
+    try {
+      const result = await uploadFileMutation.mutateAsync({
+        ...fileData,
+        userId,
+        category: 'IMAGE',
+      })
+      setFormData(prev => ({ ...prev, imageUrl: result.file.url }))
+      setUploadedImageName(result.file.originalName)
+      showToast('Image uploaded', 'success')
+    } catch (error: any) {
+      showToast(error.message || 'Failed to upload image', 'error')
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, imageUrl: '' }))
+    setUploadedImageName(null)
+  }
 
   const createBandMutation = trpc.band.create.useMutation({
     onSuccess: (data) => {
@@ -150,14 +180,16 @@ export default function CreateBandPage() {
             <Heading level={1}>Create a New Band</Heading>
             <Text variant="muted">Fill out the information below to create your band. You'll be the founder!</Text>
 
-            <Alert variant="info">
-              <Text variant="small">
-                {REQUIRE_PAYMENT_TO_ACTIVATE
-                  ? `Your band will start in PENDING status. Once you have ${MIN_MEMBERS_TO_ACTIVATE} active member${MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} and set up payment, it will become ACTIVE.`
-                  : `Your band will start in PENDING status. Once you have ${MIN_MEMBERS_TO_ACTIVATE} active member${MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'}, it will automatically become ACTIVE.`
-                }
-              </Text>
-            </Alert>
+            {(MIN_MEMBERS_TO_ACTIVATE > 1 || REQUIRE_PAYMENT_TO_ACTIVATE) && (
+              <Alert variant="info">
+                <Text variant="small">
+                  {REQUIRE_PAYMENT_TO_ACTIVATE
+                    ? `Your band will start in PENDING status. Once you have ${MIN_MEMBERS_TO_ACTIVATE} active member${MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} and set up payment, it will become ACTIVE.`
+                    : `Your band will start in PENDING status. Once you have ${MIN_MEMBERS_TO_ACTIVATE} active member${MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'}, it will automatically become ACTIVE.`
+                  }
+                </Text>
+              </Alert>
+            )}
 
             <form onSubmit={handleSubmit}>
               <Stack spacing="lg">
@@ -336,14 +368,29 @@ export default function CreateBandPage() {
                   helperText="Leave blank if your band covers a large area"
                 />
 
-                <Input
-                  label="Band Image URL (Optional)"
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  placeholder="https://example.com/band-logo.png"
-                  helperText="A link to your band's logo or image"
-                />
+                <Box>
+                  <Text variant="small" weight="semibold" className="mb-2">Band Image (Optional)</Text>
+                  {formData.imageUrl ? (
+                    <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                      <img src={formData.imageUrl} alt="Band" className="w-16 h-16 object-cover rounded-lg" />
+                      <div className="flex-1">
+                        <Text variant="small">{uploadedImageName || 'Image uploaded'}</Text>
+                      </div>
+                      <Button type="button" variant="danger" size="sm" onClick={removeImage}>
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <FileUpload
+                      onUpload={handleImageUpload}
+                      isUploading={isUploadingImage}
+                      label=""
+                      description="Upload a logo or image for your band"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      maxSizeMB={5}
+                    />
+                  )}
+                </Box>
 
                 <Button
                   type="submit"
