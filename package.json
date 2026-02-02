@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "start": "cd apps/api && node dist/index.js",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "clean": "turbo run clean"
