@@ -93,6 +93,7 @@ model User {
   mentionsReceived        Mention[] @relation("MentionsReceived")
   checklistItemsCompleted ChecklistItem[] @relation("ChecklistItemsCompleted")
   checklistItemsAssigned  ChecklistItem[] @relation("ChecklistItemsAssigned")
+  checklistItemsVerified  ChecklistItem[] @relation("ChecklistItemsVerified")
   pendingInvitesCreated   PendingInvite[] @relation("PendingInvitesCreated")
   bandsAsBillingOwner     Band[] @relation("BandBillingOwner")
   bandsDissolvedBy        Band[] @relation("BandDissolver")
@@ -378,11 +379,25 @@ enum NotificationType {
   // Tasks
   TASK_CREATED
   TASK_ASSIGNED
+  TASK_CLAIMED            // Member claimed an unassigned task
+  TASK_UNCLAIMED          // Member unclaimed a task
   TASK_STATUS_CHANGED
   TASK_COMPLETED
   TASK_VERIFICATION_NEEDED
   TASK_VERIFIED
   TASK_REJECTED
+  TASK_REMINDER           // Reminder for tasks waiting verification
+  TASK_ESCALATED          // Task escalated to leadership
+
+  // Checklist Items
+  CHECKLIST_CLAIMED              // Member claimed a checklist item
+  CHECKLIST_UNCLAIMED            // Member unclaimed a checklist item
+  CHECKLIST_COMPLETED            // Checklist item marked complete
+  CHECKLIST_VERIFICATION_NEEDED  // Checklist item needs verification
+  CHECKLIST_VERIFIED             // Checklist item verified/approved
+  CHECKLIST_REJECTED             // Checklist item rejected
+  CHECKLIST_REMINDER             // Reminder for items waiting verification
+  CHECKLIST_ESCALATED            // Checklist item escalated to leadership
 
   // Billing
   BILLING_PAYMENT_REQUIRED
@@ -1366,6 +1381,11 @@ enum VerificationStatus {
   REJECTED
 }
 
+enum AssignmentMethod {
+  ASSIGNED  // Conductor/Moderator assigned directly
+  CLAIMED   // Member self-claimed from available tasks
+}
+
 model Task {
   id          String   @id @default(cuid())
   projectId   String
@@ -1378,9 +1398,14 @@ model Task {
   priority    TaskPriority @default(MEDIUM)
   
   // Assignment
-  assigneeId    String?
-  assigneeType  AssigneeType @default(MEMBER)
-  
+  assigneeId       String?
+  assigneeType     AssigneeType @default(MEMBER)
+  assignmentMethod AssignmentMethod?  // How task was assigned (ASSIGNED by leader, CLAIMED by member)
+  assignedAt       DateTime?          // When task was assigned/claimed
+
+  // Claiming / Visibility
+  minClaimRole     MemberRole?        // Minimum role to claim (null = anyone can claim)
+
   // Timeline
   dueDate     DateTime?
   startedAt   DateTime?
@@ -1398,7 +1423,18 @@ model Task {
   verifiedById         String?
   verifiedAt           DateTime?
   verificationNotes    String? @db.Text
-  
+  rejectionReason      String? @db.Text  // If rejected, why
+
+  // Escalation (for pending verifications)
+  reminderSentAt       DateTime?         // Reminder sent to moderators
+  escalatedAt          DateTime?         // Escalated to governors/founder
+
+  // Context (for task micro-actions)
+  contextPhone         Boolean @default(false)  // Can do from phone
+  contextComputer      Boolean @default(false)  // Needs computer
+  contextTravel        Boolean @default(false)  // Requires travel
+  contextTimeMinutes   Int?                     // Estimated time in minutes
+
   // Proof/Evidence (legacy - keeping for backwards compatibility)
   attachments      String[]
   proofDescription String? @db.Text
@@ -1588,23 +1624,46 @@ model EventAttendance {
 model ChecklistItem {
   id          String   @id @default(cuid())
   taskId      String
-  
+
   // Content
   description String
   notes       String?  @db.Text
-  
-  // Assignment
-  assigneeId  String?
-  dueDate     DateTime?
-  
+  priority    TaskPriority @default(MEDIUM)
+
+  // Assignment / Claiming
+  assigneeId        String?
+  assignmentMethod  AssignmentMethod?
+  assignedAt        DateTime?
+  dueDate           DateTime?
+  minClaimRole      MemberRole?
+
   // Status
   isCompleted   Boolean  @default(false)
   completedById String?
   completedAt   DateTime?
-  
+  completionNote String? @db.Text
+
+  // Verification
+  requiresVerification Boolean           @default(false)
+  verificationStatus   VerificationStatus?
+  verifiedById         String?
+  verifiedAt           DateTime?
+  verificationNotes    String?           @db.Text
+  rejectionReason      String?           @db.Text
+
+  // Context tags
+  contextPhone       Boolean @default(false)
+  contextComputer    Boolean @default(false)
+  contextTravel      Boolean @default(false)
+  contextTimeMinutes Int?
+
+  // Escalation tracking
+  reminderSentAt DateTime?
+  escalatedAt    DateTime?
+
   // Order
   orderIndex    Int @default(0)
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -1612,11 +1671,13 @@ model ChecklistItem {
   task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   completedBy User?    @relation("ChecklistItemsCompleted", fields: [completedById], references: [id])
   assignee    User?    @relation("ChecklistItemsAssigned", fields: [assigneeId], references: [id])
+  verifiedBy  User?    @relation("ChecklistItemsVerified", fields: [verifiedById], references: [id])
   files       File[]
 
   @@index([taskId])
   @@index([completedById])
   @@index([assigneeId])
+  @@index([verifiedById])
 }
 
 // ============================================

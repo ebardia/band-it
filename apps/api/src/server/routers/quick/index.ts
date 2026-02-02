@@ -692,4 +692,357 @@ export const quickRouter = router({
         hasMore: result.total > limit,
       }
     }),
+
+  /**
+   * Get context for claiming/viewing a task
+   * Returns: task info, project, band, permissions
+   */
+  getTaskContext: publicProcedure
+    .input(
+      z.object({
+        taskId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { taskId, userId } = input
+
+      // Get task with related info
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+        include: {
+          project: {
+            select: { id: true, name: true },
+          },
+          band: {
+            select: { id: true, name: true, slug: true, dissolvedAt: true },
+          },
+          createdBy: {
+            select: { id: true, name: true },
+          },
+          assignee: {
+            select: { id: true, name: true },
+          },
+          verifiedBy: {
+            select: { id: true, name: true },
+          },
+        },
+      })
+
+      if (!task) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Task not found',
+        })
+      }
+
+      if (task.band.dissolvedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'This band has been dissolved',
+        })
+      }
+
+      // Check membership
+      const membership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: { userId, bandId: task.bandId },
+        },
+        select: { role: true, status: true },
+      })
+
+      if (!membership) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not a member of this band',
+        })
+      }
+
+      if (membership.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Your membership is not active',
+        })
+      }
+
+      // Check dues standing
+      const duesStatus = await checkGoodStanding(task.bandId, userId)
+
+      // Role hierarchy for minClaimRole check
+      const ROLE_HIERARCHY: Record<string, number> = {
+        FOUNDER: 6,
+        GOVERNOR: 5,
+        MODERATOR: 4,
+        CONDUCTOR: 3,
+        VOTING_MEMBER: 2,
+        OBSERVER: 1,
+      }
+
+      // Determine claim permissions
+      const userRoleLevel = ROLE_HIERARCHY[membership.role] || 0
+      const minRoleLevel = task.minClaimRole ? ROLE_HIERARCHY[task.minClaimRole] || 0 : 0
+      const meetsRoleRequirement = userRoleLevel >= minRoleLevel
+
+      const isUnassigned = !task.assigneeId
+      const isAssignedToUser = task.assigneeId === userId
+      const isCompleted = task.status === 'COMPLETED' || task.verificationStatus === 'APPROVED'
+      const isRejected = task.verificationStatus === 'REJECTED'
+      const isInReview = task.status === 'IN_REVIEW'
+
+      // Can claim if: unassigned, meets role requirement, not completed, good standing
+      const canClaim = isUnassigned && meetsRoleRequirement && !isCompleted && duesStatus.inGoodStanding
+
+      // Can unclaim if: assigned to user and not in review
+      const canUnclaim = isAssignedToUser && !isInReview && !isCompleted
+
+      // Can submit for verification if: assigned to user, requires verification, not already in review
+      const canSubmitForVerification = isAssignedToUser && task.requiresVerification &&
+        task.status !== 'IN_REVIEW' && task.status !== 'COMPLETED'
+
+      // Can mark complete (no verification) if: assigned to user, doesn't require verification
+      const canMarkComplete = isAssignedToUser && !task.requiresVerification && !isCompleted
+
+      // Can retry if: assigned to user and rejected
+      const canRetry = isAssignedToUser && isRejected
+
+      return {
+        task: {
+          id: task.id,
+          name: task.name,
+          description: task.description,
+          priority: task.priority,
+          status: task.status,
+          dueDate: task.dueDate,
+          requiresVerification: task.requiresVerification,
+          verificationStatus: task.verificationStatus,
+          rejectionReason: task.rejectionReason,
+          proofDescription: task.proofDescription,
+          attachments: task.attachments,
+          receiptUrls: task.receiptUrls,
+          contextPhone: task.contextPhone,
+          contextComputer: task.contextComputer,
+          contextTravel: task.contextTravel,
+          contextTimeMinutes: task.contextTimeMinutes,
+          minClaimRole: task.minClaimRole,
+          assignmentMethod: task.assignmentMethod,
+          completedAt: task.completedAt,
+          createdBy: task.createdBy,
+          assignee: task.assignee,
+          verifiedBy: task.verifiedBy,
+        },
+        project: {
+          id: task.project.id,
+          name: task.project.name,
+        },
+        band: {
+          id: task.band.id,
+          name: task.band.name,
+          slug: task.band.slug,
+        },
+        permissions: {
+          canClaim,
+          canUnclaim,
+          canSubmitForVerification,
+          canMarkComplete,
+          canRetry,
+          isAssignedToUser,
+          isCompleted,
+          isRejected,
+          isInReview,
+          meetsRoleRequirement,
+          inGoodStanding: duesStatus.inGoodStanding,
+          duesReason: duesStatus.reason,
+          membershipRole: membership.role,
+        },
+      }
+    }),
+
+  /**
+   * Get context for claiming/viewing a checklist item
+   * Returns: item info, task, project, band, permissions
+   */
+  getChecklistItemContext: publicProcedure
+    .input(
+      z.object({
+        itemId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { itemId, userId } = input
+
+      // Get checklist item with related info
+      const item = await prisma.checklistItem.findUnique({
+        where: { id: itemId },
+        include: {
+          task: {
+            select: {
+              id: true,
+              name: true,
+              status: true,
+              project: {
+                select: { id: true, name: true },
+              },
+            },
+          },
+          assignee: {
+            select: { id: true, name: true },
+          },
+          completedBy: {
+            select: { id: true, name: true },
+          },
+          verifiedBy: {
+            select: { id: true, name: true },
+          },
+        },
+      })
+
+      if (!item) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Checklist item not found',
+        })
+      }
+
+      // Get band info from task
+      const task = await prisma.task.findUnique({
+        where: { id: item.taskId },
+        select: {
+          band: {
+            select: { id: true, name: true, slug: true, dissolvedAt: true },
+          },
+        },
+      })
+
+      if (!task) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Task not found',
+        })
+      }
+
+      if (task.band.dissolvedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'This band has been dissolved',
+        })
+      }
+
+      // Check membership
+      const membership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: { userId, bandId: task.band.id },
+        },
+        select: { role: true, status: true },
+      })
+
+      if (!membership) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not a member of this band',
+        })
+      }
+
+      if (membership.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Your membership is not active',
+        })
+      }
+
+      // Check dues standing
+      const duesStatus = await checkGoodStanding(task.band.id, userId)
+
+      // Role hierarchy for minClaimRole check
+      const ROLE_HIERARCHY: Record<string, number> = {
+        FOUNDER: 6,
+        GOVERNOR: 5,
+        MODERATOR: 4,
+        CONDUCTOR: 3,
+        VOTING_MEMBER: 2,
+        OBSERVER: 1,
+      }
+
+      // Determine claim permissions
+      const userRoleLevel = ROLE_HIERARCHY[membership.role] || 0
+      const minRoleLevel = item.minClaimRole ? ROLE_HIERARCHY[item.minClaimRole] || 0 : 0
+      const meetsRoleRequirement = userRoleLevel >= minRoleLevel
+
+      const isUnassigned = !item.assigneeId
+      const isAssignedToUser = item.assigneeId === userId
+      const isCompleted = item.verificationStatus === 'APPROVED'
+      const isRejected = item.verificationStatus === 'REJECTED'
+      const isInReview = item.verificationStatus === 'PENDING'
+
+      // Can claim if: unassigned, meets role requirement, not completed, good standing, task is active
+      const taskIsActive = item.task.status === 'TODO' || item.task.status === 'IN_PROGRESS'
+      const canClaim = isUnassigned && meetsRoleRequirement && !isCompleted && duesStatus.inGoodStanding && taskIsActive
+
+      // Can unclaim if: assigned to user and not in review
+      const canUnclaim = isAssignedToUser && !isInReview && !isCompleted
+
+      // Can submit for verification if: assigned to user, requires verification, not already in review
+      const canSubmitForVerification = isAssignedToUser && item.requiresVerification &&
+        !isInReview && !isCompleted
+
+      // Can mark complete (no verification) if: assigned to user, doesn't require verification
+      const canMarkComplete = isAssignedToUser && !item.requiresVerification && !isCompleted
+
+      // Can retry if: assigned to user and rejected
+      const canRetry = isAssignedToUser && isRejected
+
+      return {
+        item: {
+          id: item.id,
+          description: item.description,
+          notes: item.notes,
+          priority: item.priority,
+          dueDate: item.dueDate,
+          isCompleted: item.isCompleted,
+          requiresVerification: item.requiresVerification,
+          verificationStatus: item.verificationStatus,
+          rejectionReason: item.rejectionReason,
+          completionNote: item.completionNote,
+          contextPhone: item.contextPhone,
+          contextComputer: item.contextComputer,
+          contextTravel: item.contextTravel,
+          contextTimeMinutes: item.contextTimeMinutes,
+          minClaimRole: item.minClaimRole,
+          assignmentMethod: item.assignmentMethod,
+          completedAt: item.completedAt,
+          assignee: item.assignee,
+          completedBy: item.completedBy,
+          verifiedBy: item.verifiedBy,
+        },
+        task: {
+          id: item.task.id,
+          name: item.task.name,
+          status: item.task.status,
+        },
+        project: {
+          id: item.task.project.id,
+          name: item.task.project.name,
+        },
+        band: {
+          id: task.band.id,
+          name: task.band.name,
+          slug: task.band.slug,
+        },
+        permissions: {
+          canClaim,
+          canUnclaim,
+          canSubmitForVerification,
+          canMarkComplete,
+          canRetry,
+          isAssignedToUser,
+          isCompleted,
+          isRejected,
+          isInReview,
+          meetsRoleRequirement,
+          inGoodStanding: duesStatus.inGoodStanding,
+          duesReason: duesStatus.reason,
+          membershipRole: membership.role,
+        },
+      }
+    }),
 })

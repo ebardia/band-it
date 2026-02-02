@@ -182,8 +182,13 @@ export const verifyTask = publicProcedure
         verifiedById: userId,
         verifiedAt: new Date(),
         verificationNotes,
+        // Save rejection reason if rejected
+        rejectionReason: approved ? null : verificationNotes,
         // Clear completedAt if rejected
         completedAt: approved ? task.completedAt : null,
+        // Clear escalation tracking
+        reminderSentAt: null,
+        escalatedAt: null,
       },
       include: {
         project: {

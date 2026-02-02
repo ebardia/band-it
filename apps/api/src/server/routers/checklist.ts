@@ -4,11 +4,29 @@ import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { setAuditFlags, clearAuditFlags } from '../../lib/auditContext'
 import { callAI, parseAIJson } from '../../lib/ai-client'
+import {
+  claimChecklistItem,
+  unclaimChecklistItem,
+  submitChecklistForVerification,
+  verifyChecklistItem,
+  retryChecklistItem,
+  updateChecklistContext,
+  getClaimableChecklistItems,
+} from './checklist.claim'
 
 // Roles that can use AI suggestions
 const CAN_USE_AI = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 
 export const checklistRouter = router({
+  // Micro-action procedures
+  claim: claimChecklistItem,
+  unclaim: unclaimChecklistItem,
+  submit: submitChecklistForVerification,
+  verify: verifyChecklistItem,
+  retry: retryChecklistItem,
+  updateContext: updateChecklistContext,
+  getClaimable: getClaimableChecklistItems,
+
   // Get a single checklist item by ID
   getById: publicProcedure
     .input(z.object({
@@ -24,6 +42,9 @@ export const checklistRouter = router({
             select: { id: true, name: true }
           },
           assignee: {
+            select: { id: true, name: true }
+          },
+          verifiedBy: {
             select: { id: true, name: true }
           },
           files: {

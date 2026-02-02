@@ -118,7 +118,7 @@ export default function CreateProposalPage() {
   )
 
   const createMutation = trpc.proposal.create.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       showToast('Proposal created successfully!', 'success')
       router.push(`/bands/${slug}/proposals/${data.proposal.id}`)
     },
@@ -862,9 +862,9 @@ export default function CreateProposalPage() {
                       userId,
                       title,
                       description,
-                      type,
-                      priority,
-                      executionType,
+                      type: type as 'GENERAL' | 'BUDGET' | 'PROJECT' | 'POLICY' | 'MEMBERSHIP',
+                      priority: priority as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT',
+                      executionType: executionType as 'PROJECT' | 'GOVERNANCE' | 'ACTION' | 'RESOLUTION',
                       executionSubtype: executionSubtype || undefined,
                       effects: financeEffects.length > 0 ? financeEffects : undefined,
                       problemStatement: problemStatement || undefined,

@@ -1,15 +1,16 @@
-import { theme } from '@band-it/shared'
+import { theme, cn } from '@band-it/shared'
 
 type AlertVariant = 'info' | 'success' | 'warning' | 'danger'
 
-interface AlertProps {
+export interface AlertProps {
   children: React.ReactNode
   variant?: AlertVariant
+  className?: string
 }
 
-export function Alert({ children, variant = 'info' }: AlertProps) {
+export function Alert({ children, variant = 'info', className }: AlertProps) {
   return (
-    <div className={theme.components.alert[variant]}>
+    <div className={cn(theme.components.alert[variant], className)}>
       {children}
     </div>
   )

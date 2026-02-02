@@ -103,6 +103,10 @@ function ActionCard({ action, onClick }: ActionCardProps) {
         return '✉️'
       case 'MENTION':
         return '💬'
+      case 'TASK':
+        return '✋'
+      case 'CHECKLIST':
+        return '☑️'
       default:
         return '📌'
     }
@@ -120,6 +124,10 @@ function ActionCard({ action, onClick }: ActionCardProps) {
         return 'Invitation'
       case 'MENTION':
         return 'Mention'
+      case 'TASK':
+        return 'Claim Task'
+      case 'CHECKLIST':
+        return 'Claim Item'
       default:
         return action.type
     }
@@ -165,9 +173,19 @@ function ActionCard({ action, onClick }: ActionCardProps) {
                 ? `in #${action.meta.channelName}`
                 : action.type === 'BAND_INVITE'
                 ? action.title
+                : action.type === 'TASK'
+                ? action.title
+                : action.type === 'CHECKLIST'
+                ? action.title
                 : `"${action.title}"`}
             </p>
-            <p className="text-sm text-gray-500 truncate">{action.bandName}</p>
+            <p className="text-sm text-gray-500 truncate">
+              {action.type === 'TASK' && action.meta.projectName
+                ? `${action.meta.projectName} • ${action.bandName}`
+                : action.type === 'CHECKLIST' && action.meta.taskName
+                ? `${action.meta.taskName} • ${action.bandName}`
+                : action.bandName}
+            </p>
           </div>
         </div>
         <svg

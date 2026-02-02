@@ -10,6 +10,7 @@ import { handleStripeWebhook } from './webhooks/stripe'
 import { handleStripeConnectWebhook } from './webhooks/stripe-connect'
 import { initBillingCron } from './cron/billing-cron'
 import { initDigestCron } from './cron/digest-cron'
+import { initTaskEscalationCron } from './cron/task-escalation-cron'
 import { initializeEffectHandlers } from './services/effects'
 import stripeConnectRoutes from './routes/stripe-connect'
 import bandDuesRoutes from './routes/band-dues'
@@ -113,4 +114,8 @@ app.listen(PORT, () => {
   // Initialize digest email cron job
   initDigestCron()
   console.log(`📧 Digest email cron job scheduled`)
+
+  // Initialize task escalation cron job
+  initTaskEscalationCron()
+  console.log(`✅ Task escalation cron job scheduled`)
 })

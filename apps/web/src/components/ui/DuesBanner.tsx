@@ -50,7 +50,7 @@ export function DuesBanner({ bandId, bandSlug, userId }: DuesBannerProps) {
               </Text>
             )}
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => router.push(`/bands/${bandSlug}/billing`)}
             >

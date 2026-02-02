@@ -217,21 +217,21 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Text variant="small" color="muted">Voting Method</Text>
-                <Text weight="medium">
+                <Text weight="semibold">
                   {VOTING_METHODS.find(m => m.value === settings.votingMethod)?.label || settings.votingMethod}
                 </Text>
               </div>
               <div>
                 <Text variant="small" color="muted">Voting Period</Text>
-                <Text weight="medium">{settings.votingPeriodDays} days</Text>
+                <Text weight="semibold">{settings.votingPeriodDays} days</Text>
               </div>
               <div>
                 <Text variant="small" color="muted">Quorum</Text>
-                <Text weight="medium">{settings.quorumPercentage}%</Text>
+                <Text weight="semibold">{settings.quorumPercentage}%</Text>
               </div>
               <div>
                 <Text variant="small" color="muted">Proposal Review</Text>
-                <Text weight="medium">{settings.requireProposalReview ? 'Required' : 'Not required'}</Text>
+                <Text weight="semibold">{settings.requireProposalReview ? 'Required' : 'Not required'}</Text>
               </div>
             </div>
           </Stack>
