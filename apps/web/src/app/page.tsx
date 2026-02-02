@@ -72,7 +72,7 @@ export default function HomePage() {
 
         {/* Main content */}
         <Center className="min-h-screen pt-32">
-        <Stack spacing="md" className="items-center">
+        <Stack spacing="md" className="items-center mt-24">
           <Image
             src="/logo.png"
             alt="Band IT Logo"
