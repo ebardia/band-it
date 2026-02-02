@@ -25,7 +25,11 @@ export default function HomePage() {
           <div className="flex items-start gap-3 bg-white border-2 border-amber-400 rounded-lg px-4 py-3 shadow-md w-full md:max-w-2xl">
             <span className="text-xl flex-shrink-0">🚧</span>
             <div className="flex-1 text-sm text-amber-900">
-              <strong>TEST MODE</strong> — Explore freely with any email. Create or join bands (only {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} needed to activate in test mode). Use the feedback button for bugs and suggestions. Best on desktop; mobile shows daily micro-actions after you register.
+              <strong>TEST MODE</strong> — Explore freely after registering. Free to sign up. Create or join bands (only {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} needed to activate in test mode). Create proposals, projects and tasks. Use the feedback button for bugs and suggestions. Best on desktop; mobile shows daily micro-actions after you register. Read the{' '}
+              <Link href="/about" className="underline font-semibold hover:text-amber-700">
+                Learn More
+              </Link>{' '}
+              section below to learn what Band It is.
             </div>
             <button
               onClick={() => setShowBanner(false)}
