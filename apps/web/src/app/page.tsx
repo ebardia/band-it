@@ -25,18 +25,7 @@ export default function HomePage() {
           <div className="flex items-start gap-3 bg-white border-2 border-amber-400 rounded-lg px-4 py-3 shadow-md w-full md:max-w-2xl">
             <span className="text-xl flex-shrink-0">🚧</span>
             <div className="flex-1 text-sm text-amber-900">
-              <strong>TEST MODE</strong> — This platform is currently in testing. Please read the{' '}
-              <Link href="/about" className="underline font-semibold hover:text-amber-700">
-                Learn More
-              </Link>{' '}
-              section to understand what Band It is about. You can register with any email
-              (we don't verify emails yet) and explore the platform: browse bands, apply to join,
-              or create your own. In test mode creating a band requires {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} to activate.
-              Once active, create discussions, proposals, projects, tasks, and more. Please use the
-              feedback button to report bugs and share suggestions. The site does not currently adapt
-              well to mobile devices; it is best accessed on laptop/desktop. However after you register
-              and become active, you can access the site through your mobile device where you will see
-              micro actions you can perform on a daily basis.
+              <strong>TEST MODE</strong> — Explore freely with any email. Create or join bands (only {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} needed to activate in test mode). Use the feedback button for bugs and suggestions. Best on desktop; mobile shows daily micro-actions after you register.
             </div>
             <button
               onClick={() => setShowBanner(false)}
