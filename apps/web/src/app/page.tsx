@@ -71,7 +71,7 @@ export default function HomePage() {
         </div>
 
         {/* Main content */}
-        <Center className="min-h-screen">
+        <Center className="min-h-screen pt-32">
         <Stack spacing="md" className="items-center">
           <Image
             src="/logo.png"
