@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { jwtDecode } from 'jwt-decode'
 import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown, AIUsageTicker } from '@/components/ui'
 import { useHelp } from '@/components/help/HelpContext'
+import { FeedbackButton } from '@/components/feedback'
 import { trpc } from '@/lib/trpc'
 import { theme } from '@band-it/shared'
 
@@ -118,6 +119,9 @@ export function AppNav() {
               onClose={() => setShowNotifications(false)}
             />
           </div>
+
+          {/* Feedback Button */}
+          <FeedbackButton />
 
           {/* Account Dropdown - Hidden on mobile */}
           <div className="hidden md:block">

@@ -139,6 +139,11 @@ model User {
   postCategoriesCreated       PostCategory[] @relation("PostCategoriesCreated")
   postsAuthored               Post[] @relation("PostsAuthored")
   postResponsesAuthored       PostResponse[] @relation("PostResponsesAuthored")
+
+  // Feedback
+  feedbackSubmitted           Feedback[] @relation("FeedbackSubmitter")
+  feedbackResponded           Feedback[] @relation("FeedbackResponder")
+  feedbackVotes               FeedbackVote[]
 }
 
 enum SubscriptionStatus {
@@ -1716,6 +1721,7 @@ model File {
   checklistItemId String?
   eventId         String?
   manualPaymentId String?
+  feedbackId      String?
 
   // Metadata
   description   String?
@@ -1733,6 +1739,7 @@ model File {
   checklistItem ChecklistItem? @relation(fields: [checklistItemId], references: [id], onDelete: Cascade)
   event         Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   manualPayment ManualPayment? @relation(fields: [manualPaymentId], references: [id], onDelete: Cascade)
+  feedback      Feedback? @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
 
   @@index([uploadedById])
   @@index([bandId])
@@ -1742,6 +1749,7 @@ model File {
   @@index([checklistItemId])
   @@index([eventId])
   @@index([manualPaymentId])
+  @@index([feedbackId])
   @@index([category])
 }
 
@@ -2240,4 +2248,81 @@ model PostResponse {
   @@index([parentId])
   @@index([authorId])
   @@index([deletedAt])
+}
+
+// ============================================
+// PLATFORM FEEDBACK
+// ============================================
+
+model Feedback {
+  id              String   @id @default(cuid())
+
+  // Content
+  category        FeedbackCategory
+  title           String
+  description     String   @db.Text
+
+  // Submitter
+  submittedById   String
+  submittedBy     User     @relation("FeedbackSubmitter", fields: [submittedById], references: [id])
+
+  // Status
+  status          FeedbackStatus @default(OPEN)
+
+  // Admin response
+  adminResponse   String?  @db.Text
+  respondedById   String?
+  respondedBy     User?    @relation("FeedbackResponder", fields: [respondedById], references: [id])
+  respondedAt     DateTime?
+
+  // Duplicate linking
+  duplicateOfId   String?
+  duplicateOf     Feedback? @relation("FeedbackDuplicates", fields: [duplicateOfId], references: [id])
+  duplicates      Feedback[] @relation("FeedbackDuplicates")
+
+  // Attachments (via File model)
+  attachments     File[]
+
+  // Votes
+  votes           FeedbackVote[]
+  voteCount       Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([status])
+  @@index([submittedById])
+  @@index([voteCount])
+  @@index([createdAt])
+}
+
+model FeedbackVote {
+  id              String   @id @default(cuid())
+
+  feedbackId      String
+  feedback        Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime @default(now())
+
+  @@unique([feedbackId, userId])
+  @@index([feedbackId])
+  @@index([userId])
+}
+
+enum FeedbackCategory {
+  BUG
+  FEATURE
+  COMMENT
+}
+
+enum FeedbackStatus {
+  OPEN
+  IN_PROGRESS
+  FIXED
+  WONT_FIX
+  DUPLICATE
 }

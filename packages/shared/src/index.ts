@@ -6,3 +6,6 @@ export * from './theme'
 
 // Export constants
 export * from './constants'
+
+// Export admin config
+export * from './admin'
