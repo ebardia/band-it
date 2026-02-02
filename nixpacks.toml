@@ -8,9 +8,9 @@ cmds = ["pnpm install --frozen-lockfile"]
 
 [phases.build]
 cmds = [
+  "cd apps/api && npx prisma generate",
   "pnpm --filter @band-it/shared build",
-  "pnpm --filter api build",
-  "cd apps/api && npx prisma generate"
+  "pnpm --filter api build"
 ]
 
 [start]
