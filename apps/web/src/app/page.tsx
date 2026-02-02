@@ -19,10 +19,10 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Test Mode Banner */}
+      {/* Test Mode Banner - positioned below nav buttons */}
       {showBanner && (
-        <div className="bg-amber-100 border-b-2 border-amber-400 px-4 py-3">
-          <div className="max-w-4xl mx-auto">
+        <div className="bg-amber-100 border-b-2 border-amber-400 px-4 py-3 mt-14">
+          <div className="max-w-xl mx-auto">
             <div className="flex items-start gap-3">
               <span className="text-xl flex-shrink-0">🚧</span>
               <div className="flex-1 text-sm text-amber-900">
@@ -32,12 +32,12 @@ export default function HomePage() {
                 </Link>{' '}
                 section to understand what Band It is about. You can register with any email
                 (we don't verify emails yet) and explore the platform: browse bands, apply to join,
-                or create your own. Creating a band requires {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} to activate. To complete
-                activation, use Stripe test card <code className="bg-amber-200 px-1 rounded">4242 4242 4242 4242</code> for payment.
-                Once active, explore discussions, proposals, projects, tasks, and more. Please join the{' '}
-                <strong>Band It Development</strong>{' '}
-                band to report bugs and share suggestions in the discussions.
-                This site does not currently adapt well to mobile devices; it is best accessed on laptop/desktop.
+                or create your own. In test mode creating a band requires {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} to activate.
+                Once active, create discussions, proposals, projects, tasks, and more. Please use the
+                feedback button to report bugs and share suggestions. The site does not currently adapt
+                well to mobile devices; it is best accessed on laptop/desktop. However after you register
+                and become active, you can access the site through your mobile device where you will see
+                micro actions you can perform on a daily basis.
               </div>
               <button
                 onClick={() => setShowBanner(false)}
