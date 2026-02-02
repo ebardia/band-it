@@ -1,10 +1,18 @@
 import fs from 'fs'
 import path from 'path'
 import { randomUUID } from 'crypto'
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
 const STORAGE_TYPE = process.env.STORAGE_TYPE || 'local'
 const LOCAL_UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || './uploads'
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3001'
+
+// R2 Configuration
+const R2_ENDPOINT = process.env.R2_ENDPOINT
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY
+const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME
+const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL
 
 if (STORAGE_TYPE === 'local') {
   if (!fs.existsSync(LOCAL_UPLOAD_DIR)) {
@@ -113,16 +121,55 @@ class LocalStorageService implements StorageService {
 }
 
 class R2StorageService implements StorageService {
+  private s3: S3Client
+
+  constructor() {
+    if (!R2_ENDPOINT || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME || !R2_PUBLIC_URL) {
+      throw new Error('R2 storage requires R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL environment variables')
+    }
+
+    this.s3 = new S3Client({
+      region: 'auto',
+      endpoint: R2_ENDPOINT,
+      credentials: {
+        accessKeyId: R2_ACCESS_KEY_ID,
+        secretAccessKey: R2_SECRET_ACCESS_KEY,
+      },
+    })
+  }
+
   async upload(buffer: Buffer, originalName: string, mimeType: string): Promise<UploadResult> {
-    throw new Error('R2 storage not implemented yet')
+    const ext = path.extname(originalName) || getExtFromMime(mimeType)
+    const filename = `${randomUUID()}${ext}`
+    const storageKey = `uploads/${filename}`
+
+    await this.s3.send(new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: storageKey,
+      Body: buffer,
+      ContentType: mimeType,
+    }))
+
+    return {
+      storageKey,
+      url: `${R2_PUBLIC_URL}/${storageKey}`,
+      filename,
+    }
   }
-  
+
   async delete(storageKey: string): Promise<void> {
-    throw new Error('R2 storage not implemented yet')
+    try {
+      await this.s3.send(new DeleteObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: storageKey,
+      }))
+    } catch (error) {
+      console.warn(`Could not delete file from R2: ${storageKey}`, error)
+    }
   }
-  
+
   getUrl(storageKey: string): string {
-    throw new Error('R2 storage not implemented yet')
+    return `${R2_PUBLIC_URL}/${storageKey}`
   }
 }
 
