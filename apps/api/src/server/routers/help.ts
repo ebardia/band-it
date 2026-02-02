@@ -43,29 +43,45 @@ async function searchFaq(question: string) {
 
   if (keywords.length === 0) return null
 
-  // Try keyword match
-  const match = await prisma.faqEntry.findFirst({
+  // Get all matching FAQ entries
+  const matches = await prisma.faqEntry.findMany({
     where: {
       isPublished: true,
       keywords: { hasSome: keywords },
     },
-    orderBy: [
-      { sortOrder: 'asc' },
-      { viewCount: 'desc' },
-    ],
   })
 
-  if (match) {
-    // Increment view count (fire and forget)
-    prisma.faqEntry.update({
-      where: { id: match.id },
-      data: { viewCount: { increment: 1 } },
-    }).catch(() => {})
+  if (matches.length === 0) return null
 
-    return match
-  }
+  // Score each match by number of overlapping keywords
+  const scored = matches.map(entry => {
+    const entryKeywords = new Set(entry.keywords.map(k => k.toLowerCase()))
+    const overlapCount = keywords.filter(k => entryKeywords.has(k)).length
+    // Require at least 2 keyword matches, or 50% of query keywords
+    const minRequired = Math.max(2, Math.ceil(keywords.length * 0.5))
+    return {
+      entry,
+      score: overlapCount,
+      meetsThreshold: overlapCount >= minRequired,
+    }
+  })
 
-  return null
+  // Filter to entries meeting threshold, then sort by score (desc), then viewCount (desc)
+  const qualified = scored
+    .filter(s => s.meetsThreshold)
+    .sort((a, b) => b.score - a.score || (b.entry.viewCount - a.entry.viewCount))
+
+  if (qualified.length === 0) return null
+
+  const best = qualified[0].entry
+
+  // Increment view count (fire and forget)
+  prisma.faqEntry.update({
+    where: { id: best.id },
+    data: { viewCount: { increment: 1 } },
+  }).catch(() => {})
+
+  return best
 }
 
 // ==========================================
