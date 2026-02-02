@@ -332,6 +332,7 @@ export default function CreateProposalPage() {
         <BandLayout
           bandSlug={slug}
           bandName={band.name}
+        bandImageUrl={band.imageUrl}
           pageTitle="Create Proposal"
           canApprove={canApprove}
           isMember={isMember}
@@ -351,6 +352,7 @@ export default function CreateProposalPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Create Proposal"
         canApprove={canApprove}
         isMember={isMember}

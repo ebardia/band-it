@@ -89,6 +89,7 @@ export default function BandSettingsPage() {
         <BandLayout
           bandSlug={slug}
           bandName={band.name}
+          bandImageUrl={band.imageUrl}
           pageTitle="Settings"
           isMember={false}
           wide={true}
@@ -107,6 +108,7 @@ export default function BandSettingsPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Settings"
         canApprove={canApprove}
         isMember={isMember}

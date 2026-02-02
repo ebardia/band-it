@@ -163,6 +163,7 @@ export default function InviteMembersPage() {
       <BandLayout
         bandSlug={slug}
         bandName={bandData.band.name}
+        bandImageUrl={bandData.band.imageUrl}
         pageTitle="Invite Members"
         canApprove={canApprove}
         isMember={isMember}

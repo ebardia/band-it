@@ -346,6 +346,7 @@ export default function BillingPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Billing"
         canApprove={canApprove}
         isMember={isMember}

@@ -324,6 +324,7 @@ export default function FinancePage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Finance"
         canApprove={canApprove}
         isMember={isMember}

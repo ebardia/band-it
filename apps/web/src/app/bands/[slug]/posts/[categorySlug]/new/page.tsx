@@ -142,6 +142,7 @@ export default function NewPostPage() {
         <BandLayout
           bandSlug={slug}
           bandName={band.name}
+        bandImageUrl={band.imageUrl}
           pageTitle="New Post"
           canApprove={canApprove}
           isMember={isMember}
@@ -178,6 +179,7 @@ export default function NewPostPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle={`New Post in ${category.name}`}
         canApprove={canApprove}
         isMember={isMember}

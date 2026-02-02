@@ -192,6 +192,7 @@ export default function EventDetailPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle={event.title}
         isMember={isMember}
         actions={

@@ -220,6 +220,7 @@ export default function PostsPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Posts"
         canApprove={canApprove}
         isMember={isMember}

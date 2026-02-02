@@ -187,6 +187,7 @@ export default function ToolsPage() {
         <BandLayout
           bandSlug={slug}
           bandName={band.name}
+        bandImageUrl={band.imageUrl}
           pageTitle="Tools"
           canApprove={canApprove}
           isMember={isMember}
@@ -437,6 +438,7 @@ export default function ToolsPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Admin Tools"
         canApprove={canApprove}
         isMember={isMember}

@@ -160,6 +160,7 @@ export default function BandMembersPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Members"
         canApprove={canApprove}
         isMember={isMember}

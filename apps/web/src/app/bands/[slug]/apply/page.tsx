@@ -146,6 +146,7 @@ export default function ApplyToBandPage() {
         <BandLayout
           bandSlug={slug}
           bandName={band.name}
+        bandImageUrl={band.imageUrl}
           pageTitle="Apply to Join"
           canApprove={canApprove}
           isMember={isMember}
@@ -171,6 +172,7 @@ export default function ApplyToBandPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Apply to Join"
         canApprove={false}
         isMember={false}

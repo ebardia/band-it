@@ -163,6 +163,7 @@ export default function BandEventsPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Events"
         isMember={isMember}
         canAccessAdminTools={canAccessAdminTools}

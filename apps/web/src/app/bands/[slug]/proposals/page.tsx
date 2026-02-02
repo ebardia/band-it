@@ -158,6 +158,7 @@ export default function ProposalsPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Band Proposals"
         canApprove={canApprove}
         isMember={isMember}

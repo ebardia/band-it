@@ -489,6 +489,7 @@ export default function TaskDetailPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band?.name || ''}
+        bandImageUrl={band?.imageUrl}
         pageTitle={task.name}
         canApprove={canApprove || false}
         isMember={isMember}

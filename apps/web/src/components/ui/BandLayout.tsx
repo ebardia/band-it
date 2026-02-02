@@ -10,6 +10,7 @@ export interface BandLayoutProps {
   children: ReactNode
   bandSlug: string
   bandName: string
+  bandImageUrl?: string | null
   pageTitle: string
   canApprove?: boolean
   isMember?: boolean
@@ -27,6 +28,7 @@ export function BandLayout({
   children,
   bandSlug,
   bandName,
+  bandImageUrl,
   pageTitle,
   canApprove = false,
   isMember = false,
@@ -73,11 +75,16 @@ export function BandLayout({
       <div className={`mx-auto px-2 md:px-4 ${wide ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
         {/* Mobile Navigation Bar */}
         <div className="md:hidden py-3">
-          {/* Band Name and Page Selector */}
+          {/* Band Image, Name and Page Selector */}
           <div className="flex items-center justify-between mb-3">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900 truncate">{bandName}</h1>
-              <Text color="muted" className="text-sm truncate">{pageTitle}</Text>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {bandImageUrl && (
+                <img src={bandImageUrl} alt={bandName} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
+              )}
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold text-gray-900 truncate">{bandName}</h1>
+                <Text color="muted" className="text-sm truncate">{pageTitle}</Text>
+              </div>
             </div>
             {actionContent && <div className="ml-2 flex-shrink-0">{actionContent}</div>}
           </div>
@@ -184,19 +191,30 @@ export function BandLayout({
 
         {/* Desktop Page Header */}
         <div className="hidden md:block py-6">
-          {/* Band Name - large, top level */}
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">{bandName}</h1>
+          <Flex gap="md" align="start">
+            {/* Left: Band Image (in sidebar area) */}
+            <div className="w-64 flex-shrink-0 flex justify-center">
+              {bandImageUrl ? (
+                <img
+                  src={bandImageUrl}
+                  alt={bandName}
+                  className="w-32 h-32 object-cover rounded-xl shadow-md"
+                />
+              ) : (
+                <div className="w-32 h-32 bg-gray-200 rounded-xl flex items-center justify-center">
+                  <span className="text-4xl text-gray-400">🎸</span>
+                </div>
+              )}
+            </div>
 
-          {/* Page Title - aligned with main content (after sidebar width) */}
-          <Flex gap="md" align="center">
-            {/* Spacer to match sidebar width */}
-            <div className="w-64 flex-shrink-0" />
-
-            {/* Page title and actions above main content */}
-            <Flex justify="between" align="center" className="flex-1">
-              <h2 className="text-2xl font-semibold text-gray-700">{pageTitle}</h2>
-              {actionContent && <div>{actionContent}</div>}
-            </Flex>
+            {/* Right: Band Name and Page Title */}
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">{bandName}</h1>
+              <Flex justify="between" align="center">
+                <h2 className="text-2xl font-semibold text-gray-700">{pageTitle}</h2>
+                {actionContent && <div>{actionContent}</div>}
+              </Flex>
+            </div>
           </Flex>
         </div>
 

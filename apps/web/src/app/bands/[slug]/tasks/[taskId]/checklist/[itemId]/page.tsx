@@ -282,6 +282,7 @@ export default function ChecklistItemDetailPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name || ''}
+        bandImageUrl={band.imageUrl}
         pageTitle={item.description}
         canApprove={canApprove || false}
         isMember={isMember}

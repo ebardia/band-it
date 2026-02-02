@@ -118,6 +118,7 @@ export default function BandApplicationsPage() {
       <BandLayout
         bandSlug={slug}
         bandName={bandData?.band?.name || ''}
+        bandImageUrl={bandData?.band?.imageUrl}
         pageTitle="Pending Applications"
         canApprove={canApprove}
         isMember={isMember}

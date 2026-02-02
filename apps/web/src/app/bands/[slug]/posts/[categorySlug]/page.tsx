@@ -148,6 +148,7 @@ export default function PostCategoryPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle={category.name}
         canApprove={canApprove}
         isMember={isMember}

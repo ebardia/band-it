@@ -130,6 +130,7 @@ export default function CreateEventPage() {
         <BandLayout
           bandSlug={slug}
           bandName={band.name}
+        bandImageUrl={band.imageUrl}
           pageTitle="Create Event"
           isMember={isMember}
         >
@@ -189,6 +190,7 @@ export default function CreateEventPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Create Event"
         isMember={isMember}
       >

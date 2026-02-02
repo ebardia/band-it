@@ -341,6 +341,7 @@ export default function PostDetailPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle={post.title}
         canApprove={canApprove}
         isMember={isMember}

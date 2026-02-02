@@ -235,6 +235,7 @@ export default function AuditLogPage() {
       <BandLayout
         bandSlug={slug}
         bandName={band.name}
+        bandImageUrl={band.imageUrl}
         pageTitle="Audit Log"
         canApprove={canApprove}
         isMember={isMember}
