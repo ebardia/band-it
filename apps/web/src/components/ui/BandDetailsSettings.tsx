@@ -81,7 +81,7 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
         category: 'IMAGE',
       })
       setFormData(prev => ({ ...prev, imageUrl: result.file.url }))
-      showToast('Image uploaded', 'success')
+      showToast('Image uploaded - click Save Changes to update your band', 'success')
     } catch (error: any) {
       showToast(error.message || 'Failed to upload image', 'error')
     } finally {
@@ -280,6 +280,9 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
                 <img src={formData.imageUrl} alt="Band" className="w-16 h-16 object-cover rounded-lg" />
                 <div className="flex-1">
                   <Text variant="small">Current image</Text>
+                  {formData.imageUrl !== (initialData.imageUrl || '') && (
+                    <Text variant="small" className="text-amber-600 font-medium">Unsaved - click Save Changes below</Text>
+                  )}
                 </div>
                 <Button type="button" variant="danger" size="sm" onClick={removeImage}>
                   Remove
