@@ -21,8 +21,8 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       {/* Test Mode Banner - positioned below nav buttons */}
       {showBanner && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10">
-          <div className="inline-flex items-start gap-3 bg-white border-2 border-amber-400 rounded-lg px-4 py-3 shadow-md max-w-xl">
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-10">
+          <div className="inline-flex items-start gap-3 bg-white border-2 border-amber-400 rounded-lg px-4 py-3 shadow-md max-w-2xl">
             <span className="text-xl flex-shrink-0">🚧</span>
             <div className="flex-1 text-sm text-amber-900">
               <strong>TEST MODE</strong> — This platform is currently in testing. Please read the{' '}
