@@ -15,7 +15,7 @@ const FAQ_ENTRIES = [
   {
     category: 'GETTING_STARTED',
     question: 'How do I create a band?',
-    answer: '1. Go to your Overview page\n2. Click "Create Band"\n3. Fill in your band\'s details (name, mission, values)\n4. Invite at least 2 other members\n5. Once you have 3 members, pay the subscription\n6. Your band is now active!',
+    answer: '1. Go to your Overview page\n2. Click "Create Band"\n3. Fill in your band\'s details (name, mission, values)\n4. Invite members\n5. Once you meet the minimum member requirement, pay the subscription\n6. Your band is now active!',
     keywords: ['create', 'band', 'new', 'start'],
     relatedPages: ['/bands/create', '/user-dashboard'],
     sortOrder: 2,
@@ -33,7 +33,7 @@ const FAQ_ENTRIES = [
   {
     category: 'BANDS',
     question: 'How many members do I need to activate a band?',
-    answer: 'You need at least 3 members (including yourself as founder) to activate a band. Once you reach 3 members, you\'ll be prompted to pay the subscription fee to complete activation.',
+    answer: 'You need to meet the minimum member requirement (currently 1 for testing, normally 3) to activate a band. Once you reach the minimum, you\'ll be prompted to pay the subscription fee to complete activation.',
     keywords: ['members', 'activate', 'three', 'minimum', 'requirement'],
     relatedPages: ['/bands/create'],
     sortOrder: 1,
@@ -41,7 +41,7 @@ const FAQ_ENTRIES = [
   {
     category: 'BANDS',
     question: 'How much does a band subscription cost?',
-    answer: 'Band subscriptions are:\n- **$20/month** for 3-20 members\n- **$100/month** for 21+ members\n\nThe subscription is auto-upgraded when you reach 21 members and auto-downgraded if you go below.\n\nIn test mode, use the card number `4242 4242 4242 4242` to test payments.',
+    answer: 'Band subscriptions are:\n- **$20/month** for small bands (up to 20 members)\n- **$100/month** for large bands (21+ members)\n\nThe subscription is auto-upgraded when you reach 21 members and auto-downgraded if you go below.\n\nIn test mode, use the card number `4242 4242 4242 4242` to test payments.',
     keywords: ['cost', 'price', 'subscription', 'payment', 'fee', 'money'],
     relatedPages: ['/bands'],
     sortOrder: 2,

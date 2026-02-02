@@ -251,10 +251,10 @@ export const bandApplicationRouter = router({
         })
       }
 
-      // Check if band should be activated (reached 3 members)
+      // Check if band should be activated (reached minimum members)
       await checkAndSetBandActivation(membership.bandId)
 
-      // Trigger billing checks (3rd member, 21st member, etc.)
+      // Trigger billing checks (minimum member reached, 21st member, etc.)
       await memberBillingTriggers.onMemberActivated(membership.bandId)
 
       return {

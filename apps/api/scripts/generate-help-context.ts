@@ -129,11 +129,11 @@ function convertToPrompt(data: HelpContext): string {
       output += `- Join a band: ${data.bands.workflows.join}\n`
     }
     if (data.bands.workflows.dissolve) {
-      if (data.bands.workflows.dissolve.under_3_members) {
-        output += `- Dissolve (under 3 members): ${data.bands.workflows.dissolve.under_3_members}\n`
+      if (data.bands.workflows.dissolve.under_minimum_members) {
+        output += `- Dissolve (under minimum members): ${data.bands.workflows.dissolve.under_minimum_members}\n`
       }
-      if (data.bands.workflows.dissolve['3_or_more_members']) {
-        output += `- Dissolve (3+ members): ${data.bands.workflows.dissolve['3_or_more_members']}\n`
+      if (data.bands.workflows.dissolve.at_or_above_minimum_members) {
+        output += `- Dissolve (at or above minimum members): ${data.bands.workflows.dissolve.at_or_above_minimum_members}\n`
       }
     }
     output += `\n`

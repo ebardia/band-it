@@ -529,7 +529,7 @@ export const emailService = {
         </p>
         <div style="background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <p style="font-size: 14px; color: #374151; margin: 0;">
-            Since the band never reached the minimum 3 members needed to operate, the founder has chosen to close it.
+            Since the band never reached the minimum members needed to operate, the founder has chosen to close it.
           </p>
         </div>
         ${reason ? `

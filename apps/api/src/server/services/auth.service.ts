@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { TRPCError } from '@trpc/server'
 import { emailService } from './email.service'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 // JWT secret (in production, use environment variable)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
@@ -159,7 +160,7 @@ export const authService = {
             slug: invite.band.slug,
           })
 
-          // Check if band should become active (3+ members)
+          // Check if band should become active (minimum members reached)
           const activeMembers = await prisma.member.count({
             where: {
               bandId: invite.bandId,
@@ -167,7 +168,7 @@ export const authService = {
             },
           })
 
-          if (activeMembers >= 3) {
+          if (activeMembers >= MIN_MEMBERS_TO_ACTIVATE) {
             await prisma.band.update({
               where: { id: invite.bandId },
               data: { status: 'ACTIVE' },

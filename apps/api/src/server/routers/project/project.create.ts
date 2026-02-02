@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 import { requireGoodStanding, getBandIdFromProposal } from '../../../lib/dues-enforcement'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 // Roles that can create projects from approved proposals
 const CAN_CREATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -95,11 +96,11 @@ export const createProject = publicProcedure
       })
     }
 
-    // Check if band is active (has 3+ members)
+    // Check if band is active (has minimum members)
     if (proposal.band.status !== 'ACTIVE') {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'Band must be active (3+ members) before creating projects'
+        message: `Band must be active (${MIN_MEMBERS_TO_ACTIVATE}+ members) before creating projects`
       })
     }
 

@@ -4,6 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 import {
   PageLayout,
   Button,
@@ -31,7 +32,7 @@ export default function HomePage() {
                 </Link>{' '}
                 section to understand what Band It is about. You can register with any email
                 (we don't verify emails yet) and explore the platform: browse bands, apply to join,
-                or create your own. Creating a band requires 3 members to activate. To complete
+                or create your own. Creating a band requires {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} to activate. To complete
                 activation, use Stripe test card <code className="bg-amber-200 px-1 rounded">4242 4242 4242 4242</code> for payment.
                 Once active, explore discussions, proposals, projects, tasks, and more. Please join the{' '}
                 <strong>Band It Development</strong>{' '}

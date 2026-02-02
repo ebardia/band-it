@@ -496,7 +496,7 @@ model Band {
   status      BandStatus @default(INACTIVE)
 
   // Activation & Dissolution
-  activatedAt       DateTime?   // Set when band first reaches 3 members
+  activatedAt       DateTime?   // Set when band first reaches minimum members
   dissolvedAt       DateTime?   // Set when band is dissolved
   dissolvedById     String?     // User who dissolved the band
   dissolutionMethod DissolutionMethod? // How the band was dissolved
@@ -570,13 +570,13 @@ enum BandStatus {
 }
 
 enum DissolutionMethod {
-  DIRECT    // Founder dissolved directly (< 3 members)
+  DIRECT    // Founder dissolved directly (< minimum members)
   PROPOSAL  // Dissolved via unanimous vote
 }
 
 enum BillingStatus {
-  NONE           // No payment needed yet (< 3 members)
-  PENDING        // 3 members reached, awaiting first payment
+  NONE           // No payment needed yet (< minimum members)
+  PENDING        // Minimum members reached, awaiting first payment
   ACTIVE         // Subscription active
   PAST_DUE       // Payment failed, in grace period
   INACTIVE       // Grace period expired or subscription cancelled

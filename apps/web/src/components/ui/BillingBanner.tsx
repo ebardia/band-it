@@ -2,6 +2,7 @@
 
 import { Button, Text, Heading, Stack } from '@/components/ui'
 import { trpc } from '@/lib/trpc'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 interface BillingBannerProps {
   bandId: string
@@ -89,14 +90,14 @@ export function BillingBanner({ bandId, bandSlug, userId }: BillingBannerProps) 
     )
   }
 
-  // Payment required (3+ members, no subscription yet)
+  // Payment required (minimum members reached, no subscription yet)
   if (needsPayment) {
     return (
       <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-lg">
         <Stack spacing="sm">
           <Heading level={3} className="text-yellow-800">Payment Required</Heading>
           <Text variant="small" className="text-yellow-700">
-            This band has 3+ members and requires a subscription to become active.
+            This band has {MIN_MEMBERS_TO_ACTIVATE}+ members and requires a subscription to become active.
           </Text>
           {isBillingOwner ? (
             <Button
@@ -156,7 +157,7 @@ export function BillingBanner({ bandId, bandSlug, userId }: BillingBannerProps) 
         <Stack spacing="sm">
           <Heading level={3} className="text-gray-800">Band Inactive</Heading>
           <Text variant="small" className="text-gray-700">
-            This band is currently inactive. To reactivate, the band needs at least 3 members and an active subscription.
+            This band is currently inactive. To reactivate, the band needs at least {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} and an active subscription.
           </Text>
           {isBillingOwner && billingStatus === 'INACTIVE' && (
             <Button

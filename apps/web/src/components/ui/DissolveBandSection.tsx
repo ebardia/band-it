@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 import {
   Stack,
   Heading,
@@ -97,7 +98,7 @@ export function DissolveBandSection({ bandId, bandSlug, bandName, userId }: Diss
     })
   }
 
-  // Direct dissolution UI (< 3 members, founder only)
+  // Direct dissolution UI (below minimum members, founder only)
   if (canDissolveData.method === 'DIRECT') {
     return (
       <Card className="border-red-200 bg-red-50">
@@ -107,11 +108,11 @@ export function DissolveBandSection({ bandId, bandSlug, bandName, userId }: Diss
           {!showConfirm ? (
             <>
               <Alert variant="warning">
-                <Text>This band has fewer than 3 active members.</Text>
+                <Text>This band has fewer than {MIN_MEMBERS_TO_ACTIVATE} active member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'}.</Text>
               </Alert>
 
               <Text color="muted">
-                As founder, you can dissolve this band directly since it has fewer than 3 members.
+                As founder, you can dissolve this band directly since it has fewer than {MIN_MEMBERS_TO_ACTIVATE} member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'}.
               </Text>
 
               <Text variant="small" color="muted">
@@ -181,7 +182,7 @@ export function DissolveBandSection({ bandId, bandSlug, bandName, userId }: Diss
     )
   }
 
-  // Proposal-based dissolution UI (3+ members)
+  // Proposal-based dissolution UI (minimum or more members)
   if (canDissolveData.method === 'PROPOSAL') {
     // Check if there's already an active dissolution proposal
     if (canDissolveData.hasActiveProposal) {

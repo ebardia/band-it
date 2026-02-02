@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 import {
   Heading,
   Text,
@@ -151,7 +152,7 @@ export default function BandAboutPage() {
               {band.status === 'PENDING' && (
                 <Alert variant="warning">
                   <Text variant="small" weight="semibold">Band is Pending</Text>
-                  <Text variant="small">This band needs {3 - band.members.length} more active member(s) to become active.</Text>
+                  <Text variant="small">This band needs {MIN_MEMBERS_TO_ACTIVATE - band.members.length} more active member(s) to become active.</Text>
                 </Alert>
               )}
             </Stack>

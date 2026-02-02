@@ -145,7 +145,7 @@ export const pageHelpDefinitions: Record<string, PageHelp> = {
       },
       {
         title: 'What\'s Next?',
-        description: 'After creating your band, you can customize settings, invite members, and start collaborating. Your band starts in "Pending" status until you have 3 active members.',
+        description: 'After creating your band, you can customize settings, invite members, and start collaborating. Your band starts in "Pending" status until it meets the minimum member requirement.',
       },
     ],
   },

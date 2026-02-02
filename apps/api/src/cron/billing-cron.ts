@@ -3,6 +3,7 @@ import { bandBillingService } from '../server/services/band-billing.service'
 import { notificationService } from '../services/notification.service'
 import { prisma } from '../lib/prisma'
 import { emailService } from '../server/services/email.service'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 /**
  * Initialize all billing-related cron jobs
@@ -20,7 +21,7 @@ export function initBillingCron() {
     await checkBillingOwnerNeeded()
   })
 
-  // Check for bands with low member count (subscription active but <3 members) daily at 4 AM
+  // Check for bands with low member count (subscription active but below minimum members) daily at 4 AM
   cron.schedule('0 4 * * *', async () => {
     console.log('[CRON] Running low member count check...')
     await checkLowMemberCount()
@@ -136,7 +137,7 @@ async function checkBillingOwnerNeeded() {
 }
 
 /**
- * Check for bands with active subscription but fewer than 3 members
+ * Check for bands with active subscription but fewer than minimum members
  * These bands will be deactivated at the end of their billing cycle
  */
 async function checkLowMemberCount() {
@@ -157,7 +158,7 @@ async function checkLowMemberCount() {
       }
     })
 
-    const lowMemberBands = bandsWithSubscription.filter(b => b.members.length < 3)
+    const lowMemberBands = bandsWithSubscription.filter(b => b.members.length < MIN_MEMBERS_TO_ACTIVATE)
 
     for (const band of lowMemberBands) {
       console.log(`[CRON] Band ${band.name} has ${band.members.length} members (below minimum)`)
@@ -168,7 +169,7 @@ async function checkLowMemberCount() {
           userId: band.billingOwnerId,
           type: 'BAND_STATUS_CHANGED',
           title: 'Low Member Count Warning',
-          message: `${band.name} has fewer than 3 members. The band will be deactivated at the end of the billing cycle unless more members join.`,
+          message: `${band.name} has fewer than ${MIN_MEMBERS_TO_ACTIVATE} members. The band will be deactivated at the end of the billing cycle unless more members join.`,
           actionUrl: `/bands/${band.slug}/members`,
           priority: 'HIGH',
           metadata: { bandId: band.id, bandName: band.name, memberCount: band.members.length },

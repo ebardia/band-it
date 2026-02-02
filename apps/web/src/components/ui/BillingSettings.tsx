@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button, Text, Heading, Stack, Card, Badge, Modal } from '@/components/ui'
 import { trpc } from '@/lib/trpc'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 interface BillingSettingsProps {
   bandId: string
@@ -147,7 +148,7 @@ export function BillingSettings({ bandId, bandSlug, userId }: BillingSettingsPro
             <div>
               <Text variant="small" className="text-gray-500">Plan</Text>
               <Text weight="semibold">
-                ${currentPriceAmount}/month ({memberCount >= 21 ? '21+ members' : '3-20 members'})
+                ${currentPriceAmount}/month ({memberCount >= 21 ? '21+ members' : `${MIN_MEMBERS_TO_ACTIVATE}-20 members`})
               </Text>
             </div>
             <div>
@@ -206,7 +207,7 @@ export function BillingSettings({ bandId, bandSlug, userId }: BillingSettingsPro
           <div className="border-t pt-4">
             <Stack spacing="sm">
               {/* No owner - show claim button */}
-              {!hasBillingOwner && memberCount >= 3 && (
+              {!hasBillingOwner && memberCount >= MIN_MEMBERS_TO_ACTIVATE && (
                 <Button
                   variant="primary"
                   onClick={handleClaim}
@@ -239,7 +240,7 @@ export function BillingSettings({ bandId, bandSlug, userId }: BillingSettingsPro
                     </Button>
                   )}
 
-                  {billingStatus === 'INACTIVE' && memberCount >= 3 && (
+                  {billingStatus === 'INACTIVE' && memberCount >= MIN_MEMBERS_TO_ACTIVATE && (
                     <Button
                       variant="primary"
                       onClick={handlePayment}

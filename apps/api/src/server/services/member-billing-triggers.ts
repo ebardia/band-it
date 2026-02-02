@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma'
 import { bandBillingService } from './band-billing.service'
 import { notificationService } from '../../services/notification.service'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 /**
  * Centralized service for handling billing-related triggers when member count changes
@@ -9,7 +10,7 @@ export const memberBillingTriggers = {
   /**
    * Called when a member becomes ACTIVE in a band
    * Handles:
-   * - 3rd member: Set billingStatus to PENDING, assign billing owner
+   * - Reaching MIN_MEMBERS_TO_ACTIVATE: Set billingStatus to PENDING, assign billing owner
    * - 21st member: Auto-upgrade subscription
    */
   async onMemberActivated(bandId: string): Promise<void> {
@@ -37,8 +38,8 @@ export const memberBillingTriggers = {
 
     console.log(`Band ${band.name}: ${activeCount} active members`)
 
-    // === 3rd member joined - require payment ===
-    if (activeCount === 3 && band.billingStatus === 'NONE') {
+    // === Minimum members reached - require payment ===
+    if (activeCount === MIN_MEMBERS_TO_ACTIVATE && band.billingStatus === 'NONE') {
       // Find the founder to be initial billing owner
       const founder = await prisma.member.findFirst({
         where: { bandId, role: 'FOUNDER', status: 'ACTIVE' },
@@ -62,7 +63,7 @@ export const memberBillingTriggers = {
         userId: billingOwnerId,
         type: 'BILLING_PAYMENT_REQUIRED',
         title: 'Payment Required',
-        message: `${band.name} now has 3 members! Please set up payment to activate the band.`,
+        message: `${band.name} now has ${MIN_MEMBERS_TO_ACTIVATE} members! Please set up payment to activate the band.`,
         actionUrl: `/bands/${band.slug}/settings`,
         priority: 'URGENT',
         metadata: { bandId: band.id, bandName: band.name, memberCount: activeCount },
@@ -81,7 +82,7 @@ export const memberBillingTriggers = {
           userId: member.userId,
           type: 'BILLING_PAYMENT_REQUIRED',
           title: 'Payment Pending',
-          message: `${band.name} has 3 members! Waiting for billing owner to complete payment.`,
+          message: `${band.name} has ${MIN_MEMBERS_TO_ACTIVATE} members! Waiting for billing owner to complete payment.`,
           actionUrl: `/bands/${band.slug}`,
           priority: 'HIGH',
           metadata: { bandId: band.id, bandName: band.name, memberCount: activeCount },
@@ -127,7 +128,7 @@ export const memberBillingTriggers = {
    * Called when a member leaves or is removed from a band
    * Handles:
    * - Below 21 members: Schedule downgrade
-   * - Below 3 members: Band stays active until billing cycle, then goes INACTIVE
+   * - Below MIN_MEMBERS_TO_ACTIVATE: Band stays active until billing cycle, then goes INACTIVE
    * - Billing owner left: Clear owner, notify members
    */
   async onMemberRemoved(bandId: string, removedUserId: string): Promise<void> {
@@ -214,8 +215,8 @@ export const memberBillingTriggers = {
       }
     }
 
-    // === Below 3 members ===
-    if (activeCount < 3) {
+    // === Below minimum members ===
+    if (activeCount < MIN_MEMBERS_TO_ACTIVATE) {
       // If band has active subscription, it stays active until billing cycle ends
       // The grace period / billing cycle handling will take care of deactivation
       // If no subscription (billingStatus is NONE or PENDING), just ensure band is INACTIVE
@@ -229,7 +230,7 @@ export const memberBillingTriggers = {
           },
         })
 
-        console.log(`Band ${band.name}: Set to INACTIVE (no subscription, below 3 members)`)
+        console.log(`Band ${band.name}: Set to INACTIVE (no subscription, below ${MIN_MEMBERS_TO_ACTIVATE} members)`)
 
         // Notify remaining members
         const remainingMembers = await prisma.member.findMany({
@@ -242,7 +243,7 @@ export const memberBillingTriggers = {
             userId: member.userId,
             type: 'BAND_STATUS_CHANGED',
             title: 'Band Inactive',
-            message: `${band.name} now has fewer than 3 members and is inactive. Invite more members to reactivate.`,
+            message: `${band.name} now has fewer than ${MIN_MEMBERS_TO_ACTIVATE} members and is inactive. Invite more members to reactivate.`,
             actionUrl: `/bands/${band.slug}/members`,
             priority: 'HIGH',
             metadata: { bandId: band.id, bandName: band.name, memberCount: activeCount },
@@ -253,7 +254,7 @@ export const memberBillingTriggers = {
       } else if (band.billingStatus === 'ACTIVE') {
         // Band has active subscription - it stays active until billing cycle ends
         // We just notify members that they need more members
-        console.log(`Band ${band.name}: Below 3 members but has active subscription - stays active until billing cycle ends`)
+        console.log(`Band ${band.name}: Below ${MIN_MEMBERS_TO_ACTIVATE} members but has active subscription - stays active until billing cycle ends`)
 
         const remainingMembers = await prisma.member.findMany({
           where: { bandId, status: 'ACTIVE' },
@@ -265,7 +266,7 @@ export const memberBillingTriggers = {
             userId: member.userId,
             type: 'BAND_STATUS_CHANGED',
             title: 'Members Needed',
-            message: `${band.name} now has fewer than 3 members. The band will remain active until the end of the billing cycle. Invite more members to continue.`,
+            message: `${band.name} now has fewer than ${MIN_MEMBERS_TO_ACTIVATE} members. The band will remain active until the end of the billing cycle. Invite more members to continue.`,
             actionUrl: `/bands/${band.slug}/members`,
             priority: 'HIGH',
             metadata: { bandId: band.id, bandName: band.name, memberCount: activeCount },

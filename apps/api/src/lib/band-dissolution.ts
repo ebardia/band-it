@@ -3,6 +3,7 @@ import { prisma } from './prisma'
 import { MemberRole, DissolutionMethod } from '@prisma/client'
 import { notificationService } from '../services/notification.service'
 import { emailService } from '../server/services/email.service'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -50,26 +51,26 @@ export async function checkDissolutionEligibility(
 
   const isFounder = userMember.role === 'FOUNDER'
 
-  // < 3 active members: only founder can dissolve directly
-  if (memberCount < 3) {
+  // Below minimum active members: only founder can dissolve directly
+  if (memberCount < MIN_MEMBERS_TO_ACTIVATE) {
     if (isFounder) {
       return {
         canDissolve: true,
         method: 'DIRECT',
         memberCount,
-        reason: 'As founder, you can dissolve this band directly since it has fewer than 3 members.',
+        reason: `As founder, you can dissolve this band directly since it has fewer than ${MIN_MEMBERS_TO_ACTIVATE} members.`,
       }
     } else {
       return {
         canDissolve: false,
         method: null,
         memberCount,
-        reason: 'Only the founder can dissolve bands with fewer than 3 members.',
+        reason: `Only the founder can dissolve bands with fewer than ${MIN_MEMBERS_TO_ACTIVATE} members.`,
       }
     }
   }
 
-  // 3+ members: must create a dissolution proposal
+  // Minimum or more members: must create a dissolution proposal
   return {
     canDissolve: true,
     method: 'PROPOSAL',

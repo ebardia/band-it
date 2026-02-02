@@ -13,12 +13,12 @@ platform:
 bands:
   what: Groups/organizations on the platform. Each band has members with different roles, channels for discussion, and proposals for decision-making.
   activation:
-    - Requires at least 3 members (including founder) to activate
-    - Once 3 members reached, founder must pay subscription to complete activation
+    - Requires at least the minimum members (currently 1 for testing, normally 3) to activate
+    - Once minimum reached, founder must pay subscription to complete activation
     - Band status changes from PENDING to ACTIVE after payment
   subscription:
     tier_1:
-      members: "3-20 members"
+      members: "Up to 20 members"
       price: "$20/month"
     tier_2:
       members: "21+ members"
@@ -38,11 +38,11 @@ bands:
     VOTING_MEMBER: Standard participation with voting rights
     OBSERVER: Can view content but cannot vote or post
   workflows:
-    create: "Overview → Create Band → Fill details (name, mission, values) → Invite members → Reach 3 members → Pay subscription → Band is Active"
+    create: "Overview → Create Band → Fill details (name, mission, values) → Invite members → Reach minimum members → Pay subscription → Band is Active"
     join: "Discover Bands → Browse/search → Click Apply → Wait for approval → See band in Overview"
     dissolve:
-      under_3_members: "Only founder can dissolve directly"
-      3_or_more_members: "Requires a dissolution proposal with unanimous approval from all voting members"
+      under_minimum_members: "Only founder can dissolve directly"
+      at_or_above_minimum_members: "Requires a dissolution proposal with unanimous approval from all voting members"
 
 proposals:
   what: Decisions voted on by band members. All significant decisions go through the proposal process for transparency.
@@ -101,7 +101,7 @@ billing:
   band_subscription:
     what: Monthly fee paid by founder to keep band active
     who_pays: Founder
-    pricing: "$20/month (3-20 members) or $100/month (21+ members)"
+    pricing: "$20/month (up to 20 members) or $100/month (21+ members)"
   member_dues:
     what: Optional recurring payments from members to the band
     required: "Configurable per band - can be required or optional"
@@ -168,12 +168,12 @@ events:
     MAYBE: Uncertain
 
 common_questions:
-  how_do_i_create_a_band: "Go to Overview → Click 'Create Band' → Fill in name, mission, values → Invite at least 2 members → Once you have 3 members, pay the subscription → Band is active"
+  how_do_i_create_a_band: "Go to Overview → Click 'Create Band' → Fill in name, mission, values → Invite members → Once you reach the minimum member requirement, pay the subscription → Band is active"
   how_do_i_join_a_band: "Go to 'Discover Bands' → Browse or search → Click 'Apply' on a band → Wait for approval → Band appears in your Overview"
   how_do_i_create_a_proposal: "Go to band's Proposals section → Click 'New Proposal' → Select type → Fill in details → Set voting period → Submit"
   why_cant_i_vote: "You may not have voting rights (Observer role), or you're not an active member of the band, or the voting period has ended"
   why_cant_i_post: "Check your role permissions and channel visibility. Observers cannot post. Some channels are restricted to certain roles"
-  why_is_my_band_not_active: "Bands require 3 members to activate. Once you have 3 members, the founder must pay the subscription"
+  why_is_my_band_not_active: "Bands require the minimum member count to activate. Once you reach it, the founder must pay the subscription"
   how_do_i_pay_dues: "Go to band's Billing section → Click 'Pay Dues' → Complete payment via Stripe, or use manual payment if your band accepts it"
   how_do_i_confirm_a_payment: "Go to band's Billing → Manual Payments tab → Find the pending payment → Click Confirm"
   what_are_the_different_roles: "Founder (full control), Governor (leadership), Moderator (moderate discussions), Conductor (lead projects), Voting Member (standard participation), Observer (view only)"
@@ -185,7 +185,7 @@ troubleshooting:
   - issue: "My proposal is stuck in review"
     solution: "Proposals in PENDING_REVIEW status need approval from a Moderator, Governor, or Founder. Contact your band leadership."
   - issue: "I can't dissolve my band"
-    solution: "With 3+ members, dissolution requires a unanimous vote via proposal. With fewer than 3 members, only the founder can dissolve directly."
+    solution: "With the minimum number of members or more, dissolution requires a unanimous vote via proposal. With fewer than the minimum, only the founder can dissolve directly."
   - issue: "Payment not showing up"
     solution: "Manual payments require confirmation from the other party. Check the Manual Payments tab for pending confirmations."
   - issue: "I'm not receiving notifications"

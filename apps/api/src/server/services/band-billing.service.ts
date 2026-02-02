@@ -5,7 +5,7 @@ import { BillingStatus } from '@prisma/client'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 // Price IDs from environment variables
-const STRIPE_PRICE_20 = process.env.STRIPE_PRICE_20 // $20/month for 3-20 members
+const STRIPE_PRICE_20 = process.env.STRIPE_PRICE_20 // $20/month for up to 20 members
 const STRIPE_PRICE_100 = process.env.STRIPE_PRICE_100 // $100/month for 21+ members
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'

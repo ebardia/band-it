@@ -9,6 +9,7 @@ import { canCreateFinanceBucketGovernanceProposal } from '../../../services/effe
 import { TRPCError } from '@trpc/server'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
 import { getEligibleReviewers } from '../../../lib/proposal-review'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 // Roles that can create proposals
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -128,9 +129,9 @@ export const proposalCreateRouter = router({
         throw new Error('Your role does not have permission to create proposals')
       }
 
-      // Check if band is active (has 3+ members)
+      // Check if band is active (has minimum members)
       if (membership.band.status !== 'ACTIVE') {
-        throw new Error('Band must be active (3+ members) before creating proposals')
+        throw new Error(`Band must be active (${MIN_MEMBERS_TO_ACTIVATE}+ members) before creating proposals`)
       }
 
       // Determine execution type (default to PROJECT for backwards compatibility)

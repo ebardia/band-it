@@ -1,5 +1,5 @@
 // AUTO-GENERATED from docs/help-context.yaml - DO NOT EDIT DIRECTLY
-// Generated at: 2026-02-02T00:30:03.720Z
+// Generated at: 2026-02-02T16:39:50.088Z
 // To update, edit docs/help-context.yaml and run: npm run generate-help-context
 
 export const PLATFORM_CONTEXT = `
@@ -10,12 +10,12 @@ Transparency-focused platform for community organizations like PACs, advocacy gr
 Groups/organizations on the platform. Each band has members with different roles, channels for discussion, and proposals for decision-making.
 
 ### Activation Requirements
-- Requires at least 3 members (including founder) to activate
-- Once 3 members reached, founder must pay subscription to complete activation
+- Requires at least the minimum members (currently 1 for testing, normally 3) to activate
+- Once minimum reached, founder must pay subscription to complete activation
 - Band status changes from PENDING to ACTIVE after payment
 
 ### Subscription Pricing
-- 3-20 members: $20/month
+- Up to 20 members: $20/month
 - 21+ members: $100/month
 - Auto-upgrades when reaching 21 members
 - Auto-downgrades when going below 21 members
@@ -30,10 +30,10 @@ Groups/organizations on the platform. Each band has members with different roles
 - OBSERVER: Can view content but cannot vote or post
 
 ### Key Workflows
-- Create a band: Overview → Create Band → Fill details (name, mission, values) → Invite members → Reach 3 members → Pay subscription → Band is Active
+- Create a band: Overview → Create Band → Fill details (name, mission, values) → Invite members → Reach minimum members → Pay subscription → Band is Active
 - Join a band: Discover Bands → Browse/search → Click Apply → Wait for approval → See band in Overview
-- Dissolve (under 3 members): Only founder can dissolve directly
-- Dissolve (3+ members): Requires a dissolution proposal with unanimous approval from all voting members
+- Dissolve (under minimum members): Only founder can dissolve directly
+- Dissolve (at or above minimum members): Requires a dissolution proposal with unanimous approval from all voting members
 
 ## PROPOSALS
 Decisions voted on by band members. All significant decisions go through the proposal process for transparency.
@@ -93,7 +93,7 @@ Communication within bands happens in channels. Supports threaded conversations,
 ### Band Subscription
 - What: Monthly fee paid by founder to keep band active
 - Who pays: Founder
-- Pricing: $20/month (3-20 members) or $100/month (21+ members)
+- Pricing: $20/month (up to 20 members) or $100/month (21+ members)
 
 ### Member Dues
 - What: Optional recurring payments from members to the band
@@ -146,7 +146,7 @@ Scheduled gatherings for band members
 ## COMMON QUESTIONS
 
 ### How do I create a band?
-Go to Overview → Click 'Create Band' → Fill in name, mission, values → Invite at least 2 members → Once you have 3 members, pay the subscription → Band is active
+Go to Overview → Click 'Create Band' → Fill in name, mission, values → Invite members → Once you reach the minimum member requirement, pay the subscription → Band is active
 
 ### How do I join a band?
 Go to 'Discover Bands' → Browse or search → Click 'Apply' on a band → Wait for approval → Band appears in your Overview
@@ -161,7 +161,7 @@ You may not have voting rights (Observer role), or you're not an active member o
 Check your role permissions and channel visibility. Observers cannot post. Some channels are restricted to certain roles
 
 ### Why is my band not active?
-Bands require 3 members to activate. Once you have 3 members, the founder must pay the subscription
+Bands require the minimum member count to activate. Once you reach it, the founder must pay the subscription
 
 ### How do I pay dues?
 Go to band's Billing section → Click 'Pay Dues' → Complete payment via Stripe, or use manual payment if your band accepts it
@@ -184,7 +184,7 @@ The channel may have restricted visibility. PUBLIC channels are visible to all. 
 Proposals in PENDING_REVIEW status need approval from a Moderator, Governor, or Founder. Contact your band leadership.
 
 ### I can't dissolve my band
-With 3+ members, dissolution requires a unanimous vote via proposal. With fewer than 3 members, only the founder can dissolve directly.
+With the minimum number of members or more, dissolution requires a unanimous vote via proposal. With fewer than the minimum, only the founder can dissolve directly.
 
 ### Payment not showing up
 Manual payments require confirmation from the other party. Check the Manual Payments tab for pending confirmations.

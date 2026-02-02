@@ -6,6 +6,7 @@ import { notificationService } from '../../../services/notification.service'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 import { checkMultipleFields, saveFlaggedContent } from '../../../services/content-moderation.service'
 import { requireGoodStanding, getBandIdFromProject } from '../../../lib/dues-enforcement'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 // Roles that can create tasks
 const CAN_CREATE_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -101,11 +102,11 @@ export const createTask = publicProcedure
       })
     }
 
-    // Check if band is active (has 3+ members)
+    // Check if band is active (has minimum members)
     if (project.band.status !== 'ACTIVE') {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'Band must be active (3+ members) before creating tasks'
+        message: `Band must be active (${MIN_MEMBERS_TO_ACTIVATE}+ members) before creating tasks`
       })
     }
 

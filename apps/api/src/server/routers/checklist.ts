@@ -13,6 +13,7 @@ import {
   updateChecklistContext,
   getClaimableChecklistItems,
 } from './checklist.claim'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 // Roles that can use AI suggestions
 const CAN_USE_AI = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -146,11 +147,11 @@ export const checklistRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' })
       }
 
-      // Check if band is active (has 3+ members)
+      // Check if band is active (has minimum members)
       if (task.band.status !== 'ACTIVE') {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Band must be active (3+ members) before creating checklist items'
+          message: `Band must be active (${MIN_MEMBERS_TO_ACTIVATE}+ members) before creating checklist items`
         })
       }
 
@@ -205,11 +206,11 @@ export const checklistRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' })
       }
 
-      // Check if band is active (has 3+ members)
+      // Check if band is active (has minimum members)
       if (task.band.status !== 'ACTIVE') {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Band must be active (3+ members) before creating checklist items'
+          message: `Band must be active (${MIN_MEMBERS_TO_ACTIVATE}+ members) before creating checklist items`
         })
       }
 

@@ -121,9 +121,9 @@ const templates = [
   {
     type: NotificationType.BILLING_PAYMENT_REQUIRED,
     title: 'Payment Required',
-    message: '{bandName} now has 3+ members and requires a subscription',
+    message: '{bandName} now meets the minimum member requirement and requires a subscription',
     emailSubject: 'Payment required for {bandName}',
-    emailBody: 'Hi,\n\n{bandName} now has 3 or more members and requires an active subscription to remain active.\n\nAs a member, you can claim billing ownership and set up payment:\n{actionUrl}\n\nCurrent monthly rate: ${priceAmount}/month',
+    emailBody: 'Hi,\n\n{bandName} now meets the minimum member requirement and requires an active subscription to remain active.\n\nAs a member, you can claim billing ownership and set up payment:\n{actionUrl}\n\nCurrent monthly rate: ${priceAmount}/month',
   },
   {
     type: NotificationType.BILLING_PAYMENT_SUCCEEDED,

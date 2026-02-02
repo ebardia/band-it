@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 import {
   Heading,
   Text,
@@ -151,7 +152,7 @@ export default function CreateBandPage() {
 
             <Alert variant="info">
               <Text variant="small">
-                Your band will start in PENDING status. Once you have 3 active members, it will automatically become ACTIVE.
+                Your band will start in PENDING status. Once you have {MIN_MEMBERS_TO_ACTIVATE} active member{MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'}, it will automatically become ACTIVE.
               </Text>
             </Alert>
 

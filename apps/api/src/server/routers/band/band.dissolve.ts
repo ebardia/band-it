@@ -7,9 +7,10 @@ import {
   hasActiveDissolutionProposal,
   executeDissolution,
 } from '../../../lib/band-dissolution'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 /**
- * Check and set activatedAt when band reaches 3 active members
+ * Check and set activatedAt when band reaches minimum active members
  * This should be called after any member becomes ACTIVE
  */
 export async function checkAndSetBandActivation(bandId: string): Promise<boolean> {
@@ -31,8 +32,8 @@ export async function checkAndSetBandActivation(bandId: string): Promise<boolean
     },
   })
 
-  // Activate if reached 3 members
-  if (activeCount >= 3) {
+  // Activate if reached minimum members
+  if (activeCount >= MIN_MEMBERS_TO_ACTIVATE) {
     await prisma.band.update({
       where: { id: bandId },
       data: { activatedAt: new Date() },
@@ -70,7 +71,7 @@ export const bandDissolveRouter = router({
     }),
 
   /**
-   * Direct dissolution by founder when band has < 3 members
+   * Direct dissolution by founder when band has fewer than minimum members
    */
   dissolve: publicProcedure
     .input(
@@ -94,7 +95,7 @@ export const bandDissolveRouter = router({
       if (eligibility.method !== 'DIRECT') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'This band has 3 or more members. You must create a dissolution proposal instead.',
+          message: `This band has ${MIN_MEMBERS_TO_ACTIVATE} or more members. You must create a dissolution proposal instead.`,
         })
       }
 
@@ -115,7 +116,7 @@ export const bandDissolveRouter = router({
     }),
 
   /**
-   * Create a dissolution proposal (for bands with 3+ members)
+   * Create a dissolution proposal (for bands with minimum or more members)
    */
   createDissolutionProposal: publicProcedure
     .input(
@@ -139,7 +140,7 @@ export const bandDissolveRouter = router({
       if (eligibility.method !== 'PROPOSAL') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Bands with fewer than 3 members can be dissolved directly by the founder.',
+          message: `Bands with fewer than ${MIN_MEMBERS_TO_ACTIVATE} members can be dissolved directly by the founder.`,
         })
       }
 

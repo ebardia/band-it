@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { bandBillingService } from '../../services/band-billing.service'
 import { TRPCError } from '@trpc/server'
 import { checkGoodStanding } from '../../../lib/dues-enforcement'
+import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 export const bandBillingRouter = router({
   /**
@@ -210,7 +211,7 @@ export const bandBillingRouter = router({
       const needsPayment = band.billingStatus === 'PENDING'
       const isPastDue = band.billingStatus === 'PAST_DUE'
       const isInactive = band.status === 'INACTIVE'
-      const noBillingOwner = !band.billingOwnerId && memberCount >= 3
+      const noBillingOwner = !band.billingOwnerId && memberCount >= MIN_MEMBERS_TO_ACTIVATE
 
       let gracePeriodDaysLeft = null
       if (band.gracePeriodEndsAt) {
