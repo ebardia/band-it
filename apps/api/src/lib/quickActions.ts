@@ -248,7 +248,7 @@ export async function getQuickActionsForUser(
       title: proposal.title,
       bandName: proposal.band.name,
       bandId: proposal.band.id,
-      url: `/quick/vote/${proposal.id}`,
+      url: `/quick/vote/${proposal.id}?band=${proposal.band.slug}`,
       urgency: getUrgency(proposal.votingEndsAt),
       meta: {
         endsAt: proposal.votingEndsAt,
@@ -256,6 +256,7 @@ export async function getQuickActionsForUser(
           ? formatTimeRemaining(proposal.votingEndsAt)
           : null,
         proposalType: proposal.type,
+        bandSlug: proposal.band.slug,
       },
     })
   }
@@ -274,7 +275,7 @@ export async function getQuickActionsForUser(
       title: `${formattedAmount} via ${payment.paymentMethod}`,
       bandName: payment.band.name,
       bandId: payment.band.id,
-      url: `/quick/confirm-payment/${payment.id}?token=${payment.confirmationToken}`,
+      url: `/quick/confirm-payment/${payment.id}?token=${payment.confirmationToken}&band=${payment.band.slug}`,
       urgency: 'medium',
       meta: {
         amount: payment.amount,
@@ -282,6 +283,7 @@ export async function getQuickActionsForUser(
         method: payment.paymentMethod,
         from: payment.initiatedBy.name,
         autoConfirmAt: payment.autoConfirmAt,
+        bandSlug: payment.band.slug,
       },
     })
   }
@@ -373,7 +375,7 @@ export async function getQuickActionsForUser(
       title: task.name,
       bandName: task.band.name,
       bandId: task.band.id,
-      url: `/quick/task/${task.id}`,
+      url: `/quick/task/${task.id}?band=${task.band.slug}`,
       urgency,
       meta: {
         projectName: task.project.name,
@@ -384,6 +386,7 @@ export async function getQuickActionsForUser(
         contextComputer: task.contextComputer,
         contextTravel: task.contextTravel,
         contextTimeMinutes: task.contextTimeMinutes,
+        bandSlug: task.band.slug,
       },
     })
   }
@@ -418,10 +421,11 @@ export async function getQuickActionsForUser(
       title: item.description.substring(0, 80) + (item.description.length > 80 ? '...' : ''),
       bandName: item.task.band.name,
       bandId: item.task.band.id,
-      url: `/quick/checklist/${item.id}`,
+      url: `/quick/checklist/${item.id}?band=${item.task.band.slug}&task=${item.task.id}`,
       urgency,
       meta: {
         taskName: item.task.name,
+        taskId: item.task.id,
         projectName: item.task.project.name,
         priority: item.priority,
         dueDate: item.dueDate,
@@ -430,6 +434,7 @@ export async function getQuickActionsForUser(
         contextComputer: item.contextComputer,
         contextTravel: item.contextTravel,
         contextTimeMinutes: item.contextTimeMinutes,
+        bandSlug: item.task.band.slug,
       },
     })
   }

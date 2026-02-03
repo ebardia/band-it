@@ -36,7 +36,10 @@ export async function checkAndSetBandActivation(bandId: string): Promise<boolean
   if (activeCount >= MIN_MEMBERS_TO_ACTIVATE) {
     await prisma.band.update({
       where: { id: bandId },
-      data: { activatedAt: new Date() },
+      data: {
+        activatedAt: new Date(),
+        status: 'ACTIVE',
+      },
     })
     return true
   }

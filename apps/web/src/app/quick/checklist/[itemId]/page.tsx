@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { jwtDecode } from 'jwt-decode'
 import { trpc } from '@/lib/trpc'
 import {
@@ -13,14 +13,30 @@ import {
   QuickBadge,
 } from '@/components/quick'
 
+// Desktop breakpoint (matches Tailwind's md:)
+const DESKTOP_BREAKPOINT = 768
+
 export default function QuickChecklistPage() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const itemId = params.itemId as string
+  const bandSlug = searchParams.get('band')
+  const taskId = searchParams.get('task')
 
   const [userId, setUserId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionCompleted, setActionCompleted] = useState<string | null>(null)
+
+  // Redirect desktop users to full page
+  useEffect(() => {
+    if (typeof window !== 'undefined' && bandSlug && taskId) {
+      if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+        router.replace(`/bands/${bandSlug}/tasks/${taskId}/checklist/${itemId}`)
+        return
+      }
+    }
+  }, [router, bandSlug, taskId, itemId])
 
   // Check for authentication
   useEffect(() => {

@@ -853,6 +853,51 @@ export default function ProposalDetailPage() {
             <Card>
               <Stack spacing="md">
                 <Heading level={3}>Close Proposal</Heading>
+
+                {/* Quorum Status */}
+                <div className={`p-3 rounded-lg ${voteSummary.quorum.met ? 'bg-green-50' : 'bg-amber-50'}`}>
+                  <Text weight="semibold" className={voteSummary.quorum.met ? 'text-green-700' : 'text-amber-700'}>
+                    {voteSummary.quorum.met ? '✓ Quorum Met' : '⚠ Quorum Not Met'}
+                  </Text>
+                  <Text variant="small" className={voteSummary.quorum.met ? 'text-green-600' : 'text-amber-600'}>
+                    {voteSummary.total} of {voteSummary.eligibleVoters} eligible voters have voted ({voteSummary.quorum.actual}%)
+                    {!voteSummary.quorum.met && (
+                      <> — need {Math.ceil(voteSummary.eligibleVoters * voteSummary.quorum.required / 100) - voteSummary.total} more vote{Math.ceil(voteSummary.eligibleVoters * voteSummary.quorum.required / 100) - voteSummary.total !== 1 ? 's' : ''} for {voteSummary.quorum.required}% quorum</>
+                    )}
+                  </Text>
+                </div>
+
+                {/* Expected Outcome */}
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <Text weight="semibold">Expected Outcome if Closed Now:</Text>
+                  {(() => {
+                    if (!voteSummary.quorum.met) {
+                      return (
+                        <Text variant="small" className="text-red-600">
+                          ✗ REJECTED — Quorum not met ({voteSummary.quorum.actual}% participation, {voteSummary.quorum.required}% required)
+                        </Text>
+                      )
+                    }
+
+                    // Calculate if vote passes based on voting method
+                    const threshold = band.votingMethod === 'SUPERMAJORITY_75' ? 75
+                      : band.votingMethod === 'SUPERMAJORITY_66' ? 66
+                      : band.votingMethod === 'UNANIMOUS' ? 100
+                      : 50 // SIMPLE_MAJORITY
+
+                    const wouldPass = band.votingMethod === 'UNANIMOUS'
+                      ? voteSummary.no === 0 && voteSummary.yes > 0
+                      : voteSummary.percentageYes > threshold
+
+                    return (
+                      <Text variant="small" className={wouldPass ? 'text-green-600' : 'text-red-600'}>
+                        {wouldPass ? '✓ APPROVED' : '✗ REJECTED'} — {voteSummary.percentageYes}% Yes, {voteSummary.percentageNo}% No
+                        (requires {band.votingMethod === 'UNANIMOUS' ? 'unanimous yes' : `>${threshold}%`})
+                      </Text>
+                    )
+                  })()}
+                </div>
+
                 <Text variant="small" color="muted">
                   Closing will calculate the final result based on the voting method.
                 </Text>

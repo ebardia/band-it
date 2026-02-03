@@ -111,7 +111,7 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
 
   return (
     <div ref={dropdownRef} className={theme.components.notificationDropdown.container}>
-      {isLoading ? (
+      {isLoading || !userId ? (
         <div className="p-4">
           <Loading message="Loading notifications..." />
         </div>

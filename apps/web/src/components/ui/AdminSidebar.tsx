@@ -101,7 +101,7 @@ export function AdminSidebar() {
       {/* Back to App */}
       <div className="pt-4 mt-4 border-t border-gray-200">
         <NavButton
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push('/user-dashboard')}
           className="text-blue-600 hover:bg-blue-50"
         >
           ← Back to App

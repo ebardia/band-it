@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { createDefaultChannel } from '../channel'
+import { checkAndSetBandActivation } from './band.dissolve'
 
 export const bandCreateRouter = router({
   /**
@@ -85,6 +86,9 @@ export const bandCreateRouter = router({
           status: 'ACTIVE',
         },
       })
+
+      // Check if band should be activated (in case MIN_MEMBERS_TO_ACTIVATE is 1)
+      await checkAndSetBandActivation(band.id)
 
       // Create the default General channel
       await createDefaultChannel(band.id, input.userId)

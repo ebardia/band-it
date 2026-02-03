@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import {
@@ -11,6 +11,9 @@ import {
   QuickInfo,
   QuickBadge,
 } from '@/components/quick'
+
+// Desktop breakpoint (matches Tailwind's md:)
+const DESKTOP_BREAKPOINT = 768
 
 const PAYMENT_METHODS: Record<string, string> = {
   ZELLE: 'Zelle',
@@ -28,10 +31,21 @@ export default function QuickConfirmPaymentPage() {
 
   const paymentId = params.paymentId as string
   const token = searchParams.get('token')
+  const bandSlug = searchParams.get('band')
 
   const [isConfirming, setIsConfirming] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [confirmError, setConfirmError] = useState<string | null>(null)
+
+  // Redirect desktop users to full page
+  useEffect(() => {
+    if (typeof window !== 'undefined' && bandSlug) {
+      if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+        router.replace(`/bands/${bandSlug}/billing`)
+        return
+      }
+    }
+  }, [router, bandSlug])
 
   // Fetch payment context using token
   const {

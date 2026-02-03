@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { jwtDecode } from 'jwt-decode'
 import { trpc } from '@/lib/trpc'
 import {
@@ -13,15 +13,30 @@ import {
   QuickBadge,
 } from '@/components/quick'
 
+// Desktop breakpoint (matches Tailwind's md:)
+const DESKTOP_BREAKPOINT = 768
+
 export default function QuickVotePage() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const proposalId = params.proposalId as string
+  const bandSlug = searchParams.get('band')
 
   const [userId, setUserId] = useState<string | null>(null)
   const [selectedVote, setSelectedVote] = useState<'YES' | 'NO' | 'ABSTAIN' | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [voteSubmitted, setVoteSubmitted] = useState(false)
+
+  // Redirect desktop users to full page
+  useEffect(() => {
+    if (typeof window !== 'undefined' && bandSlug) {
+      if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+        router.replace(`/bands/${bandSlug}/proposals/${proposalId}`)
+        return
+      }
+    }
+  }, [router, bandSlug, proposalId])
 
   // Check for authentication
   useEffect(() => {
