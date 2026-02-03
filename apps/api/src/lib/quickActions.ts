@@ -15,7 +15,7 @@ const ROLE_HIERARCHY: Record<MemberRole, number> = {
   OBSERVER: 1,
 }
 
-// Quick action types
+// Quick action types - desktop users redirected to full pages
 export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION' | 'TASK' | 'CHECKLIST'
 export type Urgency = 'high' | 'medium' | 'low'
 
