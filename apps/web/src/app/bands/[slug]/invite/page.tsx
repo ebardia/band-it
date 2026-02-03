@@ -66,14 +66,19 @@ export default function InviteMembersPage() {
     { enabled: !!bandData?.band?.id }
   )
 
-  const { data: searchData, isLoading: loadingSearch } = trpc.band.searchUsers.useQuery(
+  const { data: searchData, isLoading: loadingSearch, refetch: refetchSearch } = trpc.band.searchUsers.useQuery(
     { query: debouncedQuery, bandId: bandData?.band?.id || '' },
     { enabled: !!bandData?.band?.id && debouncedQuery.length >= 2 }
   )
 
+  const utils = trpc.useUtils()
+
   const inviteMutation = trpc.band.inviteUser.useMutation({
     onSuccess: () => {
       showToast('Invitation sent!', 'success')
+      // Refetch search results and recommended users to remove invited user
+      refetchSearch()
+      utils.band.getRecommendedUsers.invalidate()
     },
     onError: (error) => {
       showToast(error.message, 'error')

@@ -10,7 +10,11 @@ import {
   Loading,
   Alert,
   BillingBanner,
-  DuesBanner
+  DuesBanner,
+  Card,
+  Stack,
+  Heading,
+  useToast
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { BandSidebar } from '@/components/ui/BandSidebar'
@@ -29,6 +33,7 @@ import { Button } from '@/components/ui'
 export default function BandDiscussionsPage() {
   const router = useRouter()
   const params = useParams()
+  const { showToast } = useToast()
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
@@ -56,10 +61,47 @@ export default function BandDiscussionsPage() {
     { enabled: !!slug }
   )
 
+  // Check if user has a pending invitation to this band
+  const { data: invitationsData, refetch: refetchInvitations } = trpc.band.getMyInvitations.useQuery(
+    { userId: userId! },
+    { enabled: !!userId && !!bandData?.band }
+  )
+
+  // Find if user has pending invitation to THIS band
+  const pendingInvitation = invitationsData?.invitations?.find(
+    (inv: any) => inv.band.id === bandData?.band?.id
+  )
+
+  const utils = trpc.useUtils()
+
+  const acceptMutation = trpc.band.acceptInvitation.useMutation({
+    onSuccess: () => {
+      showToast('Invitation accepted! Welcome to the band.', 'success')
+      refetchInvitations()
+      utils.band.getBySlug.invalidate({ slug })
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
+  const declineMutation = trpc.band.declineInvitation.useMutation({
+    onSuccess: () => {
+      showToast('Invitation declined', 'success')
+      router.push('/overview')
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
   // Auto-select first accessible channel when channels load
+  const currentMemberCheck = bandData?.band?.members.find((m: any) => m.user.id === userId)
+  const isActiveMember = !!currentMemberCheck
+
   const { data: channelsData } = trpc.channel.list.useQuery(
     { bandId: bandData?.band?.id || '', userId: userId || '', includeArchived: false },
-    { enabled: !!bandData?.band?.id && !!userId }
+    { enabled: !!bandData?.band?.id && !!userId && isActiveMember }
   )
 
   useEffect(() => {
@@ -111,6 +153,66 @@ export default function BandDiscussionsPage() {
   const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
   const selectedChannel = channelsData?.channels?.find(c => c.id === selectedChannelId)
+
+  // Show pending invitation UI if user is not a member but has a pending invitation
+  if (!isMember && pendingInvitation) {
+    return (
+      <>
+        <AppNav />
+        <div className="min-h-screen bg-gray-50">
+          <div className="mx-auto px-4 max-w-[800px]">
+            <div className="py-12">
+              <Stack spacing="xl">
+                <div className="text-center">
+                  {band.imageUrl && (
+                    <img
+                      src={band.imageUrl}
+                      alt={band.name}
+                      className="w-24 h-24 object-cover rounded-xl shadow-md mx-auto mb-4"
+                    />
+                  )}
+                  <Heading level={1}>{band.name}</Heading>
+                  <Text color="muted" className="mt-2">You've been invited to join this band</Text>
+                </div>
+
+                <Card>
+                  <Stack spacing="md">
+                    {band.description && (
+                      <Text>{band.description}</Text>
+                    )}
+
+                    {pendingInvitation.notes && (
+                      <Alert variant="info">
+                        <Text variant="small" weight="semibold">Invitation Message:</Text>
+                        <Text variant="small">{pendingInvitation.notes}</Text>
+                      </Alert>
+                    )}
+
+                    <Flex gap="md" justify="center">
+                      <Button
+                        variant="primary"
+                        onClick={() => acceptMutation.mutate({ membershipId: pendingInvitation.id, userId: userId! })}
+                        disabled={acceptMutation.isPending || declineMutation.isPending}
+                      >
+                        {acceptMutation.isPending ? 'Accepting...' : 'Accept Invitation'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => declineMutation.mutate({ membershipId: pendingInvitation.id, userId: userId! })}
+                        disabled={acceptMutation.isPending || declineMutation.isPending}
+                      >
+                        {declineMutation.isPending ? 'Declining...' : 'Decline'}
+                      </Button>
+                    </Flex>
+                  </Stack>
+                </Card>
+              </Stack>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
 
   // Mobile navigation items
   const mobileNavItems = [

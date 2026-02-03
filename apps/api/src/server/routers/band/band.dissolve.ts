@@ -16,11 +16,11 @@ import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 export async function checkAndSetBandActivation(bandId: string): Promise<boolean> {
   const band = await prisma.band.findUnique({
     where: { id: bandId },
-    select: { activatedAt: true },
+    select: { activatedAt: true, status: true },
   })
 
-  // Already activated, nothing to do
-  if (band?.activatedAt) {
+  // Already fully activated (both activatedAt and status), nothing to do
+  if (band?.activatedAt && band?.status === 'ACTIVE') {
     return false
   }
 
@@ -37,7 +37,7 @@ export async function checkAndSetBandActivation(bandId: string): Promise<boolean
     await prisma.band.update({
       where: { id: bandId },
       data: {
-        activatedAt: new Date(),
+        activatedAt: band?.activatedAt || new Date(),
         status: 'ACTIVE',
       },
     })

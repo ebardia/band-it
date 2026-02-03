@@ -317,10 +317,11 @@ export async function getQuickActionsForUser(
       title: `Join ${invitation.band.name}`,
       bandName: invitation.band.name,
       bandId: invitation.band.id,
-      url: `/bands/${invitation.band.slug}`,
+      url: `/invitations`,
       urgency: 'medium',
       meta: {
         createdAt: invitation.createdAt,
+        bandSlug: invitation.band.slug,
       },
     })
   }
