@@ -223,7 +223,7 @@ export const proposalUpdateRouter = router({
               await notificationService.create({
                 userId: vote.userId,
                 type: 'PROPOSAL_VOTES_RESET',
-                actionUrl: `/quick/vote/${proposalId}`,
+                actionUrl: `/bands/${proposal.band.slug}/proposals/${proposalId}`,
                 priority: 'HIGH',
                 metadata: {
                   proposalId,
