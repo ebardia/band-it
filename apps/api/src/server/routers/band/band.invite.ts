@@ -23,11 +23,26 @@ export const bandInviteRouter = router({
       })
     )
     .query(async ({ input }) => {
+      // Get existing member user IDs first
+      const existingMembers = await prisma.member.findMany({
+        where: { bandId: input.bandId },
+        select: { userId: true },
+      })
+      const existingMemberIds = existingMembers.map(m => m.userId)
+
+      // Search users excluding existing members
       const users = await prisma.user.findMany({
         where: {
-          OR: [
-            { email: { contains: input.query, mode: 'insensitive' } },
-            { name: { contains: input.query, mode: 'insensitive' } },
+          AND: [
+            {
+              OR: [
+                { email: { contains: input.query, mode: 'insensitive' } },
+                { name: { contains: input.query, mode: 'insensitive' } },
+              ],
+            },
+            {
+              id: { notIn: existingMemberIds.length > 0 ? existingMemberIds : [''] },
+            },
           ],
         },
         select: {
@@ -38,24 +53,12 @@ export const bandInviteRouter = router({
           passions: true,
           developmentPath: true,
         },
-        take: 10,
+        take: 20,
       })
-
-      // Filter out users who are already members
-      const existingMembers = await prisma.member.findMany({
-        where: {
-          bandId: input.bandId,
-          userId: { in: users.map(u => u.id) },
-        },
-        select: { userId: true },
-      })
-
-      const existingMemberIds = new Set(existingMembers.map(m => m.userId))
-      const availableUsers = users.filter(u => !existingMemberIds.has(u.id))
 
       return {
         success: true,
-        users: availableUsers,
+        users,
       }
     }),
 
