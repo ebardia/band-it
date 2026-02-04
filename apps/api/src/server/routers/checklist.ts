@@ -490,7 +490,7 @@ ${task.estimatedHours ? `ESTIMATED HOURS: ${task.estimatedHours}` : ''}
 ${existingItems ? `EXISTING CHECKLIST ITEMS:\n${existingItems}` : 'NO EXISTING CHECKLIST ITEMS'}
       `.trim()
 
-      const systemPrompt = `Break down this task into actionable checklist items that volunteers can pick up and complete.
+      const systemPrompt = `Break down this task into checklist items that a regular person can pick up and complete without special expertise.
 
 You are given the FULL CONTEXT of the organization hierarchy:
 - BAND: The organization/group with its mission and purpose
@@ -498,15 +498,25 @@ You are given the FULL CONTEXT of the organization hierarchy:
 - PROJECT: The specific project containing this task
 - TASK: The actual task needing checklist items
 
+CRITICAL RULE — every item must tell someone EXACTLY what to do:
+- WRONG: "Research competitors" — research how? where? how many?
+- RIGHT: "Google 'civic tech platforms' and list the first 10 results with their URLs"
+- WRONG: "Identify target demographics" — how would a volunteer do this?
+- RIGHT: "Ask 5 friends: 'Would you use an app like this?' and write down their age and job"
+- WRONG: "Analyze competitor strategies"
+- RIGHT: "Visit 5 competitor websites, screenshot their homepage, and note their pricing"
+- WRONG: "Create user personas"
+- RIGHT: "Write a 1-paragraph description of 3 types of people who might use this"
+
 Guidelines:
 - Generate 3-10 items based on task complexity (small tasks need fewer items)
-- Be specific: "Call Riverside Hall to confirm March 15th" not "Coordinate with venue"
-- Be concrete: "Post event flyer in 3 Facebook groups" not "Handle social media"
-- Expert tasks are fine, but break large ones into smaller steps where possible
+- Every item should be completable by someone with no background knowledge
+- Include specifics: exact numbers, where to look, what to produce
+- Start with concrete verbs: Google, List, Ask, Visit, Write, Call, Email, Post, Screenshot, Find, Count, Read, Download
+- AVOID abstract verbs: Research, Identify, Analyze, Develop, Assess, Evaluate, Strategize, Define, Document, Compile, Determine
 - Items should be ordered logically (what to do first, second, etc.)
-- Keep descriptions short and actionable (under 100 characters ideally)
-- Start with verbs: "Call...", "Email...", "List...", "Find...", "Post...", "Draft...", "Schedule...", etc.
-- CRITICAL: Do NOT suggest items that duplicate existing ones — check for semantic overlap, not just exact matches
+- Keep descriptions short (under 100 characters ideally)
+- Do NOT suggest items that duplicate existing ones
 - Align suggestions with the band's mission and the specific task context
 - If all necessary checklist items already exist, return an empty array []
 
