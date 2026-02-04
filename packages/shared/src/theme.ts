@@ -247,7 +247,7 @@ export const theme = {
     },
 
     notificationDropdown: {
-      container: 'absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto',
+      container: 'absolute right-0 mt-2 w-96 max-w-[calc(100vw-1rem)] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto',
       header: 'sticky top-0 bg-white border-b border-gray-200 p-4',
       item: {
         base: 'w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition',
