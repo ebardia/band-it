@@ -135,22 +135,12 @@ export default function NotificationsPage() {
           {/* Header */}
           <Flex justify="between" align="center">
             <Stack spacing="sm">
-              <Flex gap="sm" align="center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push('/user-dashboard')}
-                  className="md:hidden -ml-2"
-                >
-                  ← Back
-                </Button>
-                <Heading level={1}>Notifications</Heading>
-              </Flex>
+              <Heading level={1}>Notifications</Heading>
               {unreadCount > 0 && (
                 <Text color="muted">{unreadCount} unread</Text>
               )}
             </Stack>
-            <Flex gap="sm">
+            <Flex gap="sm" align="center">
               <Button
                 variant={showUnreadOnly ? 'primary' : 'ghost'}
                 size="sm"
@@ -168,6 +158,15 @@ export default function NotificationsPage() {
                   Mark All Read
                 </Button>
               )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/user-dashboard')}
+                className="text-xl font-bold text-gray-500 hover:text-gray-700"
+                title="Close"
+              >
+                ✕
+              </Button>
             </Flex>
           </Flex>
 

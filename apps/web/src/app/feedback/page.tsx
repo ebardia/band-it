@@ -191,20 +191,21 @@ function FeedbackPageContent() {
           {/* Header */}
           <Flex justify="between" align="center" wrap>
             <Stack spacing="sm">
-              <Flex gap="sm" align="center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push('/user-dashboard')}
-                  className="md:hidden -ml-2"
-                >
-                  ← Back
-                </Button>
-                <Heading level={1}>Feedback & Suggestions</Heading>
-              </Flex>
+              <Heading level={1}>Feedback & Suggestions</Heading>
               <Text color="muted">Help us improve Band It by sharing your ideas and reporting issues</Text>
             </Stack>
-            <FeedbackButton className="ml-auto" />
+            <Flex gap="sm" align="center">
+              <FeedbackButton />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/user-dashboard')}
+                className="text-xl font-bold text-gray-500 hover:text-gray-700"
+                title="Close"
+              >
+                ✕
+              </Button>
+            </Flex>
           </Flex>
 
           {/* Filters */}
