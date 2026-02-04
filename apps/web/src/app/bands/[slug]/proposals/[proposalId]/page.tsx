@@ -528,16 +528,26 @@ export default function ProposalDetailPage() {
           {canSubmit && (
             <Card>
               <Stack spacing="md">
-                <Heading level={3}>Submit for Review</Heading>
+                <Heading level={3}>
+                  {bandData?.band?.requireProposalReview ? 'Submit for Review' : 'Submit Proposal'}
+                </Heading>
                 <Text variant="small" color="muted">
-                  This proposal is a draft. Submit it to be reviewed by a moderator before it can go to voting.
+                  {bandData?.band?.requireProposalReview
+                    ? 'This proposal is a draft. Submit it to be reviewed by a moderator before it can go to voting.'
+                    : `This proposal is a draft. When you submit, voting will open immediately for ${band.votingPeriodDays || 7} days.`
+                  }
                 </Text>
                 <Button
                   variant="primary"
                   onClick={() => submitForReviewMutation.mutate({ proposalId, userId: userId! })}
                   disabled={submitForReviewMutation.isPending}
                 >
-                  {submitForReviewMutation.isPending ? 'Submitting...' : 'Submit for Review'}
+                  {submitForReviewMutation.isPending
+                    ? 'Submitting...'
+                    : bandData?.band?.requireProposalReview
+                      ? 'Submit for Review'
+                      : 'Submit & Open Voting'
+                  }
                 </Button>
               </Stack>
             </Card>

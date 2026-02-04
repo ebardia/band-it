@@ -827,12 +827,19 @@ export default function CreateProposalPage() {
                 </>
               )}
 
-              {/* Review Info */}
-              {band.requireProposalReview && (
+              {/* Submission Info */}
+              {band.requireProposalReview ? (
                 <Alert variant="info">
                   <Text>
                     This band requires proposals to be reviewed by a moderator before they go to voting.
                     You can save as draft to continue editing later, or submit for review when ready.
+                  </Text>
+                </Alert>
+              ) : (
+                <Alert variant="warning">
+                  <Text>
+                    <strong>Note:</strong> This band does not require proposal review.
+                    When you submit, voting will open immediately for {band.votingPeriodDays || 7} days.
                   </Text>
                 </Alert>
               )}
@@ -849,7 +856,7 @@ export default function CreateProposalPage() {
                     ? 'Submitting...'
                     : band.requireProposalReview
                       ? 'Submit for Review'
-                      : 'Create Proposal'}
+                      : 'Submit & Open Voting'}
                 </Button>
                 <Button
                   type="button"
