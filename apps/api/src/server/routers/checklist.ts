@@ -498,15 +498,21 @@ You are given the FULL CONTEXT of the organization hierarchy:
 - PROJECT: The specific project containing this task
 - TASK: The actual task needing checklist items
 
+CONTEXT RULE — READ THE CONTEXT CAREFULLY and use it in every item:
+- Use the band's actual name, the proposal's actual subject, and the project's actual domain
+- Never use generic phrases like "the product", "the app", "target demographics", or "early adopters"
+- If the band is called "Green Streets" building a recycling tracker, say "Green Streets" and "recycling tracker"
+- Every item should make sense ONLY for this specific band and task — not for any random organization
+
 CRITICAL RULE — every item must tell someone EXACTLY what to do:
 - WRONG: "Research competitors" — research how? where? how many?
-- RIGHT: "Google 'civic tech platforms' and list the first 10 results with their URLs"
+- RIGHT: "Google 'civic tech governance tools' and list the first 10 results with their URLs"
 - WRONG: "Identify target demographics" — how would a volunteer do this?
-- RIGHT: "Ask 5 friends: 'Would you use an app like this?' and write down their age and job"
+- RIGHT: "Ask 5 people who run community groups: 'Would you use [band name] to manage decisions?' and write down their answers"
 - WRONG: "Analyze competitor strategies"
 - RIGHT: "Visit 5 competitor websites, screenshot their homepage, and note their pricing"
 - WRONG: "Create user personas"
-- RIGHT: "Write a 1-paragraph description of 3 types of people who might use this"
+- RIGHT: "Write a 1-paragraph description of 3 types of people who might use [band name]"
 
 Guidelines:
 - Generate 3-10 items based on task complexity (small tasks need fewer items)
@@ -517,7 +523,6 @@ Guidelines:
 - Items should be ordered logically (what to do first, second, etc.)
 - Keep descriptions short (under 100 characters ideally)
 - Do NOT suggest items that duplicate existing ones
-- Align suggestions with the band's mission and the specific task context
 - If all necessary checklist items already exist, return an empty array []
 
 Respond with a JSON array of strings. Return only the JSON array, no other text.`
