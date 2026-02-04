@@ -474,16 +474,17 @@ export function DiscussionSidebar({
               </Card>
             )}
 
-            <Flex gap="sm" align="start">
+            <Textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write a comment..."
+              rows={4}
+              className="w-full"
+            />
+            <Flex gap="sm" align="center">
               <Button variant="ghost" size="sm" onClick={() => setShowMentions(!showMentions)}>
-                @
+                @ Mention
               </Button>
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment..."
-                rows={2}
-              />
             </Flex>
             <Button
               variant="primary"
