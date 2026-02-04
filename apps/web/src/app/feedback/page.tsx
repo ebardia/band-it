@@ -191,7 +191,17 @@ function FeedbackPageContent() {
           {/* Header */}
           <Flex justify="between" align="center" wrap>
             <Stack spacing="sm">
-              <Heading level={1}>Feedback & Suggestions</Heading>
+              <Flex gap="sm" align="center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.back()}
+                  className="md:hidden -ml-2"
+                >
+                  ← Back
+                </Button>
+                <Heading level={1}>Feedback & Suggestions</Heading>
+              </Flex>
               <Text color="muted">Help us improve Band It by sharing your ideas and reporting issues</Text>
             </Stack>
             <FeedbackButton className="ml-auto" />

@@ -135,7 +135,17 @@ export default function NotificationsPage() {
           {/* Header */}
           <Flex justify="between" align="center">
             <Stack spacing="sm">
-              <Heading level={1}>Notifications</Heading>
+              <Flex gap="sm" align="center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.back()}
+                  className="md:hidden -ml-2"
+                >
+                  ← Back
+                </Button>
+                <Heading level={1}>Notifications</Heading>
+              </Flex>
               {unreadCount > 0 && (
                 <Text color="muted">{unreadCount} unread</Text>
               )}
