@@ -49,14 +49,14 @@ export default function HomePage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push('/register')}
+              onClick={() => router.replace('/register')}
             >
               Register
             </Button>
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => router.push('/login')}
+              onClick={() => router.replace('/login')}
             >
               Sign In
             </Button>
