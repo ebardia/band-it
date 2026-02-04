@@ -112,6 +112,16 @@ export default function ChecklistItemDetailPage() {
     }
   })
 
+  const deleteItemMutation = trpc.checklist.delete.useMutation({
+    onSuccess: () => {
+      showToast('Checklist item deleted!', 'success')
+      router.push(`/bands/${slug}/tasks/${taskId}`)
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
   // Integrity Guard validation mutation
   const validationMutation = trpc.validation.check.useMutation()
 
@@ -213,6 +223,12 @@ export default function ChecklistItemDetailPage() {
     toggleMutation.mutate({ itemId, userId })
   }
 
+  const handleDelete = () => {
+    if (!userId) return
+    if (!window.confirm('Are you sure you want to delete this checklist item? This action cannot be undone.')) return
+    deleteItemMutation.mutate({ itemId, userId })
+  }
+
   const handleFileUpload = (file: { fileName: string; mimeType: string; base64Data: string }) => {
     if (!userId || !itemData?.item) return
     uploadFileMutation.mutate({
@@ -287,13 +303,6 @@ export default function ChecklistItemDetailPage() {
         canApprove={canApprove || false}
         isMember={isMember}
         wide={true}
-        action={
-          (canUpdate || isAssignee) ? (
-            <Button variant="secondary" size="md" onClick={handleOpenEditModal}>
-              Edit Item
-            </Button>
-          ) : undefined
-        }
       >
         <Stack spacing="lg">
           {/* Breadcrumb */}
@@ -365,9 +374,15 @@ export default function ChecklistItemDetailPage() {
                 )}
               </Flex>
 
-              {/* Toggle completion */}
+              {/* Actions */}
               {(canUpdate || isAssignee) && (
-                <Flex>
+                <Flex gap="sm" className="flex-wrap">
+                  <Button
+                    variant="secondary"
+                    onClick={handleOpenEditModal}
+                  >
+                    Edit Item
+                  </Button>
                   <Button
                     variant={item.isCompleted ? 'secondary' : 'primary'}
                     onClick={handleToggle}
@@ -379,6 +394,13 @@ export default function ChecklistItemDetailPage() {
                         ? 'Mark as Pending'
                         : 'Mark as Completed'
                     }
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={handleDelete}
+                    disabled={deleteItemMutation.isPending}
+                  >
+                    {deleteItemMutation.isPending ? 'Deleting...' : 'Delete'}
                   </Button>
                 </Flex>
               )}
