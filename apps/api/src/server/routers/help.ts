@@ -57,19 +57,25 @@ async function searchFaq(question: string) {
   const scored = matches.map(entry => {
     const entryKeywords = new Set(entry.keywords.map(k => k.toLowerCase()))
     const overlapCount = keywords.filter(k => entryKeywords.has(k)).length
-    // Require at least 2 keyword matches, or 50% of query keywords
-    const minRequired = Math.max(2, Math.ceil(keywords.length * 0.5))
+    const matchRatio = overlapCount / keywords.length
+
+    // Require at least 2 keyword matches AND 70% of query keywords
+    // This prevents partial matches from overriding AI (e.g., "channel locked" matching "create channel")
+    const minCount = Math.max(2, Math.ceil(keywords.length * 0.7))
+    const meetsThreshold = overlapCount >= minCount && matchRatio >= 0.7
+
     return {
       entry,
       score: overlapCount,
-      meetsThreshold: overlapCount >= minRequired,
+      matchRatio,
+      meetsThreshold,
     }
   })
 
-  // Filter to entries meeting threshold, then sort by score (desc), then viewCount (desc)
+  // Filter to entries meeting threshold, then sort by match ratio (desc), score (desc), viewCount (desc)
   const qualified = scored
     .filter(s => s.meetsThreshold)
-    .sort((a, b) => b.score - a.score || (b.entry.viewCount - a.entry.viewCount))
+    .sort((a, b) => b.matchRatio - a.matchRatio || b.score - a.score || (b.entry.viewCount - a.entry.viewCount))
 
   if (qualified.length === 0) return null
 
