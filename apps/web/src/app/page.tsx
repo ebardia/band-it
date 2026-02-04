@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -16,14 +16,6 @@ import {
 export default function HomePage() {
   const router = useRouter()
   const [showBanner, setShowBanner] = useState(true)
-
-  // Redirect logged-in users to dashboard
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    if (token) {
-      router.replace('/user-dashboard')
-    }
-  }, [router])
 
   return (
     <div className="min-h-screen flex flex-col">

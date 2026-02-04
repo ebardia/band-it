@@ -53,17 +53,16 @@ function RegisterContent() {
       }
 
       // Check if email is already verified (SKIP_EMAIL_VERIFICATION mode)
-      // Use replace so register page isn't in browser history
       if (data.user.emailVerified) {
         if (!data.bandsJoined || data.bandsJoined.length === 0) {
           showToast('Account created successfully!', 'success')
         }
-        router.replace('/profile') // Skip email verification, go to profile
+        router.push('/profile') // Skip email verification, go to profile
       } else {
         if (!data.bandsJoined || data.bandsJoined.length === 0) {
           showToast('Account created! Please check your email.', 'success')
         }
-        router.replace('/verify-email')
+        router.push('/verify-email')
       }
     },
     onError: (error) => {

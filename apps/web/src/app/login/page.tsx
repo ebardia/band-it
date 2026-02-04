@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { trpc } from '@/lib/trpc'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
@@ -31,6 +31,14 @@ function LoginForm() {
   // Get returnTo URL from query params (for quick action pages)
   const returnTo = searchParams.get('returnTo')
 
+  // Redirect already logged-in users to dashboard (replace to avoid history bloat)
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      router.replace(returnTo && returnTo.startsWith('/') ? returnTo : '/user-dashboard')
+    }
+  }, [router, returnTo])
+
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
       localStorage.setItem('accessToken', data.accessToken)
@@ -38,18 +46,17 @@ function LoginForm() {
 
       if (!data.user.emailVerified) {
         showToast('Please verify your email before continuing.', 'warning')
-        router.replace('/verify-email')
+        router.push('/verify-email')
         return
       }
 
       showToast(`Welcome back, ${data.user.name}!`, 'success')
 
       // Redirect to returnTo URL if provided (validate it's a safe internal path)
-      // Use replace so login page isn't in browser history
       if (returnTo && returnTo.startsWith('/')) {
-        router.replace(returnTo)
+        router.push(returnTo)
       } else {
-        router.replace('/user-dashboard')
+        router.push('/user-dashboard')
       }
     },
     onError: (error) => {
