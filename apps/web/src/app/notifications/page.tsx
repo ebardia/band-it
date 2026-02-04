@@ -139,7 +139,7 @@ export default function NotificationsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => router.back()}
+                  onClick={() => router.push('/user-dashboard')}
                   className="md:hidden -ml-2"
                 >
                   ← Back
