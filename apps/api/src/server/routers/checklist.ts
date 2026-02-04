@@ -490,46 +490,27 @@ ${task.estimatedHours ? `ESTIMATED HOURS: ${task.estimatedHours}` : ''}
 ${existingItems ? `EXISTING CHECKLIST ITEMS:\n${existingItems}` : 'NO EXISTING CHECKLIST ITEMS'}
       `.trim()
 
-      const systemPrompt = `You are a task management expert helping someone break down a task into simple, actionable checklist items.
+      const systemPrompt = `Break down this task into actionable checklist items that volunteers can pick up and complete.
 
-A "checklist item" is a small, specific step that can be checked off. Think of it like a to-do within a to-do.
-
-IMPORTANT: You are given the FULL CONTEXT of the organization hierarchy:
+You are given the FULL CONTEXT of the organization hierarchy:
 - BAND: The organization/group with its mission and purpose
 - PROPOSAL: The approved initiative this work stems from
 - PROJECT: The specific project containing this task
 - TASK: The actual task needing checklist items
 
-You MUST understand and respect this context. Your suggestions should align with:
-- The band's mission and purpose (if it's a test band, suggest test-related items)
-- The proposal's goals and expected outcomes
-- The project's objectives
-- The specific task requirements
+Guidelines:
+- Generate 3-10 items based on task complexity (small tasks need fewer items)
+- Be specific: "Call Riverside Hall to confirm March 15th" not "Coordinate with venue"
+- Be concrete: "Post event flyer in 3 Facebook groups" not "Handle social media"
+- Expert tasks are fine, but break large ones into smaller steps where possible
+- Items should be ordered logically (what to do first, second, etc.)
+- Keep descriptions short and actionable (under 100 characters ideally)
+- Start with verbs: "Call...", "Email...", "List...", "Find...", "Post...", "Draft...", "Schedule...", etc.
+- CRITICAL: Do NOT suggest items that duplicate existing ones — check for semantic overlap, not just exact matches
+- Align suggestions with the band's mission and the specific task context
+- If all necessary checklist items already exist, return an empty array []
 
-Your job is to suggest 3-8 checklist items that would help complete this task. IMPORTANT: Carefully review any existing checklist items listed below - do NOT suggest items that cover the same work, even if worded differently.
-
-RULES:
-1. Each item should be a single, specific action (not a complex sub-task)
-2. Items should be ordered logically (what to do first, second, etc.)
-3. Keep item descriptions short and actionable (under 100 characters ideally)
-4. Start with verbs: "Call...", "Send...", "Review...", "Draft...", "Schedule...", etc.
-5. CRITICAL: Do NOT suggest items that duplicate existing ones - check for semantic overlap, not just exact matches. If an existing item covers "review documents", don't suggest "check documentation" or similar.
-6. Be practical and specific to the task at hand - USE THE FULL CONTEXT provided above
-7. If all necessary checklist items already exist, return an empty array []
-8. NEVER suggest generic items that don't match the band's actual mission (e.g., don't suggest "recruit musicians" for a test band)
-
-Respond with a JSON array of strings, where each string is a checklist item description.
-
-Example response:
-[
-  "Review existing documentation",
-  "Draft initial outline",
-  "Schedule meeting with stakeholders",
-  "Send outline for feedback",
-  "Incorporate feedback and finalize"
-]
-
-Respond ONLY with the JSON array, no other text.`
+Respond with a JSON array of strings. Return only the JSON array, no other text.`
 
       try {
         const response = await callAI(
@@ -543,14 +524,26 @@ Respond ONLY with the JSON array, no other text.`
           },
           {
             system: systemPrompt,
-            maxTokens: 1000,
+            maxTokens: 1500,
           }
         )
 
-        // Parse JSON response
-        const suggestions = parseAIJson<string[]>(response.content)
+        // Parse JSON response - try parseAIJson first, then fallback to regex extraction
+        let suggestions = parseAIJson<string[]>(response.content)
 
-        if (!suggestions || !Array.isArray(suggestions) || !suggestions.every(s => typeof s === 'string')) {
+        if (!suggestions) {
+          // Try to extract JSON array from response if wrapped in other text
+          const jsonMatch = response.content.match(/\[[\s\S]*?\]/)
+          if (jsonMatch) {
+            try {
+              suggestions = JSON.parse(jsonMatch[0])
+            } catch {
+              // Fall through to error
+            }
+          }
+        }
+
+        if (!suggestions || !Array.isArray(suggestions)) {
           console.error('Failed to parse AI response:', response.content)
           throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
@@ -558,10 +551,12 @@ Respond ONLY with the JSON array, no other text.`
           })
         }
 
-        // Filter out empty strings and trim
+        // Filter out empty strings, ensure all items are strings, and trim
         const validatedSuggestions = suggestions
+          .filter(s => typeof s === 'string')
           .map(s => s.trim())
           .filter(s => s.length > 0)
+          .slice(0, 10) // Cap at 10 items
 
         return {
           suggestions: validatedSuggestions,
