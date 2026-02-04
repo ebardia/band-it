@@ -38,17 +38,18 @@ function LoginForm() {
 
       if (!data.user.emailVerified) {
         showToast('Please verify your email before continuing.', 'warning')
-        router.push('/verify-email')
+        router.replace('/verify-email')
         return
       }
 
       showToast(`Welcome back, ${data.user.name}!`, 'success')
 
       // Redirect to returnTo URL if provided (validate it's a safe internal path)
+      // Use replace so login page isn't in browser history
       if (returnTo && returnTo.startsWith('/')) {
-        router.push(returnTo)
+        router.replace(returnTo)
       } else {
-        router.push('/user-dashboard')
+        router.replace('/user-dashboard')
       }
     },
     onError: (error) => {
