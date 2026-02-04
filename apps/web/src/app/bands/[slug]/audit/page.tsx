@@ -16,19 +16,15 @@ import {
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
-const ENTITY_TYPES = [
-  'Band',
-  'Member',
-  'Proposal',
-  'Vote',
-  'Project',
-  'Task',
-  'ChecklistItem',
-  'Comment',
-  'File',
-  'Event',
-  'EventRSVP',
-  'EventAttendance',
+const CATEGORIES = [
+  { value: '', label: 'All Activity' },
+  { value: 'membership', label: 'Membership' },
+  { value: 'voting', label: 'Voting' },
+  { value: 'proposals', label: 'Proposals' },
+  { value: 'projects', label: 'Projects' },
+  { value: 'tasks', label: 'Tasks' },
+  { value: 'events', label: 'Events' },
+  { value: 'settings', label: 'Settings' },
 ]
 
 const DATE_RANGES = [
@@ -38,6 +34,21 @@ const DATE_RANGES = [
   { label: 'All time', value: undefined },
 ]
 
+interface AuditItem {
+  id: string
+  createdAt: string | Date
+  description: string
+  category: string
+  action: string
+  entityType: string
+  entityId: string
+  entityName: string | null
+  actorId: string | null
+  actorName: string | null
+  flagged: boolean
+  flagReasons: string[] | null
+}
+
 export default function AuditLogPage() {
   const router = useRouter()
   const params = useParams()
@@ -45,10 +56,9 @@ export default function AuditLogPage() {
   const [userId, setUserId] = useState<string | null>(null)
 
   // Filter state
-  const [entityType, setEntityType] = useState<string>('')
+  const [category, setCategory] = useState<string>('')
   const [actorId, setActorId] = useState<string>('')
-  const [action, setAction] = useState<string>('')
-  const [daysBack, setDaysBack] = useState<number | undefined>(7)
+  const [daysBack, setDaysBack] = useState<number | undefined>(30)
   const [page, setPage] = useState(1)
 
   useEffect(() => {
@@ -79,18 +89,14 @@ export default function AuditLogPage() {
   const { data: auditData, isLoading: auditLoading } = trpc.audit.list.useQuery(
     {
       bandId: bandData?.band?.id || '',
-      entityType: entityType || undefined,
+      category: category as any || undefined,
       actorId: actorId || undefined,
-      action: action || undefined,
       daysBack,
       page,
-      pageSize: 25,
+      pageSize: 50,
     },
     { enabled: !!bandData?.band?.id }
   )
-
-  // Utils for imperative queries - must be called before conditional returns
-  const utils = trpc.useUtils()
 
   if (bandLoading) {
     return (
@@ -99,7 +105,7 @@ export default function AuditLogPage() {
         <BandLayout
           bandSlug={slug}
           bandName="Loading..."
-          pageTitle="Audit Log"
+          pageTitle="Activity Log"
           isMember={false}
           wide={true}
         >
@@ -116,7 +122,7 @@ export default function AuditLogPage() {
         <BandLayout
           bandSlug={slug}
           bandName=""
-          pageTitle="Audit Log"
+          pageTitle="Activity Log"
           isMember={false}
           wide={true}
         >
@@ -134,52 +140,55 @@ export default function AuditLogPage() {
   const isMember = !!currentMember
   const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
 
-  const formatDate = (date: string | Date) => {
-    const d = new Date(date)
-    const now = new Date()
-    const isToday = d.toDateString() === now.toDateString()
+  // Group items by date
+  const groupItemsByDate = (items: AuditItem[]) => {
+    const groups: { label: string; date: string; items: AuditItem[] }[] = []
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
 
-    const timeStr = d.toLocaleTimeString('en-US', {
+    const todayStr = today.toDateString()
+    const yesterdayStr = yesterday.toDateString()
+
+    let currentGroup: { label: string; date: string; items: AuditItem[] } | null = null
+
+    items.forEach(item => {
+      const itemDate = new Date(item.createdAt)
+      const itemDateStr = itemDate.toDateString()
+
+      let label: string
+      if (itemDateStr === todayStr) {
+        label = 'Today'
+      } else if (itemDateStr === yesterdayStr) {
+        label = 'Yesterday'
+      } else {
+        label = itemDate.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+        })
+      }
+
+      if (!currentGroup || currentGroup.label !== label) {
+        currentGroup = { label, date: itemDateStr, items: [] }
+        groups.push(currentGroup)
+      }
+
+      currentGroup.items.push(item)
+    })
+
+    return groups
+  }
+
+  const formatTime = (date: string | Date) => {
+    return new Date(date).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     }).toLowerCase()
-
-    if (isToday) {
-      return `Today, ${timeStr}`
-    }
-
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    }) + `, ${timeStr}`
   }
 
-  const getActionBadge = (action: string) => {
-    switch (action) {
-      case 'created':
-        return <Badge variant="success">created</Badge>
-      case 'updated':
-        return <Badge variant="info">updated</Badge>
-      case 'deleted':
-        return <Badge variant="danger">deleted</Badge>
-      default:
-        return <Badge variant="neutral">{action}</Badge>
-    }
-  }
-
-  const formatChanges = (changes: Record<string, { from: any; to: any }> | null) => {
-    if (!changes) return '—'
-
-    const entries = Object.entries(changes).slice(0, 2) // Show max 2 changes
-    return entries.map(([key, val]) => {
-      const fromStr = val.from === null ? 'null' : String(val.from)
-      const toStr = val.to === null ? 'null' : String(val.to)
-      return `${key}: ${fromStr.slice(0, 10)}${fromStr.length > 10 ? '...' : ''} → ${toStr.slice(0, 10)}${toStr.length > 10 ? '...' : ''}`
-    }).join(', ')
-  }
-
-  const handleRowClick = async (item: any) => {
+  const handleItemClick = (item: AuditItem) => {
     if (item.action === 'deleted') return
 
     const entityType = item.entityType
@@ -187,7 +196,7 @@ export default function AuditLogPage() {
 
     switch (entityType) {
       case 'Band':
-        router.push(`/bands/${slug}`)
+        router.push(`/bands/${slug}/about`)
         break
       case 'Member':
         router.push(`/bands/${slug}/members`)
@@ -196,38 +205,23 @@ export default function AuditLogPage() {
         router.push(`/bands/${slug}/proposals/${entityId}`)
         break
       case 'Vote':
-        // Would need to look up the proposal ID - for now go to proposals
         router.push(`/bands/${slug}/proposals`)
         break
       case 'Project':
         router.push(`/bands/${slug}/projects/${entityId}`)
         break
       case 'Task':
-        router.push(`/bands/${slug}/tasks/${entityId}`)
+        router.push(`/bands/${slug}/tasks`)
         break
-      case 'ChecklistItem':
-        // Look up the task ID and navigate to the checklist item
-        try {
-          const result = await utils.checklist.getById.fetch({ itemId: entityId })
-          if (result.item?.task?.id) {
-            router.push(`/bands/${slug}/tasks/${result.item.task.id}/checklist/${entityId}`)
-          } else {
-            router.push(`/bands/${slug}/tasks`)
-          }
-        } catch {
-          router.push(`/bands/${slug}/tasks`)
-        }
-        break
-      case 'Comment':
-        // Comments don't have their own page
-        break
-      case 'File':
-        // Files don't have their own page
+      case 'Event':
+        router.push(`/bands/${slug}/events/${entityId}`)
         break
     }
   }
 
   const totalPages = auditData?.totalPages || 1
+  const items = (auditData?.items || []) as AuditItem[]
+  const groupedItems = groupItemsByDate(items)
 
   return (
     <>
@@ -236,7 +230,7 @@ export default function AuditLogPage() {
         bandSlug={slug}
         bandName={band.name}
         bandImageUrl={band.imageUrl}
-        pageTitle="Audit Log"
+        pageTitle="Activity Log"
         canApprove={canApprove}
         isMember={isMember}
         canAccessAdminTools={canAccessAdminTools}
@@ -244,15 +238,14 @@ export default function AuditLogPage() {
       >
         <Stack spacing="lg">
           {/* Filters */}
-          <Flex gap="md" wrap="wrap">
+          <Flex gap="md" wrap="wrap" align="center">
             <select
-              value={entityType}
-              onChange={(e) => { setEntityType(e.target.value); setPage(1) }}
+              value={category}
+              onChange={(e) => { setCategory(e.target.value); setPage(1) }}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All Entities</option>
-              {ENTITY_TYPES.map(type => (
-                <option key={type} value={type}>{type}</option>
+              {CATEGORIES.map(cat => (
+                <option key={cat.value} value={cat.value}>{cat.label}</option>
               ))}
             </select>
 
@@ -261,22 +254,10 @@ export default function AuditLogPage() {
               onChange={(e) => { setActorId(e.target.value); setPage(1) }}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All Users</option>
+              <option value="">All Members</option>
               {membersData?.members.map(member => (
                 <option key={member.userId} value={member.userId}>{member.name}</option>
               ))}
-              <option value="system">System</option>
-            </select>
-
-            <select
-              value={action}
-              onChange={(e) => { setAction(e.target.value); setPage(1) }}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Actions</option>
-              <option value="created">Created</option>
-              <option value="updated">Updated</option>
-              <option value="deleted">Deleted</option>
             </select>
 
             <select
@@ -293,126 +274,102 @@ export default function AuditLogPage() {
             </select>
           </Flex>
 
-          {/* Table */}
+          {/* Activity Timeline */}
           {auditLoading ? (
-            <Loading message="Loading audit logs..." />
-          ) : auditData?.items.length === 0 ? (
+            <Loading message="Loading activity..." />
+          ) : items.length === 0 ? (
             <div className="text-center py-12">
-              <Text color="muted">No log entries</Text>
+              <Text color="muted">No activity found</Text>
             </div>
           ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">When</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Who</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Action</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">What</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Changes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {auditData?.items.map((item) => (
-                      <tr
-                        key={item.id}
-                        className={`border-b border-gray-100 hover:bg-gray-50 ${item.action !== 'deleted' ? 'cursor-pointer' : 'cursor-default'} ${item.flagged ? 'bg-amber-50' : ''}`}
-                        onClick={() => handleRowClick(item)}
-                      >
-                        <td className="py-3 px-4 text-gray-600 whitespace-nowrap">
-                          {formatDate(item.createdAt)}
-                        </td>
-                        <td className="py-3 px-4">
-                          {item.actorName || <span className="text-gray-400">System</span>}
-                        </td>
-                        <td className="py-3 px-4">
-                          <Flex gap="xs" align="center">
-                            {getActionBadge(item.action)}
-                            {item.flagged && (
-                              <Badge variant="warning" title={item.flagReasons?.join(', ') || 'Flagged'}>
-                                ⚠️
-                              </Badge>
-                            )}
-                          </Flex>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="text-gray-500">{item.entityType}:</span>{' '}
-                          <span className="font-medium">
-                            {item.entityName
-                              ? (item.entityName.length > 30
-                                  ? item.entityName.slice(0, 30) + '...'
-                                  : item.entityName)
-                              : item.entityId.slice(0, 8) + '...'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-gray-500 font-mono text-xs max-w-xs truncate">
-                          {item.flagged && item.flagReasons?.length ? (
-                            <span className="text-amber-600">
-                              Flagged: {item.flagReasons.join(', ')}
-                            </span>
-                          ) : (
-                            formatChanges(item.changes)
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div className="space-y-6">
+              {groupedItems.map((group) => (
+                <div key={group.date}>
+                  {/* Date Header */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <Text weight="semibold" className="text-gray-700 whitespace-nowrap">
+                      {group.label}
+                    </Text>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
 
-              {/* Pagination */}
-              <Flex justify="between" align="center">
-                <Text variant="small" color="muted">
-                  Showing {((page - 1) * 25) + 1}-{Math.min(page * 25, auditData?.total || 0)} of {auditData?.total} entries
+                  {/* Activity Items */}
+                  <div className="space-y-3 pl-2">
+                    {group.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`flex gap-4 py-2 px-3 rounded-lg transition-colors ${
+                          item.action !== 'deleted'
+                            ? 'hover:bg-gray-50 cursor-pointer'
+                            : ''
+                        } ${item.flagged ? 'bg-amber-50 border-l-2 border-amber-400' : ''}`}
+                        onClick={() => handleItemClick(item)}
+                      >
+                        {/* Time */}
+                        <div className="w-20 flex-shrink-0">
+                          <Text variant="small" color="muted" className="tabular-nums">
+                            {formatTime(item.createdAt)}
+                          </Text>
+                        </div>
+
+                        {/* Description */}
+                        <div className="flex-1 min-w-0">
+                          <Text className="text-gray-800">
+                            {item.description}
+                          </Text>
+                          {item.flagged && item.flagReasons && (
+                            <Flex gap="xs" className="mt-1">
+                              <Badge variant="warning" className="text-xs">
+                                Flagged: {item.flagReasons.join(', ')}
+                              </Badge>
+                            </Flex>
+                          )}
+                        </div>
+
+                        {/* Category Badge (optional, can be hidden) */}
+                        {!category && (
+                          <div className="flex-shrink-0">
+                            <Badge variant="neutral" className="text-xs capitalize">
+                              {item.category}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {items.length > 0 && (
+            <Flex justify="between" align="center" className="pt-4 border-t border-gray-200">
+              <Text variant="small" color="muted">
+                Showing {items.length} entries
+              </Text>
+              <Flex gap="sm">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage(p => p - 1)}
+                >
+                  Previous
+                </Button>
+                <Text variant="small" className="px-3 py-1">
+                  Page {page} of {totalPages}
                 </Text>
-                <Flex gap="sm">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage(p => p - 1)}
-                  >
-                    Previous
-                  </Button>
-                  <Flex gap="xs" align="center">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum
-                      if (totalPages <= 5) {
-                        pageNum = i + 1
-                      } else if (page <= 3) {
-                        pageNum = i + 1
-                      } else if (page >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i
-                      } else {
-                        pageNum = page - 2 + i
-                      }
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => setPage(pageNum)}
-                          className={`px-3 py-1 text-sm rounded ${
-                            page === pageNum
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      )
-                    })}
-                  </Flex>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage(p => p + 1)}
-                  >
-                    Next
-                  </Button>
-                </Flex>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  Next
+                </Button>
               </Flex>
-            </>
+            </Flex>
           )}
         </Stack>
       </BandLayout>
