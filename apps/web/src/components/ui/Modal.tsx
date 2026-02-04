@@ -28,8 +28,16 @@ export function Modal({ isOpen, onClose, children, size = 'md', title }: ModalPr
 
       {/* Modal Content */}
       <div className={`relative bg-white rounded-lg shadow-xl ${sizeClasses[size]} w-full mx-4 my-8 p-6 z-10 max-h-[90vh] overflow-y-auto`}>
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl font-bold leading-none"
+          title="Close"
+        >
+          ✕
+        </button>
         {title && (
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{title}</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4 pr-8">{title}</h2>
         )}
         {children}
       </div>

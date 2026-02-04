@@ -119,13 +119,22 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
         <Stack spacing="sm">
           {/* Header */}
           <div className={theme.components.notificationDropdown.header}>
-            <Flex justify="between">
+            <Flex justify="between" align="center">
               <Heading level={3}>Notifications</Heading>
-              {notificationsData?.notifications && notificationsData.notifications.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead}>
-                  Mark all read
-                </Button>
-              )}
+              <Flex gap="sm" align="center">
+                {notificationsData?.notifications && notificationsData.notifications.length > 0 && (
+                  <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead}>
+                    Mark all read
+                  </Button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="text-gray-500 hover:text-gray-700 text-xl font-bold leading-none"
+                  title="Close"
+                >
+                  ✕
+                </button>
+              </Flex>
             </Flex>
           </div>
 
