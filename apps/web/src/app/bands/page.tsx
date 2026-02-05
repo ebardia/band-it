@@ -148,7 +148,7 @@ export default function BrowseBandsPage() {
                           <Heading level={2}>{band.name}</Heading>
                           {getStatusBadge(band.status)}
                         </Flex>
-                        <Text color="muted">{band.description}</Text>
+                        <Text color="muted" className="line-clamp-3">{band.description}</Text>
                         <Flex justify="between">
                           <Text variant="small">
                             Founded by: <Text variant="small" weight="semibold">{band.createdBy.name}</Text>
