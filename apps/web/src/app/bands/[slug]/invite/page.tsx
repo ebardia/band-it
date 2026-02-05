@@ -263,7 +263,6 @@ export default function InviteMembersPage() {
                       <Flex justify="between">
                         <Stack spacing="sm">
                           <Heading level={3}>{user.name}</Heading>
-                          <Text variant="small" color="muted">{user.email}</Text>
                         </Stack>
                         <Badge variant="info">Score: {user.matchScore}</Badge>
                       </Flex>
@@ -321,7 +320,6 @@ export default function InviteMembersPage() {
                     <Flex justify="between">
                       <Stack spacing="sm">
                         <Heading level={3}>{user.name}</Heading>
-                        <Text variant="small" color="muted">{user.email}</Text>
                       </Stack>
                       <Button
                         variant="secondary"

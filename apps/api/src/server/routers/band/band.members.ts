@@ -29,7 +29,6 @@ export const getMembers = publicProcedure
               select: {
                 id: true,
                 name: true,
-                email: true,
                 strengths: true,
                 passions: true,
                 zipcode: true,
@@ -135,7 +134,6 @@ export const getMemberProfile = publicProcedure
           select: {
             id: true,
             name: true,
-            email: true,
             strengths: true,
             weaknesses: true,
             passions: true,
@@ -308,7 +306,7 @@ export const changeRole = publicProcedure
       where: { id: memberId },
       data: { role: newRole },
       include: {
-        user: { select: { id: true, name: true, email: true } }
+        user: { select: { id: true, name: true } }
       }
     })
 

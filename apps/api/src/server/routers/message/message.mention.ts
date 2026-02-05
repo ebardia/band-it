@@ -49,7 +49,7 @@ export const getMentionableUsers = publicProcedure
               where: { status: 'ACTIVE' },
               include: {
                 user: {
-                  select: { id: true, name: true, email: true },
+                  select: { id: true, name: true },
                 },
               },
             },
@@ -85,13 +85,12 @@ export const getMentionableUsers = publicProcedure
       canAccessChannel(m.role, channel.visibility)
     )
 
-    // Apply search filter
+    // Apply search filter (name only, not email for privacy)
     let filteredMembers = accessibleMembers
     if (search) {
       const searchLower = search.toLowerCase()
       filteredMembers = accessibleMembers.filter(m =>
-        m.user.name.toLowerCase().includes(searchLower) ||
-        m.user.email.toLowerCase().includes(searchLower)
+        m.user.name.toLowerCase().includes(searchLower)
       )
     }
 
@@ -107,7 +106,6 @@ export const getMentionableUsers = publicProcedure
       users: filteredMembers.map(m => ({
         id: m.user.id,
         name: m.user.name,
-        email: m.user.email,
         role: m.role,
       })),
       roleMentions: availableRoleMentions,

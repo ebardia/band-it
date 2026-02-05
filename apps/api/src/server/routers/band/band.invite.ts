@@ -48,7 +48,6 @@ export const bandInviteRouter = router({
         select: {
           id: true,
           name: true,
-          email: true,
           strengths: true,
           passions: true,
           developmentPath: true,
@@ -150,7 +149,6 @@ export const bandInviteRouter = router({
             select: {
               id: true,
               name: true,
-              email: true,
             },
           },
         },
@@ -511,7 +509,7 @@ export const bandInviteRouter = router({
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
         where: { email: normalizedEmail },
-        select: { id: true, name: true, email: true },
+        select: { id: true, name: true },
       })
 
       if (existingUser) {
@@ -549,7 +547,7 @@ export const bandInviteRouter = router({
           },
           include: {
             user: {
-              select: { id: true, name: true, email: true },
+              select: { id: true, name: true },
             },
           },
         })
@@ -570,9 +568,9 @@ export const bandInviteRouter = router({
           relatedType: 'BAND',
         })
 
-        // Send email notification
+        // Send email notification (use normalizedEmail from input, not from user object)
         await emailService.sendExistingUserInviteEmail({
-          email: existingUser.email,
+          email: normalizedEmail,
           userName: existingUser.name,
           bandName: inviterMembership.band.name,
           inviterName: inviterMembership.user.name,

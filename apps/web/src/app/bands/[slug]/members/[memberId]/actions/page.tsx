@@ -257,9 +257,6 @@ export default function MemberActionsPage() {
                       <Badge variant={ROLE_COLORS[member.role]}>
                         {ROLE_LABELS[member.role]}
                       </Badge>
-                      <Text variant="small" className="text-gray-500">
-                        {member.user.email}
-                      </Text>
                     </Flex>
                     <Text variant="small" className="text-gray-400">
                       Member since {new Date(member.createdAt).toLocaleDateString()}

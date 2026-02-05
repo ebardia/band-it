@@ -203,9 +203,6 @@ export default function BandMembersPage() {
                         <Badge variant="warning">{member.status}</Badge>
                       )}
                     </Flex>
-                    <Text variant="small" className="text-gray-500">
-                      {member.user.email}
-                    </Text>
                     {member.stats && (
                       <Flex gap="md" className="text-gray-500">
                         <Text variant="small">

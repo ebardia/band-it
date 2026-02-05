@@ -162,7 +162,6 @@ export const bandMatchingRouter = router({
         select: {
           id: true,
           name: true,
-          email: true,
           strengths: true,
           passions: true,
           developmentPath: true,

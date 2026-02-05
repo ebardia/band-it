@@ -311,7 +311,7 @@ export function BillingSettings({ bandId, bandSlug, userId }: BillingSettingsPro
           <div className="max-h-60 overflow-y-auto">
             {candidates?.candidates
               ?.filter((c: { isBillingOwner: boolean }) => !c.isBillingOwner)
-              .map((candidate: { userId: string; name: string; email: string; role: string }) => (
+              .map((candidate: { userId: string; name: string; role: string }) => (
                 <div
                   key={candidate.userId}
                   className={`p-3 border rounded-lg mb-2 cursor-pointer transition-colors ${
@@ -323,7 +323,7 @@ export function BillingSettings({ bandId, bandSlug, userId }: BillingSettingsPro
                 >
                   <Text weight="semibold">{candidate.name}</Text>
                   <Text variant="small" className="text-gray-500">
-                    {candidate.email} - {candidate.role}
+                    {candidate.role}
                   </Text>
                 </div>
               ))}

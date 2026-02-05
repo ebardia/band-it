@@ -276,7 +276,7 @@ export const bandBillingRouter = router({
         },
         include: {
           user: {
-            select: { id: true, name: true, email: true },
+            select: { id: true, name: true },
           },
         },
         orderBy: {
@@ -295,7 +295,6 @@ export const bandBillingRouter = router({
         candidates: activeMembers.map((m) => ({
           userId: m.user.id,
           name: m.user.name,
-          email: m.user.email,
           role: m.role,
           isBillingOwner: m.user.id === band?.billingOwnerId,
         })),
