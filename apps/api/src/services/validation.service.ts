@@ -248,7 +248,7 @@ If aligned, concerns should be an empty array. If misaligned, provide specific e
   }
 }
 
-// Scope Alignment Check - FLAG if out of scope
+// Scope Alignment Check - BLOCK if out of scope
 async function checkScopeAlignment(
   entityType: EntityType,
   data: Record<string, any>,
@@ -263,6 +263,9 @@ async function checkScopeAlignment(
   let parentContext = `Name/Title: ${parent.title || parent.name || 'Untitled'}\n`
   parentContext += `Description: ${parent.description || 'No description'}\n`
 
+  if (parent.problemStatement) {
+    parentContext += `Problem Statement: ${parent.problemStatement}\n`
+  }
   if (parent.expectedOutcome) {
     parentContext += `Expected Outcome: ${parent.expectedOutcome}\n`
   }
@@ -282,9 +285,17 @@ CHILD ${entityType.toUpperCase()} BEING CREATED:
 Name/Title: ${contentName}
 Description: ${description}
 
-Does this ${entityType.toLowerCase()} clearly and directly contribute to the parent's goals?
-Be reasonable - supporting tasks and related work items are fine.
-Only flag content that seems completely unrelated or contradictory to the parent's objectives.
+Does this ${entityType.toLowerCase()} directly implement, support, or contribute to the parent ${parentType.toLowerCase()}'s stated goals?
+
+A ${entityType.toLowerCase()} is ALIGNED if it:
+- Directly implements part or all of the parent's objectives
+- Is a necessary phase, step, or sub-deliverable of the parent
+- Addresses the same problem or goal described by the parent
+
+A ${entityType.toLowerCase()} is NOT ALIGNED if it:
+- Covers a different topic or domain than the parent
+- Has no logical connection to the parent's purpose, problem, or expected outcome
+- Would make more sense as a standalone initiative unrelated to this parent
 
 Respond with JSON only:
 {
@@ -292,7 +303,7 @@ Respond with JSON only:
   "concerns": string[]
 }
 
-If aligned, concerns should be an empty array. If misaligned, explain how it doesn't fit the parent's scope.`
+If aligned, concerns should be an empty array. If not aligned, explain specifically why it does not fit the parent's scope.`
 
   try {
     const response = await callAI(prompt, {
@@ -371,14 +382,14 @@ export async function validateContent(params: ValidateContentParams): Promise<Va
     })
   }
 
-  // 6. Process scope result - FLAG
+  // 6. Process scope result - BLOCK
   if (scopeResult && !scopeResult.isAligned) {
     issues.push({
       type: 'scope',
-      severity: 'flag',
+      severity: 'block',
       message: scopeResult.concerns.length > 0
         ? scopeResult.concerns.join(' ')
-        : `This ${params.entityType.toLowerCase()} may not fit within the parent's scope.`,
+        : `This ${params.entityType.toLowerCase()} does not appear related to the parent's scope.`,
     })
   }
 

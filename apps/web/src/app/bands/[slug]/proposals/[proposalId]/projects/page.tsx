@@ -234,8 +234,31 @@ export default function ProposalProjectsPage() {
     utils.aiUsage.invalidate()
 
     if (result.suggestions && result.suggestions.length > 0) {
-      // Create all suggested projects
+      let created = 0
+      const skipped: string[] = []
+
       for (const suggestion of result.suggestions) {
+        // Validate each AI suggestion against the proposal scope
+        try {
+          const validation = await validationMutation.mutateAsync({
+            entityType: 'Project',
+            action: 'create',
+            bandId: bandData?.band?.id || '',
+            data: {
+              name: suggestion.name,
+              description: suggestion.description,
+            },
+            parentId: proposalId,
+          })
+
+          if (!validation.canProceed) {
+            skipped.push(suggestion.name)
+            continue
+          }
+        } catch {
+          // If validation fails (e.g. AI unavailable), allow the project through
+        }
+
         await createProjectMutation.mutateAsync({
           proposalId,
           name: suggestion.name,
@@ -244,8 +267,18 @@ export default function ProposalProjectsPage() {
           userId: userId!,
           aiGenerated: true,
         })
+        created++
       }
-      showToast(`Created ${result.suggestions.length} projects from AI suggestions`, 'success')
+
+      if (created > 0) {
+        showToast(`Created ${created} projects from AI suggestions`, 'success')
+      }
+      if (skipped.length > 0) {
+        showToast(`Skipped ${skipped.length} suggestions that didn't align with the proposal`, 'warning')
+      }
+      if (created === 0 && skipped.length === 0) {
+        showToast('No new suggestions were generated', 'info')
+      }
     } else {
       showToast('All necessary projects already exist - no new suggestions needed', 'info')
     }
