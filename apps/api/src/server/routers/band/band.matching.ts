@@ -62,8 +62,16 @@ const sameRegion = (zip1: string, zip2: string): boolean => {
   return zip1.substring(0, 3) === zip2.substring(0, 3)
 }
 
+// Match tier thresholds
+const MATCH_TIERS = [
+  { tier: 1 as const, min: 40, label: 'Strong Match' },
+  { tier: 2 as const, min: 25, label: 'Good Match' },
+  { tier: 3 as const, min: 10, label: 'Fair Match' },
+  { tier: 4 as const, min: 1, label: 'Partial Match' },
+] as const
+
 // Main matching function
-function calculateMatchScore(user: UserProfile, band: BandProfile): MatchResult {
+export function calculateMatchScore(user: UserProfile, band: BandProfile): MatchResult {
   const scores = {
     location: 0,
     skills: 0,
@@ -316,6 +324,7 @@ export const bandMatchingRouter = router({
             },
             matchScore: 0,
             matchReasons: [] as string[],
+            matchTier: 5,
           }))
 
         return {
@@ -325,35 +334,61 @@ export const bandMatchingRouter = router({
         }
       }
 
-      // Score and rank bands
-      const scoredBands = bands
-        .map(band => {
-          const result = calculateMatchScore(user, {
-            id: band.id,
-            zipcode: band.zipcode,
-            values: band.values,
-            skillsLookingFor: band.skillsLookingFor,
-            whatMembersWillLearn: band.whatMembersWillLearn,
-          })
-          return {
-            band: {
-              id: band.id,
-              name: band.name,
-              slug: band.slug,
-              description: band.description,
-              memberCount: band._count.members,
-              status: band.status,
-            },
-            matchScore: result.score,
-            matchReasons: result.matchReasons,
-          }
+      // Score all bands
+      const allScored = bands.map(band => {
+        const result = calculateMatchScore(user, {
+          id: band.id,
+          zipcode: band.zipcode,
+          values: band.values,
+          skillsLookingFor: band.skillsLookingFor,
+          whatMembersWillLearn: band.whatMembersWillLearn,
         })
-        .filter(result => result.matchScore >= 15) // Minimum 15% match
-        .sort((a, b) => b.matchScore - a.matchScore)
-        .slice(0, input.limit)
+        return {
+          band: {
+            id: band.id,
+            name: band.name,
+            slug: band.slug,
+            description: band.description,
+            memberCount: band._count.members,
+            status: band.status,
+          },
+          matchScore: result.score,
+          matchReasons: result.matchReasons,
+          matchTier: 5 as number, // default to fallback tier
+        }
+      })
 
-      // If no matches found, return top bands by member count
-      if (scoredBands.length === 0) {
+      // Assign each band to its highest qualifying tier
+      for (const item of allScored) {
+        if (item.matchScore >= 40) item.matchTier = 1
+        else if (item.matchScore >= 25) item.matchTier = 2
+        else if (item.matchScore >= 10) item.matchTier = 3
+        else if (item.matchScore > 0) item.matchTier = 4
+        else item.matchTier = 5
+      }
+
+      // Collect bands tier by tier until we have >= 2 results
+      const results: typeof allScored = []
+      for (const tierDef of MATCH_TIERS) {
+        const tierBands = allScored
+          .filter(b => b.matchTier === tierDef.tier)
+          .sort((a, b) => b.matchScore - a.matchScore)
+        results.push(...tierBands)
+        if (results.length >= 2) break
+      }
+
+      // If we still have < 2, add fallback popular bands (tier 5)
+      if (results.length < 2) {
+        const popularFallbacks = allScored
+          .filter(b => b.matchTier === 5)
+          .sort((a, b) => b.band.memberCount - a.band.memberCount)
+        results.push(...popularFallbacks)
+      }
+
+      const recommendations = results.slice(0, input.limit)
+
+      if (recommendations.length === 0 || recommendations.every(r => r.matchTier === 5)) {
+        // All fallback, no real matches
         const fallbackBands = bands
           .sort((a, b) => b._count.members - a._count.members)
           .slice(0, input.limit)
@@ -368,6 +403,7 @@ export const bandMatchingRouter = router({
             },
             matchScore: 0,
             matchReasons: [] as string[],
+            matchTier: 5,
           }))
 
         return {
@@ -378,7 +414,7 @@ export const bandMatchingRouter = router({
       }
 
       return {
-        recommendations: scoredBands,
+        recommendations,
         hasProfile: true,
         message: null,
       }

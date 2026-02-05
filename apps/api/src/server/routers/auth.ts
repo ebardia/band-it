@@ -42,7 +42,7 @@ export const authRouter = router({
         user: result.user,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
-        bandsJoined: result.bandsJoined, // Return info about auto-joined bands
+        bandsInvited: result.bandsInvited, // Return info about bands user was invited to
       }
     }),
 

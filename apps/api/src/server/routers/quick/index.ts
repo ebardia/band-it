@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { checkGoodStanding } from '../../../lib/dues-enforcement'
 import { CAN_VOTE, getQuickActionsForUser } from '../../../lib/quickActions'
+import { calculateMatchScore } from '../band/band.matching'
 
 /**
  * Quick router - provides context for mobile-first micro landing pages
@@ -1043,6 +1044,129 @@ export const quickRouter = router({
           duesReason: duesStatus.reason,
           membershipRole: membership.role,
         },
+      }
+    }),
+
+  /**
+   * Get band preview context for mobile band discovery
+   * Returns: band info, match score/reasons, user's membership status
+   * No membership required (public band preview)
+   */
+  getBandPreviewContext: publicProcedure
+    .input(
+      z.object({
+        bandSlug: z.string(),
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { bandSlug, userId } = input
+
+      // Get band details
+      const band = await prisma.band.findUnique({
+        where: { slug: bandSlug },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          values: true,
+          skillsLookingFor: true,
+          whatMembersWillLearn: true,
+          zipcode: true,
+          status: true,
+          _count: {
+            select: {
+              members: {
+                where: { status: 'ACTIVE' },
+              },
+            },
+          },
+        },
+      })
+
+      if (!band) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Band not found',
+        })
+      }
+
+      // Get user profile for match calculation
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          zipcode: true,
+          strengths: true,
+          passions: true,
+          developmentPath: true,
+        },
+      })
+
+      // Calculate match score if user has a profile
+      let matchScore = 0
+      let matchReasons: string[] = []
+      const hasProfile = user && (
+        user.zipcode ||
+        user.strengths.length > 0 ||
+        user.passions.length > 0 ||
+        user.developmentPath.length > 0
+      )
+
+      if (user && hasProfile) {
+        const result = calculateMatchScore(
+          {
+            zipcode: user.zipcode,
+            strengths: user.strengths,
+            passions: user.passions,
+            developmentPath: user.developmentPath,
+          },
+          {
+            id: band.id,
+            zipcode: band.zipcode,
+            values: band.values,
+            skillsLookingFor: band.skillsLookingFor,
+            whatMembersWillLearn: band.whatMembersWillLearn,
+          }
+        )
+        matchScore = result.score
+        matchReasons = result.matchReasons
+      }
+
+      // Check user's membership status
+      const membership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: { userId, bandId: band.id },
+        },
+        select: { id: true, status: true, role: true },
+      })
+
+      let userStatus: 'ACTIVE' | 'PENDING' | 'INVITED' | 'NONE' = 'NONE'
+      let membershipId: string | null = null
+      if (membership) {
+        userStatus = membership.status as 'ACTIVE' | 'PENDING' | 'INVITED'
+        membershipId = membership.id
+      }
+
+      return {
+        band: {
+          id: band.id,
+          name: band.name,
+          slug: band.slug,
+          description: band.description,
+          values: band.values,
+          skillsLookingFor: band.skillsLookingFor,
+          whatMembersWillLearn: band.whatMembersWillLearn,
+          memberCount: band._count.members,
+          status: band.status,
+        },
+        match: {
+          score: matchScore,
+          reasons: matchReasons,
+          hasProfile: !!hasProfile,
+        },
+        userStatus,
+        membershipId,
       }
     }),
 })

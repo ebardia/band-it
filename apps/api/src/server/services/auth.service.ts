@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { TRPCError } from '@trpc/server'
 import { emailService } from './email.service'
-import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 // JWT secret (in production, use environment variable)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
@@ -78,13 +77,13 @@ export const authService = {
     }
 
     // Process pending invites for this email
-    const bandsJoined = await this.processPendingInvites(user.id, normalizedEmail, inviteToken)
+    const bandsInvited = await this.processPendingInvites(user.id, normalizedEmail, inviteToken)
 
     return {
       user,
       accessToken,
       refreshToken,
-      bandsJoined, // Return info about auto-joined bands
+      bandsInvited, // Return info about bands user was invited to
     }
   },
 
@@ -93,7 +92,7 @@ export const authService = {
    * Creates Member records and deletes PendingInvite records
    */
   async processPendingInvites(userId: string, email: string, inviteToken?: string) {
-    const bandsJoined: Array<{ id: string; name: string; slug: string }> = []
+    const bandsInvited: Array<{ id: string; name: string; slug: string; description: string | null }> = []
 
     // Find all pending invites for this email
     const pendingInvites = await prisma.pendingInvite.findMany({
@@ -103,7 +102,7 @@ export const authService = {
       },
       include: {
         band: {
-          select: { id: true, name: true, slug: true },
+          select: { id: true, name: true, slug: true, description: true },
         },
       },
     })
@@ -114,7 +113,7 @@ export const authService = {
         where: { token: inviteToken },
         include: {
           band: {
-            select: { id: true, name: true, slug: true },
+            select: { id: true, name: true, slug: true, description: true },
           },
         },
       })
@@ -142,38 +141,24 @@ export const authService = {
         })
 
         if (!existingMember) {
-          // Create member record
+          // Create member record as INVITED so user can review band details first
           await prisma.member.create({
             data: {
               userId,
               bandId: invite.bandId,
               role: invite.role,
-              status: 'ACTIVE', // Direct join since they were explicitly invited
+              status: 'INVITED',
               invitedBy: invite.invitedById,
               notes: invite.notes,
             },
           })
 
-          bandsJoined.push({
+          bandsInvited.push({
             id: invite.band.id,
             name: invite.band.name,
             slug: invite.band.slug,
+            description: invite.band.description,
           })
-
-          // Check if band should become active (minimum members reached)
-          const activeMembers = await prisma.member.count({
-            where: {
-              bandId: invite.bandId,
-              status: 'ACTIVE',
-            },
-          })
-
-          if (activeMembers >= MIN_MEMBERS_TO_ACTIVATE) {
-            await prisma.band.update({
-              where: { id: invite.bandId },
-              data: { status: 'ACTIVE' },
-            })
-          }
         }
 
         // Delete the pending invite
@@ -186,7 +171,7 @@ export const authService = {
       }
     }
 
-    return bandsJoined
+    return bandsInvited
   },
 
   /**

@@ -20,6 +20,12 @@ export function QuickActionsWidget({ userId }: QuickActionsWidgetProps) {
     }
   )
 
+  const { data: myBandsData } = trpc.band.getMyBands.useQuery(
+    { userId },
+    { enabled: !!userId }
+  )
+  const activeBandCount = myBandsData?.bands.filter((b: any) => b.status === 'ACTIVE').length ?? 0
+
   // Don't show anything while loading or if no actions
   if (isLoading) {
     return (
@@ -48,6 +54,25 @@ export function QuickActionsWidget({ userId }: QuickActionsWidgetProps) {
           <Text weight="semibold" className="text-gray-700">You're all caught up!</Text>
           <Text color="muted" className="text-sm">No pending actions right now.</Text>
         </div>
+        {activeBandCount <= 1 && (
+          <button
+            onClick={() => router.push('/discover')}
+            className="w-full text-left bg-blue-50 hover:bg-blue-100 rounded-lg p-4 transition-colors border border-blue-200 hover:border-blue-300 mt-2"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔍</span>
+                <div>
+                  <p className="text-gray-900 font-medium">Find Your Band</p>
+                  <p className="text-sm text-gray-500">Discover bands that match your skills and interests</p>
+                </div>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
+        )}
       </div>
     )
   }

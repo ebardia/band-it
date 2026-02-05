@@ -154,6 +154,25 @@ export default function OverviewDashboard() {
       {/* Mobile View - Quick Actions Only */}
       <div className="md:hidden min-h-screen bg-gray-50 px-4 py-4">
         <QuickActionsWidget userId={userId} />
+        {bandCount <= 1 && (
+          <button
+            onClick={() => router.push('/discover')}
+            className="w-full text-left bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-lg p-4 transition-colors border border-blue-200 hover:border-blue-300 mb-4"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔍</span>
+                <div>
+                  <p className="text-gray-900 font-semibold">Find More Bands</p>
+                  <p className="text-sm text-gray-600">Discover bands that match your skills and interests</p>
+                </div>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
+        )}
         <div className="text-center mt-8">
           <Text color="muted" className="text-sm">
             For full dashboard, use a larger screen

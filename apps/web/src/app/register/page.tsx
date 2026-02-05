@@ -46,21 +46,24 @@ function RegisterContent() {
       localStorage.setItem('refreshToken', data.refreshToken)
       localStorage.setItem('userEmail', formData.email)
 
-      // Show bands joined message if any
-      if (data.bandsJoined && data.bandsJoined.length > 0) {
-        const bandNames = data.bandsJoined.map((b: { name: string }) => b.name).join(', ')
-        showToast(`Welcome! You've automatically joined: ${bandNames}`, 'success')
+      const hasInvites = data.bandsInvited && data.bandsInvited.length > 0
+
+      // Show bands invited message if any
+      if (hasInvites) {
+        const bandNames = data.bandsInvited.map((b: { name: string }) => b.name).join(', ')
+        showToast(`You've been invited to: ${bandNames}. Review and accept on the next page.`, 'info')
       }
 
       // Check if email is already verified (SKIP_EMAIL_VERIFICATION mode)
       // Use replace so register page isn't in browser history
       if (data.user.emailVerified) {
-        if (!data.bandsJoined || data.bandsJoined.length === 0) {
+        if (!hasInvites) {
           showToast('Account created successfully!', 'success')
         }
-        router.replace('/profile') // Skip email verification, go to profile
+        // Redirect to /discover if there are pending invites, otherwise /profile
+        router.replace(hasInvites ? '/discover' : '/profile')
       } else {
-        if (!data.bandsJoined || data.bandsJoined.length === 0) {
+        if (!hasInvites) {
           showToast('Account created! Please check your email.', 'success')
         }
         router.replace('/verify-email')
@@ -102,7 +105,7 @@ function RegisterContent() {
             {inviteToken && (
               <Alert variant="info">
                 <Text variant="small">
-                  You've been invited to join a band! Create your account to accept the invitation and join automatically.
+                  You've been invited to join a band! Create your account to review and accept the invitation.
                 </Text>
               </Alert>
             )}
