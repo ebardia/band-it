@@ -198,7 +198,7 @@ export default function TaskDetailPage() {
       description: editDescription || null,
       priority: editPriority,
       assigneeId: editAssigneeId || undefined,
-      dueDate: editDueDate || undefined,
+      dueDate: editDueDate ? new Date(editDueDate).toISOString() : undefined,
       estimatedHours: editEstimatedHours || undefined,
     }
 
