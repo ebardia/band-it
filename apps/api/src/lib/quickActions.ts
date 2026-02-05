@@ -16,7 +16,7 @@ const ROLE_HIERARCHY: Record<MemberRole, number> = {
 }
 
 // Quick action types - desktop users redirected to full pages
-export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION' | 'TASK' | 'CHECKLIST'
+export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION' | 'CHECKLIST'
 export type Urgency = 'high' | 'medium' | 'low'
 
 export interface QuickAction {
@@ -81,7 +81,7 @@ export async function getQuickActionsForUser(
   const userBandIds = Array.from(bandRoles.keys())
 
   // Run queries in parallel for better performance
-  const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions, claimableTasks, claimableChecklistItems] = await Promise.all([
+  const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions, claimableChecklistItems] = await Promise.all([
     // 1. Pending votes - proposals open for voting where user hasn't voted
     prisma.proposal.findMany({
       where: {
@@ -192,29 +192,7 @@ export async function getQuickActionsForUser(
       take: limit,
     }),
 
-    // 6. Claimable tasks - unassigned tasks user can claim
-    userBandIds.length > 0 ? prisma.task.findMany({
-      where: {
-        bandId: { in: userBandIds },
-        assigneeId: null,
-        status: { in: ['TODO', 'IN_PROGRESS'] },
-        OR: [
-          { verificationStatus: null },
-          { verificationStatus: { not: 'APPROVED' } },
-        ],
-      },
-      include: {
-        project: { select: { id: true, name: true } },
-        band: { select: { id: true, name: true, slug: true } },
-      },
-      orderBy: [
-        { priority: 'desc' },
-        { dueDate: 'asc' },
-      ],
-      take: limit * 2, // Fetch extra since we'll filter by role
-    }) : Promise.resolve([]),
-
-    // 7. Claimable checklist items - unassigned items user can claim
+    // 6. Claimable checklist items - unassigned items user can claim
     userBandIds.length > 0 ? prisma.checklistItem.findMany({
       where: {
         task: {
@@ -348,52 +326,6 @@ export async function getQuickActionsForUser(
         authorName: message.author.name,
         preview: message.content.substring(0, 100),
         createdAt: message.createdAt,
-      },
-    })
-  }
-
-  // Process claimable tasks - filter by role requirement
-  for (const task of claimableTasks) {
-    const userRole = bandRoles.get(task.bandId)
-    if (!userRole) continue
-
-    // Check role requirement
-    if (task.minClaimRole) {
-      const userRoleLevel = ROLE_HIERARCHY[userRole] || 0
-      const minRoleLevel = ROLE_HIERARCHY[task.minClaimRole] || 0
-      if (userRoleLevel < minRoleLevel) continue
-    }
-
-    // Determine urgency based on due date
-    let urgency: Urgency = 'low'
-    if (task.dueDate) {
-      const hoursUntilDue = (task.dueDate.getTime() - now.getTime()) / (1000 * 60 * 60)
-      if (hoursUntilDue < 0) urgency = 'high' // Overdue
-      else if (hoursUntilDue < 24) urgency = 'high'
-      else if (hoursUntilDue < 72) urgency = 'medium'
-    }
-    // High priority tasks are always at least medium urgency
-    if (task.priority === 'URGENT') urgency = 'high'
-    else if (task.priority === 'HIGH' && urgency === 'low') urgency = 'medium'
-
-    actions.push({
-      type: 'TASK',
-      id: task.id,
-      title: task.name,
-      bandName: task.band.name,
-      bandId: task.band.id,
-      url: `/quick/task/${task.id}?band=${task.band.slug}`,
-      urgency,
-      meta: {
-        projectName: task.project.name,
-        priority: task.priority,
-        dueDate: task.dueDate,
-        timeRemaining: task.dueDate ? formatTimeRemaining(task.dueDate) : null,
-        contextPhone: task.contextPhone,
-        contextComputer: task.contextComputer,
-        contextTravel: task.contextTravel,
-        contextTimeMinutes: task.contextTimeMinutes,
-        bandSlug: task.band.slug,
       },
     })
   }
