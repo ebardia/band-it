@@ -63,6 +63,17 @@ export const submitForVerification = publicProcedure
       })
     }
 
+    // All checklist items must be completed before submitting for review
+    const incompleteItems = await prisma.checklistItem.count({
+      where: { taskId, isCompleted: false },
+    })
+    if (incompleteItems > 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Cannot submit for review: ${incompleteItems} checklist item${incompleteItems === 1 ? ' is' : 's are'} still incomplete.`,
+      })
+    }
+
     // Update task to IN_REVIEW
     const updatedTask = await prisma.task.update({
       where: { id: taskId },

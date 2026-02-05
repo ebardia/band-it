@@ -281,6 +281,17 @@ export const retryTask = publicProcedure
       })
     }
 
+    // All checklist items must be completed before resubmitting for review
+    const incompleteItems = await prisma.checklistItem.count({
+      where: { taskId, isCompleted: false },
+    })
+    if (incompleteItems > 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Cannot resubmit for review: ${incompleteItems} checklist item${incompleteItems === 1 ? ' is' : 's are'} still incomplete.`,
+      })
+    }
+
     // Resubmit for verification
     const updatedTask = await prisma.task.update({
       where: { id: taskId },

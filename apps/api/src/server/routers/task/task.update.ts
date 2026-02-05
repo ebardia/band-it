@@ -141,8 +141,22 @@ export const updateTask = publicProcedure
 
     // Handle status changes
     if (status !== undefined) {
-      updateData.status = status
       const statusStr = status as string
+
+      // All checklist items must be completed before moving to IN_REVIEW or COMPLETED
+      if (statusStr === 'IN_REVIEW' || statusStr === 'COMPLETED') {
+        const incompleteItems = await prisma.checklistItem.count({
+          where: { taskId, isCompleted: false },
+        })
+        if (incompleteItems > 0) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `Cannot change status: ${incompleteItems} checklist item${incompleteItems === 1 ? ' is' : 's are'} still incomplete.`,
+          })
+        }
+      }
+
+      updateData.status = status
       const taskStatusStr = task.status as string
 
       // Set startedAt when moving to IN_PROGRESS
