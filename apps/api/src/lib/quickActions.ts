@@ -198,7 +198,10 @@ export async function getQuickActionsForUser(
         bandId: { in: userBandIds },
         assigneeId: null,
         status: { in: ['TODO', 'IN_PROGRESS'] },
-        verificationStatus: { not: 'APPROVED' },
+        OR: [
+          { verificationStatus: null },
+          { verificationStatus: { not: 'APPROVED' } },
+        ],
       },
       include: {
         project: { select: { id: true, name: true } },
@@ -220,7 +223,10 @@ export async function getQuickActionsForUser(
         },
         assigneeId: null,
         isCompleted: false,
-        verificationStatus: { not: 'APPROVED' },
+        OR: [
+          { verificationStatus: null },
+          { verificationStatus: { not: 'APPROVED' } },
+        ],
       },
       include: {
         task: {
