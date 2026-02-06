@@ -437,8 +437,8 @@ export default function HomePage() {
           </Flex>
         </div>
 
-        {/* Main content */}
-        <Container size="lg" className="pt-32 pb-12">
+        {/* Main content - extra top padding on mobile for taller banner */}
+        <Container size="lg" className="pt-48 md:pt-32 pb-12">
           <Stack spacing="xl">
             {/* Hero section with logo */}
             <div className="text-center">
