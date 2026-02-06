@@ -5,13 +5,11 @@ import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import {
-  Button,
   Card,
   Container,
   Heading,
   Text,
   Stack,
-  Flex,
 } from '@/components/ui'
 
 // Cost factors per 1M tokens (Anthropic Sonnet pricing)
@@ -145,34 +143,16 @@ export default function AIUsagePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* Top navigation bar */}
-      <div className="p-4">
-        <Flex justify="between" align="center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/')}
-          >
-            Home
-          </Button>
-          <Flex gap="sm">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/register')}
-            >
-              Register
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => router.push('/login')}
-            >
-              Sign In
-            </Button>
-          </Flex>
-        </Flex>
-      </div>
+      {/* Fixed close button */}
+      <button
+        onClick={() => router.back()}
+        className="fixed top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors"
+        aria-label="Close"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-600">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
 
       <main className="flex-1">
         <Container size="lg" className="py-12">
