@@ -4,7 +4,6 @@ import { useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
-  PageLayout,
   Container,
   Button,
   Stack,
@@ -417,9 +416,10 @@ export default function HomePage() {
         </div>
       )}
 
-      <PageLayout>
+      {/* Main page content */}
+      <main className="flex-1 bg-gradient-to-br from-blue-50 to-purple-50">
         {/* Top navigation bar */}
-        <div className="absolute top-0 right-0 p-4">
+        <div className="absolute top-0 right-0 p-4 z-20">
           <Flex justify="end" gap="sm">
             <Button
               variant="ghost"
@@ -608,9 +608,9 @@ export default function HomePage() {
             </Card>
           </Stack>
         </Container>
+      </main>
 
-        <Footer />
-      </PageLayout>
+      <Footer />
     </div>
   )
 }
