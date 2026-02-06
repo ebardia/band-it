@@ -9,7 +9,6 @@ import {
   Stack,
   Button,
   Flex,
-  Footer,
 } from '@/components/ui'
 
 export default function PrivacyPage() {
@@ -241,8 +240,6 @@ export default function PrivacyPage() {
         </Card>
         </Container>
       </main>
-
-      <Footer />
     </div>
   )
 }

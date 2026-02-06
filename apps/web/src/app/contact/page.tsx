@@ -13,7 +13,6 @@ import {
   useToast,
   Stack,
   Flex,
-  Footer,
 } from '@/components/ui'
 
 export default function ContactPage() {
@@ -100,7 +99,6 @@ export default function ContactPage() {
             </Card>
           </Container>
         </main>
-        <Footer />
       </div>
     )
   }
@@ -207,7 +205,6 @@ export default function ContactPage() {
           </Card>
         </Container>
       </main>
-      <Footer />
     </div>
   )
 }

@@ -12,7 +12,6 @@ import {
   Text,
   Stack,
   Flex,
-  Footer,
 } from '@/components/ui'
 
 // Cost factors per 1M tokens (Anthropic Sonnet pricing)
@@ -249,7 +248,6 @@ export default function AIUsagePage() {
           </Stack>
         </Container>
       </main>
-      <Footer />
     </div>
   )
 }

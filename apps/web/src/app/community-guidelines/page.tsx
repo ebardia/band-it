@@ -9,7 +9,6 @@ import {
   Text,
   Card,
   Flex,
-  Footer,
 } from '@/components/ui'
 
 export default function CommunityGuidelinesPage() {
@@ -146,8 +145,6 @@ export default function CommunityGuidelinesPage() {
           </Stack>
         </Container>
       </main>
-
-      <Footer />
     </div>
   )
 }

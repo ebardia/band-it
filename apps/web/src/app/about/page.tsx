@@ -12,7 +12,6 @@ import {
   Text,
   Flex,
   Card,
-  Footer,
 } from "@/components/ui"
 
 const useCases = [
@@ -597,8 +596,6 @@ export default function AboutPage() {
           </Card>
         </Stack>
       </Container>
-
-      <Footer />
     </PageLayout>
   )
 }

@@ -9,7 +9,6 @@ import {
   Stack,
   Button,
   Flex,
-  Footer,
 } from '@/components/ui'
 
 export default function TermsPage() {
@@ -255,8 +254,6 @@ export default function TermsPage() {
         </Card>
         </Container>
       </main>
-
-      <Footer />
     </div>
   )
 }

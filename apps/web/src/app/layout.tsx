@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import { TRPCProvider } from "@/lib/trpc-provider"
-import { ToastProvider } from "@/components/ui"
+import { ToastProvider, Footer } from "@/components/ui"
 import { GuidedFlowProvider } from "@/components/guided-flows"
 import { HelpProvider } from "@/components/help/HelpContext"
 import { HelpPanel } from "@/components/help/HelpPanel"
@@ -18,12 +18,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="min-h-screen flex flex-col">
         <TRPCProvider>
           <ToastProvider>
             <GuidedFlowProvider>
               <HelpProvider>
-                {children}
+                <div className="flex-1 flex flex-col">
+                  {children}
+                </div>
+                <Footer />
                 <HelpPanel />
               </HelpProvider>
             </GuidedFlowProvider>
