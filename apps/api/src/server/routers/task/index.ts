@@ -5,6 +5,7 @@ import { updateTask } from './task.update'
 import { submitForVerification, verifyTask } from './task.verify'
 import { claimTask, unclaimTask, retryTask, updateTaskContext } from './task.claim'
 import { suggestTasks } from './task.ai'
+import { updateDeliverable, getDeliverable, attachFileToDeliverable, removeFileFromDeliverable } from './task.deliverable'
 import { runTaskEscalationJob } from '../../../cron/task-escalation-cron'
 
 export const taskRouter = router({
@@ -31,6 +32,12 @@ export const taskRouter = router({
   // Verification
   submitForVerification: submitForVerification,
   verify: verifyTask,
+
+  // Deliverables
+  updateDeliverable: updateDeliverable,
+  getDeliverable: getDeliverable,
+  attachFileToDeliverable: attachFileToDeliverable,
+  removeFileFromDeliverable: removeFileFromDeliverable,
 
   // AI
   suggestTasks: suggestTasks,

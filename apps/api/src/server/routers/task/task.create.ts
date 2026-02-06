@@ -23,6 +23,7 @@ export const createTask = publicProcedure
     estimatedHours: z.number().int().positive().optional(),
     estimatedCost: z.number().positive().optional(),
     requiresVerification: z.boolean().optional().default(true),
+    requiresDeliverable: z.boolean().optional().default(true),
     tags: z.array(z.string()).optional(),
     orderIndex: z.number().int().optional(),
     userId: z.string(),
@@ -39,7 +40,7 @@ export const createTask = publicProcedure
 
     const {
       projectId, name, description, priority, assigneeId, assigneeType,
-      dueDate, estimatedHours, estimatedCost, requiresVerification,
+      dueDate, estimatedHours, estimatedCost, requiresVerification, requiresDeliverable,
       tags, orderIndex, userId, aiGenerated,
       proceedWithFlags, flagReasons, flagDetails
     } = input
@@ -161,6 +162,7 @@ export const createTask = publicProcedure
         estimatedHours,
         estimatedCost,
         requiresVerification,
+        requiresDeliverable,
         tags: tags || [],
         orderIndex: finalOrderIndex,
         createdById: userId,

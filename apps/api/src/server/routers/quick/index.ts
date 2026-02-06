@@ -815,6 +815,7 @@ export const quickRouter = router({
           status: task.status,
           dueDate: task.dueDate,
           requiresVerification: task.requiresVerification,
+          requiresDeliverable: task.requiresDeliverable,
           verificationStatus: task.verificationStatus,
           rejectionReason: task.rejectionReason,
           proofDescription: task.proofDescription,

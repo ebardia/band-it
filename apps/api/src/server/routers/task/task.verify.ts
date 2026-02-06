@@ -19,7 +19,7 @@ export const submitForVerification = publicProcedure
   .mutation(async ({ input }) => {
     const { taskId, userId, proofDescription, attachments, receiptUrls } = input
 
-    // Get task
+    // Get task with deliverable
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       include: {
@@ -32,7 +32,8 @@ export const submitForVerification = publicProcedure
               where: { status: 'ACTIVE' }
             }
           }
-        }
+        },
+        deliverable: true
       }
     })
 
@@ -71,6 +72,22 @@ export const submitForVerification = publicProcedure
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: `Cannot submit for review: ${incompleteItems} checklist item${incompleteItems === 1 ? ' is' : 's are'} still incomplete.`,
+      })
+    }
+
+    // If task requires a deliverable, ensure one exists with minimum summary
+    if (task.requiresDeliverable && !task.deliverable) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'This task requires a deliverable summary before submission. Please add a summary of what was accomplished.',
+      })
+    }
+
+    // Validate deliverable summary meets minimum length if it exists
+    if (task.deliverable && task.deliverable.summary.length < 30) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Deliverable summary must be at least 30 characters.',
       })
     }
 

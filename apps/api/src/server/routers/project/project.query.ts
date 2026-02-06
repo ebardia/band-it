@@ -160,3 +160,94 @@ export const getMyProjects = publicProcedure
 
     return { projects }
   })
+
+export const getProjectDeliverables = publicProcedure
+  .input(z.object({
+    projectId: z.string(),
+    search: z.string().optional(),
+    page: z.number().int().min(1).default(1),
+    limit: z.number().int().min(1).max(50).default(20),
+  }))
+  .query(async ({ input }) => {
+    const { projectId, search, page, limit } = input
+    const skip = (page - 1) * limit
+
+    // Verify project exists
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { id: true, name: true, bandId: true }
+    })
+
+    if (!project) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Project not found'
+      })
+    }
+
+    // Build where clause for search
+    const searchWhere = search ? {
+      OR: [
+        { summary: { contains: search, mode: 'insensitive' as const } },
+        { task: { name: { contains: search, mode: 'insensitive' as const } } },
+        { files: { some: { originalName: { contains: search, mode: 'insensitive' as const } } } },
+      ]
+    } : {}
+
+    // Get deliverables for all tasks in this project
+    const [deliverables, total] = await Promise.all([
+      prisma.taskDeliverable.findMany({
+        where: {
+          task: { projectId },
+          ...searchWhere,
+        },
+        include: {
+          task: {
+            select: {
+              id: true,
+              name: true,
+              status: true,
+              verificationStatus: true,
+              completedAt: true,
+              assignee: {
+                select: { id: true, name: true }
+              }
+            }
+          },
+          createdBy: {
+            select: { id: true, name: true }
+          },
+          files: {
+            select: {
+              id: true,
+              filename: true,
+              originalName: true,
+              mimeType: true,
+              size: true,
+              url: true,
+              category: true,
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.taskDeliverable.count({
+        where: {
+          task: { projectId },
+          ...searchWhere,
+        }
+      })
+    ])
+
+    return {
+      deliverables,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      }
+    }
+  })

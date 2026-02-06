@@ -34,6 +34,7 @@ export function TaskCreateForm({
     estimatedHours: '',
     estimatedCost: '',
     requiresVerification: true,
+    requiresDeliverable: true,
     tags: '',
   })
 
@@ -47,6 +48,7 @@ export function TaskCreateForm({
       estimatedHours: form.estimatedHours ? parseInt(form.estimatedHours) : undefined,
       estimatedCost: form.estimatedCost ? parseFloat(form.estimatedCost) : undefined,
       requiresVerification: form.requiresVerification,
+      requiresDeliverable: form.requiresDeliverable,
       tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
     })
   }
@@ -61,6 +63,7 @@ export function TaskCreateForm({
       estimatedHours: '',
       estimatedCost: '',
       requiresVerification: true,
+      requiresDeliverable: true,
       tags: '',
     })
   }
@@ -145,18 +148,32 @@ export function TaskCreateForm({
           </Stack>
         </Flex>
 
-        <Flex gap="sm" align="center">
-          <input
-            type="checkbox"
-            id="requiresVerification"
-            checked={form.requiresVerification}
-            onChange={(e) => setForm({ ...form, requiresVerification: e.target.checked })}
-            className="w-4 h-4"
-          />
-          <Text variant="small" as="label" htmlFor="requiresVerification">
-            Requires verification (proof, receipts, etc.)
-          </Text>
-        </Flex>
+        <Stack spacing="sm">
+          <Flex gap="sm" align="center">
+            <input
+              type="checkbox"
+              id="requiresVerification"
+              checked={form.requiresVerification}
+              onChange={(e) => setForm({ ...form, requiresVerification: e.target.checked })}
+              className="w-4 h-4"
+            />
+            <Text variant="small" as="label" htmlFor="requiresVerification">
+              Requires verification (proof, receipts, etc.)
+            </Text>
+          </Flex>
+          <Flex gap="sm" align="center">
+            <input
+              type="checkbox"
+              id="requiresDeliverable"
+              checked={form.requiresDeliverable}
+              onChange={(e) => setForm({ ...form, requiresDeliverable: e.target.checked })}
+              className="w-4 h-4"
+            />
+            <Text variant="small" as="label" htmlFor="requiresDeliverable">
+              Requires deliverable (summary of what was accomplished)
+            </Text>
+          </Flex>
+        </Stack>
 
         <Flex gap="sm">
           <Button

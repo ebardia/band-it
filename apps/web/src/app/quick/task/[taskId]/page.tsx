@@ -26,6 +26,11 @@ export default function QuickTaskPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionCompleted, setActionCompleted] = useState<string | null>(null)
+  const [showDeliverableForm, setShowDeliverableForm] = useState(false)
+  const [deliverableSummary, setDeliverableSummary] = useState('')
+  const [deliverableLinks, setDeliverableLinks] = useState<Array<{ url: string; title: string }>>([])
+  const [newLinkUrl, setNewLinkUrl] = useState('')
+  const [newLinkTitle, setNewLinkTitle] = useState('')
 
   // Redirect desktop users to full page
   useEffect(() => {
@@ -114,6 +119,13 @@ export default function QuickTaskPage() {
     },
   })
 
+  const updateDeliverableMutation = trpc.task.updateDeliverable.useMutation({
+    onError: (error) => {
+      setIsSubmitting(false)
+      console.error('Deliverable error:', error)
+    },
+  })
+
   const handleClaim = () => {
     if (!userId) return
     setIsSubmitting(true)
@@ -126,10 +138,59 @@ export default function QuickTaskPage() {
     unclaimMutation.mutate({ taskId, userId })
   }
 
-  const handleSubmitForVerification = () => {
+  const handleSubmitForVerification = async () => {
     if (!userId) return
+
+    // If task requires deliverable and form not shown yet, show it
+    if (context?.task?.requiresDeliverable && !showDeliverableForm) {
+      setShowDeliverableForm(true)
+      return
+    }
+
+    // Validate deliverable if required
+    if (context?.task?.requiresDeliverable) {
+      if (!deliverableSummary.trim()) {
+        return // Form validation will show error
+      }
+      if (deliverableSummary.trim().length < 30) {
+        return // Form validation will show error
+      }
+    }
+
     setIsSubmitting(true)
-    submitVerificationMutation.mutate({ taskId, userId })
+
+    try {
+      // Save deliverable first if summary provided
+      if (deliverableSummary.trim()) {
+        await updateDeliverableMutation.mutateAsync({
+          taskId,
+          userId,
+          summary: deliverableSummary.trim(),
+          links: deliverableLinks.length > 0 ? deliverableLinks : undefined,
+        })
+      }
+
+      // Then submit for verification
+      submitVerificationMutation.mutate({ taskId, userId })
+    } catch (error) {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleAddLink = () => {
+    if (!newLinkUrl.trim() || !newLinkTitle.trim()) return
+    try {
+      new URL(newLinkUrl)
+      setDeliverableLinks(prev => [...prev, { url: newLinkUrl.trim(), title: newLinkTitle.trim() }])
+      setNewLinkUrl('')
+      setNewLinkTitle('')
+    } catch {
+      // Invalid URL, ignore
+    }
+  }
+
+  const handleRemoveLink = (index: number) => {
+    setDeliverableLinks(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleRetry = () => {
@@ -491,6 +552,84 @@ export default function QuickTaskPage() {
         </QuickCard>
       )}
 
+      {/* Deliverable form (shown when submitting for verification) */}
+      {showDeliverableForm && (permissions.canSubmitForVerification || permissions.canMarkComplete) && (
+        <QuickCard className="mt-4">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-1">
+                What was accomplished? {task.requiresDeliverable && <span className="text-red-500">*</span>}
+              </h3>
+              <textarea
+                value={deliverableSummary}
+                onChange={(e) => setDeliverableSummary(e.target.value)}
+                placeholder="Describe the work completed, decisions made, outcomes achieved..."
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  task.requiresDeliverable && deliverableSummary.trim().length > 0 && deliverableSummary.trim().length < 30
+                    ? 'border-red-300'
+                    : 'border-gray-300'
+                }`}
+                rows={4}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {deliverableSummary.trim().length}/30 min characters
+                {task.requiresDeliverable && deliverableSummary.trim().length > 0 && deliverableSummary.trim().length < 30 && (
+                  <span className="text-red-500 ml-1">({30 - deliverableSummary.trim().length} more needed)</span>
+                )}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-1">Related Links (optional)</h3>
+              {deliverableLinks.length > 0 && (
+                <div className="space-y-2 mb-2">
+                  {deliverableLinks.map((link, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-gray-50 px-2 py-1 rounded text-sm">
+                      <span className="truncate flex-1">{link.title}</span>
+                      <button
+                        onClick={() => handleRemoveLink(idx)}
+                        className="text-red-500 text-xs ml-2"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={newLinkUrl}
+                  onChange={(e) => setNewLinkUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+                <input
+                  type="text"
+                  value={newLinkTitle}
+                  onChange={(e) => setNewLinkTitle(e.target.value)}
+                  placeholder="Title"
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+                <button
+                  onClick={handleAddLink}
+                  disabled={!newLinkUrl.trim() || !newLinkTitle.trim()}
+                  className="px-2 py-1 bg-gray-200 rounded text-sm disabled:opacity-50"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+              <p className="text-xs text-blue-700">
+                To attach files, please use the desktop version of Band It.
+              </p>
+            </div>
+          </div>
+        </QuickCard>
+      )}
+
       {/* Action buttons */}
       <div className="mt-6 space-y-3">
         {permissions.canClaim && (
@@ -509,9 +648,16 @@ export default function QuickTaskPage() {
             variant="primary"
             fullWidth
             onClick={handleSubmitForVerification}
-            disabled={isSubmitting}
+            disabled={isSubmitting || (showDeliverableForm && task.requiresDeliverable && deliverableSummary.trim().length < 30)}
           >
-            {isSubmitting ? 'Submitting...' : '📤 Submit for Verification'}
+            {isSubmitting
+              ? 'Submitting...'
+              : showDeliverableForm
+                ? '📤 Submit for Verification'
+                : task.requiresDeliverable
+                  ? '📝 Add Deliverable & Submit'
+                  : '📤 Submit for Verification'
+            }
           </QuickButton>
         )}
 
@@ -520,9 +666,16 @@ export default function QuickTaskPage() {
             variant="success"
             fullWidth
             onClick={handleSubmitForVerification}
-            disabled={isSubmitting}
+            disabled={isSubmitting || (showDeliverableForm && task.requiresDeliverable && deliverableSummary.trim().length < 30)}
           >
-            {isSubmitting ? 'Completing...' : '✅ Mark Complete'}
+            {isSubmitting
+              ? 'Completing...'
+              : showDeliverableForm
+                ? '✅ Complete Task'
+                : task.requiresDeliverable
+                  ? '📝 Add Deliverable & Complete'
+                  : '✅ Mark Complete'
+            }
           </QuickButton>
         )}
 

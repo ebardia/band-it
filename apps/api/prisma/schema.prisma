@@ -86,6 +86,7 @@ model User {
   tasksCreated            Task[] @relation("TaskCreator")
   tasksAssigned           Task[] @relation("TaskAssignee")
   tasksVerified           Task[] @relation("TaskVerifier")
+  deliverablesCreated     TaskDeliverable[] @relation("DeliverableCreator")
   filesUploaded           File[] @relation("FilesUploaded")
 
   commentsAuthored        Comment[] @relation("CommentsAuthored")
@@ -1430,6 +1431,9 @@ model Task {
   verificationNotes    String? @db.Text
   rejectionReason      String? @db.Text  // If rejected, why
 
+  // Deliverable
+  requiresDeliverable  Boolean @default(true)  // Task creator can mark false
+
   // Escalation (for pending verifications)
   reminderSentAt       DateTime?         // Reminder sent to moderators
   escalatedAt          DateTime?         // Escalated to governors/founder
@@ -1467,6 +1471,7 @@ model Task {
   files      File[]
   comments  Comment[]
   checklistItems ChecklistItem[]
+  deliverable TaskDeliverable?
 
   @@index([projectId])
   @@index([bandId])
@@ -1476,6 +1481,33 @@ model Task {
   @@index([createdById])
   @@index([verifiedById])
   @@index([dueDate])
+}
+
+// ============================================
+// TASK DELIVERABLES
+// ============================================
+
+model TaskDeliverable {
+  id              String   @id @default(cuid())
+  taskId          String   @unique
+
+  // Content
+  summary         String   @db.Text  // Min 30 chars, what was accomplished
+  links           Json?              // Array of { url, title } objects
+  nextSteps       String?  @db.Text  // Optional notes for future work
+
+  // Metadata
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  task            Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation("DeliverableCreator", fields: [createdById], references: [id])
+  files           File[]
+
+  @@index([taskId])
+  @@index([createdById])
 }
 
 // ============================================
@@ -1722,6 +1754,7 @@ model File {
   eventId         String?
   manualPaymentId String?
   feedbackId      String?
+  deliverableId   String?
 
   // Metadata
   description   String?
@@ -1740,6 +1773,7 @@ model File {
   event         Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   manualPayment ManualPayment? @relation(fields: [manualPaymentId], references: [id], onDelete: Cascade)
   feedback      Feedback? @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  deliverable   TaskDeliverable? @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
 
   @@index([uploadedById])
   @@index([bandId])
@@ -1750,6 +1784,7 @@ model File {
   @@index([eventId])
   @@index([manualPaymentId])
   @@index([feedbackId])
+  @@index([deliverableId])
   @@index([category])
 }
 

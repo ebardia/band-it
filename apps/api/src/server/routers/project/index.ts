@@ -1,6 +1,6 @@
 import { router } from '../../trpc'
 import { createProject } from './project.create'
-import { getProjectsByProposal, getProjectById, getProjectsByBand, getMyProjects } from './project.query'
+import { getProjectsByProposal, getProjectById, getProjectsByBand, getMyProjects, getProjectDeliverables } from './project.query'
 import { updateProject } from './project.update'
 import { suggestProjects } from './project.ai'
 
@@ -13,6 +13,7 @@ export const projectRouter = router({
   getById: getProjectById,
   getByBand: getProjectsByBand,
   getMyProjects: getMyProjects,
+  getDeliverables: getProjectDeliverables,
   
   // Update
   update: updateProject,

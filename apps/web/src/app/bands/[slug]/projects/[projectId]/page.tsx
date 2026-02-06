@@ -596,6 +596,27 @@ export default function ProjectDetailPage() {
             />
           </Card>
 
+          {/* Deliverables Link Card */}
+          <Card>
+            <Stack spacing="md">
+              <Flex justify="between" align="center">
+                <div>
+                  <Heading level={2}>Project Deliverables</Heading>
+                  <Text variant="small" color="muted">
+                    Knowledge captured from completed tasks
+                  </Text>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => router.push(`/bands/${slug}/projects/${projectId}/deliverables`)}
+                >
+                  View All Deliverables →
+                </Button>
+              </Flex>
+            </Stack>
+          </Card>
+
           <Card>
             <Stack spacing="md">
               <Heading level={2}>Original Proposal</Heading>
