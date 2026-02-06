@@ -878,6 +878,56 @@ export const emailService = {
   },
 
   /**
+   * Send contact form email to support
+   */
+  async sendContactFormEmail(options: {
+    name: string
+    email: string
+    subject: string
+    message: string
+  }) {
+    const { name, email, subject, message } = options
+    const CONTACT_EMAIL = process.env.CONTACT_EMAIL || 'bardia@ebardia.com'
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #3B82F6;">New Contact Form Submission</h1>
+        <div style="background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="font-size: 14px; color: #374151; margin: 0;">
+            <strong>From:</strong> ${name} (${email})<br>
+            <strong>Subject:</strong> ${subject}
+          </p>
+        </div>
+        <div style="background-color: #FFFFFF; padding: 15px; border: 1px solid #E5E7EB; border-radius: 8px; margin: 20px 0;">
+          <p style="font-size: 14px; color: #374151; white-space: pre-wrap; margin: 0;">
+            ${message}
+          </p>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          This message was sent via the Band IT contact form.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 CONTACT FORM EMAIL:')
+      console.log(`From: ${name} (${email})`)
+      console.log(`Subject: ${subject}`)
+      console.log(`Message: ${message}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: CONTACT_EMAIL,
+      subject: `[Band IT Contact] ${subject}`,
+      html,
+    })
+  },
+
+  /**
    * Send auto-confirm warning email
    */
   async sendManualPaymentAutoConfirmWarningEmail(options: {
