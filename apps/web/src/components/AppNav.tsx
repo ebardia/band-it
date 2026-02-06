@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { jwtDecode } from 'jwt-decode'
-import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown, AIUsageTicker } from '@/components/ui'
+import { Dropdown, DropdownItem, useToast, NotificationBell, NotificationsDropdown } from '@/components/ui'
 import { useHelp } from '@/components/help/HelpContext'
 import { FeedbackButton } from '@/components/feedback'
 import { trpc } from '@/lib/trpc'
@@ -67,10 +67,6 @@ export function AppNav() {
 
   return (
     <>
-      {/* AI Usage Ticker - Hidden on mobile */}
-      <div className="hidden md:block">
-        <AIUsageTicker />
-      </div>
       <nav className={theme.components.nav.container}>
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4">
         {/* Logo */}

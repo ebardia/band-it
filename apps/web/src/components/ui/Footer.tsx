@@ -33,6 +33,12 @@ export function Footer() {
             >
               Contact Us
             </Link>
+            <Link
+              href="/ai-usage"
+              className="text-sm text-gray-500 hover:text-gray-700 hover:underline"
+            >
+              AI Usage
+            </Link>
           </nav>
         </div>
       </div>
