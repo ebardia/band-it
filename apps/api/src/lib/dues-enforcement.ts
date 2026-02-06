@@ -261,3 +261,17 @@ export async function getBandIdFromProject(projectId: string): Promise<string> {
   }
   return project.bandId
 }
+
+/**
+ * Helper to resolve bandId from a checklistItemId.
+ */
+export async function getBandIdFromChecklistItem(checklistItemId: string): Promise<string> {
+  const item = await prisma.checklistItem.findUnique({
+    where: { id: checklistItemId },
+    select: { task: { select: { bandId: true } } },
+  })
+  if (!item) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
+  }
+  return item.task.bandId
+}

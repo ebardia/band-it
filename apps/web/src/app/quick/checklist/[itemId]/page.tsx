@@ -16,6 +16,11 @@ import {
 // Desktop breakpoint (matches Tailwind's md:)
 const DESKTOP_BREAKPOINT = 768
 
+interface DeliverableLink {
+  url: string
+  title: string
+}
+
 export default function QuickChecklistPage() {
   const router = useRouter()
   const params = useParams()
@@ -27,6 +32,13 @@ export default function QuickChecklistPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionCompleted, setActionCompleted] = useState<string | null>(null)
+
+  // Deliverable state
+  const [summary, setSummary] = useState('')
+  const [links, setLinks] = useState<DeliverableLink[]>([])
+  const [newLinkUrl, setNewLinkUrl] = useState('')
+  const [newLinkTitle, setNewLinkTitle] = useState('')
+  const [deliverableError, setDeliverableError] = useState<string | null>(null)
 
   // Redirect desktop users to full page
   useEffect(() => {
@@ -114,6 +126,25 @@ export default function QuickChecklistPage() {
     },
   })
 
+  // @ts-ignore - tRPC type instantiation depth issue
+  const updateDeliverableMutation = trpc.checklist.updateDeliverable.useMutation({
+    onError: (error) => {
+      setDeliverableError(error.message)
+      setIsSubmitting(false)
+    },
+  })
+
+  // Populate form with existing deliverable data
+  useEffect(() => {
+    if (context?.item?.deliverable) {
+      setSummary(context.item.deliverable.summary || '')
+      const existingLinks = context.item.deliverable.links
+      if (Array.isArray(existingLinks)) {
+        setLinks(existingLinks as unknown as DeliverableLink[])
+      }
+    }
+  }, [context])
+
   const handleClaim = () => {
     if (!userId) return
     setIsSubmitting(true)
@@ -126,16 +157,103 @@ export default function QuickChecklistPage() {
     unclaimMutation.mutate({ itemId, userId })
   }
 
-  const handleSubmit = () => {
-    if (!userId) return
-    setIsSubmitting(true)
-    submitMutation.mutate({ itemId, userId })
+  const handleAddLink = () => {
+    if (!newLinkUrl.trim() || !newLinkTitle.trim()) {
+      setDeliverableError('Please enter both URL and title')
+      return
+    }
+    try {
+      new URL(newLinkUrl)
+    } catch {
+      setDeliverableError('Please enter a valid URL')
+      return
+    }
+    setLinks(prev => [...prev, { url: newLinkUrl.trim(), title: newLinkTitle.trim() }])
+    setNewLinkUrl('')
+    setNewLinkTitle('')
+    setDeliverableError(null)
   }
 
-  const handleRetry = () => {
-    if (!userId) return
+  const handleRemoveLink = (index: number) => {
+    setLinks(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSubmit = async () => {
+    if (!userId || !context) return
+    setDeliverableError(null)
+
+    const requiresDeliverable = context.item.requiresDeliverable
+
+    // Validate deliverable if required
+    if (requiresDeliverable) {
+      if (!summary.trim()) {
+        setDeliverableError('Please enter a summary of what was accomplished')
+        return
+      }
+      if (summary.trim().length < 30) {
+        setDeliverableError('Summary must be at least 30 characters')
+        return
+      }
+    }
+
     setIsSubmitting(true)
-    retryMutation.mutate({ itemId, userId })
+
+    try {
+      // Save deliverable first if required or if summary is provided
+      if (summary.trim()) {
+        await updateDeliverableMutation.mutateAsync({
+          checklistItemId: itemId,
+          userId,
+          summary: summary.trim(),
+          links: links.length > 0 ? links : undefined,
+        })
+      }
+
+      // Now submit for verification
+      submitMutation.mutate({ itemId, userId })
+    } catch (error) {
+      // Error already handled by mutation onError
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleRetry = async () => {
+    if (!userId || !context) return
+    setDeliverableError(null)
+
+    const requiresDeliverable = context.item.requiresDeliverable
+
+    // Validate deliverable if required
+    if (requiresDeliverable) {
+      if (!summary.trim()) {
+        setDeliverableError('Please enter a summary of what was accomplished')
+        return
+      }
+      if (summary.trim().length < 30) {
+        setDeliverableError('Summary must be at least 30 characters')
+        return
+      }
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      // Save deliverable first if required or if summary is provided
+      if (summary.trim()) {
+        await updateDeliverableMutation.mutateAsync({
+          checklistItemId: itemId,
+          userId,
+          summary: summary.trim(),
+          links: links.length > 0 ? links : undefined,
+        })
+      }
+
+      // Now retry submission
+      retryMutation.mutate({ itemId, userId })
+    } catch (error) {
+      // Error already handled by mutation onError
+      setIsSubmitting(false)
+    }
   }
 
   const formatDueDate = (date: string | Date | null) => {
@@ -269,6 +387,9 @@ export default function QuickChecklistPage() {
 
   // Show rejected state
   if (permissions.isRejected && permissions.isAssignedToUser) {
+    const summaryLength = summary.trim().length
+    const isSummaryValid = !item.requiresDeliverable || summaryLength >= 30
+
     return (
       <QuickLayout
         bandName={band.name}
@@ -301,12 +422,100 @@ export default function QuickChecklistPage() {
           </div>
         </QuickCard>
 
+        {/* Deliverable form for retry */}
+        <QuickCard className="mt-4">
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium text-gray-700">
+                  Update your work summary {item.requiresDeliverable && <span className="text-red-500">*</span>}
+                </h3>
+                <span className="text-xs text-gray-500">{summaryLength}/30 min</span>
+              </div>
+              <textarea
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Describe the work completed..."
+                className={`w-full px-3 py-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  item.requiresDeliverable && summaryLength > 0 && summaryLength < 30
+                    ? 'border-red-300'
+                    : 'border-gray-300'
+                }`}
+                rows={3}
+              />
+              {item.requiresDeliverable && summaryLength > 0 && summaryLength < 30 && (
+                <p className="text-xs text-red-500 mt-1">
+                  {30 - summaryLength} more characters needed
+                </p>
+              )}
+            </div>
+
+            {/* Links section */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Related Links (optional)</h3>
+
+              {links.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  {links.map((link, index) => (
+                    <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded text-sm">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{link.title}</p>
+                        <p className="text-gray-500 text-xs truncate">{link.url}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLink(index)}
+                        className="text-red-500 text-xs hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <input
+                  type="url"
+                  value={newLinkUrl}
+                  onChange={(e) => setNewLinkUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newLinkTitle}
+                    onChange={(e) => setNewLinkTitle(e.target.value)}
+                    placeholder="Link title"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddLink}
+                    disabled={!newLinkUrl.trim() || !newLinkTitle.trim()}
+                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium disabled:opacity-50"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {deliverableError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{deliverableError}</p>
+              </div>
+            )}
+          </div>
+        </QuickCard>
+
         <div className="mt-6 space-y-3">
           <QuickButton
             variant="primary"
             fullWidth
             onClick={handleRetry}
-            disabled={isSubmitting || !permissions.canRetry}
+            disabled={isSubmitting || !permissions.canRetry || (item.requiresDeliverable && !isSummaryValid)}
           >
             {isSubmitting ? 'Resubmitting...' : 'Resubmit for Verification'}
           </QuickButton>
@@ -414,6 +623,10 @@ export default function QuickChecklistPage() {
     )
   }
 
+  // Calculate if deliverable is valid for submit
+  const summaryLength = summary.trim().length
+  const isSummaryValid = !item.requiresDeliverable || summaryLength >= 30
+
   // Main checklist item UI - either claim, work on, or submit
   return (
     <QuickLayout
@@ -491,6 +704,96 @@ export default function QuickChecklistPage() {
         </QuickCard>
       )}
 
+      {/* Deliverable form - shown when assigned and can submit */}
+      {permissions.isAssignedToUser && (permissions.canSubmitForVerification || permissions.canMarkComplete) && (
+        <QuickCard className="mt-4">
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium text-gray-700">
+                  What was accomplished? {item.requiresDeliverable && <span className="text-red-500">*</span>}
+                </h3>
+                <span className="text-xs text-gray-500">{summary.trim().length}/30 min</span>
+              </div>
+              <textarea
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Describe the work completed..."
+                className={`w-full px-3 py-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  item.requiresDeliverable && summary.trim().length > 0 && summary.trim().length < 30
+                    ? 'border-red-300'
+                    : 'border-gray-300'
+                }`}
+                rows={3}
+              />
+              {item.requiresDeliverable && summary.trim().length > 0 && summary.trim().length < 30 && (
+                <p className="text-xs text-red-500 mt-1">
+                  {30 - summary.trim().length} more characters needed
+                </p>
+              )}
+            </div>
+
+            {/* Links section */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Related Links (optional)</h3>
+
+              {links.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  {links.map((link, index) => (
+                    <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded text-sm">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{link.title}</p>
+                        <p className="text-gray-500 text-xs truncate">{link.url}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLink(index)}
+                        className="text-red-500 text-xs hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <input
+                  type="url"
+                  value={newLinkUrl}
+                  onChange={(e) => setNewLinkUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newLinkTitle}
+                    onChange={(e) => setNewLinkTitle(e.target.value)}
+                    placeholder="Link title"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddLink}
+                    disabled={!newLinkUrl.trim() || !newLinkTitle.trim()}
+                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium disabled:opacity-50"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {deliverableError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{deliverableError}</p>
+              </div>
+            )}
+          </div>
+        </QuickCard>
+      )}
+
       {/* Action buttons */}
       <div className="mt-6 space-y-3">
         {permissions.canClaim && (
@@ -509,7 +812,7 @@ export default function QuickChecklistPage() {
             variant="primary"
             fullWidth
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || (item.requiresDeliverable && !isSummaryValid)}
           >
             {isSubmitting ? 'Submitting...' : '📤 Submit for Verification'}
           </QuickButton>
@@ -520,7 +823,7 @@ export default function QuickChecklistPage() {
             variant="success"
             fullWidth
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || (item.requiresDeliverable && !isSummaryValid)}
           >
             {isSubmitting ? 'Completing...' : '✅ Mark Complete'}
           </QuickButton>

@@ -87,6 +87,7 @@ model User {
   tasksAssigned           Task[] @relation("TaskAssignee")
   tasksVerified           Task[] @relation("TaskVerifier")
   deliverablesCreated     TaskDeliverable[] @relation("DeliverableCreator")
+  checklistDeliverablesCreated ChecklistItemDeliverable[] @relation("ChecklistDeliverableCreator")
   filesUploaded           File[] @relation("FilesUploaded")
 
   commentsAuthored        Comment[] @relation("CommentsAuthored")
@@ -1511,6 +1512,33 @@ model TaskDeliverable {
 }
 
 // ============================================
+// CHECKLIST ITEM DELIVERABLES
+// ============================================
+
+model ChecklistItemDeliverable {
+  id                  String   @id @default(cuid())
+  checklistItemId     String   @unique
+
+  // Content
+  summary             String   @db.Text  // Min 30 chars, what was accomplished
+  links               Json?              // Array of { url, title } objects
+  nextSteps           String?  @db.Text  // Optional notes for future work
+
+  // Metadata
+  createdById         String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  checklistItem       ChecklistItem @relation(fields: [checklistItemId], references: [id], onDelete: Cascade)
+  createdBy           User     @relation("ChecklistDeliverableCreator", fields: [createdById], references: [id])
+  files               File[]
+
+  @@index([checklistItemId])
+  @@index([createdById])
+}
+
+// ============================================
 // EVENTS
 // ============================================
 
@@ -1688,6 +1716,9 @@ model ChecklistItem {
   verificationNotes    String?           @db.Text
   rejectionReason      String?           @db.Text
 
+  // Deliverable
+  requiresDeliverable  Boolean           @default(false)  // Most checklist items are small
+
   // Context tags
   contextPhone       Boolean @default(false)
   contextComputer    Boolean @default(false)
@@ -1710,6 +1741,7 @@ model ChecklistItem {
   assignee    User?    @relation("ChecklistItemsAssigned", fields: [assigneeId], references: [id])
   verifiedBy  User?    @relation("ChecklistItemsVerified", fields: [verifiedById], references: [id])
   files       File[]
+  deliverable ChecklistItemDeliverable?
 
   @@index([taskId])
   @@index([completedById])
@@ -1755,6 +1787,7 @@ model File {
   manualPaymentId String?
   feedbackId      String?
   deliverableId   String?
+  checklistDeliverableId String?
 
   // Metadata
   description   String?
@@ -1774,6 +1807,7 @@ model File {
   manualPayment ManualPayment? @relation(fields: [manualPaymentId], references: [id], onDelete: Cascade)
   feedback      Feedback? @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
   deliverable   TaskDeliverable? @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+  checklistDeliverable ChecklistItemDeliverable? @relation(fields: [checklistDeliverableId], references: [id], onDelete: Cascade)
 
   @@index([uploadedById])
   @@index([bandId])
@@ -1785,6 +1819,7 @@ model File {
   @@index([manualPaymentId])
   @@index([feedbackId])
   @@index([deliverableId])
+  @@index([checklistDeliverableId])
   @@index([category])
 }
 

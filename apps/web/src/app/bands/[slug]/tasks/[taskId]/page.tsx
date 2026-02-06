@@ -42,6 +42,7 @@ export default function TaskDetailPage() {
   
   const [userId, setUserId] = useState<string | null>(null)
   const [newItemText, setNewItemText] = useState('')
+  const [newItemRequiresDeliverable, setNewItemRequiresDeliverable] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(new Set())
   
@@ -110,6 +111,7 @@ export default function TaskDetailPage() {
   const createItemMutation = trpc.checklist.create.useMutation({
     onSuccess: () => {
       setNewItemText('')
+      setNewItemRequiresDeliverable(false)
       refetchChecklist()
     },
     onError: (error) => {
@@ -279,6 +281,7 @@ export default function TaskDetailPage() {
     const checklistData = {
       taskId,
       description: newItemText,
+      requiresDeliverable: newItemRequiresDeliverable,
       userId,
     }
 
@@ -767,27 +770,41 @@ export default function TaskDetailPage() {
                 </Stack>
               ) : null}
 
-              <Flex gap="sm" align="end">
-                <Input
-                  placeholder="Add a checklist item..."
-                  value={newItemText}
-                  onChange={(e) => setNewItemText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleAddItem()
-                    }
-                  }}
-                />
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleAddItem}
-                  disabled={createItemMutation.isPending || validationMutation.isPending || !newItemText.trim()}
-                >
-                  {validationMutation.isPending ? '...' : 'Add'}
-                </Button>
-              </Flex>
+              <Stack spacing="sm">
+                <Flex gap="sm" align="end">
+                  <Input
+                    placeholder="Add a checklist item..."
+                    value={newItemText}
+                    onChange={(e) => setNewItemText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleAddItem()
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleAddItem}
+                    disabled={createItemMutation.isPending || validationMutation.isPending || !newItemText.trim()}
+                  >
+                    {validationMutation.isPending ? '...' : 'Add'}
+                  </Button>
+                </Flex>
+                <Flex gap="sm" align="center">
+                  <input
+                    type="checkbox"
+                    id="requiresDeliverable"
+                    checked={newItemRequiresDeliverable}
+                    onChange={(e) => setNewItemRequiresDeliverable(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="requiresDeliverable" className="text-sm text-gray-600">
+                    Requires deliverable (summary of work when completing)
+                  </label>
+                </Flex>
+              </Stack>
             </Stack>
           </Card>
 

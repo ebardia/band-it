@@ -28,6 +28,11 @@ import { AppNav } from '@/components/AppNav'
 
 const CAN_UPDATE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 
+interface DeliverableLink {
+  url: string
+  title: string
+}
+
 export default function ChecklistItemDetailPage() {
   const router = useRouter()
   const params = useParams()
@@ -44,12 +49,20 @@ export default function ChecklistItemDetailPage() {
   const [editNotes, setEditNotes] = useState('')
   const [editAssigneeId, setEditAssigneeId] = useState<string | null>(null)
   const [editDueDate, setEditDueDate] = useState('')
+  const [editRequiresDeliverable, setEditRequiresDeliverable] = useState(false)
 
   // Integrity Guard state
   const [validationIssues, setValidationIssues] = useState<any[]>([])
   const [showBlockModal, setShowBlockModal] = useState(false)
   const [showWarningModal, setShowWarningModal] = useState(false)
   const [pendingEditData, setPendingEditData] = useState<any>(null)
+
+  // Deliverable state
+  const [summary, setSummary] = useState('')
+  const [links, setLinks] = useState<DeliverableLink[]>([])
+  const [nextSteps, setNextSteps] = useState('')
+  const [newLinkUrl, setNewLinkUrl] = useState('')
+  const [newLinkTitle, setNewLinkTitle] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -68,6 +81,12 @@ export default function ChecklistItemDetailPage() {
 
   const { data: itemData, isLoading, refetch } = trpc.checklist.getById.useQuery(
     { itemId },
+    { enabled: !!itemId }
+  )
+
+  // Fetch deliverable data
+  const { data: deliverableData, refetch: refetchDeliverable } = trpc.checklist.getDeliverable.useQuery(
+    { checklistItemId: itemId },
     { enabled: !!itemId }
   )
 
@@ -125,6 +144,50 @@ export default function ChecklistItemDetailPage() {
   // Integrity Guard validation mutation
   const validationMutation = trpc.validation.check.useMutation()
 
+  // Deliverable mutations
+  // @ts-ignore - tRPC type instantiation depth issue
+  const updateDeliverableMutation = trpc.checklist.updateDeliverable.useMutation({
+    onSuccess: () => {
+      showToast('Deliverable saved!', 'success')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const submitMutation = trpc.checklist.submit.useMutation({
+    onSuccess: () => {
+      showToast('Submitted for verification!', 'success')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const retryMutation = trpc.checklist.retry.useMutation({
+    onSuccess: () => {
+      showToast('Resubmitted for verification!', 'success')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  // Populate deliverable form with existing data
+  useEffect(() => {
+    if (deliverableData?.deliverable) {
+      setSummary(deliverableData.deliverable.summary || '')
+      const existingLinks = deliverableData.deliverable.links
+      if (Array.isArray(existingLinks)) {
+        setLinks(existingLinks as unknown as DeliverableLink[])
+      }
+      setNextSteps(deliverableData.deliverable.nextSteps || '')
+    }
+  }, [deliverableData])
+
   const handleOpenEditModal = () => {
     if (!itemData?.item) return
     const item = itemData.item
@@ -132,6 +195,7 @@ export default function ChecklistItemDetailPage() {
     setEditNotes(item.notes || '')
     setEditAssigneeId(item.assigneeId || null)
     setEditDueDate(item.dueDate ? new Date(item.dueDate).toISOString().split('T')[0] : '')
+    setEditRequiresDeliverable(item.requiresDeliverable || false)
     setShowEditModal(true)
   }
 
@@ -145,6 +209,7 @@ export default function ChecklistItemDetailPage() {
       notes: editNotes || null,
       assigneeId: editAssigneeId,
       dueDate: editDueDate ? new Date(editDueDate) : null,
+      requiresDeliverable: editRequiresDeliverable,
     }
 
     // Store data for potential later use
@@ -227,6 +292,115 @@ export default function ChecklistItemDetailPage() {
     if (!userId) return
     if (!window.confirm('Are you sure you want to delete this checklist item? This action cannot be undone.')) return
     deleteItemMutation.mutate({ itemId, userId })
+  }
+
+  const handleAddLink = () => {
+    if (!newLinkUrl.trim() || !newLinkTitle.trim()) {
+      showToast('Please enter both URL and title', 'error')
+      return
+    }
+    try {
+      new URL(newLinkUrl)
+    } catch {
+      showToast('Please enter a valid URL', 'error')
+      return
+    }
+    setLinks(prev => [...prev, { url: newLinkUrl.trim(), title: newLinkTitle.trim() }])
+    setNewLinkUrl('')
+    setNewLinkTitle('')
+  }
+
+  const handleRemoveLink = (index: number) => {
+    setLinks(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSaveDeliverable = async () => {
+    if (!userId) return
+
+    if (summary.trim().length < 30) {
+      showToast('Summary must be at least 30 characters', 'error')
+      return
+    }
+
+    updateDeliverableMutation.mutate({
+      checklistItemId: itemId,
+      userId,
+      summary: summary.trim(),
+      links: links.length > 0 ? links : undefined,
+      nextSteps: nextSteps.trim() || null,
+    })
+  }
+
+  const handleSubmitForVerification = async () => {
+    if (!userId || !itemData?.item) return
+
+    const requiresDeliverable = itemData.item.requiresDeliverable
+
+    // Validate deliverable if required
+    if (requiresDeliverable) {
+      if (!summary.trim()) {
+        showToast('Please enter a summary of what was accomplished', 'error')
+        return
+      }
+      if (summary.trim().length < 30) {
+        showToast('Summary must be at least 30 characters', 'error')
+        return
+      }
+    }
+
+    try {
+      // Save deliverable first if summary is provided
+      if (summary.trim()) {
+        await updateDeliverableMutation.mutateAsync({
+          checklistItemId: itemId,
+          userId,
+          summary: summary.trim(),
+          links: links.length > 0 ? links : undefined,
+          nextSteps: nextSteps.trim() || null,
+        })
+      }
+
+      // Now submit for verification
+      submitMutation.mutate({ itemId, userId })
+    } catch (error) {
+      // Error already handled by mutation onError
+    }
+  }
+
+  const handleRetry = async () => {
+    if (!userId || !itemData?.item) return
+
+    const requiresDeliverable = itemData.item.requiresDeliverable
+
+    // Validate deliverable if required
+    if (requiresDeliverable) {
+      if (!summary.trim()) {
+        showToast('Please enter a summary of what was accomplished', 'error')
+        return
+      }
+      if (summary.trim().length < 30) {
+        showToast('Summary must be at least 30 characters', 'error')
+        return
+      }
+    }
+
+    try {
+      // Save deliverable first if summary is provided
+      if (summary.trim()) {
+        await updateDeliverableMutation.mutateAsync({
+          checklistItemId: itemId,
+          userId,
+          summary: summary.trim(),
+          links: links.length > 0 ? links : undefined,
+          nextSteps: nextSteps.trim() || null,
+        })
+      }
+
+      // Now retry submission
+      retryMutation.mutate({ itemId, userId })
+    } catch (error) {
+      // Error already handled by mutation onError
+    }
   }
 
   const handleFileUpload = (file: { fileName: string; mimeType: string; base64Data: string }) => {
@@ -407,6 +581,150 @@ export default function ChecklistItemDetailPage() {
             </Stack>
           </Card>
 
+          {/* Deliverable Section - shown when user is assignee and item requires deliverable or has one */}
+          {isAssignee && (item.requiresDeliverable || deliverableData?.deliverable) && (
+            <Card>
+              <Stack spacing="md">
+                <Flex justify="between" align="center">
+                  <Heading level={3}>
+                    Deliverable {item.requiresDeliverable && <span className="text-red-500">*</span>}
+                  </Heading>
+                  {deliverableData?.deliverable && (
+                    <Badge variant="success">Saved</Badge>
+                  )}
+                </Flex>
+
+                {item.verificationStatus === 'REJECTED' && item.rejectionReason && (
+                  <Alert variant="danger">
+                    <Text weight="semibold">Feedback from reviewer:</Text>
+                    <Text>{item.rejectionReason}</Text>
+                  </Alert>
+                )}
+
+                <Stack spacing="sm">
+                  <Flex justify="between" align="center">
+                    <Text variant="small" weight="semibold">
+                      What was accomplished?
+                    </Text>
+                    <Text variant="small" color="muted">
+                      {summary.trim().length}/30 min
+                    </Text>
+                  </Flex>
+                  <Textarea
+                    value={summary}
+                    onChange={(e) => setSummary(e.target.value)}
+                    placeholder="Describe the work completed, decisions made, outcomes achieved..."
+                    rows={4}
+                  />
+                  {item.requiresDeliverable && summary.trim().length > 0 && summary.trim().length < 30 && (
+                    <Text variant="small" color="muted" className="text-red-500">
+                      Summary must be at least 30 characters ({30 - summary.trim().length} more needed)
+                    </Text>
+                  )}
+                </Stack>
+
+                {/* Links */}
+                <Stack spacing="sm">
+                  <Text variant="small" weight="semibold">Related Links (optional)</Text>
+
+                  {links.length > 0 && (
+                    <Stack spacing="xs">
+                      {links.map((link, index) => (
+                        <Flex key={index} gap="sm" align="center" className="bg-gray-50 p-2 rounded">
+                          <div className="flex-1 min-w-0">
+                            <Text variant="small" weight="semibold" className="truncate">{link.title}</Text>
+                            <Text variant="small" color="muted" className="truncate">{link.url}</Text>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveLink(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            Remove
+                          </Button>
+                        </Flex>
+                      ))}
+                    </Stack>
+                  )}
+
+                  <Flex gap="sm" className="flex-wrap md:flex-nowrap">
+                    <Input
+                      type="url"
+                      value={newLinkUrl}
+                      onChange={(e) => setNewLinkUrl(e.target.value)}
+                      placeholder="https://..."
+                    />
+                    <Input
+                      type="text"
+                      value={newLinkTitle}
+                      onChange={(e) => setNewLinkTitle(e.target.value)}
+                      placeholder="Link title"
+                    />
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleAddLink}
+                      disabled={!newLinkUrl.trim() || !newLinkTitle.trim()}
+                    >
+                      Add
+                    </Button>
+                  </Flex>
+                </Stack>
+
+                {/* Next Steps */}
+                <Stack spacing="sm">
+                  <Text variant="small" weight="semibold">Next Steps / Notes for Future (optional)</Text>
+                  <Textarea
+                    value={nextSteps}
+                    onChange={(e) => setNextSteps(e.target.value)}
+                    placeholder="Any follow-up work needed, lessons learned, or notes for whoever picks this up next..."
+                    rows={2}
+                  />
+                </Stack>
+
+                {/* Action buttons */}
+                <Flex gap="sm" className="flex-wrap">
+                  <Button
+                    variant="secondary"
+                    onClick={handleSaveDeliverable}
+                    disabled={updateDeliverableMutation.isPending || summary.trim().length < 30}
+                  >
+                    {updateDeliverableMutation.isPending ? 'Saving...' : 'Save Deliverable'}
+                  </Button>
+
+                  {item.requiresVerification && !item.isCompleted && item.verificationStatus !== 'PENDING' && (
+                    <Button
+                      variant="primary"
+                      onClick={handleSubmitForVerification}
+                      disabled={
+                        submitMutation.isPending ||
+                        updateDeliverableMutation.isPending ||
+                        (item.requiresDeliverable && summary.trim().length < 30)
+                      }
+                    >
+                      {submitMutation.isPending ? 'Submitting...' : 'Submit for Verification'}
+                    </Button>
+                  )}
+
+                  {item.verificationStatus === 'REJECTED' && (
+                    <Button
+                      variant="primary"
+                      onClick={handleRetry}
+                      disabled={
+                        retryMutation.isPending ||
+                        updateDeliverableMutation.isPending ||
+                        (item.requiresDeliverable && summary.trim().length < 30)
+                      }
+                    >
+                      {retryMutation.isPending ? 'Resubmitting...' : 'Resubmit for Verification'}
+                    </Button>
+                  )}
+                </Flex>
+              </Stack>
+            </Card>
+          )}
+
           {/* Files Section */}
           <Card>
             <Stack spacing="md">
@@ -504,6 +822,19 @@ export default function ChecklistItemDetailPage() {
                 onChange={(e) => setEditDueDate(e.target.value)}
               />
             </Stack>
+
+            <Flex gap="sm" align="center">
+              <input
+                type="checkbox"
+                id="editRequiresDeliverable"
+                checked={editRequiresDeliverable}
+                onChange={(e) => setEditRequiresDeliverable(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="editRequiresDeliverable" className="text-sm text-gray-600">
+                Requires deliverable (summary of work when completing)
+              </label>
+            </Flex>
 
             <Flex gap="sm" justify="end">
               <Button variant="ghost" onClick={() => setShowEditModal(false)}>

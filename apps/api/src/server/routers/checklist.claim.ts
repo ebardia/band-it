@@ -335,6 +335,7 @@ export const submitChecklistForVerification = publicProcedure
     const item = await prisma.checklistItem.findUnique({
       where: { id: itemId },
       include: {
+        deliverable: true,
         task: {
           include: {
             project: { select: { id: true, name: true } },
@@ -358,6 +359,22 @@ export const submitChecklistForVerification = publicProcedure
         code: 'FORBIDDEN',
         message: 'You are not assigned to this item'
       })
+    }
+
+    // Check if deliverable is required
+    if (item.requiresDeliverable) {
+      if (!item.deliverable) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'This checklist item requires a deliverable. Please fill in the deliverable form before submitting.'
+        })
+      }
+      if (item.deliverable.summary.length < 30) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Deliverable summary must be at least 30 characters.'
+        })
+      }
     }
 
     // Check if verification is required

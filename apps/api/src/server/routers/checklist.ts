@@ -13,6 +13,12 @@ import {
   updateChecklistContext,
   getClaimableChecklistItems,
 } from './checklist.claim'
+import {
+  updateChecklistDeliverable,
+  getChecklistDeliverable,
+  attachFileToChecklistDeliverable,
+  removeFileFromChecklistDeliverable,
+} from './checklist.deliverable'
 import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 
 // Roles that can use AI suggestions
@@ -27,6 +33,12 @@ export const checklistRouter = router({
   retry: retryChecklistItem,
   updateContext: updateChecklistContext,
   getClaimable: getClaimableChecklistItems,
+
+  // Deliverable procedures
+  updateDeliverable: updateChecklistDeliverable,
+  getDeliverable: getChecklistDeliverable,
+  attachFileToDeliverable: attachFileToChecklistDeliverable,
+  removeFileFromDeliverable: removeFileFromChecklistDeliverable,
 
   // Get a single checklist item by ID
   getById: publicProcedure
@@ -120,6 +132,7 @@ export const checklistRouter = router({
       notes: z.string().optional(),
       assigneeId: z.string().optional(),
       dueDate: z.coerce.date().optional(),
+      requiresDeliverable: z.boolean().optional(),
       userId: z.string(),
       // Integrity Guard flags
       proceedWithFlags: z.boolean().optional(),
@@ -127,7 +140,7 @@ export const checklistRouter = router({
       flagDetails: z.any().optional(),
     }))
     .mutation(async ({ input }) => {
-      const { taskId, description, notes, assigneeId, dueDate, userId, proceedWithFlags, flagReasons, flagDetails } = input
+      const { taskId, description, notes, assigneeId, dueDate, requiresDeliverable, userId, proceedWithFlags, flagReasons, flagDetails } = input
 
       // Set integrity flags in audit context if user proceeded with warnings
       if (proceedWithFlags && flagReasons && flagReasons.length > 0) {
@@ -169,6 +182,7 @@ export const checklistRouter = router({
           notes,
           assigneeId,
           dueDate,
+          requiresDeliverable: requiresDeliverable ?? false,
           orderIndex: (maxOrder?.orderIndex ?? -1) + 1,
         },
         include: {
@@ -255,6 +269,7 @@ export const checklistRouter = router({
       notes: z.string().nullable().optional(),
       assigneeId: z.string().nullable().optional(),
       dueDate: z.coerce.date().nullable().optional(),
+      requiresDeliverable: z.boolean().optional(),
       userId: z.string(),
       // Integrity Guard flags
       proceedWithFlags: z.boolean().optional(),
@@ -262,7 +277,7 @@ export const checklistRouter = router({
       flagDetails: z.any().optional(),
     }))
     .mutation(async ({ input }) => {
-      const { itemId, description, notes, assigneeId, dueDate, userId, proceedWithFlags, flagReasons, flagDetails } = input
+      const { itemId, description, notes, assigneeId, dueDate, requiresDeliverable, userId, proceedWithFlags, flagReasons, flagDetails } = input
 
       // Set integrity flags in audit context if user proceeded with warnings
       if (proceedWithFlags && flagReasons && flagReasons.length > 0) {
@@ -283,6 +298,7 @@ export const checklistRouter = router({
       if (notes !== undefined) updateData.notes = notes
       if (assigneeId !== undefined) updateData.assigneeId = assigneeId
       if (dueDate !== undefined) updateData.dueDate = dueDate
+      if (requiresDeliverable !== undefined) updateData.requiresDeliverable = requiresDeliverable
 
       const updatedItem = await prisma.checklistItem.update({
         where: { id: itemId },

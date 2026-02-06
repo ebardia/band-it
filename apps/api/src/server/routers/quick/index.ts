@@ -896,6 +896,16 @@ export const quickRouter = router({
           verifiedBy: {
             select: { id: true, name: true },
           },
+          deliverable: {
+            select: {
+              id: true,
+              summary: true,
+              links: true,
+              nextSteps: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
         },
       })
 
@@ -1002,6 +1012,7 @@ export const quickRouter = router({
           dueDate: item.dueDate,
           isCompleted: item.isCompleted,
           requiresVerification: item.requiresVerification,
+          requiresDeliverable: item.requiresDeliverable,
           verificationStatus: item.verificationStatus,
           rejectionReason: item.rejectionReason,
           completionNote: item.completionNote,
@@ -1015,6 +1026,7 @@ export const quickRouter = router({
           assignee: item.assignee,
           completedBy: item.completedBy,
           verifiedBy: item.verifiedBy,
+          deliverable: item.deliverable,
         },
         task: {
           id: item.task.id,

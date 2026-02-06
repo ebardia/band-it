@@ -185,8 +185,8 @@ export const getProjectDeliverables = publicProcedure
       })
     }
 
-    // Build where clause for search
-    const searchWhere = search ? {
+    // Build where clause for task deliverable search
+    const taskSearchWhere = search ? {
       OR: [
         { summary: { contains: search, mode: 'insensitive' as const } },
         { task: { name: { contains: search, mode: 'insensitive' as const } } },
@@ -194,12 +194,22 @@ export const getProjectDeliverables = publicProcedure
       ]
     } : {}
 
-    // Get deliverables for all tasks in this project
-    const [deliverables, total] = await Promise.all([
+    // Build where clause for checklist item deliverable search
+    const checklistSearchWhere = search ? {
+      OR: [
+        { summary: { contains: search, mode: 'insensitive' as const } },
+        { checklistItem: { description: { contains: search, mode: 'insensitive' as const } } },
+        { checklistItem: { task: { name: { contains: search, mode: 'insensitive' as const } } } },
+        { files: { some: { originalName: { contains: search, mode: 'insensitive' as const } } } },
+      ]
+    } : {}
+
+    // Get task deliverables and checklist item deliverables in parallel
+    const [taskDeliverables, checklistDeliverables, taskTotal, checklistTotal] = await Promise.all([
       prisma.taskDeliverable.findMany({
         where: {
           task: { projectId },
-          ...searchWhere,
+          ...taskSearchWhere,
         },
         include: {
           task: {
@@ -230,19 +240,93 @@ export const getProjectDeliverables = publicProcedure
           }
         },
         orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
+      }),
+      prisma.checklistItemDeliverable.findMany({
+        where: {
+          checklistItem: { task: { projectId } },
+          ...checklistSearchWhere,
+        },
+        include: {
+          checklistItem: {
+            select: {
+              id: true,
+              description: true,
+              isCompleted: true,
+              verificationStatus: true,
+              completedAt: true,
+              assignee: {
+                select: { id: true, name: true }
+              },
+              task: {
+                select: {
+                  id: true,
+                  name: true,
+                }
+              }
+            }
+          },
+          createdBy: {
+            select: { id: true, name: true }
+          },
+          files: {
+            select: {
+              id: true,
+              filename: true,
+              originalName: true,
+              mimeType: true,
+              size: true,
+              url: true,
+              category: true,
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
       }),
       prisma.taskDeliverable.count({
         where: {
           task: { projectId },
-          ...searchWhere,
+          ...taskSearchWhere,
+        }
+      }),
+      prisma.checklistItemDeliverable.count({
+        where: {
+          checklistItem: { task: { projectId } },
+          ...checklistSearchWhere,
         }
       })
     ])
 
+    // Combine and sort by createdAt, then paginate
+    const allDeliverables = [
+      ...taskDeliverables.map(d => ({
+        ...d,
+        type: 'task' as const,
+        itemName: d.task.name,
+        itemId: d.task.id,
+        itemStatus: d.task.status,
+        itemVerificationStatus: d.task.verificationStatus,
+        itemCompletedAt: d.task.completedAt,
+        itemAssignee: d.task.assignee,
+        parentTask: null,
+      })),
+      ...checklistDeliverables.map(d => ({
+        ...d,
+        type: 'checklist' as const,
+        itemName: d.checklistItem.description,
+        itemId: d.checklistItem.id,
+        itemStatus: d.checklistItem.isCompleted ? 'DONE' : 'IN_PROGRESS',
+        itemVerificationStatus: d.checklistItem.verificationStatus,
+        itemCompletedAt: d.checklistItem.completedAt,
+        itemAssignee: d.checklistItem.assignee,
+        parentTask: d.checklistItem.task,
+      })),
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+    const total = taskTotal + checklistTotal
+    const paginatedDeliverables = allDeliverables.slice(skip, skip + limit)
+
     return {
-      deliverables,
+      deliverables: paginatedDeliverables,
       pagination: {
         page,
         limit,

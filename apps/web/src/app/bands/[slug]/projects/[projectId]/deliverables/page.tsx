@@ -41,17 +41,20 @@ interface Deliverable {
   nextSteps: string | null
   createdAt: string
   updatedAt: string
-  task: {
+  type: 'task' | 'checklist'
+  itemName: string
+  itemId: string
+  itemStatus: string
+  itemVerificationStatus: string | null
+  itemCompletedAt: string | null
+  itemAssignee: {
     id: string
     name: string
-    status: string
-    verificationStatus: string | null
-    completedAt: string | null
-    assignee: {
-      id: string
-      name: string
-    } | null
-  }
+  } | null
+  parentTask: {
+    id: string
+    name: string
+  } | null
   createdBy: {
     id: string
     name: string
@@ -79,27 +82,49 @@ function DeliverableCard({ deliverable }: { deliverable: Deliverable }) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
+  // Determine navigation URL based on type
+  const getItemUrl = () => {
+    if (deliverable.type === 'task') {
+      return `/bands/${slug}/tasks/${deliverable.itemId}`
+    } else {
+      // Checklist item - navigate to the parent task with checklist item ID
+      return `/bands/${slug}/tasks/${deliverable.parentTask?.id}/checklist/${deliverable.itemId}`
+    }
+  }
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <Stack spacing="md">
-        {/* Task Header */}
+        {/* Header */}
         <Flex justify="between" align="start" className="flex-wrap gap-2">
-          <div
-            className="cursor-pointer hover:text-blue-600"
-            onClick={() => router.push(`/bands/${slug}/tasks/${deliverable.task.id}`)}
-          >
-            <Text weight="semibold" className="text-lg">
-              {deliverable.task.name}
-            </Text>
+          <div>
+            {deliverable.type === 'checklist' && deliverable.parentTask && (
+              <Text variant="small" color="muted" className="mb-1">
+                Task: {deliverable.parentTask.name}
+              </Text>
+            )}
+            <div
+              className="cursor-pointer hover:text-blue-600"
+              onClick={() => router.push(getItemUrl())}
+            >
+              <Flex gap="sm" align="center">
+                {deliverable.type === 'checklist' && (
+                  <Badge variant="neutral" className="text-xs">Checklist</Badge>
+                )}
+                <Text weight="semibold" className="text-lg">
+                  {deliverable.itemName}
+                </Text>
+              </Flex>
+            </div>
           </div>
           <Flex gap="sm">
-            {deliverable.task.verificationStatus === 'APPROVED' && (
+            {deliverable.itemVerificationStatus === 'APPROVED' && (
               <Badge variant="success">Verified</Badge>
             )}
-            {deliverable.task.verificationStatus === 'PENDING' && (
+            {deliverable.itemVerificationStatus === 'PENDING' && (
               <Badge variant="warning">Pending Review</Badge>
             )}
-            {deliverable.task.verificationStatus === 'REJECTED' && (
+            {deliverable.itemVerificationStatus === 'REJECTED' && (
               <Badge variant="danger">Rejected</Badge>
             )}
           </Flex>
@@ -165,13 +190,13 @@ function DeliverableCard({ deliverable }: { deliverable: Deliverable }) {
         <Flex justify="between" align="center" className="pt-2 border-t border-gray-100">
           <Text variant="small" color="muted">
             By {deliverable.createdBy.name}
-            {deliverable.task.assignee && deliverable.task.assignee.id !== deliverable.createdBy.id && (
-              <span> (assigned to {deliverable.task.assignee.name})</span>
+            {deliverable.itemAssignee && deliverable.itemAssignee.id !== deliverable.createdBy.id && (
+              <span> (assigned to {deliverable.itemAssignee.name})</span>
             )}
           </Text>
           <Text variant="small" color="muted">
-            {deliverable.task.completedAt
-              ? `Completed ${formatDate(deliverable.task.completedAt)}`
+            {deliverable.itemCompletedAt
+              ? `Completed ${formatDate(deliverable.itemCompletedAt)}`
               : `Updated ${formatDate(deliverable.updatedAt)}`
             }
           </Text>
@@ -256,6 +281,7 @@ export default function ProjectDeliverablesPage() {
   const project = projectData.project
   const band = project.band
   const currentMember = band.members.find((m: any) => m.user.id === userId)
+  // @ts-ignore - tRPC type instantiation depth issue
   const deliverables = (deliverablesData?.deliverables || []) as Deliverable[]
   const pagination = deliverablesData?.pagination
 
