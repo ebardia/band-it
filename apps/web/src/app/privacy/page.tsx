@@ -1,19 +1,55 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import {
-  PageLayout,
   Container,
   Card,
   Heading,
   Text,
-  Stack
+  Stack,
+  Button,
+  Flex,
+  Footer,
 } from '@/components/ui'
 
 export default function PrivacyPage() {
+  const router = useRouter()
+
   return (
-    <PageLayout>
-      <Container size="md">
-        <Card>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-50">
+      {/* Top navigation bar */}
+      <div className="p-4">
+        <Flex justify="between" align="center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/')}
+          >
+            Home
+          </Button>
+          <Flex gap="sm">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/register')}
+            >
+              Register
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/login')}
+            >
+              Sign In
+            </Button>
+          </Flex>
+        </Flex>
+      </div>
+
+      {/* Main content */}
+      <main className="flex-1">
+        <Container size="md" className="py-12">
+          <Card>
           <Stack spacing="lg">
             <div>
               <Heading level={1}>BAND IT — PRIVACY POLICY</Heading>
@@ -203,7 +239,10 @@ export default function PrivacyPage() {
             </section>
           </Stack>
         </Card>
-      </Container>
-    </PageLayout>
+        </Container>
+      </main>
+
+      <Footer />
+    </div>
   )
 }

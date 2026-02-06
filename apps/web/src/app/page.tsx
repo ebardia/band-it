@@ -11,7 +11,8 @@ import {
   Heading,
   Text,
   Flex,
-  Card
+  Card,
+  Footer,
 } from "@/components/ui"
 
 const useCases = [
@@ -607,6 +608,8 @@ export default function HomePage() {
             </Card>
           </Stack>
         </Container>
+
+        <Footer />
       </PageLayout>
     </div>
   )

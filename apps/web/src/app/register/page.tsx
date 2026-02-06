@@ -195,7 +195,10 @@ function RegisterContent() {
                       className="rounded w-4 h-4"
                     />
                     <Text variant="small">
-                      I have read and agree to follow these community guidelines
+                      I have read and agree to follow these{' '}
+                      <a href="/community-guidelines" target="_blank" className="text-blue-600 hover:underline">
+                        community guidelines
+                      </a>
                     </Text>
                   </label>
                 </div>
