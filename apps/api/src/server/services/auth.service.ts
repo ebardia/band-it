@@ -76,6 +76,13 @@ export const authService = {
       await emailService.sendVerificationEmail(user.id, user.email, user.name)
     }
 
+    // Notify admin of new registration
+    await emailService.sendNewUserRegistrationNotification({
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+    })
+
     // Process pending invites for this email
     const bandsInvited = await this.processPendingInvites(user.id, normalizedEmail, inviteToken)
 

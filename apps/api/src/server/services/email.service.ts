@@ -924,6 +924,56 @@ export const emailService = {
   },
 
   /**
+   * Send admin notification when a new user registers
+   */
+  async sendNewUserRegistrationNotification(options: {
+    userId: string
+    userName: string
+    userEmail: string
+  }) {
+    const { userId, userName, userEmail } = options
+    const ADMIN_EMAIL = 'bardia@ebardia.com'
+    const userUrl = `${FRONTEND_URL}/admin/users/${userId}`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #10B981;">New User Registration</h1>
+        <p style="font-size: 16px; color: #374151;">
+          A new user has registered on Band IT.
+        </p>
+        <div style="background-color: #D1FAE5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10B981;">
+          <p style="font-size: 14px; color: #065F46; margin: 0;">
+            <strong>Name:</strong> ${userName}<br>
+            <strong>Email:</strong> ${userEmail}<br>
+            <strong>User ID:</strong> ${userId}<br>
+            <strong>Registered:</strong> ${new Date().toLocaleString()}
+          </p>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          This is an automated notification from Band IT.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 NEW USER REGISTRATION NOTIFICATION:')
+      console.log(`Name: ${userName}`)
+      console.log(`Email: ${userEmail}`)
+      console.log(`User ID: ${userId}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: ADMIN_EMAIL,
+      subject: `[Band IT] New user registered: ${userName}`,
+      html,
+    })
+  },
+
+  /**
    * Send auto-confirm warning email
    */
   async sendManualPaymentAutoConfirmWarningEmail(options: {
