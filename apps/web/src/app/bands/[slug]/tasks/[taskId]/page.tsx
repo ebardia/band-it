@@ -43,7 +43,13 @@ export default function TaskDetailPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [newItemText, setNewItemText] = useState('')
   const [newItemRequiresDeliverable, setNewItemRequiresDeliverable] = useState(false)
-  const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
+  const [aiSuggestions, setAiSuggestions] = useState<{
+    description: string
+    validation: {
+      canProceed: boolean
+      issues: any[]
+    }
+  }[]>([])
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(new Set())
   
   // Edit modal state
@@ -121,7 +127,15 @@ export default function TaskDetailPage() {
 
   const createManyMutation = trpc.checklist.createMany.useMutation({
     onSuccess: (data) => {
-      showToast(`Added ${data.items.length} checklist items!`, 'success')
+      const msgs: string[] = []
+      msgs.push(`Added ${data.items.length} checklist items!`)
+      if (data.blockedCount > 0) {
+        msgs.push(`${data.blockedCount} blocked by validation.`)
+      }
+      if (data.flaggedCount > 0) {
+        msgs.push(`${data.flaggedCount} added with warnings.`)
+      }
+      showToast(msgs.join(' '), data.blockedCount > 0 ? 'warning' : 'success')
       setAiSuggestions([])
       setSelectedSuggestions(new Set())
       refetchChecklist()
@@ -155,8 +169,22 @@ export default function TaskDetailPage() {
         showToast('All necessary checklist items already exist - no new suggestions needed', 'info')
       } else {
         setAiSuggestions(data.suggestions)
-        setSelectedSuggestions(new Set(data.suggestions.map((_, i) => i)))
-        showToast(`Generated ${data.suggestions.length} suggestions!`, 'success')
+        // Only auto-select items that can proceed (not blocked)
+        const selectableIndices = data.suggestions
+          .map((s, i) => s.validation.canProceed ? i : -1)
+          .filter(i => i !== -1)
+        setSelectedSuggestions(new Set(selectableIndices))
+
+        const blockedCount = data.suggestions.filter(s => !s.validation.canProceed).length
+        const flaggedCount = data.suggestions.filter(s => s.validation.canProceed && s.validation.issues.length > 0).length
+
+        if (blockedCount > 0) {
+          showToast(`Generated ${data.suggestions.length} suggestions. ${blockedCount} blocked due to validation issues.`, 'warning')
+        } else if (flaggedCount > 0) {
+          showToast(`Generated ${data.suggestions.length} suggestions. ${flaggedCount} have minor alignment concerns.`, 'info')
+        } else {
+          showToast(`Generated ${data.suggestions.length} suggestions!`, 'success')
+        }
       }
       // Refresh AI usage tracker
       utils.aiUsage.invalidate()
@@ -371,6 +399,9 @@ export default function TaskDetailPage() {
   }
 
   const handleToggleSuggestion = (index: number) => {
+    // Don't allow toggling blocked items
+    if (!aiSuggestions[index]?.validation.canProceed) return
+
     setSelectedSuggestions(prev => {
       const newSet = new Set(prev)
       if (newSet.has(index)) {
@@ -384,7 +415,9 @@ export default function TaskDetailPage() {
 
   const handleAddSelectedSuggestions = () => {
     if (!userId || selectedSuggestions.size === 0) return
-    const descriptions = aiSuggestions.filter((_, i) => selectedSuggestions.has(i))
+    const descriptions = aiSuggestions
+      .filter((_, i) => selectedSuggestions.has(i))
+      .map(s => s.description)
     createManyMutation.mutate({
       taskId,
       descriptions,
@@ -635,32 +668,55 @@ export default function TaskDetailPage() {
                         ✨ AI Suggestions
                       </Text>
                       <Text variant="small" color="muted">
-                        {selectedSuggestions.size} of {aiSuggestions.length} selected
+                        {selectedSuggestions.size} of {aiSuggestions.filter(s => s.validation.canProceed).length} selectable
                       </Text>
                     </Flex>
-                    
+
                     <Stack spacing="sm">
-                      {aiSuggestions.map((suggestion, index) => (
-                        <Flex 
-                          key={index} 
-                          gap="sm" 
-                          align="center"
-                          className="cursor-pointer"
-                          onClick={() => handleToggleSuggestion(index)}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleToggleSuggestion(index)
-                            }}
+                      {aiSuggestions.map((suggestion, index) => {
+                        const isBlocked = !suggestion.validation.canProceed
+                        const isFlagged = suggestion.validation.canProceed && suggestion.validation.issues.length > 0
+
+                        return (
+                          <Flex
+                            key={index}
+                            gap="sm"
+                            align="start"
+                            className={`${isBlocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${isFlagged ? 'bg-yellow-50 p-2 rounded' : ''} ${isBlocked ? 'bg-red-50 p-2 rounded' : ''}`}
+                            onClick={() => handleToggleSuggestion(index)}
                           >
-                            {selectedSuggestions.has(index) ? '☑️' : '⬜'}
-                          </Button>
-                          <Text variant="small">{suggestion}</Text>
-                        </Flex>
-                      ))}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleToggleSuggestion(index)
+                              }}
+                              disabled={isBlocked}
+                            >
+                              {isBlocked ? '🚫' : selectedSuggestions.has(index) ? '☑️' : '⬜'}
+                            </Button>
+                            <Stack spacing="xs" className="flex-1">
+                              <Text
+                                variant="small"
+                                className={isBlocked ? 'line-through text-gray-500' : isFlagged ? 'text-yellow-800' : ''}
+                              >
+                                {suggestion.description}
+                              </Text>
+                              {isBlocked && suggestion.validation.issues.length > 0 && (
+                                <Text variant="small" className="text-red-600">
+                                  Blocked: {suggestion.validation.issues[0]?.suggestion || 'Does not align with task scope'}
+                                </Text>
+                              )}
+                              {isFlagged && (
+                                <Text variant="small" className="text-yellow-700">
+                                  Warning: {suggestion.validation.issues[0]?.suggestion || 'Minor alignment concerns'}
+                                </Text>
+                              )}
+                            </Stack>
+                          </Flex>
+                        )
+                      })}
                     </Stack>
 
                     <Flex gap="sm" justify="end">
@@ -677,8 +733,8 @@ export default function TaskDetailPage() {
                         onClick={handleAddSelectedSuggestions}
                         disabled={selectedSuggestions.size === 0 || createManyMutation.isPending}
                       >
-                        {createManyMutation.isPending 
-                          ? 'Adding...' 
+                        {createManyMutation.isPending
+                          ? 'Adding...'
                           : `Add ${selectedSuggestions.size} Items`
                         }
                       </Button>

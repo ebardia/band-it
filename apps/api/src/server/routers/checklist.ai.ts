@@ -3,6 +3,7 @@ import { publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { callAI, parseAIJson } from '../../lib/ai-client'
+import { validateContent } from '../../services/validation.service'
 
 // Roles that can use AI suggestions
 const CAN_USE_AI = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -130,9 +131,43 @@ Respond ONLY with the JSON array, no other text.`
       }
 
       // Filter out empty strings and trim
-      const validatedSuggestions = suggestions
+      const trimmedSuggestions = suggestions
         .map(s => s.trim())
         .filter(s => s.length > 0)
+
+      // Validate each suggestion against the task scope
+      const validatedSuggestions = await Promise.all(
+        trimmedSuggestions.map(async (description) => {
+          try {
+            const validationResult = await validateContent({
+              entityType: 'ChecklistItem',
+              action: 'create',
+              bandId: task.band.id,
+              userId,
+              data: { description },
+              parentId: taskId,
+            })
+
+            return {
+              description,
+              validation: {
+                canProceed: validationResult.canProceed,
+                issues: validationResult.issues,
+              },
+            }
+          } catch (error) {
+            // If validation fails, allow but mark as unknown
+            console.error('Validation error for suggestion:', description, error)
+            return {
+              description,
+              validation: {
+                canProceed: true,
+                issues: [],
+              },
+            }
+          }
+        })
+      )
 
       return {
         suggestions: validatedSuggestions,

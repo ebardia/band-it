@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { setAuditFlags, clearAuditFlags } from '../../lib/auditContext'
 import { callAI, parseAIJson } from '../../lib/ai-client'
+import { validateContent } from '../../services/validation.service'
 import {
   claimChecklistItem,
   unclaimChecklistItem,
@@ -207,14 +208,15 @@ export const checklistRouter = router({
       taskId: z.string(),
       descriptions: z.array(z.string().min(1)),
       userId: z.string(),
+      skipValidation: z.boolean().optional(), // Allow skipping if already validated
     }))
     .mutation(async ({ input }) => {
-      const { taskId, descriptions, userId } = input
+      const { taskId, descriptions, userId, skipValidation } = input
 
       // Verify task exists and get band status
       const task = await prisma.task.findUnique({
         where: { id: taskId },
-        include: { band: { select: { status: true } } }
+        include: { band: { select: { id: true, status: true } } }
       })
       if (!task) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' })
@@ -228,6 +230,52 @@ export const checklistRouter = router({
         })
       }
 
+      // Validate each description unless skipped (already validated at suggestion time)
+      let validDescriptions = descriptions
+      const blockedItems: string[] = []
+      const flaggedItems: string[] = []
+
+      if (!skipValidation) {
+        const validationResults = await Promise.all(
+          descriptions.map(async (description) => {
+            try {
+              const result = await validateContent({
+                entityType: 'ChecklistItem',
+                action: 'create',
+                bandId: task.band.id,
+                userId,
+                data: { description },
+                parentId: taskId,
+              })
+              return { description, result }
+            } catch (error) {
+              console.error('Validation error for:', description, error)
+              return { description, result: { canProceed: true, issues: [] } }
+            }
+          })
+        )
+
+        // Filter out blocked items, track flagged ones
+        validDescriptions = []
+        for (const { description, result } of validationResults) {
+          if (!result.canProceed) {
+            blockedItems.push(description)
+          } else {
+            validDescriptions.push(description)
+            if (result.issues.length > 0) {
+              flaggedItems.push(description)
+            }
+          }
+        }
+      }
+
+      if (validDescriptions.length === 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'All items were blocked by validation. They may not align with the task scope.',
+        })
+      }
+
       // Get max order index
       const maxOrder = await prisma.checklistItem.findFirst({
         where: { taskId },
@@ -237,9 +285,9 @@ export const checklistRouter = router({
 
       let startIndex = (maxOrder?.orderIndex ?? -1) + 1
 
-      // Create all items
+      // Create valid items
       const createdItems = await Promise.all(
-        descriptions.map((description, index) =>
+        validDescriptions.map((description, index) =>
           prisma.checklistItem.create({
             data: {
               taskId,
@@ -258,7 +306,11 @@ export const checklistRouter = router({
         )
       )
 
-      return { items: createdItems }
+      return {
+        items: createdItems,
+        blockedCount: blockedItems.length,
+        flaggedCount: flaggedItems.length,
+      }
     }),
 
   // Update a checklist item
@@ -629,11 +681,45 @@ Respond with a JSON array of strings. Return only the JSON array, no other text.
         }
 
         // Filter out empty strings, ensure all items are strings, and trim
-        const validatedSuggestions = suggestions
+        const trimmedSuggestions = suggestions
           .filter(s => typeof s === 'string')
           .map(s => s.trim())
           .filter(s => s.length > 0)
           .slice(0, 10) // Cap at 10 items
+
+        // Validate each suggestion against the task scope
+        const validatedSuggestions = await Promise.all(
+          trimmedSuggestions.map(async (description) => {
+            try {
+              const validationResult = await validateContent({
+                entityType: 'ChecklistItem',
+                action: 'create',
+                bandId: task.band.id,
+                userId,
+                data: { description },
+                parentId: taskId,
+              })
+
+              return {
+                description,
+                validation: {
+                  canProceed: validationResult.canProceed,
+                  issues: validationResult.issues,
+                },
+              }
+            } catch (error) {
+              // If validation fails, allow but mark as unknown
+              console.error('Validation error for suggestion:', description, error)
+              return {
+                description,
+                validation: {
+                  canProceed: true,
+                  issues: [],
+                },
+              }
+            }
+          })
+        )
 
         return {
           suggestions: validatedSuggestions,
