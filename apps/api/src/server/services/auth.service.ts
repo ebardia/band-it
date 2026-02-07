@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { TRPCError } from '@trpc/server'
 import { emailService } from './email.service'
+import { analyticsService } from './analytics.service'
 
 // JWT secret (in production, use environment variable)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
@@ -85,6 +86,11 @@ export const authService = {
 
     // Process pending invites for this email
     const bandsInvited = await this.processPendingInvites(user.id, normalizedEmail, inviteToken)
+
+    // Track registration event
+    await analyticsService.trackEvent('user_registered', {
+      userId: user.id,
+    })
 
     return {
       user,
@@ -226,6 +232,11 @@ export const authService = {
 
     // Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user.id)
+
+    // Track sign-in event
+    await analyticsService.trackEvent('user_signed_in', {
+      userId: user.id,
+    })
 
     return {
       user: {

@@ -3,6 +3,7 @@ import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { createDefaultChannel } from '../channel'
 import { checkAndSetBandActivation } from './band.dissolve'
+import { analyticsService } from '../../services/analytics.service'
 
 export const bandCreateRouter = router({
   /**
@@ -92,6 +93,12 @@ export const bandCreateRouter = router({
 
       // Create the default General channel
       await createDefaultChannel(band.id, input.userId)
+
+      // Track band creation event
+      await analyticsService.trackEvent('band_created', {
+        userId: input.userId,
+        metadata: { bandId: band.id, bandName: band.name },
+      })
 
       return {
         success: true,

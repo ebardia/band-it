@@ -11,6 +11,7 @@ export function AdminSidebar() {
 
   const mainNav = [
     { label: '📊 Dashboard', path: '/admin' },
+    { label: '📈 Analytics', path: '/admin/analytics' },
     { label: '👥 Users', path: '/admin/users' },
     { label: '🎸 Bands', path: '/admin/bands' },
   ]

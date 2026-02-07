@@ -10,6 +10,7 @@ import { TRPCError } from '@trpc/server'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
 import { getEligibleReviewers } from '../../../lib/proposal-review'
 import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
+import { analyticsService } from '../../services/analytics.service'
 
 // Roles that can create proposals
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -328,6 +329,14 @@ export const proposalCreateRouter = router({
 
       // Clear flags to prevent leaking to other operations
       clearAuditFlags()
+
+      // Track proposal creation event (only for non-draft proposals)
+      if (status !== 'DRAFT') {
+        await analyticsService.trackEvent('proposal_created', {
+          userId: input.userId,
+          metadata: { proposalId: proposal.id, bandId: input.bandId },
+        })
+      }
 
       return {
         success: true,

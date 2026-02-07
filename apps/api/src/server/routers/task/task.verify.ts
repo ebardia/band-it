@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
 import { requireGoodStanding, getBandIdFromTask } from '../../../lib/dues-enforcement'
+import { analyticsService } from '../../services/analytics.service'
 
 // Roles that can verify tasks
 const CAN_VERIFY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
@@ -239,6 +240,12 @@ export const verifyTask = publicProcedure
       await prisma.project.update({
         where: { id: task.projectId },
         data: { completedTasks: { increment: 1 } }
+      })
+
+      // Track task completion event
+      await analyticsService.trackEvent('task_completed', {
+        userId: task.assigneeId || undefined,
+        metadata: { taskId: task.id, projectId: task.projectId, bandId: task.bandId },
       })
     }
 

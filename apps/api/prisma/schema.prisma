@@ -2396,3 +2396,32 @@ enum FeedbackStatus {
   WONT_FIX
   DUPLICATE
 }
+
+// ============================================
+// ANALYTICS
+// ============================================
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  eventType   String   // 'user_registered', 'user_signed_in', 'band_created', etc.
+  sessionId   String?  // Random session identifier (optional)
+  userId      String?  // Only if user is logged in
+  metadata    Json?    // Event-specific data
+  createdAt   DateTime @default(now())
+
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([eventType, createdAt])
+}
+
+model DailyStats {
+  id               String   @id @default(cuid())
+  date             DateTime @db.Date @unique
+  registrations    Int      @default(0)
+  signIns          Int      @default(0)
+  bandsCreated     Int      @default(0)
+  proposalsCreated Int      @default(0)
+  tasksCompleted   Int      @default(0)
+
+  @@index([date])
+}
