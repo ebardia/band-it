@@ -52,6 +52,13 @@ export function NotificationsDropdown({ isOpen, onClose }: NotificationsDropdown
     { enabled: !!userId }
   )
 
+  // Refetch notifications when dropdown opens to ensure fresh data
+  useEffect(() => {
+    if (isOpen && userId) {
+      refetch()
+    }
+  }, [isOpen, userId, refetch])
+
   const markAsReadMutation = trpc.notification.markAsRead.useMutation({
     onSuccess: () => {
       // Invalidate all notification queries to refresh everything
