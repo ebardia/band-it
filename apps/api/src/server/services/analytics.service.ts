@@ -7,6 +7,7 @@ export type AnalyticsEventType =
   | 'band_created'
   | 'proposal_created'
   | 'task_completed'
+  | 'page_viewed'
 
 interface TrackEventOptions {
   userId?: string
@@ -54,8 +55,8 @@ export const analyticsService = {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // Map event types to daily stat fields
-    const fieldMap: Record<AnalyticsEventType, string> = {
+    // Map event types to daily stat fields (page_viewed has no daily stat)
+    const fieldMap: Partial<Record<AnalyticsEventType, string>> = {
       user_registered: 'registrations',
       user_signed_in: 'signIns',
       band_created: 'bandsCreated',
@@ -205,6 +206,7 @@ export const analyticsService = {
 
   /**
    * Get recent events for activity feed
+   * Includes user name/email when userId is present
    */
   async getRecentEvents(limit: number = 50) {
     const events = await prisma.analyticsEvent.findMany({
@@ -212,12 +214,30 @@ export const analyticsService = {
       take: limit,
     })
 
-    return events.map((event) => ({
-      id: event.id,
-      eventType: event.eventType,
-      userId: event.userId,
-      metadata: event.metadata,
-      createdAt: event.createdAt,
-    }))
+    // Get unique userIds to fetch user data
+    const userIds = [...new Set(events.map((e) => e.userId).filter(Boolean))] as string[]
+
+    // Fetch user data in one query
+    const users = userIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, name: true, email: true },
+        })
+      : []
+
+    const userMap = new Map(users.map((u) => [u.id, u]))
+
+    return events.map((event) => {
+      const user = event.userId ? userMap.get(event.userId) : null
+      return {
+        id: event.id,
+        eventType: event.eventType,
+        userId: event.userId,
+        userName: user?.name ?? null,
+        userEmail: user?.email ?? null,
+        metadata: event.metadata,
+        createdAt: event.createdAt,
+      }
+    })
   },
 }

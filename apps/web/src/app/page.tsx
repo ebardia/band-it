@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
@@ -12,6 +12,7 @@ import {
   Flex,
   Card,
 } from "@/components/ui"
+import { trpc } from "@/lib/trpc"
 
 const useCases = [
   {
@@ -393,6 +394,17 @@ export default function HomePage() {
   const router = useRouter()
   const [showBanner, setShowBanner] = useState(true)
   const [selectedUseCase, setSelectedUseCase] = useState<string | null>(null)
+
+  // Track landing page view
+  const trackPageView = trpc.analytics.trackPageView.useMutation()
+
+  useEffect(() => {
+    trackPageView.mutate({
+      page: 'landing',
+      referrer: typeof document !== 'undefined' ? document.referrer : undefined,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col">

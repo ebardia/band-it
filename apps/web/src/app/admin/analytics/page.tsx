@@ -24,6 +24,7 @@ const eventTypeLabels: Record<string, string> = {
   band_created: 'Band Created',
   proposal_created: 'Proposal Created',
   task_completed: 'Task Completed',
+  page_viewed: 'Page Viewed',
 }
 
 export default function AdminAnalyticsPage() {
@@ -279,38 +280,47 @@ export default function AdminAnalyticsPage() {
                 </div>
                 <div className="divide-y divide-gray-100">
                   {recentEvents && recentEvents.length > 0 ? (
-                    recentEvents.slice(0, 20).map((event: any) => (
-                      <Flex
-                        key={event.id}
-                        justify="between"
-                        align="center"
-                        className="px-4 py-3"
-                      >
-                        <Flex align="center" gap="md">
-                          <Badge
-                            variant={
-                              event.eventType === 'user_registered'
-                                ? 'success'
-                                : event.eventType === 'band_created'
-                                ? 'info'
-                                : event.eventType === 'task_completed'
-                                ? 'warning'
-                                : 'secondary'
-                            }
-                          >
-                            {eventTypeLabels[event.eventType] || event.eventType}
-                          </Badge>
-                          {event.userId && (
-                            <Text variant="small" color="muted">
-                              User: {event.userId.slice(0, 8)}...
-                            </Text>
-                          )}
+                    recentEvents.slice(0, 20).map((event: any) => {
+                      const metadata = event.metadata as Record<string, unknown> | null
+                      return (
+                        <Flex
+                          key={event.id}
+                          justify="between"
+                          align="center"
+                          className="px-4 py-3"
+                        >
+                          <Flex align="center" gap="md" wrap="wrap">
+                            <Badge
+                              variant={
+                                event.eventType === 'user_registered'
+                                  ? 'success'
+                                  : event.eventType === 'band_created'
+                                  ? 'info'
+                                  : event.eventType === 'task_completed'
+                                  ? 'warning'
+                                  : event.eventType === 'page_viewed'
+                                  ? 'secondary'
+                                  : 'secondary'
+                              }
+                            >
+                              {eventTypeLabels[event.eventType] || event.eventType}
+                            </Badge>
+                            {event.userName ? (
+                              <Text variant="small" color="muted">
+                                {event.userName} ({event.userEmail})
+                              </Text>
+                            ) : event.eventType === 'page_viewed' && metadata?.page ? (
+                              <Text variant="small" color="muted">
+                                Page: {String(metadata.page)}
+                              </Text>
+                            ) : null}
+                          </Flex>
+                          <Text variant="small" color="muted" className="flex-shrink-0">
+                            {new Date(event.createdAt).toLocaleString()}
+                          </Text>
                         </Flex>
-                        <Text variant="small" color="muted">
-                          {new Date(event.createdAt).toLocaleString()}
-                        </Text>
-                      </Flex>
-                    ))
+                      )
+                    })
                   ) : (
                     <div className="p-4">
                       <Text color="muted">No events recorded yet.</Text>

@@ -23,6 +23,29 @@ async function requireAdmin(userId: string) {
 
 export const analyticsRouter = router({
   /**
+   * Track a page view (public endpoint for client-side tracking)
+   * Can be called by anonymous users
+   */
+  trackPageView: publicProcedure
+    .input(
+      z.object({
+        page: z.string().min(1).max(100),
+        userId: z.string().optional(),
+        referrer: z.string().max(500).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await analyticsService.trackEvent('page_viewed', {
+        userId: input.userId,
+        metadata: {
+          page: input.page,
+          referrer: input.referrer,
+        },
+      })
+      return { success: true }
+    }),
+
+  /**
    * Get overview metrics for the analytics dashboard
    * Returns: totals, recent counts (30 days), % change from previous period
    */
