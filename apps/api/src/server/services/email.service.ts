@@ -123,10 +123,6 @@ export const emailService = {
             Verify Email
           </a>
         </div>
-        <p style="font-size: 14px; color: #6B7280;">
-          Or copy and paste this link into your browser:<br>
-          <a href="${verificationUrl}" style="color: #3B82F6;">${verificationUrl}</a>
-        </p>
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
         <p style="font-size: 12px; color: #9CA3AF;">
           If you didn't create an account, you can safely ignore this email.

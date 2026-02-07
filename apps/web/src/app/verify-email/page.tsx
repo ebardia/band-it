@@ -145,6 +145,7 @@ function VerifyEmailContent() {
 
             <Center>
               <Text variant="small">Didn't receive the email?</Text>
+              <Text variant="small" color="muted">Check your spam folder</Text>
               <Button
                 variant="ghost"
                 size="sm"
@@ -154,11 +155,6 @@ function VerifyEmailContent() {
                 {resendMutation.isPending ? 'Sending...' : 'Resend verification email'}
               </Button>
             </Center>
-
-            <Alert variant="warning">
-              <Text variant="small" color="warning" weight="bold">Development Mode:</Text>
-              <Text variant="small" color="warning"> Check your terminal/console for the verification link.</Text>
-            </Alert>
           </Stack>
         </Card>
       </Container>
