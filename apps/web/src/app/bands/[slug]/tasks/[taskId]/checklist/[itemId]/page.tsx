@@ -284,8 +284,24 @@ export default function ChecklistItemDetailPage() {
   }
 
   const handleToggle = () => {
-    if (!userId) return
-    toggleMutation.mutate({ itemId, userId })
+    if (!userId || !itemData?.item) return
+
+    const isMarkingComplete = !itemData.item.isCompleted
+
+    // If marking complete and there's a summary, include deliverable data
+    if (isMarkingComplete && summary.trim()) {
+      toggleMutation.mutate({
+        itemId,
+        userId,
+        deliverable: {
+          summary: summary.trim(),
+          links: links.length > 0 ? links : undefined,
+          nextSteps: nextSteps.trim() || undefined,
+        },
+      })
+    } else {
+      toggleMutation.mutate({ itemId, userId })
+    }
   }
 
   const handleDelete = () => {
@@ -581,8 +597,8 @@ export default function ChecklistItemDetailPage() {
             </Stack>
           </Card>
 
-          {/* Deliverable Section - shown when user is assignee and item requires deliverable or has one */}
-          {isAssignee && (item.requiresDeliverable || deliverableData?.deliverable) && (
+          {/* Deliverable Section - shown when user can complete and item requires deliverable or has one */}
+          {(isAssignee || canUpdate) && (item.requiresDeliverable || deliverableData?.deliverable) && (
             <Card>
               <Stack spacing="md">
                 <Flex justify="between" align="center">

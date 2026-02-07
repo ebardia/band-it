@@ -331,13 +331,43 @@ export const checklistRouter = router({
     .input(z.object({
       itemId: z.string(),
       userId: z.string(),
+      // Optional deliverable data to save when marking complete
+      deliverable: z.object({
+        summary: z.string().min(1),
+        links: z.array(z.object({
+          url: z.string().url(),
+          title: z.string().min(1),
+        })).optional(),
+        nextSteps: z.string().optional(),
+      }).optional(),
     }))
     .mutation(async ({ input }) => {
-      const { itemId, userId } = input
+      const { itemId, userId, deliverable } = input
 
       const item = await prisma.checklistItem.findUnique({ where: { id: itemId } })
       if (!item) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
+      }
+
+      const isMarkingComplete = !item.isCompleted
+
+      // If marking complete and deliverable provided, save it
+      if (isMarkingComplete && deliverable) {
+        await prisma.checklistItemDeliverable.upsert({
+          where: { checklistItemId: itemId },
+          create: {
+            checklistItemId: itemId,
+            createdById: userId,
+            summary: deliverable.summary,
+            links: deliverable.links || [],
+            nextSteps: deliverable.nextSteps || null,
+          },
+          update: {
+            summary: deliverable.summary,
+            links: deliverable.links || [],
+            nextSteps: deliverable.nextSteps || null,
+          },
+        })
       }
 
       const updatedItem = await prisma.checklistItem.update({
