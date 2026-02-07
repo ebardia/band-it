@@ -147,6 +147,11 @@ export default function ProposalsPage() {
     (p: any) => p.createdBy.id === userId && ['REJECTED', 'WITHDRAWN'].includes(p.status)
   ) || []
 
+  // My completed proposals (approved/closed that I created)
+  const myCompleted = proposalsData?.proposals.filter(
+    (p: any) => p.createdBy.id === userId && ['APPROVED', 'CLOSED'].includes(p.status)
+  ) || []
+
   const openProposals = proposalsData?.proposals.filter((p: any) => p.status === 'OPEN') || []
   const completedProposals = proposalsData?.proposals.filter(
     (p: any) => ['APPROVED', 'REJECTED', 'CLOSED'].includes(p.status) && p.createdBy.id !== userId
@@ -297,6 +302,38 @@ export default function ProposalsPage() {
                         disabled={proposal.submissionCount >= 3}
                       >
                         {proposal.submissionCount < 3 ? 'Revise' : 'View'}
+                      </Button>
+                    </Flex>
+                  </Card>
+                ))}
+              </Stack>
+            </Stack>
+          )}
+
+          {/* My Completed Proposals */}
+          {myCompleted.length > 0 && (
+            <Stack spacing="lg">
+              <Heading level={2}>My Completed Proposals ({myCompleted.length})</Heading>
+              <Stack spacing="md">
+                {myCompleted.map((proposal: any) => (
+                  <Card key={proposal.id}>
+                    <Flex justify="between">
+                      <Stack spacing="sm">
+                        <Heading level={3}>{proposal.title}</Heading>
+                        <Text variant="small" color="muted">
+                          {proposal.closedAt ? `Completed ${new Date(proposal.closedAt).toLocaleDateString()}` : `Created ${new Date(proposal.createdAt).toLocaleDateString()}`}
+                        </Text>
+                        <Flex gap="sm">
+                          {getStatusBadge(proposal.status)}
+                          <Badge variant="neutral">{proposal._count.votes} votes</Badge>
+                        </Flex>
+                      </Stack>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
+                      >
+                        View
                       </Button>
                     </Flex>
                   </Card>
