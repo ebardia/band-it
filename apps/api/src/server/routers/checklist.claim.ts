@@ -356,11 +356,30 @@ export const submitChecklistForVerification = publicProcedure
       throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
     }
 
-    // Must be the assignee
-    if (item.assigneeId !== userId) {
+    // Check user is a band member
+    const membership = item.task.band.members.find(m => m.userId === userId)
+    if (!membership) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'You are not assigned to this item'
+        message: 'You must be a band member to submit items'
+      })
+    }
+
+    // Auto-assign if unassigned (user is claiming by submitting)
+    if (!item.assigneeId) {
+      await prisma.checklistItem.update({
+        where: { id: itemId },
+        data: {
+          assigneeId: userId,
+          assignmentMethod: 'CLAIMED',
+          assignedAt: new Date(),
+        }
+      })
+    } else if (item.assigneeId !== userId) {
+      // Already assigned to someone else
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'This item is assigned to someone else'
       })
     }
 

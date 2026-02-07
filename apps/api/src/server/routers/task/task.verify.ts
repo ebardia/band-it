@@ -45,15 +45,33 @@ export const submitForVerification = publicProcedure
       })
     }
 
-    // Only assignee or admin can submit for verification
+    // Check user is a band member
     const member = task.band.members.find(m => m.userId === userId)
-    const isAssignee = task.assigneeId === userId
-    const isAdmin = member && CAN_VERIFY_TASK.includes(member.role)
-
-    if (!isAssignee && !isAdmin) {
+    if (!member) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'Only the assignee can submit this task for verification'
+        message: 'You must be a band member to submit tasks'
+      })
+    }
+
+    const isAssignee = task.assigneeId === userId
+    const isAdmin = CAN_VERIFY_TASK.includes(member.role)
+
+    // Auto-assign if unassigned (user is claiming by submitting)
+    if (!task.assigneeId) {
+      await prisma.task.update({
+        where: { id: taskId },
+        data: {
+          assigneeId: userId,
+          assignmentMethod: 'CLAIMED',
+          assignedAt: new Date(),
+        }
+      })
+    } else if (!isAssignee && !isAdmin) {
+      // Already assigned to someone else and user is not admin
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'This task is assigned to someone else'
       })
     }
 

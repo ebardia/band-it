@@ -176,6 +176,21 @@ export default function ChecklistItemDetailPage() {
     }
   })
 
+  const claimMutation = trpc.checklist.claim.useMutation({
+    onSuccess: () => {
+      showToast('Item claimed!', 'success')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const handleClaim = () => {
+    if (!userId) return
+    claimMutation.mutate({ itemId, userId })
+  }
+
   // Populate deliverable form with existing data
   useEffect(() => {
     if (deliverableData?.deliverable) {
@@ -563,6 +578,23 @@ export default function ChecklistItemDetailPage() {
                   </Stack>
                 )}
               </Flex>
+
+              {/* Claim Button - show when unassigned and user is a member */}
+              {isMember && !item.assigneeId && !item.isCompleted && (
+                <Alert variant="info">
+                  <Flex justify="between" align="center" className="flex-wrap gap-2">
+                    <Text>This item is unassigned. Claim it to start working on it.</Text>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleClaim}
+                      disabled={claimMutation.isPending}
+                    >
+                      {claimMutation.isPending ? 'Claiming...' : 'Claim Item'}
+                    </Button>
+                  </Flex>
+                </Alert>
+              )}
 
               {/* Actions */}
               {(canUpdate || isAssignee) && (() => {

@@ -197,6 +197,22 @@ export default function TaskDetailPage() {
   // Integrity Guard validation mutation
   const validationMutation = trpc.validation.check.useMutation()
 
+  // Task claim mutation
+  const claimTaskMutation = trpc.task.claim.useMutation({
+    onSuccess: () => {
+      showToast('Task claimed!', 'success')
+      refetchTask()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const handleClaimTask = () => {
+    if (!userId) return
+    claimTaskMutation.mutate({ taskId, userId })
+  }
+
   const handleStatusChange = (newStatus: TaskStatus) => {
     if (!userId) return
     updateTaskMutation.mutate({
@@ -612,6 +628,23 @@ export default function TaskDetailPage() {
               </Flex>
             </Stack>
           </Card>
+
+          {/* Claim Task - show when unassigned and user is a member */}
+          {isMember && !task.assigneeId && task.status !== 'COMPLETED' && (
+            <Alert variant="info">
+              <Flex justify="between" align="center" className="flex-wrap gap-2">
+                <Text>This task is unassigned. Claim it to start working on it.</Text>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleClaimTask}
+                  disabled={claimTaskMutation.isPending}
+                >
+                  {claimTaskMutation.isPending ? 'Claiming...' : 'Claim Task'}
+                </Button>
+              </Flex>
+            </Alert>
+          )}
 
           {/* Status Update */}
           {(canUpdate || isAssignee) && (
