@@ -51,11 +51,16 @@ export const updateChecklistDeliverable = publicProcedure
       })
     }
 
-    // Only assignee can create/update deliverable
-    if (item.assigneeId !== userId) {
+    // Check if user can update: assignee OR has update role (Conductor+)
+    const CAN_UPDATE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
+    const membership = item.task.band.members.find(m => m.userId === userId)
+    const canUpdate = membership && CAN_UPDATE.includes(membership.role)
+    const isAssignee = item.assigneeId === userId
+
+    if (!isAssignee && !canUpdate) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'Only the checklist item assignee can update the deliverable'
+        message: 'Only the assignee or Conductor+ can update the deliverable'
       })
     }
 
