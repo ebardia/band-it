@@ -40,6 +40,8 @@ interface ProjectTasksProps {
   onDismissSuggestions: () => void
   isSuggesting: boolean
   suggestionsCreatedCount: number
+  aiRequiresDeliverable: boolean
+  onAiRequiresDeliverableChange: (value: boolean) => void
 }
 
 export function ProjectTasks({
@@ -66,6 +68,8 @@ export function ProjectTasks({
   onDismissSuggestions,
   isSuggesting,
   suggestionsCreatedCount,
+  aiRequiresDeliverable,
+  onAiRequiresDeliverableChange,
 }: ProjectTasksProps) {
   return (
     <Card>
@@ -102,6 +106,8 @@ export function ProjectTasks({
             onDismiss={onDismissSuggestions}
             isCreating={isCreating}
             createdCount={suggestionsCreatedCount}
+            requiresDeliverable={aiRequiresDeliverable}
+            onRequiresDeliverableChange={onAiRequiresDeliverableChange}
           />
         )}
 

@@ -51,7 +51,8 @@ export default function TaskDetailPage() {
     }
   }[]>([])
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(new Set())
-  
+  const [aiRequiresDeliverable, setAiRequiresDeliverable] = useState(false)
+
   // Edit modal state
   const [showEditModal, setShowEditModal] = useState(false)
   const [editName, setEditName] = useState('')
@@ -138,6 +139,7 @@ export default function TaskDetailPage() {
       showToast(msgs.join(' '), data.blockedCount > 0 ? 'warning' : 'success')
       setAiSuggestions([])
       setSelectedSuggestions(new Set())
+      setAiRequiresDeliverable(false)
       refetchChecklist()
     },
     onError: (error) => {
@@ -438,12 +440,14 @@ export default function TaskDetailPage() {
       taskId,
       descriptions,
       userId,
+      requiresDeliverable: aiRequiresDeliverable,
     })
   }
 
   const handleDismissSuggestions = () => {
     setAiSuggestions([])
     setSelectedSuggestions(new Set())
+    setAiRequiresDeliverable(false)
   }
 
   const handleViewChecklistItem = (itemId: string) => {
@@ -751,6 +755,19 @@ export default function TaskDetailPage() {
                         )
                       })}
                     </Stack>
+
+                    <Flex gap="sm" align="center" className="pt-2 border-t border-purple-200">
+                      <input
+                        type="checkbox"
+                        id="aiRequiresDeliverable"
+                        checked={aiRequiresDeliverable}
+                        onChange={(e) => setAiRequiresDeliverable(e.target.checked)}
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="aiRequiresDeliverable" className="text-sm text-purple-800">
+                        Require deliverable for these items
+                      </label>
+                    </Flex>
 
                     <Flex gap="sm" justify="end">
                       <Button

@@ -220,9 +220,10 @@ export const checklistRouter = router({
       descriptions: z.array(z.string().min(1)),
       userId: z.string(),
       skipValidation: z.boolean().optional(), // Allow skipping if already validated
+      requiresDeliverable: z.boolean().optional(), // Apply to all created items
     }))
     .mutation(async ({ input }) => {
-      const { taskId, descriptions, userId, skipValidation } = input
+      const { taskId, descriptions, userId, skipValidation, requiresDeliverable } = input
 
       // Verify task exists and get band status
       const task = await prisma.task.findUnique({
@@ -304,6 +305,7 @@ export const checklistRouter = router({
               taskId,
               description,
               orderIndex: startIndex + index,
+              requiresDeliverable: requiresDeliverable ?? false,
             },
             include: {
               completedBy: {

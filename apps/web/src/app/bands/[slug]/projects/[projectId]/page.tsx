@@ -63,6 +63,7 @@ export default function ProjectDetailPage() {
   // AI Suggestions state
   const [taskSuggestions, setTaskSuggestions] = useState<TaskSuggestion[] | null>(null)
   const [suggestionsCreatedCount, setSuggestionsCreatedCount] = useState(0)
+  const [aiTasksRequireDeliverable, setAiTasksRequireDeliverable] = useState(false)
 
   // Integrity Guard state (for task creation)
   const [validationIssues, setValidationIssues] = useState<any[]>([])
@@ -384,13 +385,14 @@ export default function ProjectDetailPage() {
       priority: suggestion.priority,
       estimatedHours: suggestion.estimatedHours || undefined,
       requiresVerification: suggestion.requiresVerification,
+      requiresDeliverable: aiTasksRequireDeliverable,
       aiGenerated: true,
     })
   }
 
   const handleAcceptAllSuggestions = async () => {
     if (!taskSuggestions) return
-    
+
     for (const suggestion of taskSuggestions) {
       await createSuggestedTaskMutation.mutateAsync({
         projectId,
@@ -400,18 +402,21 @@ export default function ProjectDetailPage() {
         priority: suggestion.priority,
         estimatedHours: suggestion.estimatedHours || undefined,
         requiresVerification: suggestion.requiresVerification,
+        requiresDeliverable: aiTasksRequireDeliverable,
         aiGenerated: true,
       })
     }
-    
+
     showToast(`Created ${taskSuggestions.length} tasks!`, 'success')
     setTaskSuggestions(null)
     setSuggestionsCreatedCount(0)
+    setAiTasksRequireDeliverable(false)
   }
 
   const handleDismissSuggestions = () => {
     setTaskSuggestions(null)
     setSuggestionsCreatedCount(0)
+    setAiTasksRequireDeliverable(false)
   }
 
   const handleTaskStatusChange = (taskId: string, newStatus: TaskStatus) => {
@@ -593,6 +598,8 @@ export default function ProjectDetailPage() {
               onDismissSuggestions={handleDismissSuggestions}
               isSuggesting={suggestTasksMutation.isPending}
               suggestionsCreatedCount={suggestionsCreatedCount}
+              aiRequiresDeliverable={aiTasksRequireDeliverable}
+              onAiRequiresDeliverableChange={setAiTasksRequireDeliverable}
             />
           </Card>
 

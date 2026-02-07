@@ -19,6 +19,8 @@ interface TaskSuggestionsProps {
   onDismiss: () => void
   isCreating: boolean
   createdCount: number
+  requiresDeliverable: boolean
+  onRequiresDeliverableChange: (value: boolean) => void
 }
 
 const PRIORITY_COLORS = {
@@ -35,6 +37,8 @@ export function TaskSuggestions({
   onDismiss,
   isCreating,
   createdCount,
+  requiresDeliverable,
+  onRequiresDeliverableChange,
 }: TaskSuggestionsProps) {
   const [acceptedIndices, setAcceptedIndices] = useState<Set<number>>(new Set())
 
@@ -92,6 +96,19 @@ export function TaskSuggestions({
             <Text variant="small">{createdCount} task(s) created successfully</Text>
           </Alert>
         )}
+
+        <Flex gap="sm" align="center" className="py-2 px-3 bg-blue-100 rounded-lg">
+          <input
+            type="checkbox"
+            id="aiTasksRequireDeliverable"
+            checked={requiresDeliverable}
+            onChange={(e) => onRequiresDeliverableChange(e.target.checked)}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="aiTasksRequireDeliverable" className="text-sm text-blue-800">
+            Require deliverable for these tasks
+          </label>
+        </Flex>
 
         <Stack spacing="md">
           {suggestions.map((suggestion, index) => {
