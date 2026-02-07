@@ -117,6 +117,17 @@ export const checklistRouter = router({
           },
           files: {
             select: { id: true }
+          },
+          deliverable: {
+            select: {
+              id: true,
+              summary: true,
+              links: true,
+              nextSteps: true,
+              files: {
+                select: { id: true }
+              }
+            }
           }
         },
         orderBy: { orderIndex: 'asc' }
