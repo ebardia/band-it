@@ -565,35 +565,45 @@ export default function ChecklistItemDetailPage() {
               </Flex>
 
               {/* Actions */}
-              {(canUpdate || isAssignee) && (
-                <Flex gap="sm" className="flex-wrap">
-                  <Button
-                    variant="secondary"
-                    onClick={handleOpenEditModal}
-                  >
-                    Edit Item
-                  </Button>
-                  <Button
-                    variant={item.isCompleted ? 'secondary' : 'primary'}
-                    onClick={handleToggle}
-                    disabled={toggleMutation.isPending}
-                  >
-                    {toggleMutation.isPending
-                      ? 'Updating...'
-                      : item.isCompleted
-                        ? 'Mark as Pending'
-                        : 'Mark as Completed'
-                    }
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onClick={handleDelete}
-                    disabled={deleteItemMutation.isPending}
-                  >
-                    {deleteItemMutation.isPending ? 'Deleting...' : 'Delete'}
-                  </Button>
-                </Flex>
-              )}
+              {(canUpdate || isAssignee) && (() => {
+                const needsDeliverable = item.requiresDeliverable && !item.isCompleted && summary.trim().length < 30
+                return (
+                  <Stack spacing="sm">
+                    <Flex gap="sm" className="flex-wrap">
+                      <Button
+                        variant="secondary"
+                        onClick={handleOpenEditModal}
+                      >
+                        Edit Item
+                      </Button>
+                      <Button
+                        variant={item.isCompleted ? 'secondary' : 'primary'}
+                        onClick={handleToggle}
+                        disabled={toggleMutation.isPending || needsDeliverable}
+                      >
+                        {toggleMutation.isPending
+                          ? 'Updating...'
+                          : item.isCompleted
+                            ? 'Mark as Pending'
+                            : 'Mark as Completed'
+                        }
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={handleDelete}
+                        disabled={deleteItemMutation.isPending}
+                      >
+                        {deleteItemMutation.isPending ? 'Deleting...' : 'Delete'}
+                      </Button>
+                    </Flex>
+                    {needsDeliverable && (
+                      <Text variant="small" color="muted">
+                        Fill in the deliverable section below (min 30 chars) before completing
+                      </Text>
+                    )}
+                  </Stack>
+                )
+              })()}
             </Stack>
           </Card>
 

@@ -344,12 +344,28 @@ export const checklistRouter = router({
     .mutation(async ({ input }) => {
       const { itemId, userId, deliverable } = input
 
-      const item = await prisma.checklistItem.findUnique({ where: { id: itemId } })
+      const item = await prisma.checklistItem.findUnique({
+        where: { id: itemId },
+        include: { deliverable: true },
+      })
       if (!item) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
       }
 
       const isMarkingComplete = !item.isCompleted
+
+      // If marking complete and deliverable is required, validate it
+      if (isMarkingComplete && item.requiresDeliverable) {
+        const hasExistingDeliverable = item.deliverable && item.deliverable.summary.length >= 30
+        const hasNewDeliverable = deliverable && deliverable.summary.length >= 30
+
+        if (!hasExistingDeliverable && !hasNewDeliverable) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'This item requires a deliverable summary (min 30 characters) before completing',
+          })
+        }
+      }
 
       // If marking complete and deliverable provided, save it
       if (isMarkingComplete && deliverable) {
