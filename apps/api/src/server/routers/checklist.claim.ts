@@ -71,6 +71,9 @@ export const getClaimableChecklistItems = publicProcedure
         task: {
           bandId: { in: Array.from(bandRoles.keys()) },
           status: { in: ['TODO', 'IN_PROGRESS'] }, // Only from active tasks
+          project: {
+            status: { notIn: ['CANCELLED', 'COMPLETED'] }, // Exclude cancelled/completed projects
+          },
         },
         assigneeId: null,
         isCompleted: false,

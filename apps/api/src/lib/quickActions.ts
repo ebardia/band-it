@@ -198,6 +198,9 @@ export async function getQuickActionsForUser(
         task: {
           bandId: { in: userBandIds },
           status: { in: ['TODO', 'IN_PROGRESS'] }, // Only from active tasks
+          project: {
+            status: { notIn: ['CANCELLED', 'COMPLETED'] }, // Exclude cancelled/completed projects
+          },
         },
         assigneeId: null,
         isCompleted: false,
