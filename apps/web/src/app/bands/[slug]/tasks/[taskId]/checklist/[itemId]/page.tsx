@@ -329,19 +329,46 @@ export default function ChecklistItemDetailPage() {
       showToast('Please enter both URL and title', 'error')
       return
     }
+    if (!userId) return
     try {
       new URL(newLinkUrl)
     } catch {
       showToast('Please enter a valid URL', 'error')
       return
     }
-    setLinks(prev => [...prev, { url: newLinkUrl.trim(), title: newLinkTitle.trim() }])
+    const newLink = { url: newLinkUrl.trim(), title: newLinkTitle.trim() }
+    const updatedLinks = [...links, newLink]
+
+    // Update local state immediately for responsiveness
+    setLinks(updatedLinks)
     setNewLinkUrl('')
     setNewLinkTitle('')
+
+    // Save to backend immediately
+    updateDeliverableMutation.mutate({
+      checklistItemId: itemId,
+      userId,
+      summary: summary.trim() || undefined,
+      links: updatedLinks,
+      nextSteps: nextSteps.trim() || null,
+    })
   }
 
   const handleRemoveLink = (index: number) => {
-    setLinks(prev => prev.filter((_, i) => i !== index))
+    if (!userId) return
+    const updatedLinks = links.filter((_, i) => i !== index)
+
+    // Update local state immediately
+    setLinks(updatedLinks)
+
+    // Save to backend immediately
+    updateDeliverableMutation.mutate({
+      checklistItemId: itemId,
+      userId,
+      summary: summary.trim() || undefined,
+      links: updatedLinks,
+      nextSteps: nextSteps.trim() || null,
+    })
   }
 
   const handleSaveDeliverable = async () => {

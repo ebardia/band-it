@@ -14,7 +14,9 @@ export const updateChecklistDeliverable = publicProcedure
   .input(z.object({
     checklistItemId: z.string(),
     userId: z.string(),
-    summary: z.string().min(30, 'Summary must be at least 30 characters').max(5000),
+    // Summary is optional for intermediate saves (adding links, etc.)
+    // but required when submitting for verification
+    summary: z.string().max(5000).optional().nullable(),
     links: z.array(linkSchema).optional(),
     nextSteps: z.string().max(2000).optional().nullable(),
   }))
@@ -95,13 +97,13 @@ export const updateChecklistDeliverable = publicProcedure
       where: { checklistItemId },
       create: {
         checklistItemId,
-        summary,
+        summary: summary || '',
         links: links || [],
         nextSteps,
         createdById: userId,
       },
       update: {
-        summary,
+        summary: summary ?? undefined, // Only update if provided
         links: links || [],
         nextSteps,
       },
