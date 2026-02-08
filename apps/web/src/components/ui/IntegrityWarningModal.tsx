@@ -5,6 +5,7 @@ import { Stack, Flex } from './layout'
 import { Heading, Text } from './Typography'
 import { Button } from './Button'
 import { Badge } from './Badge'
+import { TrainAIButton } from '@/components/ai'
 
 interface ValidationIssue {
   type: 'legality' | 'values' | 'scope'
@@ -18,6 +19,10 @@ interface IntegrityWarningModalProps {
   onProceed: () => void
   issues: ValidationIssue[]
   isProceeding?: boolean
+  // Optional AI training props
+  bandId?: string
+  userId?: string
+  userRole?: string
 }
 
 function getIssueLabel(type: ValidationIssue['type']): string {
@@ -48,9 +53,23 @@ export function IntegrityWarningModal({
   onProceed,
   issues,
   isProceeding = false,
+  bandId,
+  userId,
+  userRole,
 }: IntegrityWarningModalProps) {
   // Filter to only show flag-level issues (not blocks)
   const flagIssues = issues.filter(i => i.severity === 'flag')
+
+  // Determine which validation type flagged (for AI training context)
+  const hasScopeFlag = flagIssues.some(i => i.type === 'scope')
+  const hasValuesFlag = flagIssues.some(i => i.type === 'values')
+
+  // Get the primary issue type for training context
+  const getValidationOperation = () => {
+    if (hasScopeFlag) return 'content_scope_check'
+    if (hasValuesFlag) return 'content_values_check'
+    return 'task_validation'
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
@@ -84,6 +103,24 @@ export function IntegrityWarningModal({
             You can still proceed, but this action will be flagged in the audit log for review.
           </Text>
         </div>
+
+        {/* Train AI option */}
+        {bandId && userId && userRole && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <Flex justify="between" align="center">
+              <Text variant="small" color="muted">
+                Think this warning is wrong? Help improve the AI.
+              </Text>
+              <TrainAIButton
+                bandId={bandId}
+                userId={userId}
+                userRole={userRole}
+                contextOperation={getValidationOperation()}
+                placeholder="e.g., 'Tasks for vendor coordination are within our scope' or 'Our band values include external partnerships'"
+              />
+            </Flex>
+          </div>
+        )}
 
         {/* Actions */}
         <Flex justify="end" gap="md">

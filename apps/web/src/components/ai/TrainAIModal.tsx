@@ -5,20 +5,32 @@ import { Modal } from '@/components/ui'
 import { Stack, Text, Button, Flex, Alert } from '@/components/ui'
 import { trpc } from '@/lib/trpc'
 
-// Operation types that users can select
-const OPERATION_OPTIONS = [
-  { value: '', label: 'All AI operations' },
+// Operation types that users can select - grouped by category
+const GENERATION_OPERATIONS = [
   { value: 'task_suggestions', label: 'Task suggestions' },
   { value: 'checklist_suggestions', label: 'Checklist suggestions' },
   { value: 'project_suggestions', label: 'Project suggestions' },
   { value: 'proposal_draft', label: 'Proposal drafting' },
-] as const
+]
+
+const VALIDATION_OPERATIONS = [
+  { value: 'content_scope_check', label: 'Scope validation (does content match project?)' },
+  { value: 'content_values_check', label: 'Values validation (does content align with band values?)' },
+  { value: 'content_legality_check', label: 'Legality validation' },
+  { value: 'task_validation', label: 'Task validation' },
+  { value: 'proposal_validation', label: 'Proposal validation' },
+  { value: 'project_validation', label: 'Project validation' },
+]
+
+// Check if an operation is a validation type
+const isValidationOperation = (op: string) =>
+  VALIDATION_OPERATIONS.some(v => v.value === op)
 
 // Category options for broader scope
 const CATEGORY_OPTIONS = [
   { value: '', label: 'All categories' },
   { value: 'generation', label: 'All generation (suggestions, drafting)' },
-  { value: 'validation', label: 'All validation (checks)' },
+  { value: 'validation', label: 'All validation (content checks)' },
   { value: 'help', label: 'Help questions' },
 ] as const
 
@@ -44,10 +56,17 @@ export function TrainAIModal({
   placeholder,
   onSuccess,
 }: TrainAIModalProps) {
+  // Determine initial scope based on context
+  const isFromValidation = contextOperation && isValidationOperation(contextOperation)
+
   const [instruction, setInstruction] = useState('')
-  const [scopeType, setScopeType] = useState<'operation' | 'category' | 'all'>('operation')
+  // Default to "category" for validation contexts (more useful), "all" otherwise for simplicity
+  const [scopeType, setScopeType] = useState<'operation' | 'category' | 'all'>(
+    isFromValidation ? 'category' : 'all'
+  )
   const [operation, setOperation] = useState(contextOperation || '')
-  const [category, setCategory] = useState('')
+  // Pre-select validation category when coming from validation
+  const [category, setCategory] = useState(isFromValidation ? 'validation' : '')
   const [error, setError] = useState<string | null>(null)
 
   const createMutation = trpc.band.createAIInstruction.useMutation({
@@ -166,9 +185,17 @@ export function TrainAIModal({
                 onChange={(e) => setOperation(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {OPERATION_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
+                <option value="">All operations</option>
+                <optgroup label="Generation">
+                  {GENERATION_OPERATIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Validation">
+                  {VALIDATION_OPERATIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </optgroup>
               </select>
             )}
 

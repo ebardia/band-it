@@ -670,6 +670,9 @@ export default function ProjectDetailPage() {
           isOpen={showBlockModal}
           onClose={handleCloseBlock}
           issues={validationIssues}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         <IntegrityWarningModal
@@ -678,6 +681,9 @@ export default function ProjectDetailPage() {
           onProceed={handleProceedWithWarnings}
           issues={validationIssues}
           isProceeding={createTaskMutation.isPending}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         {/* Integrity Guard Modals - Project Edit */}
@@ -685,6 +691,9 @@ export default function ProjectDetailPage() {
           isOpen={showProjectBlockModal}
           onClose={handleCloseBlockProject}
           issues={projectValidationIssues}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         <IntegrityWarningModal
@@ -693,6 +702,9 @@ export default function ProjectDetailPage() {
           onProceed={handleProceedWithWarningsProject}
           issues={projectValidationIssues}
           isProceeding={updateProjectMutation.isPending}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
       </BandLayout>
     </>

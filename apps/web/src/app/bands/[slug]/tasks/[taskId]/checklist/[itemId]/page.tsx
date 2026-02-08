@@ -914,6 +914,9 @@ export default function ChecklistItemDetailPage() {
           isOpen={showBlockModal}
           onClose={handleCloseBlock}
           issues={validationIssues}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         <IntegrityWarningModal
@@ -922,6 +925,9 @@ export default function ChecklistItemDetailPage() {
           onProceed={handleProceedWithWarnings}
           issues={validationIssues}
           isProceeding={updateMutation.isPending}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
       </BandLayout>
     </>

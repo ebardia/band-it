@@ -21,6 +21,7 @@ import {
   IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import { TrainAIButton } from '@/components/ai'
 
 // Roles that can create projects
 const CAN_CREATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -392,6 +393,13 @@ export default function ProposalProjectsPage() {
               >
                 {aiSuggestMutation.isPending ? 'Generating...' : 'AI Suggest'}
               </Button>
+              <TrainAIButton
+                bandId={band?.id || ''}
+                userId={userId || ''}
+                userRole={currentMember?.role || ''}
+                contextOperation="project_suggestions"
+                placeholder="e.g., 'Focus on phased delivery' or 'Include resource requirements'"
+              />
             </Flex>
           ) : undefined
         }
@@ -695,6 +703,9 @@ export default function ProposalProjectsPage() {
           isOpen={showBlockModal}
           onClose={handleCloseBlock}
           issues={validationIssues}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         <IntegrityWarningModal
@@ -703,6 +714,9 @@ export default function ProposalProjectsPage() {
           onProceed={handleProceedWithWarnings}
           issues={validationIssues}
           isProceeding={createProjectMutation.isPending}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
       </BandLayout>
     </>

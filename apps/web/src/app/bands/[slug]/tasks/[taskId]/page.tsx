@@ -24,6 +24,7 @@ import {
   IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import { TrainAIButton } from '@/components/ai'
 
 const CAN_UPDATE_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 const CAN_VERIFY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
@@ -769,25 +770,34 @@ export default function TaskDetailPage() {
                       </label>
                     </Flex>
 
-                    <Flex gap="sm" justify="end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleDismissSuggestions}
-                      >
-                        Dismiss
-                      </Button>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={handleAddSelectedSuggestions}
-                        disabled={selectedSuggestions.size === 0 || createManyMutation.isPending}
-                      >
-                        {createManyMutation.isPending
-                          ? 'Adding...'
-                          : `Add ${selectedSuggestions.size} Items`
-                        }
-                      </Button>
+                    <Flex gap="sm" justify="between" align="center">
+                      <TrainAIButton
+                        bandId={band?.id || ''}
+                        userId={userId || ''}
+                        userRole={currentMember?.role || ''}
+                        contextOperation="checklist_suggestions"
+                        placeholder="e.g., 'Include items for documentation' or 'Focus on items that can be done in 15 minutes'"
+                      />
+                      <Flex gap="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleDismissSuggestions}
+                        >
+                          Dismiss
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={handleAddSelectedSuggestions}
+                          disabled={selectedSuggestions.size === 0 || createManyMutation.isPending}
+                        >
+                          {createManyMutation.isPending
+                            ? 'Adding...'
+                            : `Add ${selectedSuggestions.size} Items`
+                          }
+                        </Button>
+                      </Flex>
                     </Flex>
                   </Stack>
                 </Card>
@@ -1065,6 +1075,9 @@ export default function TaskDetailPage() {
           isOpen={showBlockModal}
           onClose={handleCloseBlockChecklist}
           issues={validationIssues}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         <IntegrityWarningModal
@@ -1073,6 +1086,9 @@ export default function TaskDetailPage() {
           onProceed={handleProceedWithWarningsChecklist}
           issues={validationIssues}
           isProceeding={createItemMutation.isPending}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         {/* Integrity Guard Modals - Task Edit */}
@@ -1080,6 +1096,9 @@ export default function TaskDetailPage() {
           isOpen={showTaskBlockModal}
           onClose={handleCloseBlockTask}
           issues={taskValidationIssues}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         <IntegrityWarningModal
@@ -1088,6 +1107,9 @@ export default function TaskDetailPage() {
           onProceed={handleProceedWithWarningsTask}
           issues={taskValidationIssues}
           isProceeding={updateTaskMutation.isPending}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
       </BandLayout>
     </>

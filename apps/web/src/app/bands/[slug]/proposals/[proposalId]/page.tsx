@@ -1101,6 +1101,9 @@ export default function ProposalDetailPage() {
           isOpen={showBlockModal}
           onClose={handleCloseBlock}
           issues={validationIssues}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         <IntegrityWarningModal
@@ -1109,6 +1112,9 @@ export default function ProposalDetailPage() {
           onProceed={handleProceedWithWarnings}
           issues={validationIssues}
           isProceeding={editMutation.isPending}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         {/* Reject Modal */}

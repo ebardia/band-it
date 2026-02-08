@@ -22,6 +22,7 @@ import {
   IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import { TrainAIButton } from '@/components/ai'
 
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 const CAN_CREATE_GOVERNANCE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -677,15 +678,24 @@ export default function CreateProposalPage() {
                     rows={2}
                   />
 
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="md"
-                    onClick={handleGenerateDraft}
-                    disabled={generateDraftMutation.isPending || title.length < 3}
-                  >
-                    {generateDraftMutation.isPending ? 'Generating...' : 'Generate Draft'}
-                  </Button>
+                  <Flex gap="sm" align="center">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="md"
+                      onClick={handleGenerateDraft}
+                      disabled={generateDraftMutation.isPending || title.length < 3}
+                    >
+                      {generateDraftMutation.isPending ? 'Generating...' : 'Generate Draft'}
+                    </Button>
+                    <TrainAIButton
+                      bandId={band?.id || ''}
+                      userId={userId || ''}
+                      userRole={currentMember?.role || ''}
+                      contextOperation="proposal_draft"
+                      placeholder="e.g., 'Include budget estimates' or 'Focus on member benefits'"
+                    />
+                  </Flex>
                 </Stack>
               </Card>
 
@@ -910,6 +920,9 @@ export default function CreateProposalPage() {
           isOpen={showBlockModal}
           onClose={handleCloseBlock}
           issues={validationIssues}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
 
         <IntegrityWarningModal
@@ -918,6 +931,9 @@ export default function CreateProposalPage() {
           onProceed={handleProceedWithWarnings}
           issues={validationIssues}
           isProceeding={createMutation.isPending}
+          bandId={band?.id}
+          userId={userId || undefined}
+          userRole={currentMember?.role}
         />
       </BandLayout>
     </>
