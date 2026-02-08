@@ -71,8 +71,8 @@ export function BandLayout({
   const currentPage = mobileNavItems.find(item => isActive(item.path)) || mobileNavItems[0]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className={`mx-auto px-2 md:px-4 ${wide ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      <div className={`mx-auto px-2 md:px-4 ${wide ? 'max-w-[1600px]' : 'max-w-7xl'} overflow-hidden`}>
         {/* Mobile Navigation Bar */}
         <div className="md:hidden py-3">
           {/* Band Image, Name and Page Selector */}
@@ -220,7 +220,7 @@ export function BandLayout({
 
         {/* Main Content Area */}
         <div className="pb-8">
-          <Flex gap="md" align="start" className="flex-col md:flex-row">
+          <Flex gap="md" align="start" className="flex-col md:flex-row min-w-0 w-full">
             {/* Left Sidebar - Hidden on mobile */}
             <BandSidebar
               bandSlug={bandSlug}
@@ -232,7 +232,7 @@ export function BandLayout({
             />
 
             {/* Main Content */}
-            <div className="w-full md:flex-1 bg-white rounded-lg shadow p-4 md:p-8">
+            <div className="w-full md:flex-1 min-w-0 overflow-hidden bg-white rounded-lg shadow p-4 md:p-8">
               {bandId && userId && (
                 <DuesBanner bandId={bandId} bandSlug={bandSlug} userId={userId} />
               )}
