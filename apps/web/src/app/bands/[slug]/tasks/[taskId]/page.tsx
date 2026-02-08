@@ -314,12 +314,11 @@ export default function TaskDetailPage() {
     setPendingTaskData(null)
   }
 
-  // Handle closing block modal for task edit
+  // Handle closing block modal for task edit - keep modal open so user can edit and retry
   const handleCloseBlockTask = () => {
     setShowTaskBlockModal(false)
     setTaskValidationIssues([])
     setPendingTaskData(null)
-    setShowEditModal(false) // Close the edit modal too
   }
 
   const handleAddItem = async () => {
@@ -394,12 +393,11 @@ export default function TaskDetailPage() {
     setPendingChecklistData(null)
   }
 
-  // Handle closing block modal for checklist
+  // Handle closing block modal for checklist - keep input so user can edit and retry
   const handleCloseBlockChecklist = () => {
     setShowBlockModal(false)
     setValidationIssues([])
     setPendingChecklistData(null)
-    setNewItemText('') // Clear the input
   }
 
   const handleToggleItem = (itemId: string) => {

@@ -217,12 +217,11 @@ export default function ProposalProjectsPage() {
     setPendingProjectData(null)
   }
 
-  // Handle closing block modal
+  // Handle closing block modal - keep form open so user can edit and retry
   const handleCloseBlock = () => {
     setShowBlockModal(false)
     setValidationIssues([])
     setPendingProjectData(null)
-    setShowCreateForm(false) // Close the form
   }
 
   const handleAISuggest = async () => {

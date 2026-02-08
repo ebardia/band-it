@@ -306,12 +306,11 @@ export default function ProposalDetailPage() {
     setPendingEditData(null)
   }
 
-  // Handle closing block modal
+  // Handle closing block modal - keep edit modal open so user can edit and retry
   const handleCloseBlock = () => {
     setShowBlockModal(false)
     setValidationIssues([])
     setPendingEditData(null)
-    setShowEditModal(false) // Close the edit modal too
   }
 
   if (isLoading) {

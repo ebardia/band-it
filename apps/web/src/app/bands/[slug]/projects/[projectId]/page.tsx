@@ -283,12 +283,11 @@ export default function ProjectDetailPage() {
     setPendingProjectData(null)
   }
 
-  // Handle closing block modal for project edit
+  // Handle closing block modal for project edit - keep form open so user can edit and retry
   const handleCloseBlockProject = () => {
     setShowProjectBlockModal(false)
     setProjectValidationIssues([])
     setPendingProjectData(null)
-    setIsEditing(false) // Close the edit form
   }
 
   const handleCreateTask = async (data: any) => {
@@ -361,12 +360,11 @@ export default function ProjectDetailPage() {
     setPendingTaskData(null)
   }
 
-  // Handle closing block modal
+  // Handle closing block modal - keep form open so user can edit and retry
   const handleCloseBlock = () => {
     setShowBlockModal(false)
     setValidationIssues([])
     setPendingTaskData(null)
-    setShowCreateTask(false) // Close the form so they can't re-submit blocked content
   }
 
   const handleSuggestTasks = () => {
