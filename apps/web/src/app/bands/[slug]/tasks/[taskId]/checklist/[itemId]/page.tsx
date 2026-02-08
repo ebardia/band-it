@@ -667,8 +667,8 @@ export default function ChecklistItemDetailPage() {
 
           {/* Deliverable Section - shown when user can complete and item requires deliverable or has one */}
           {(isAssignee || canUpdate) && (item.requiresDeliverable || deliverableData?.deliverable) && (
-            <Card>
-              <Stack spacing="md">
+            <Card className="overflow-hidden">
+              <Stack spacing="md" className="overflow-hidden">
                 <Flex justify="between" align="center">
                   <Heading level={3}>
                     Deliverable {item.requiresDeliverable && <span className="text-red-500">*</span>}
@@ -714,16 +714,16 @@ export default function ChecklistItemDetailPage() {
                   {links.length > 0 && (
                     <Stack spacing="xs">
                       {links.map((link, index) => (
-                        <Flex key={index} gap="sm" align="center" className="bg-gray-50 p-2 rounded">
-                          <div className="flex-1 min-w-0">
-                            <Text variant="small" weight="semibold" className="truncate">{link.title}</Text>
-                            <Text variant="small" color="muted" className="truncate">{link.url}</Text>
+                        <Flex key={index} gap="sm" align="center" className="bg-gray-50 p-2 rounded overflow-hidden">
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <Text variant="small" weight="semibold" className="truncate block">{link.title}</Text>
+                            <Text variant="small" color="muted" className="truncate block" style={{ wordBreak: 'break-all' }}>{link.url}</Text>
                           </div>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRemoveLink(index)}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-red-500 hover:text-red-700 shrink-0"
                           >
                             Remove
                           </Button>
