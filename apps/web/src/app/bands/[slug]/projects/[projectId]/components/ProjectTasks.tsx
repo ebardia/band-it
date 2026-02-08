@@ -19,8 +19,10 @@ interface TaskSuggestion {
 interface ProjectTasksProps {
   tasks: any[]
   bandSlug: string
+  bandId: string
   bandMembers: any[]
   userId: string | null
+  userRole: string
   highlightedTaskId: string | null
   canUpdate: boolean
   canVerify: boolean
@@ -47,8 +49,10 @@ interface ProjectTasksProps {
 export function ProjectTasks({
   tasks,
   bandSlug,
+  bandId,
   bandMembers,
   userId,
+  userRole,
   highlightedTaskId,
   canUpdate,
   canVerify,
@@ -108,6 +112,9 @@ export function ProjectTasks({
             createdCount={suggestionsCreatedCount}
             requiresDeliverable={aiRequiresDeliverable}
             onRequiresDeliverableChange={onAiRequiresDeliverableChange}
+            bandId={bandId}
+            userId={userId || ''}
+            userRole={userRole}
           />
         )}
 

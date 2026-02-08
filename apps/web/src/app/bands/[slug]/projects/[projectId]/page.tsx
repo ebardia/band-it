@@ -578,8 +578,10 @@ export default function ProjectDetailPage() {
             <ProjectTasks
               tasks={tasks}
               bandSlug={slug}
+              bandId={band.id}
               bandMembers={band.members}
               userId={userId}
+              userRole={currentMember?.role || ''}
               highlightedTaskId={highlightedTaskId}
               canUpdate={canUpdateProject || false}
               canVerify={canVerifyTasks || false}

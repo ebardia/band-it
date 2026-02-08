@@ -146,6 +146,9 @@ model User {
   feedbackSubmitted           Feedback[] @relation("FeedbackSubmitter")
   feedbackResponded           Feedback[] @relation("FeedbackResponder")
   feedbackVotes               FeedbackVote[]
+
+  // AI Instructions
+  aiInstructions              AIInstruction[]
 }
 
 enum SubscriptionStatus {
@@ -563,6 +566,7 @@ model Band {
   manualPayments ManualPayment[]
   postCategories  PostCategory[]
   posts           Post[]
+  aiInstructions  AIInstruction[]
 
   @@index([createdById])
   @@index([status])
@@ -2055,6 +2059,35 @@ model AIUsage {
   @@index([entityType, entityId])
   @@index([operation])
   @@index([createdAt])
+}
+
+// AI Instructions - per-band training for AI prompts
+model AIInstruction {
+  id          String   @id @default(cuid())
+
+  // Scope
+  bandId      String
+  category    String?  // 'generation', 'validation', 'help', or null for all
+  operation   String?  // specific operation, or null for category-wide
+
+  // The instruction itself
+  instruction String   // e.g., "Include vendor phone numbers when suggesting tasks"
+
+  // Status
+  isActive    Boolean  @default(true)
+
+  // Metadata
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  band        Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([bandId, isActive])
+  @@index([bandId, category, isActive])
+  @@index([bandId, operation, isActive])
 }
 
 // ============================================

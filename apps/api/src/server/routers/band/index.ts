@@ -8,6 +8,7 @@ import { bandBillingRouter } from './band.billing'
 import { bandDissolveRouter } from './band.dissolve'
 import { bandGovernanceRouter } from './band.governance'
 import { bandUpdateRouter } from './band.update'
+import { bandAIInstructionRouter } from './band.aiInstruction'
 import { getMembers, getMemberProfile, changeRole, proposeRemoval } from './band.members'
 
 export const bandRouter = router({
@@ -70,4 +71,10 @@ export const bandRouter = router({
 
   // Update
   updateDetails: bandUpdateRouter.updateDetails,
+
+  // AI Instructions
+  listAIInstructions: bandAIInstructionRouter.list,
+  createAIInstruction: bandAIInstructionRouter.create,
+  toggleAIInstruction: bandAIInstructionRouter.toggle,
+  deleteAIInstruction: bandAIInstructionRouter.delete,
 })

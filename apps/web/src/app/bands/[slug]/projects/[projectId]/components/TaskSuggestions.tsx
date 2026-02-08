@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Heading, Text, Stack, Flex, Card, Button, Badge, Alert } from '@/components/ui'
+import { TrainAIButton } from '@/components/ai'
 
 interface TaskSuggestion {
   name: string
@@ -21,6 +22,10 @@ interface TaskSuggestionsProps {
   createdCount: number
   requiresDeliverable: boolean
   onRequiresDeliverableChange: (value: boolean) => void
+  // For AI training
+  bandId: string
+  userId: string
+  userRole: string
 }
 
 const PRIORITY_COLORS = {
@@ -39,6 +44,9 @@ export function TaskSuggestions({
   createdCount,
   requiresDeliverable,
   onRequiresDeliverableChange,
+  bandId,
+  userId,
+  userRole,
 }: TaskSuggestionsProps) {
   const [acceptedIndices, setAcceptedIndices] = useState<Set<number>>(new Set())
 
@@ -81,6 +89,13 @@ export function TaskSuggestions({
             >
               Add All ({remainingSuggestions.length})
             </Button>
+            <TrainAIButton
+              bandId={bandId}
+              userId={userId}
+              userRole={userRole}
+              contextOperation="task_suggestions"
+              placeholder="e.g., 'Focus on tasks that can be completed within 2 hours' or 'Always include budget estimates'"
+            />
             <Button
               variant="ghost"
               size="sm"

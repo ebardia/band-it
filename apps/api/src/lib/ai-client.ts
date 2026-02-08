@@ -1,5 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from './prisma'
+import {
+  getInstructionsForOperation,
+  formatInstructionsForPrompt,
+} from '../server/services/ai-instruction.service'
 
 // Environmental conversion factors per 1000 tokens
 const ENVIRONMENTAL_FACTORS = {
@@ -110,6 +114,23 @@ export async function callAI(
   let error: string | undefined
 
   try {
+    // Fetch band-specific AI instructions if bandId is provided
+    let systemWithInstructions = system || ''
+    if (context.bandId) {
+      try {
+        const instructions = await getInstructionsForOperation(context.bandId, context.operation)
+        if (instructions.length > 0) {
+          const instructionText = formatInstructionsForPrompt(instructions)
+          systemWithInstructions = systemWithInstructions
+            ? `${systemWithInstructions}${instructionText}`
+            : instructionText.trim()
+        }
+      } catch (instructionErr) {
+        // Don't fail the AI call if instruction fetching fails
+        console.error('Failed to fetch AI instructions:', instructionErr)
+      }
+    }
+
     // Build message options
     const messageOptions: Anthropic.MessageCreateParams = {
       model,
@@ -117,8 +138,8 @@ export async function callAI(
       messages: [{ role: 'user', content: prompt }],
     }
 
-    if (system) {
-      messageOptions.system = system
+    if (systemWithInstructions) {
+      messageOptions.system = systemWithInstructions
     }
 
     if (temperature !== undefined) {
