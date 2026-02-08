@@ -77,6 +77,8 @@ function getActionDetails(type: QuickAction['type']): { icon: string; typeLabel:
       return { icon: '✉️', typeLabel: 'Invitation', buttonLabel: 'Respond' }
     case 'MENTION':
       return { icon: '💬', typeLabel: 'Mention', buttonLabel: 'View' }
+    case 'REVIEW_APPLICATION':
+      return { icon: '👋', typeLabel: 'New Application', buttonLabel: 'Review' }
     default:
       return { icon: '📌', typeLabel: type, buttonLabel: 'View' }
   }

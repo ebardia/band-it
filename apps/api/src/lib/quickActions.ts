@@ -16,7 +16,10 @@ const ROLE_HIERARCHY: Record<MemberRole, number> = {
 }
 
 // Quick action types - desktop users redirected to full pages
-export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION' | 'CHECKLIST'
+export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION' | 'CHECKLIST' | 'REVIEW_APPLICATION'
+
+// Roles that can review applications
+const CAN_REVIEW_APPLICATIONS = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
 export type Urgency = 'high' | 'medium' | 'low'
 
 export interface QuickAction {
@@ -80,8 +83,13 @@ export async function getQuickActionsForUser(
   memberships.forEach(m => bandRoles.set(m.bandId, m.role))
   const userBandIds = Array.from(bandRoles.keys())
 
+  // Get bands where user can review applications
+  const reviewerBandIds = memberships
+    .filter(m => CAN_REVIEW_APPLICATIONS.includes(m.role))
+    .map(m => m.bandId)
+
   // Run queries in parallel for better performance
-  const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions, claimableChecklistItems] = await Promise.all([
+  const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions, claimableChecklistItems, pendingApplications] = await Promise.all([
     // 1. Pending votes - proposals open for voting where user hasn't voted
     prisma.proposal.findMany({
       where: {
@@ -224,6 +232,20 @@ export async function getQuickActionsForUser(
         { dueDate: 'asc' },
       ],
       take: limit * 2, // Fetch extra since we'll filter by role
+    }) : Promise.resolve([]),
+
+    // 7. Pending applications - applications to bands where user can review
+    reviewerBandIds.length > 0 ? prisma.member.findMany({
+      where: {
+        bandId: { in: reviewerBandIds },
+        status: 'PENDING', // Application pending review
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        band: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { createdAt: 'asc' }, // Oldest first
+      take: limit,
     }) : Promise.resolve([]),
   ])
 
@@ -377,6 +399,34 @@ export async function getQuickActionsForUser(
         contextTravel: item.contextTravel,
         contextTimeMinutes: item.contextTimeMinutes,
         bandSlug: item.task.band.slug,
+      },
+    })
+  }
+
+  // Process pending applications
+  for (const application of pendingApplications) {
+    // Calculate how long the application has been waiting
+    const hoursWaiting = (now.getTime() - application.createdAt.getTime()) / (1000 * 60 * 60)
+    let urgency: Urgency = 'low'
+    if (hoursWaiting > 72) urgency = 'high' // Waiting more than 3 days
+    else if (hoursWaiting > 24) urgency = 'medium' // Waiting more than 1 day
+
+    actions.push({
+      type: 'REVIEW_APPLICATION',
+      id: application.id,
+      title: `${application.user.name || application.user.email} wants to join`,
+      bandName: application.band.name,
+      bandId: application.band.id,
+      url: `/bands/${application.band.slug}/applications`,
+      urgency,
+      meta: {
+        applicantName: application.user.name,
+        applicantEmail: application.user.email,
+        appliedAt: application.createdAt,
+        waitingTime: hoursWaiting > 24
+          ? `${Math.floor(hoursWaiting / 24)} day${Math.floor(hoursWaiting / 24) === 1 ? '' : 's'}`
+          : `${Math.floor(hoursWaiting)} hour${Math.floor(hoursWaiting) === 1 ? '' : 's'}`,
+        bandSlug: application.band.slug,
       },
     })
   }
