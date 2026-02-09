@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { trpc } from '@/lib/trpc'
 import { Stack, Flex } from './layout'
 import { Text } from './Typography'
@@ -10,6 +10,86 @@ import { Card } from './Card'
 import { Textarea } from './Textarea'
 import { RightSidebar } from './RightSidebar'
 import { useToast } from './Toast'
+
+// Inline mention autocomplete component
+interface InlineMentionAutocompleteProps {
+  members: any[]
+  search: string
+  position: { top: number; left: number }
+  onSelect: (member: any) => void
+  onClose: () => void
+  selectedIndex: number
+}
+
+function InlineMentionAutocomplete({
+  members,
+  search,
+  position,
+  onSelect,
+  onClose,
+  selectedIndex,
+}: InlineMentionAutocompleteProps) {
+  const listRef = useRef<HTMLDivElement>(null)
+
+  // Filter members by search term
+  const filteredMembers = members.filter(m =>
+    m.user.name.toLowerCase().includes(search.toLowerCase())
+  )
+
+  // Scroll selected item into view
+  useEffect(() => {
+    if (listRef.current && filteredMembers.length > 0) {
+      const selectedEl = listRef.current.children[selectedIndex] as HTMLElement
+      if (selectedEl) {
+        selectedEl.scrollIntoView({ block: 'nearest' })
+      }
+    }
+  }, [selectedIndex, filteredMembers.length])
+
+  if (filteredMembers.length === 0) {
+    return (
+      <div
+        className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3"
+        style={{ top: position.top, left: position.left }}
+      >
+        <Text variant="small" color="muted">No matches found</Text>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      ref={listRef}
+      className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto w-56"
+      style={{ top: position.top, left: position.left }}
+    >
+      {filteredMembers.map((member, index) => (
+        <button
+          key={member.user.id}
+          onClick={() => onSelect(member)}
+          className={`
+            w-full text-left px-3 py-2 flex items-center gap-2
+            ${index === selectedIndex ? 'bg-blue-50' : 'hover:bg-gray-50'}
+          `}
+        >
+          <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+            <Text variant="small" weight="semibold">
+              {member.user.name.charAt(0).toUpperCase()}
+            </Text>
+          </div>
+          <div className="flex-1 min-w-0">
+            <Text variant="small" weight="semibold" className="truncate">
+              {member.user.name}
+            </Text>
+            <Text variant="small" color="muted" className="truncate">
+              {member.role.replace('_', ' ').toLowerCase()}
+            </Text>
+          </div>
+        </button>
+      ))}
+    </div>
+  )
+}
 
 interface DiscussionSidebarProps {
   bandId?: string
@@ -271,6 +351,122 @@ export function DiscussionSidebar({
   const [showMentions, setShowMentions] = useState(false)
   const [selectedMentions, setSelectedMentions] = useState<string[]>([])
   const commentsEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Inline mention autocomplete state
+  const [inlineMention, setInlineMention] = useState<{
+    active: boolean
+    search: string
+    position: { top: number; left: number }
+    startIndex: number
+    selectedIndex: number
+  } | null>(null)
+
+  // Check for @ mention trigger in textarea
+  const checkForMention = useCallback((text: string, cursorPos: number) => {
+    const textBeforeCursor = text.substring(0, cursorPos)
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@')
+
+    if (lastAtIndex === -1) {
+      setInlineMention(null)
+      return
+    }
+
+    // Check if there's a space between @ and cursor
+    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1)
+    if (textAfterAt.includes(' ') || textAfterAt.includes('\n')) {
+      setInlineMention(null)
+      return
+    }
+
+    // Check if @ is at the start or preceded by whitespace
+    if (lastAtIndex > 0 && !/\s/.test(textBeforeCursor[lastAtIndex - 1])) {
+      setInlineMention(null)
+      return
+    }
+
+    // Calculate position for dropdown
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const rect = textarea.getBoundingClientRect()
+
+    setInlineMention({
+      active: true,
+      search: textAfterAt,
+      position: {
+        top: rect.height + 4, // Below the textarea
+        left: 0,
+      },
+      startIndex: lastAtIndex,
+      selectedIndex: 0,
+    })
+  }, [])
+
+  // Handle mention selection from inline autocomplete
+  const handleInlineMentionSelect = useCallback((member: any) => {
+    if (!inlineMention) return
+
+    const beforeMention = newComment.substring(0, inlineMention.startIndex)
+    const afterMention = newComment.substring(
+      inlineMention.startIndex + 1 + inlineMention.search.length
+    )
+
+    // Insert the mention
+    const newText = `${beforeMention}@${member.user.name} ${afterMention}`
+    setNewComment(newText)
+
+    // Add to selected mentions if not already there
+    if (!selectedMentions.includes(member.user.id)) {
+      setSelectedMentions([...selectedMentions, member.user.id])
+    }
+
+    setInlineMention(null)
+
+    // Focus back on textarea
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus()
+        const newCursorPos = beforeMention.length + member.user.name.length + 2
+        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos)
+      }
+    }, 0)
+  }, [inlineMention, newComment, selectedMentions])
+
+  // Handle keyboard navigation in mention autocomplete
+  const handleTextareaKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!inlineMention?.active) return
+
+    const filteredMembers = bandMembers.filter(m =>
+      m.user.name.toLowerCase().includes(inlineMention.search.toLowerCase()) &&
+      m.user.id !== userId
+    )
+
+    if (filteredMembers.length === 0) return
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setInlineMention(prev => prev ? {
+        ...prev,
+        selectedIndex: Math.min(prev.selectedIndex + 1, filteredMembers.length - 1)
+      } : null)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setInlineMention(prev => prev ? {
+        ...prev,
+        selectedIndex: Math.max(prev.selectedIndex - 1, 0)
+      } : null)
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault()
+      const selected = filteredMembers[inlineMention.selectedIndex]
+      if (selected) {
+        handleInlineMentionSelect(selected)
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setInlineMention(null)
+    }
+  }, [inlineMention, bandMembers, userId, handleInlineMentionSelect])
 
   const { data: commentsData, isLoading, refetch } = trpc.comment.getByEntity.useQuery(
     { bandId, proposalId, projectId, taskId },
@@ -474,13 +670,34 @@ export function DiscussionSidebar({
               </Card>
             )}
 
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write a comment..."
-              rows={4}
-              className="w-full"
-            />
+            <div className="relative">
+              <Textarea
+                ref={textareaRef}
+                value={newComment}
+                onChange={(e) => {
+                  setNewComment(e.target.value)
+                  checkForMention(e.target.value, e.target.selectionStart)
+                }}
+                onKeyDown={handleTextareaKeyDown}
+                onBlur={() => {
+                  // Delay closing to allow click on autocomplete
+                  setTimeout(() => setInlineMention(null), 200)
+                }}
+                placeholder="Write a comment... (type @ to mention)"
+                rows={4}
+                className="w-full"
+              />
+              {inlineMention?.active && (
+                <InlineMentionAutocomplete
+                  members={bandMembers.filter(m => m.user.id !== userId)}
+                  search={inlineMention.search}
+                  position={inlineMention.position}
+                  onSelect={handleInlineMentionSelect}
+                  onClose={() => setInlineMention(null)}
+                  selectedIndex={inlineMention.selectedIndex}
+                />
+              )}
+            </div>
             <Flex gap="sm" align="center">
               <Button variant="ghost" size="sm" onClick={() => setShowMentions(!showMentions)}>
                 @ Mention
