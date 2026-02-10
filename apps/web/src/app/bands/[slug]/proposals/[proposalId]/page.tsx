@@ -12,21 +12,19 @@ import {
   useToast,
   Flex,
   Card,
-  Badge,
   Alert,
   Loading,
   BandLayout,
   DiscussionSidebar,
   Textarea,
   Input,
-  List,
-  ListItem,
   Modal,
   ProposalProjectsHierarchy,
   IntegrityBlockModal,
   IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import { ProposalHeaderCompact } from './components/ProposalHeaderCompact'
 
 const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
 const CAN_CREATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -388,27 +386,6 @@ export default function ProposalDetailPage() {
   const isOpen = proposal.status === 'OPEN'
   const votingEnded = proposal.votingEndsAt ? new Date() > new Date(proposal.votingEndsAt) : false
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'DRAFT':
-        return <Badge variant="neutral">📝 Draft</Badge>
-      case 'PENDING_REVIEW':
-        return <Badge variant="warning">⏳ Pending Review</Badge>
-      case 'OPEN':
-        return <Badge variant="info">🗳️ Voting</Badge>
-      case 'APPROVED':
-        return <Badge variant="success">✅ Passed</Badge>
-      case 'REJECTED':
-        return <Badge variant="danger">❌ Failed</Badge>
-      case 'CLOSED':
-        return <Badge variant="neutral">Closed</Badge>
-      case 'WITHDRAWN':
-        return <Badge variant="neutral">↩️ Withdrawn</Badge>
-      default:
-        return <Badge variant="neutral">{status}</Badge>
-    }
-  }
-
   const handleVote = (vote: string) => {
     if (!userId) return
     voteMutation.mutate({
@@ -446,13 +423,6 @@ export default function ProposalDetailPage() {
         canApprove={canApprove}
         isMember={isMember}
         wide={true}
-        action={
-          canEdit ? (
-            <Button variant="secondary" size="md" onClick={handleOpenEditModal}>
-              Edit Proposal
-            </Button>
-          ) : undefined
-        }
         rightSidebar={
           <DiscussionSidebar
             proposalId={proposalId}
@@ -461,7 +431,7 @@ export default function ProposalDetailPage() {
           />
         }
       >
-        <Stack spacing="lg">
+        <Stack spacing="md">
           {/* Breadcrumb */}
           <Flex gap="sm" align="center">
             <Button
@@ -473,376 +443,121 @@ export default function ProposalDetailPage() {
             </Button>
           </Flex>
 
-          {/* Recently Edited Notice */}
-          {proposal.editCount > 0 && proposal.lastEditedAt && (
-            <Alert variant="info">
-              <Flex gap="sm" align="center">
-                <Text variant="small">
-                  This proposal was edited {proposal.editCount} time{proposal.editCount > 1 ? 's' : ''}.
-                  Last edited on {new Date(proposal.lastEditedAt).toLocaleDateString()}.
-                </Text>
-              </Flex>
-            </Alert>
-          )}
-
-          {/* Header */}
+          {/* Compact Header with all info and actions */}
           <Card>
-            <Stack spacing="md">
-              <Flex gap="sm" className="flex-wrap">
-                {getStatusBadge(proposal.status)}
-                <Badge variant="neutral">{TYPE_LABELS[proposal.type] || proposal.type}</Badge>
-                <Badge variant={PRIORITY_VARIANTS[proposal.priority] as any}>{proposal.priority}</Badge>
-                {proposal.editCount > 0 && (
-                  <Badge variant="warning">Edited</Badge>
-                )}
-              </Flex>
-              <Text color="muted">
-                Proposed by {proposal.createdBy.name} on {new Date(proposal.createdAt).toLocaleDateString()}
-              </Text>
-              {proposal.submissionCount > 1 && (
-                <Text variant="small" color="muted">
-                  Submission #{proposal.submissionCount} of 3
-                </Text>
-              )}
-            </Stack>
+            <ProposalHeaderCompact
+              proposal={proposal}
+              band={bandData?.band}
+              canEdit={canEdit}
+              canSubmit={canSubmit}
+              canWithdraw={canWithdraw}
+              canResubmit={canResubmit}
+              canReview={!!canReview}
+              onEdit={handleOpenEditModal}
+              onSubmit={() => submitForReviewMutation.mutate({ proposalId, userId: userId! })}
+              onWithdraw={() => withdrawMutation.mutate({ proposalId, userId: userId! })}
+              onApprove={() => approveMutation.mutate({ proposalId, userId: userId! })}
+              onReject={() => setShowRejectModal(true)}
+              isSubmitting={submitForReviewMutation.isPending}
+              isWithdrawing={withdrawMutation.isPending}
+              isApproving={approveMutation.isPending}
+            />
           </Card>
 
-          {/* Rejection Feedback (for rejected proposals) */}
-          {proposal.status === 'REJECTED' && proposal.rejectionReason && (
-            <Alert variant="danger">
-              <Stack spacing="sm">
-                <Text weight="semibold">Reviewer Feedback</Text>
-                <Text style={{ whiteSpace: 'pre-wrap' }}>{proposal.rejectionReason}</Text>
-                {proposal.reviewedBy && (
-                  <Text variant="small" color="muted">
-                    Reviewed by {proposal.reviewedBy.name} on{' '}
-                    {proposal.reviewedAt ? new Date(proposal.reviewedAt).toLocaleDateString() : 'N/A'}
-                  </Text>
-                )}
-              </Stack>
-            </Alert>
-          )}
-
-          {/* Author Actions for Draft */}
-          {canSubmit && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>
-                  {bandData?.band?.requireProposalReview ? 'Submit for Review' : 'Submit Proposal'}
-                </Heading>
-                <Text variant="small" color="muted">
-                  {bandData?.band?.requireProposalReview
-                    ? 'This proposal is a draft. Submit it to be reviewed by a moderator before it can go to voting.'
-                    : `This proposal is a draft. When you submit, voting will open immediately for ${band.votingPeriodDays || 7} days.`
-                  }
-                </Text>
-                <Button
-                  variant="primary"
-                  onClick={() => submitForReviewMutation.mutate({ proposalId, userId: userId! })}
-                  disabled={submitForReviewMutation.isPending}
-                >
-                  {submitForReviewMutation.isPending
-                    ? 'Submitting...'
-                    : bandData?.band?.requireProposalReview
-                      ? 'Submit for Review'
-                      : 'Submit & Open Voting'
-                  }
-                </Button>
-              </Stack>
-            </Card>
-          )}
-
-          {/* Author Actions for Pending Review */}
-          {canWithdraw && (
-            <Alert variant="info">
-              <Flex justify="between" align="center">
-                <Text>Your proposal is waiting for moderator review.</Text>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => withdrawMutation.mutate({ proposalId, userId: userId! })}
-                  disabled={withdrawMutation.isPending}
-                >
-                  {withdrawMutation.isPending ? 'Withdrawing...' : 'Withdraw'}
-                </Button>
-              </Flex>
-            </Alert>
-          )}
-
-          {/* Author Actions for Rejected/Withdrawn */}
-          {canResubmit && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Resubmit Proposal</Heading>
-                <Text variant="small" color="muted">
-                  You can edit and resubmit this proposal. ({3 - (proposal.submissionCount || 0)} attempts remaining)
-                </Text>
-                <Button
-                  variant="primary"
-                  onClick={handleOpenEditModal}
-                >
-                  Edit & Resubmit
-                </Button>
-              </Stack>
-            </Card>
-          )}
-
-          {/* Reviewer Actions */}
-          {canReview && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Review Proposal</Heading>
-                <Text variant="small" color="muted">
-                  As a reviewer, you can approve this proposal to send it to voting, or reject it with feedback.
-                </Text>
-                <Flex gap="md">
-                  <Button
-                    variant="primary"
-                    onClick={() => approveMutation.mutate({ proposalId, userId: userId! })}
-                    disabled={approveMutation.isPending || rejectMutation.isPending}
-                  >
-                    {approveMutation.isPending ? 'Approving...' : '✅ Approve for Voting'}
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => setShowRejectModal(true)}
-                    disabled={approveMutation.isPending || rejectMutation.isPending}
-                  >
-                    ❌ Reject
-                  </Button>
-                </Flex>
-              </Stack>
-            </Card>
-          )}
-
-          {/* Description */}
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Description</Heading>
-              <Text style={{ whiteSpace: 'pre-wrap' }}>{proposal.description}</Text>
-            </Stack>
-          </Card>
-
-          {/* Problem & Outcome */}
-          {(proposal.problemStatement || proposal.expectedOutcome || proposal.risksAndConcerns) && (
-            <Card>
-              <Stack spacing="lg">
-                <Heading level={3}>Analysis</Heading>
-                
-                {proposal.problemStatement && (
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Problem Statement</Text>
-                    <Text style={{ whiteSpace: 'pre-wrap' }}>{proposal.problemStatement}</Text>
-                  </Stack>
-                )}
-
-                {proposal.expectedOutcome && (
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Expected Outcome</Text>
-                    <Text style={{ whiteSpace: 'pre-wrap' }}>{proposal.expectedOutcome}</Text>
-                  </Stack>
-                )}
-
-                {proposal.risksAndConcerns && (
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Risks & Concerns</Text>
-                    <Text style={{ whiteSpace: 'pre-wrap' }}>{proposal.risksAndConcerns}</Text>
-                  </Stack>
-                )}
-              </Stack>
-            </Card>
-          )}
-
-          {/* Budget */}
-          {(proposal.budgetRequested || proposal.budgetBreakdown || proposal.fundingSource) && (
-            <Card>
-              <Stack spacing="lg">
-                <Heading level={3}>Budget</Heading>
-                
-                {proposal.budgetRequested && (
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Amount Requested</Text>
-                    <Heading level={2}>{formatCurrency(proposal.budgetRequested)}</Heading>
-                  </Stack>
-                )}
-
-                {proposal.budgetBreakdown && (
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Breakdown</Text>
-                    <Text style={{ whiteSpace: 'pre-wrap' }}>{proposal.budgetBreakdown}</Text>
-                  </Stack>
-                )}
-
-                {proposal.fundingSource && (
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Funding Source</Text>
-                    <Text>{proposal.fundingSource}</Text>
-                  </Stack>
-                )}
-              </Stack>
-            </Card>
-          )}
-
-          {/* Timeline */}
-          {(proposal.proposedStartDate || proposal.proposedEndDate || proposal.milestones) && (
-            <Card>
-              <Stack spacing="lg">
-                <Heading level={3}>Timeline</Heading>
-                
-                <Flex gap="lg">
-                  {proposal.proposedStartDate && (
-                    <Stack spacing="sm">
-                      <Text variant="small" weight="semibold">Start Date</Text>
-                      <Text>{new Date(proposal.proposedStartDate).toLocaleDateString()}</Text>
-                    </Stack>
-                  )}
-                  {proposal.proposedEndDate && (
-                    <Stack spacing="sm">
-                      <Text variant="small" weight="semibold">End Date</Text>
-                      <Text>{new Date(proposal.proposedEndDate).toLocaleDateString()}</Text>
-                    </Stack>
-                  )}
-                </Flex>
-
-                {proposal.milestones && (
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Milestones</Text>
-                    <Text style={{ whiteSpace: 'pre-wrap' }}>{proposal.milestones}</Text>
-                  </Stack>
-                )}
-              </Stack>
-            </Card>
-          )}
-
-          {/* External Links */}
-          {proposal.externalLinks && proposal.externalLinks.length > 0 && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Supporting Links</Heading>
-                <List>
-                  {proposal.externalLinks.map((link: string, idx: number) => (
-                    <ListItem key={idx}>
-                      <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {link}
-                      </a>
-                    </ListItem>
-                  ))}
-                </List>
-              </Stack>
-            </Card>
-          )}
-
-          {/* Voting Info - only show when proposal is in voting or completed */}
-          {['OPEN', 'APPROVED', 'REJECTED', 'CLOSED'].includes(proposal.status) && proposal.votingEndsAt && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Voting Information</Heading>
-                <Flex gap="lg">
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Method</Text>
-                    <Text variant="small">{band.votingMethod?.replace(/_/g, ' ')}</Text>
-                  </Stack>
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Voting Ends</Text>
-                    <Text variant="small">{new Date(proposal.votingEndsAt).toLocaleString()}</Text>
-                  </Stack>
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Eligible Voters</Text>
-                    <Text variant="small">{voteSummary.eligibleVoters}</Text>
-                  </Stack>
-                </Flex>
-              </Stack>
-            </Card>
-          )}
-
-          {/* Vote Results - only show when proposal has been/is in voting */}
+          {/* Compact Voting Results */}
           {['OPEN', 'APPROVED', 'REJECTED', 'CLOSED'].includes(proposal.status) && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>
-                  {proposal.status === 'OPEN' ? 'Current Results' : 'Final Results'}
-                </Heading>
-                <Flex gap="lg">
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Yes</Text>
-                    <Heading level={2}>{voteSummary.yes}</Heading>
-                    <Text variant="small" color="muted">{voteSummary.percentageYes}%</Text>
-                  </Stack>
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">No</Text>
-                    <Heading level={2}>{voteSummary.no}</Heading>
-                    <Text variant="small" color="muted">{voteSummary.percentageNo}%</Text>
-                  </Stack>
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Abstain</Text>
-                    <Heading level={2}>{voteSummary.abstain}</Heading>
-                  </Stack>
-                  <Stack spacing="sm">
-                    <Text variant="small" weight="semibold">Total Votes</Text>
-                    <Heading level={2}>{voteSummary.total}</Heading>
-                    <Text variant="small" color="muted">of {voteSummary.eligibleVoters}</Text>
-                  </Stack>
-                </Flex>
-              </Stack>
-            </Card>
+            <div className="border border-gray-200 rounded-lg bg-white p-3 space-y-2">
+              {/* Results row */}
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium text-gray-700">
+                    {proposal.status === 'OPEN' ? 'Current:' : 'Result:'}
+                  </span>
+                  <span className="text-green-600 font-semibold">
+                    👍 {voteSummary.yes} ({voteSummary.percentageYes}%)
+                  </span>
+                  <span className="text-red-600 font-semibold">
+                    👎 {voteSummary.no} ({voteSummary.percentageNo}%)
+                  </span>
+                  <span className="text-gray-500">
+                    🤷 {voteSummary.abstain}
+                  </span>
+                  <span className="text-gray-400">|</span>
+                  <span className="text-sm text-gray-600">
+                    {voteSummary.total}/{voteSummary.eligibleVoters} voted
+                  </span>
+                </div>
+                {proposal.votingEndsAt && (
+                  <span className="text-xs text-gray-500">
+                    {proposal.status === 'OPEN' ? 'Ends:' : 'Ended:'} {new Date(proposal.votingEndsAt).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+              {/* Voting method */}
+              <div className="text-xs text-gray-500">
+                Method: {band.votingMethod?.replace(/_/g, ' ')}
+              </div>
+            </div>
           )}
 
-          {/* Voting Section */}
+          {/* Compact Voting Section */}
           {isOpen && canVote && !votingEnded && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>{hasVoted ? 'Change Your Vote' : 'Cast Your Vote'}</Heading>
-
-                {/* Dissolution proposal warning */}
-                {proposal.type === 'DISSOLUTION' && (
-                  <Alert variant="danger">
-                    <Text weight="semibold">⚠️ Dissolution Vote</Text>
-                    <Text variant="small">
-                      This proposal requires unanimous approval. If ANY voting member votes NO, the band will NOT be dissolved.
-                      Non-voters are excluded from the count.
-                    </Text>
-                  </Alert>
-                )}
-
-                <Textarea
-                  label="Comment (optional)"
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Add a comment to explain your vote..."
-                  rows={3}
-                />
-
-                <Flex gap="md">
-                  <Button
-                    variant={selectedVote === 'YES' ? 'primary' : 'secondary'}
-                    size="lg"
+            <div className="border border-gray-200 rounded-lg bg-white p-3 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="text-sm font-medium text-gray-700">
+                  {hasVoted ? 'Change Vote:' : 'Vote:'}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
                     onClick={() => handleVote('YES')}
                     disabled={voteMutation.isPending}
+                    className={`px-3 py-1.5 rounded text-sm font-medium ${
+                      selectedVote === 'YES'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-green-50 text-green-700 hover:bg-green-100'
+                    }`}
                   >
                     👍 Yes
-                  </Button>
-                  <Button
-                    variant={selectedVote === 'NO' ? 'danger' : 'secondary'}
-                    size="lg"
+                  </button>
+                  <button
                     onClick={() => handleVote('NO')}
                     disabled={voteMutation.isPending}
+                    className={`px-3 py-1.5 rounded text-sm font-medium ${
+                      selectedVote === 'NO'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-red-50 text-red-700 hover:bg-red-100'
+                    }`}
                   >
                     👎 No
-                  </Button>
-                  {/* Hide abstain for dissolution proposals */}
+                  </button>
                   {proposal.type !== 'DISSOLUTION' && (
-                    <Button
-                      variant={selectedVote === 'ABSTAIN' ? 'ghost' : 'secondary'}
-                      size="lg"
+                    <button
                       onClick={() => handleVote('ABSTAIN')}
                       disabled={voteMutation.isPending}
+                      className={`px-3 py-1.5 rounded text-sm font-medium ${
+                        selectedVote === 'ABSTAIN'
+                          ? 'bg-gray-600 text-white'
+                          : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                      }`}
                     >
                       🤷 Abstain
-                    </Button>
+                    </button>
                   )}
-                </Flex>
-              </Stack>
-            </Card>
+                </div>
+              </div>
+              {proposal.type === 'DISSOLUTION' && (
+                <div className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                  ⚠️ Dissolution requires unanimous approval. Any NO vote will fail.
+                </div>
+              )}
+              <input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Add comment (optional)..."
+                className="w-full text-sm px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
           )}
 
           {isOpen && votingEnded && (
@@ -857,69 +572,45 @@ export default function ProposalDetailPage() {
             </Alert>
           )}
 
-          {/* Close Proposal Button */}
+          {/* Compact Close Proposal */}
           {isOpen && canClose && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Close Proposal</Heading>
-
-                {/* Quorum Status */}
-                <div className={`p-3 rounded-lg ${voteSummary.quorum.met ? 'bg-green-50' : 'bg-amber-50'}`}>
-                  <Text weight="semibold" className={voteSummary.quorum.met ? 'text-green-700' : 'text-amber-700'}>
+            <div className="border border-gray-200 rounded-lg bg-white p-3 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-medium ${voteSummary.quorum.met ? 'text-green-700' : 'text-amber-700'}`}>
                     {voteSummary.quorum.met ? '✓ Quorum Met' : '⚠ Quorum Not Met'}
-                  </Text>
-                  <Text variant="small" className={voteSummary.quorum.met ? 'text-green-600' : 'text-amber-600'}>
-                    {voteSummary.total} of {voteSummary.eligibleVoters} eligible voters have voted ({voteSummary.quorum.actual}%)
-                    {!voteSummary.quorum.met && (
-                      <> — need {Math.ceil(voteSummary.eligibleVoters * voteSummary.quorum.required / 100) - voteSummary.total} more vote{Math.ceil(voteSummary.eligibleVoters * voteSummary.quorum.required / 100) - voteSummary.total !== 1 ? 's' : ''} for {voteSummary.quorum.required}% quorum</>
-                    )}
-                  </Text>
-                </div>
-
-                {/* Expected Outcome */}
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <Text weight="semibold">Expected Outcome if Closed Now:</Text>
+                    <span className="text-gray-400 font-normal ml-1">
+                      ({voteSummary.quorum.actual}%)
+                    </span>
+                  </span>
+                  <span className="text-gray-300">|</span>
                   {(() => {
                     if (!voteSummary.quorum.met) {
-                      return (
-                        <Text variant="small" className="text-red-600">
-                          ✗ REJECTED — Quorum not met ({voteSummary.quorum.actual}% participation, {voteSummary.quorum.required}% required)
-                        </Text>
-                      )
+                      return <span className="text-sm text-red-600">Would reject (no quorum)</span>
                     }
-
-                    // Calculate if vote passes based on voting method
                     const threshold = band.votingMethod === 'SUPERMAJORITY_75' ? 75
                       : band.votingMethod === 'SUPERMAJORITY_66' ? 66
                       : band.votingMethod === 'UNANIMOUS' ? 100
-                      : 50 // SIMPLE_MAJORITY
-
+                      : 50
                     const wouldPass = band.votingMethod === 'UNANIMOUS'
                       ? voteSummary.no === 0 && voteSummary.yes > 0
                       : voteSummary.percentageYes > threshold
-
                     return (
-                      <Text variant="small" className={wouldPass ? 'text-green-600' : 'text-red-600'}>
-                        {wouldPass ? '✓ APPROVED' : '✗ REJECTED'} — {voteSummary.percentageYes}% Yes, {voteSummary.percentageNo}% No
-                        (requires {band.votingMethod === 'UNANIMOUS' ? 'unanimous yes' : `>${threshold}%`})
-                      </Text>
+                      <span className={`text-sm font-medium ${wouldPass ? 'text-green-600' : 'text-red-600'}`}>
+                        Would {wouldPass ? 'pass' : 'fail'}
+                      </span>
                     )
                   })()}
                 </div>
-
-                <Text variant="small" color="muted">
-                  Closing will calculate the final result based on the voting method.
-                </Text>
-                <Button
-                  variant="danger"
-                  size="md"
+                <button
                   onClick={handleClose}
                   disabled={closeMutation.isPending}
+                  className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                 >
-                  {closeMutation.isPending ? 'Closing...' : 'Close Proposal & Finalize'}
-                </Button>
-              </Stack>
-            </Card>
+                  {closeMutation.isPending ? 'Closing...' : 'Close & Finalize'}
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Projects Section - Only shows for approved proposals */}
@@ -930,40 +621,33 @@ export default function ProposalDetailPage() {
             canCreateProject={!!canCreateProject}
           />
 
-          {/* Vote List */}
+          {/* Compact Vote List */}
           {proposal.votes.length > 0 && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Votes ({proposal.votes.length})</Heading>
-                <Stack spacing="sm">
-                  {proposal.votes.map((vote: any) => (
-                    <Flex key={vote.id} justify="between" align="start">
-                      <Stack spacing="sm">
-                        <Text variant="small" weight="semibold">{vote.user.name}</Text>
-                        {vote.comment && (
-                          <Text variant="small" color="muted">"{vote.comment}"</Text>
-                        )}
-                      </Stack>
-                      <Badge 
-                        variant={vote.vote === 'YES' ? 'success' : vote.vote === 'NO' ? 'danger' : 'neutral'}
-                      >
-                        {vote.vote}
-                      </Badge>
-                    </Flex>
-                  ))}
-                </Stack>
-              </Stack>
-            </Card>
+            <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+              <div className="px-3 py-2 bg-gray-50 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Votes ({proposal.votes.length})</span>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {proposal.votes.map((vote: any) => (
+                  <div key={vote.id} className="flex items-center justify-between px-3 py-1.5 hover:bg-gray-50">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-sm font-medium truncate">{vote.user.name}</span>
+                      {vote.comment && (
+                        <span className="text-xs text-gray-500 truncate">"{vote.comment}"</span>
+                      )}
+                    </div>
+                    <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                      vote.vote === 'YES' ? 'bg-green-100 text-green-700' :
+                      vote.vote === 'NO' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {vote.vote}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
-
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={() => router.push(`/bands/${slug}/proposals`)}
-          >
-            ← Back to Proposals
-          </Button>
         </Stack>
 
         {/* Edit Modal */}
