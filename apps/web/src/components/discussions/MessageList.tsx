@@ -67,24 +67,35 @@ export function MessageList({ bandId, channelId, userId, userRole, onOpenThread 
     }
   }, [channelId, userId])
 
-  // Track if this is initial load for this channel
-  const isInitialLoad = useRef(true)
+  // Track message count to detect NEW messages (not just refetches)
+  const prevMessageCount = useRef<number>(0)
+  const hasInitialized = useRef(false)
 
-  // Reset initial load flag when channel changes
+  // Reset when channel changes
   useEffect(() => {
-    isInitialLoad.current = true
+    prevMessageCount.current = 0
+    hasInitialized.current = false
   }, [channelId])
 
-  // Scroll to bottom only when new messages arrive (not on initial page load)
+  // Scroll to bottom only when NEW messages arrive (count increases)
   useEffect(() => {
-    if (isInitialLoad.current) {
-      isInitialLoad.current = false
+    const currentCount = data?.messages?.length || 0
+
+    // Skip the first render after channel change (initial load)
+    if (!hasInitialized.current) {
+      hasInitialized.current = true
+      prevMessageCount.current = currentCount
       return
     }
-    // Smooth scroll for new messages after initial load
-    messagesEndRef.current?.scrollIntoView({
-      behavior: 'smooth'
-    })
+
+    // Only scroll if message count INCREASED (new message added)
+    if (currentCount > prevMessageCount.current) {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: 'smooth'
+      })
+    }
+
+    prevMessageCount.current = currentCount
   }, [data?.messages])
 
   // Set up polling for new messages
