@@ -465,6 +465,29 @@ export default function HomePage() {
               </Stack>
             </div>
 
+            {/* Onboarding Video */}
+            <div className="max-w-3xl mx-auto">
+              <Card>
+                <Stack spacing="md" className="items-center">
+                  <Heading level={3}>See Band It in Action</Heading>
+                  <Text color="muted" className="text-center">
+                    Watch this 5-minute overview to learn how Band It works
+                  </Text>
+                  <div className="w-full aspect-video rounded-lg overflow-hidden">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                      title="Band It Overview"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </Stack>
+              </Card>
+            </div>
+
             {/* Main intro content */}
             <div className="max-w-3xl mx-auto">
               <Stack spacing="lg">
