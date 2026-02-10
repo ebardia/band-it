@@ -143,6 +143,56 @@ export default function ProposalsPage() {
     }
   }, [slug, expandedProposals, expandedProjects, expandedTasks, expansionRestored])
 
+  const utils = trpc.useUtils()
+
+  // Fetch data for restored expanded items
+  useEffect(() => {
+    if (!expansionRestored) return
+
+    // Fetch projects for expanded proposals
+    expandedProposals.forEach(async (proposalId) => {
+      if (!projectsCache[proposalId]) {
+        try {
+          const result = await utils.proposal.getProjectsForProposal.fetch({ proposalId })
+          if (result.projects) {
+            setProjectsCache(prev => ({ ...prev, [proposalId]: result.projects }))
+          }
+        } catch (error) {
+          console.error('Failed to fetch projects:', error)
+        }
+      }
+    })
+
+    // Fetch tasks for expanded projects
+    expandedProjects.forEach(async (projectId) => {
+      if (!tasksCache[projectId]) {
+        try {
+          const result = await utils.proposal.getTasksForProject.fetch({ projectId })
+          if (result.tasks) {
+            setTasksCache(prev => ({ ...prev, [projectId]: result.tasks }))
+          }
+        } catch (error) {
+          console.error('Failed to fetch tasks:', error)
+        }
+      }
+    })
+
+    // Fetch checklist for expanded tasks
+    expandedTasks.forEach(async (taskId) => {
+      if (!checklistCache[taskId]) {
+        try {
+          const result = await utils.proposal.getChecklistForTask.fetch({ taskId })
+          if (result.checklistItems) {
+            setChecklistCache(prev => ({ ...prev, [taskId]: result.checklistItems }))
+          }
+        } catch (error) {
+          console.error('Failed to fetch checklist:', error)
+        }
+      }
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expansionRestored])
+
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
@@ -190,8 +240,6 @@ export default function ProposalsPage() {
     { taskId: '' },
     { enabled: false }
   )
-
-  const utils = trpc.useUtils()
 
   // Toggle proposal expansion
   const toggleProposal = useCallback(async (proposalId: string) => {
