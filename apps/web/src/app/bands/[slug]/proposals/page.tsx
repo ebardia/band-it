@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
@@ -24,11 +24,72 @@ const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 // Roles that can review proposals
 const CAN_REVIEW = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
 
+// Status icons
+const STATUS_ICONS = {
+  COMPLETED: '✅',
+  IN_PROGRESS: '⏳',
+  NOT_STARTED: '○',
+}
+
+interface ProposalData {
+  id: string
+  title: string
+  status: string
+  type: string
+  executionType: string
+  createdAt: string
+  votingEndsAt: string | null
+  votingStartedAt: string | null
+  closedAt: string | null
+  createdBy: { id: string; name: string }
+  projectCount: number
+  projectsCompleted: number
+  voteCount: number
+  voteBreakdown: { yes: number; no: number; abstain: number } | null
+  allProjectsComplete: boolean
+}
+
+interface ProjectData {
+  id: string
+  name: string
+  status: string
+  priority: string
+  taskCount: number
+  tasksCompleted: number
+}
+
+interface TaskData {
+  id: string
+  name: string
+  status: string
+  dueDate: string | null
+  assignee: { id: string; name: string } | null
+  checklistCount: number
+  checklistCompleted: number
+}
+
+interface ChecklistData {
+  id: string
+  description: string
+  isCompleted: boolean
+  assignee: { id: string; name: string } | null
+}
+
 export default function ProposalsPage() {
   const router = useRouter()
   const params = useParams()
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
+
+  // Expansion state
+  const [expandedProposals, setExpandedProposals] = useState<Set<string>>(new Set())
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
+
+  // Cache for lazy-loaded data
+  const [projectsCache, setProjectsCache] = useState<Record<string, ProjectData[]>>({})
+  const [tasksCache, setTasksCache] = useState<Record<string, TaskData[]>>({})
+  const [checklistCache, setChecklistCache] = useState<Record<string, ChecklistData[]>>({})
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -50,7 +111,8 @@ export default function ProposalsPage() {
     { enabled: !!slug }
   )
 
-  const { data: proposalsData, isLoading: proposalsLoading } = trpc.proposal.getByBand.useQuery(
+  // Use the new hierarchy endpoint
+  const { data: proposalsData, isLoading: proposalsLoading } = trpc.proposal.getProposalsList.useQuery(
     { bandId: bandData?.band?.id || '' },
     { enabled: !!bandData?.band?.id }
   )
@@ -61,6 +123,151 @@ export default function ProposalsPage() {
     { enabled: !!bandData?.band?.id && !!userId }
   )
 
+  // Lazy loading queries
+  const projectsQuery = trpc.proposal.getProjectsForProposal.useQuery(
+    { proposalId: '' },
+    { enabled: false }
+  )
+
+  const tasksQuery = trpc.proposal.getTasksForProject.useQuery(
+    { projectId: '' },
+    { enabled: false }
+  )
+
+  const checklistQuery = trpc.proposal.getChecklistForTask.useQuery(
+    { taskId: '' },
+    { enabled: false }
+  )
+
+  const utils = trpc.useUtils()
+
+  // Toggle proposal expansion
+  const toggleProposal = useCallback(async (proposalId: string) => {
+    const newExpanded = new Set(expandedProposals)
+
+    if (newExpanded.has(proposalId)) {
+      // Collapse: remove from expanded and collapse all children
+      newExpanded.delete(proposalId)
+
+      // Collapse child projects
+      const childProjects = projectsCache[proposalId] || []
+      const projectIds = new Set(childProjects.map(p => p.id))
+      setExpandedProjects(prev => {
+        const next = new Set(prev)
+        projectIds.forEach(id => next.delete(id))
+        return next
+      })
+
+      // Collapse child tasks
+      childProjects.forEach(project => {
+        const childTasks = tasksCache[project.id] || []
+        const taskIds = new Set(childTasks.map(t => t.id))
+        setExpandedTasks(prev => {
+          const next = new Set(prev)
+          taskIds.forEach(id => next.delete(id))
+          return next
+        })
+      })
+    } else {
+      // Expand: add to expanded and fetch projects if not cached
+      newExpanded.add(proposalId)
+
+      if (!projectsCache[proposalId]) {
+        try {
+          const result = await utils.proposal.getProjectsForProposal.fetch({ proposalId })
+          if (result.projects) {
+            setProjectsCache(prev => ({ ...prev, [proposalId]: result.projects }))
+          }
+        } catch (error) {
+          console.error('Failed to fetch projects:', error)
+        }
+      }
+    }
+
+    setExpandedProposals(newExpanded)
+  }, [expandedProposals, projectsCache, tasksCache, utils])
+
+  // Toggle project expansion
+  const toggleProject = useCallback(async (projectId: string) => {
+    const newExpanded = new Set(expandedProjects)
+
+    if (newExpanded.has(projectId)) {
+      // Collapse
+      newExpanded.delete(projectId)
+
+      // Collapse child tasks
+      const childTasks = tasksCache[projectId] || []
+      const taskIds = new Set(childTasks.map(t => t.id))
+      setExpandedTasks(prev => {
+        const next = new Set(prev)
+        taskIds.forEach(id => next.delete(id))
+        return next
+      })
+    } else {
+      // Expand
+      newExpanded.add(projectId)
+
+      if (!tasksCache[projectId]) {
+        try {
+          const result = await utils.proposal.getTasksForProject.fetch({ projectId })
+          if (result.tasks) {
+            setTasksCache(prev => ({ ...prev, [projectId]: result.tasks }))
+          }
+        } catch (error) {
+          console.error('Failed to fetch tasks:', error)
+        }
+      }
+    }
+
+    setExpandedProjects(newExpanded)
+  }, [expandedProjects, tasksCache, utils])
+
+  // Toggle task expansion
+  const toggleTask = useCallback(async (taskId: string) => {
+    const newExpanded = new Set(expandedTasks)
+
+    if (newExpanded.has(taskId)) {
+      newExpanded.delete(taskId)
+    } else {
+      newExpanded.add(taskId)
+
+      if (!checklistCache[taskId]) {
+        try {
+          const result = await utils.proposal.getChecklistForTask.fetch({ taskId })
+          if (result.checklistItems) {
+            setChecklistCache(prev => ({ ...prev, [taskId]: result.checklistItems }))
+          }
+        } catch (error) {
+          console.error('Failed to fetch checklist:', error)
+        }
+      }
+    }
+
+    setExpandedTasks(newExpanded)
+  }, [expandedTasks, checklistCache, utils])
+
+  // Get status indicator for project/task
+  const getStatusIndicator = (completed: number, total: number) => {
+    if (total === 0) return STATUS_ICONS.NOT_STARTED
+    if (completed === total) return STATUS_ICONS.COMPLETED
+    if (completed > 0) return STATUS_ICONS.IN_PROGRESS
+    return STATUS_ICONS.NOT_STARTED
+  }
+
+  // Format relative time for voting end
+  const getVotingTimeLeft = (votingEndsAt: string | null) => {
+    if (!votingEndsAt) return ''
+    const end = new Date(votingEndsAt)
+    const now = new Date()
+    const diffMs = end.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffDays < 0) return 'Ended'
+    if (diffDays === 0) return 'Ends today'
+    if (diffDays === 1) return 'Ends tomorrow'
+    return `Ends in ${diffDays} days`
+  }
+
   if (bandLoading || proposalsLoading) {
     return (
       <>
@@ -68,11 +275,9 @@ export default function ProposalsPage() {
         <BandLayout
           bandSlug={slug}
           bandName="Loading..."
-          pageTitle="Band Proposals"
+          pageTitle="Proposals"
           isMember={false}
           wide={true}
-          bandId={bandData?.band?.id}
-          userId={userId || undefined}
         >
           <Loading message="Loading proposals..." />
         </BandLayout>
@@ -87,11 +292,9 @@ export default function ProposalsPage() {
         <BandLayout
           bandSlug={slug}
           bandName=""
-          pageTitle="Band Proposals"
+          pageTitle="Proposals"
           isMember={false}
           wide={true}
-          bandId={bandData?.band?.id}
-          userId={userId || undefined}
         >
           <Alert variant="danger">
             <Text>Band not found</Text>
@@ -107,55 +310,276 @@ export default function ProposalsPage() {
   const isMember = !!currentMember
   const canCreateProposal = currentMember && CAN_CREATE_PROPOSAL.includes(currentMember.role)
   const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'DRAFT':
-        return <Badge variant="neutral">📝 Draft</Badge>
-      case 'PENDING_REVIEW':
-        return <Badge variant="warning">⏳ Pending Review</Badge>
-      case 'OPEN':
-        return <Badge variant="info">🗳️ Voting</Badge>
-      case 'APPROVED':
-        return <Badge variant="success">✅ Passed</Badge>
-      case 'REJECTED':
-        return <Badge variant="danger">❌ Failed</Badge>
-      case 'CLOSED':
-        return <Badge variant="neutral">Closed</Badge>
-      case 'WITHDRAWN':
-        return <Badge variant="neutral">↩️ Withdrawn</Badge>
-      default:
-        return <Badge variant="neutral">{status}</Badge>
-    }
-  }
-
   const canReview = currentMember && CAN_REVIEW.includes(currentMember.role)
   const pendingReviewProposals = pendingReviewData?.proposals || []
 
-  // My drafts (proposals I created that are still in draft)
-  const myDrafts = proposalsData?.proposals.filter(
-    (p: any) => p.createdBy.id === userId && p.status === 'DRAFT'
-  ) || []
+  const proposals = proposalsData?.proposals || { drafts: [], voting: [], inProgress: [], past: [] }
+  const counts = proposalsData?.counts || { drafts: 0, voting: 0, inProgress: 0, past: 0 }
 
-  // My pending review (proposals I created that are pending review)
-  const myPendingReview = proposalsData?.proposals.filter(
-    (p: any) => p.createdBy.id === userId && p.status === 'PENDING_REVIEW'
-  ) || []
+  // Render a single proposal row
+  const renderProposalRow = (proposal: ProposalData, showExpandToggle: boolean = true) => {
+    const isExpanded = expandedProposals.has(proposal.id)
+    const hasProjects = proposal.projectCount > 0
+    const projects = projectsCache[proposal.id] || []
 
-  // My rejected/withdrawn (proposals I can resubmit)
-  const myRejected = proposalsData?.proposals.filter(
-    (p: any) => p.createdBy.id === userId && ['REJECTED', 'WITHDRAWN'].includes(p.status)
-  ) || []
+    return (
+      <div key={proposal.id} className="border-b border-gray-100 last:border-b-0">
+        {/* Proposal row */}
+        <div className="flex items-center py-3 px-2 hover:bg-gray-50 group">
+          {/* Expand toggle */}
+          <button
+            onClick={(e) => { e.stopPropagation(); if (hasProjects) toggleProposal(proposal.id) }}
+            className={`w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 ${!hasProjects ? 'invisible' : ''}`}
+            disabled={!hasProjects}
+          >
+            {isExpanded ? '▼' : '▶'}
+          </button>
 
-  // My completed proposals (approved/closed that I created)
-  const myCompleted = proposalsData?.proposals.filter(
-    (p: any) => p.createdBy.id === userId && ['APPROVED', 'CLOSED'].includes(p.status)
-  ) || []
+          {/* Proposal info */}
+          <div className="flex-1 min-w-0 ml-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Text weight="semibold" className="truncate">{proposal.title}</Text>
+              {proposal.allProjectsComplete && proposal.status === 'APPROVED' && (
+                <Badge variant="success">✅ All complete</Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
+              {proposal.status === 'OPEN' && (
+                <span>{getVotingTimeLeft(proposal.votingEndsAt)}</span>
+              )}
+              {proposal.status === 'APPROVED' && proposal.projectCount > 0 && (
+                <span>{proposal.projectsCompleted} of {proposal.projectCount} projects ✓</span>
+              )}
+              {(proposal.status === 'DRAFT' || proposal.status === 'PENDING_REVIEW') && (
+                <span>Started {new Date(proposal.createdAt).toLocaleDateString()}</span>
+              )}
+              {['CLOSED', 'REJECTED', 'WITHDRAWN'].includes(proposal.status) && proposal.voteBreakdown && (
+                <span>{proposal.voteBreakdown.yes} yes, {proposal.voteBreakdown.no} no</span>
+              )}
+              <span>by {proposal.createdBy.name}</span>
+            </div>
+          </div>
 
-  const openProposals = proposalsData?.proposals.filter((p: any) => p.status === 'OPEN') || []
-  const completedProposals = proposalsData?.proposals.filter(
-    (p: any) => ['APPROVED', 'REJECTED', 'CLOSED'].includes(p.status) && p.createdBy.id !== userId
-  ) || []
+          {/* Status badge */}
+          <div className="hidden sm:block mx-2">
+            {proposal.status === 'DRAFT' && <Badge variant="neutral">DRAFT</Badge>}
+            {proposal.status === 'PENDING_REVIEW' && <Badge variant="warning">PENDING</Badge>}
+            {proposal.status === 'APPROVED' && !proposal.allProjectsComplete && <Badge variant="info">IN PROGRESS</Badge>}
+            {proposal.status === 'REJECTED' && <Badge variant="danger">REJECTED</Badge>}
+            {proposal.status === 'CLOSED' && <Badge variant="neutral">CLOSED</Badge>}
+            {proposal.status === 'WITHDRAWN' && <Badge variant="neutral">WITHDRAWN</Badge>}
+          </div>
+
+          {/* Navigate button */}
+          <button
+            onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
+            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0"
+            title="View proposal"
+          >
+            →
+          </button>
+        </div>
+
+        {/* Expanded projects */}
+        {isExpanded && hasProjects && (
+          <div className="ml-4 md:ml-8 border-l-2 border-gray-200">
+            {projects.length === 0 ? (
+              <div className="py-2 px-4 text-sm text-gray-400">Loading projects...</div>
+            ) : (
+              projects.map(project => renderProjectRow(project, proposal.id))
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Render a project row
+  const renderProjectRow = (project: ProjectData, proposalId: string) => {
+    const isExpanded = expandedProjects.has(project.id)
+    const hasTasks = project.taskCount > 0
+    const tasks = tasksCache[project.id] || []
+    const statusIcon = getStatusIndicator(project.tasksCompleted, project.taskCount)
+
+    return (
+      <div key={project.id}>
+        {/* Project row */}
+        <div className="flex items-center py-2 px-2 hover:bg-gray-50">
+          {/* Expand toggle */}
+          <button
+            onClick={(e) => { e.stopPropagation(); if (hasTasks) toggleProject(project.id) }}
+            className={`w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 text-sm ${!hasTasks ? 'invisible' : ''}`}
+            disabled={!hasTasks}
+          >
+            {isExpanded ? '▼' : '▶'}
+          </button>
+
+          {/* Project info */}
+          <div className="flex-1 min-w-0 ml-1">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">📁</span>
+              <Text variant="small" weight="semibold" className="truncate">{project.name}</Text>
+              <span className="text-sm">{statusIcon}</span>
+            </div>
+            {project.taskCount > 0 && (
+              <Text variant="small" color="muted" className="ml-6">
+                {project.tasksCompleted} of {project.taskCount} tasks ✓
+              </Text>
+            )}
+          </div>
+
+          {/* Navigate button */}
+          <button
+            onClick={() => router.push(`/bands/${slug}/projects/${project.id}`)}
+            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-sm"
+            title="View project"
+          >
+            →
+          </button>
+        </div>
+
+        {/* Expanded tasks */}
+        {isExpanded && hasTasks && (
+          <div className="ml-4 md:ml-7 border-l-2 border-gray-100">
+            {tasks.length === 0 ? (
+              <div className="py-2 px-4 text-sm text-gray-400">Loading tasks...</div>
+            ) : (
+              tasks.map(task => renderTaskRow(task, project.id))
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Render a task row
+  const renderTaskRow = (task: TaskData, projectId: string) => {
+    const isExpanded = expandedTasks.has(task.id)
+    const hasChecklist = task.checklistCount > 0
+    const checklistItems = checklistCache[task.id] || []
+    const isCompleted = task.status === 'COMPLETED'
+    const statusIcon = isCompleted ? '✅' : (task.status === 'IN_PROGRESS' || task.status === 'IN_REVIEW') ? '⏳' : '○'
+
+    return (
+      <div key={task.id}>
+        {/* Task row */}
+        <div className="flex items-center py-2 px-2 hover:bg-gray-50">
+          {/* Expand toggle */}
+          <button
+            onClick={(e) => { e.stopPropagation(); if (hasChecklist) toggleTask(task.id) }}
+            className={`w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 text-xs ${!hasChecklist ? 'invisible' : ''}`}
+            disabled={!hasChecklist}
+          >
+            {isExpanded ? '▼' : '▶'}
+          </button>
+
+          {/* Task info */}
+          <div className="flex-1 min-w-0 ml-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">{statusIcon}</span>
+              <Text variant="small" className="truncate">{task.name}</Text>
+              {task.assignee && (
+                <Text variant="small" color="muted">({task.assignee.name})</Text>
+              )}
+            </div>
+            {hasChecklist && (
+              <Text variant="small" color="muted" className="ml-5">
+                {task.checklistCompleted} of {task.checklistCount} items ✓
+              </Text>
+            )}
+          </div>
+
+          {/* Navigate button */}
+          <button
+            onClick={() => router.push(`/bands/${slug}/tasks/${task.id}`)}
+            className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-xs"
+            title="View task"
+          >
+            →
+          </button>
+        </div>
+
+        {/* Expanded checklist */}
+        {isExpanded && hasChecklist && (
+          <div className="ml-4 md:ml-6 border-l-2 border-gray-50">
+            {checklistItems.length === 0 ? (
+              <div className="py-1 px-4 text-sm text-gray-400">Loading checklist...</div>
+            ) : (
+              checklistItems.map(item => renderChecklistRow(item, task.id))
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Render a checklist item row
+  const renderChecklistRow = (item: ChecklistData, taskId: string) => {
+    return (
+      <div key={item.id} className="flex items-center py-1 px-2 hover:bg-gray-50">
+        {/* Spacer for alignment */}
+        <div className="w-6 flex-shrink-0" />
+
+        {/* Checklist info */}
+        <div className="flex-1 min-w-0 ml-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">{item.isCompleted ? '☑️' : '☐'}</span>
+            <Text variant="small" className={`truncate ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}>
+              {item.description}
+            </Text>
+          </div>
+        </div>
+
+        {/* Navigate button */}
+        <button
+          onClick={() => router.push(`/bands/${slug}/tasks/${taskId}/checklist/${item.id}`)}
+          className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-xs"
+          title="View checklist item"
+        >
+          →
+        </button>
+      </div>
+    )
+  }
+
+  // Render a section
+  const renderSection = (
+    icon: string,
+    title: string,
+    count: number,
+    proposalsList: ProposalData[],
+    emptyMessage: string,
+    defaultCollapsed: boolean = false
+  ) => {
+    const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
+
+    return (
+      <div className="mb-6">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="w-full flex items-center gap-2 py-2 text-left hover:bg-gray-50 rounded"
+        >
+          <span className="text-lg">{icon}</span>
+          <Heading level={3} className="flex-1">
+            {title} ({count})
+          </Heading>
+          <span className="text-gray-400 text-sm">{isCollapsed ? '▶' : '▼'}</span>
+        </button>
+
+        {!isCollapsed && (
+          <div className="border border-gray-200 rounded-lg mt-2 bg-white">
+            {proposalsList.length === 0 ? (
+              <div className="py-4 px-4 text-center text-gray-500">
+                {emptyMessage}
+              </div>
+            ) : (
+              proposalsList.map(proposal => renderProposalRow(proposal))
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <>
@@ -164,7 +588,7 @@ export default function ProposalsPage() {
         bandSlug={slug}
         bandName={band.name}
         bandImageUrl={band.imageUrl}
-        pageTitle="Band Proposals"
+        pageTitle="Proposals"
         canApprove={canApprove}
         isMember={isMember}
         canAccessAdminTools={canAccessAdminTools}
@@ -179,239 +603,138 @@ export default function ProposalsPage() {
               size="md"
               onClick={() => router.push(`/bands/${slug}/proposals/create`)}
             >
-              Create Proposal
+              + New Proposal
             </Button>
           ) : undefined
         }
       >
-        <Stack spacing="xl">
-          {/* Pending Review Queue (for reviewers) */}
+        <Stack spacing="lg">
+          {/* Pending Review Alert (for reviewers) */}
           {canReview && pendingReviewProposals.length > 0 && (
-            <Stack spacing="lg">
-              <Alert variant="warning">
-                <Flex justify="between" align="center">
-                  <Text weight="semibold">⚠️ {pendingReviewProposals.length} proposal(s) waiting for your review</Text>
-                </Flex>
-              </Alert>
-              <Heading level={2}>Pending Review ({pendingReviewProposals.length})</Heading>
-              <Stack spacing="md">
-                {pendingReviewProposals.map((proposal: any) => (
-                  <Card key={proposal.id}>
-                    <Flex justify="between">
-                      <Stack spacing="sm">
-                        <Heading level={3}>{proposal.title}</Heading>
-                        <Text variant="small" color="muted">
-                          By {proposal.createdBy.name} • Submitted {proposal.submittedAt ? new Date(proposal.submittedAt).toLocaleDateString() : 'recently'}
-                        </Text>
-                        <Flex gap="sm">
-                          {getStatusBadge(proposal.status)}
-                          <Badge variant="neutral">{proposal.authorRole}</Badge>
-                        </Flex>
-                      </Stack>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                      >
-                        Review
-                      </Button>
-                    </Flex>
-                  </Card>
-                ))}
-              </Stack>
-            </Stack>
+            <Alert variant="warning">
+              <Flex justify="between" align="center" className="flex-wrap gap-2">
+                <Text weight="semibold">
+                  ⚠️ {pendingReviewProposals.length} proposal(s) waiting for your review
+                </Text>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    // Scroll to drafts section or expand it
+                    const el = document.getElementById('drafts-section')
+                    if (el) el.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                >
+                  Review Now
+                </Button>
+              </Flex>
+            </Alert>
           )}
 
-          {/* My Drafts */}
-          {myDrafts.length > 0 && (
-            <Stack spacing="lg">
-              <Heading level={2}>My Drafts ({myDrafts.length})</Heading>
-              <Stack spacing="md">
-                {myDrafts.map((proposal: any) => (
-                  <Card key={proposal.id}>
-                    <Flex justify="between">
-                      <Stack spacing="sm">
-                        <Heading level={3}>{proposal.title}</Heading>
-                        <Text variant="small" color="muted">
-                          Created {new Date(proposal.createdAt).toLocaleDateString()}
-                        </Text>
-                        {getStatusBadge(proposal.status)}
-                      </Stack>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                      >
-                        Edit & Submit
-                      </Button>
-                    </Flex>
-                  </Card>
-                ))}
-              </Stack>
-            </Stack>
-          )}
+          {/* Drafts & Pending Review Section */}
+          <div id="drafts-section">
+            <SectionHeader
+              icon="📝"
+              title="Drafts & Pending Review"
+              count={counts.drafts}
+              proposals={proposals.drafts}
+              emptyMessage="No drafts. Start a new proposal above."
+              renderProposalRow={renderProposalRow}
+              slug={slug}
+              router={router}
+            />
+          </div>
 
-          {/* My Pending Review */}
-          {myPendingReview.length > 0 && (
-            <Stack spacing="lg">
-              <Heading level={2}>Awaiting Review ({myPendingReview.length})</Heading>
-              <Stack spacing="md">
-                {myPendingReview.map((proposal: any) => (
-                  <Card key={proposal.id}>
-                    <Flex justify="between">
-                      <Stack spacing="sm">
-                        <Heading level={3}>{proposal.title}</Heading>
-                        <Text variant="small" color="muted">
-                          Submitted {proposal.submittedAt ? new Date(proposal.submittedAt).toLocaleDateString() : 'recently'}
-                        </Text>
-                        {getStatusBadge(proposal.status)}
-                      </Stack>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                      >
-                        View
-                      </Button>
-                    </Flex>
-                  </Card>
-                ))}
-              </Stack>
-            </Stack>
-          )}
+          {/* Open for Voting Section */}
+          <SectionHeader
+            icon="🗳️"
+            title="Open for Voting"
+            count={counts.voting}
+            proposals={proposals.voting}
+            emptyMessage="No proposals currently open for voting."
+            renderProposalRow={renderProposalRow}
+            slug={slug}
+            router={router}
+          />
 
-          {/* My Rejected/Withdrawn */}
-          {myRejected.length > 0 && (
-            <Stack spacing="lg">
-              <Heading level={2}>Needs Revision ({myRejected.length})</Heading>
-              <Stack spacing="md">
-                {myRejected.map((proposal: any) => (
-                  <Card key={proposal.id}>
-                    <Flex justify="between">
-                      <Stack spacing="sm">
-                        <Heading level={3}>{proposal.title}</Heading>
-                        <Text variant="small" color="muted">
-                          {proposal.status === 'REJECTED' ? 'Rejected' : 'Withdrawn'} • {proposal.submissionCount < 3 ? `${3 - proposal.submissionCount} resubmissions left` : 'No resubmissions left'}
-                        </Text>
-                        {getStatusBadge(proposal.status)}
-                      </Stack>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                        disabled={proposal.submissionCount >= 3}
-                      >
-                        {proposal.submissionCount < 3 ? 'Revise' : 'View'}
-                      </Button>
-                    </Flex>
-                  </Card>
-                ))}
-              </Stack>
-            </Stack>
-          )}
+          {/* In Progress Section */}
+          <SectionHeader
+            icon="⚙️"
+            title="In Progress"
+            count={counts.inProgress}
+            proposals={proposals.inProgress}
+            emptyMessage="No approved proposals in progress."
+            renderProposalRow={renderProposalRow}
+            slug={slug}
+            router={router}
+          />
 
-          {/* My Completed Proposals */}
-          {myCompleted.length > 0 && (
-            <Stack spacing="lg">
-              <Heading level={2}>My Completed Proposals ({myCompleted.length})</Heading>
-              <Stack spacing="md">
-                {myCompleted.map((proposal: any) => (
-                  <Card key={proposal.id}>
-                    <Flex justify="between">
-                      <Stack spacing="sm">
-                        <Heading level={3}>{proposal.title}</Heading>
-                        <Text variant="small" color="muted">
-                          {proposal.closedAt ? `Completed ${new Date(proposal.closedAt).toLocaleDateString()}` : `Created ${new Date(proposal.createdAt).toLocaleDateString()}`}
-                        </Text>
-                        <Flex gap="sm">
-                          {getStatusBadge(proposal.status)}
-                          <Badge variant="neutral">{proposal._count.votes} votes</Badge>
-                        </Flex>
-                      </Stack>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                      >
-                        View
-                      </Button>
-                    </Flex>
-                  </Card>
-                ))}
-              </Stack>
-            </Stack>
-          )}
-
-          {/* Open Proposals */}
-          <Stack spacing="lg">
-            <Heading level={2}>Open for Voting ({openProposals.length})</Heading>
-
-            {openProposals.length > 0 ? (
-              <Stack spacing="md">
-                {openProposals.map((proposal: any) => (
-                  <Card key={proposal.id}>
-                    <Flex justify="between">
-                      <Stack spacing="sm">
-                        <Heading level={3}>{proposal.title}</Heading>
-                        <Text variant="small" color="muted">
-                          By {proposal.createdBy.name} • Ends {proposal.votingEndsAt ? new Date(proposal.votingEndsAt).toLocaleDateString() : 'TBD'}
-                        </Text>
-                        <Flex gap="sm">
-                          {getStatusBadge(proposal.status)}
-                          <Badge variant="neutral">{proposal._count.votes} votes</Badge>
-                        </Flex>
-                      </Stack>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                      >
-                        Vote Now
-                      </Button>
-                    </Flex>
-                  </Card>
-                ))}
-              </Stack>
-            ) : (
-              <Alert variant="info">
-                <Text>No open proposals at this time.</Text>
-              </Alert>
-            )}
-          </Stack>
-
-          {/* Completed Proposals */}
-          {completedProposals.length > 0 && (
-            <Stack spacing="lg">
-              <Heading level={2}>Past Proposals ({completedProposals.length})</Heading>
-              <Stack spacing="md">
-                {completedProposals.map((proposal: any) => (
-                  <Card key={proposal.id}>
-                    <Flex justify="between">
-                      <Stack spacing="sm">
-                        <Heading level={3}>{proposal.title}</Heading>
-                        <Text variant="small" color="muted">
-                          By {proposal.createdBy.name}
-                        </Text>
-                        <Flex gap="sm">
-                          {getStatusBadge(proposal.status)}
-                          <Badge variant="neutral">{proposal._count.votes} votes</Badge>
-                        </Flex>
-                      </Stack>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-                      >
-                        View
-                      </Button>
-                    </Flex>
-                  </Card>
-                ))}
-              </Stack>
-            </Stack>
-          )}
+          {/* Past Section */}
+          <SectionHeader
+            icon="📁"
+            title="Past"
+            count={counts.past}
+            proposals={proposals.past}
+            emptyMessage="No past proposals yet."
+            renderProposalRow={renderProposalRow}
+            defaultCollapsed={counts.past > 5}
+            slug={slug}
+            router={router}
+          />
         </Stack>
       </BandLayout>
     </>
+  )
+}
+
+// Section header component
+function SectionHeader({
+  icon,
+  title,
+  count,
+  proposals,
+  emptyMessage,
+  renderProposalRow,
+  defaultCollapsed = false,
+  slug,
+  router,
+}: {
+  icon: string
+  title: string
+  count: number
+  proposals: ProposalData[]
+  emptyMessage: string
+  renderProposalRow: (proposal: ProposalData) => React.ReactNode
+  defaultCollapsed?: boolean
+  slug: string
+  router: any
+}) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
+
+  return (
+    <div>
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="w-full flex items-center gap-2 py-2 px-1 text-left hover:bg-gray-50 rounded-lg transition-colors"
+      >
+        <span className="text-xl">{icon}</span>
+        <span className="flex-1 font-semibold text-gray-800">
+          {title} <span className="text-gray-400 font-normal">({count})</span>
+        </span>
+        <span className="text-gray-400 text-sm px-2">{isCollapsed ? '▶' : '▼'}</span>
+      </button>
+
+      {!isCollapsed && (
+        <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+          {proposals.length === 0 ? (
+            <div className="py-6 px-4 text-center text-gray-500">
+              {emptyMessage}
+            </div>
+          ) : (
+            proposals.map(proposal => renderProposalRow(proposal))
+          )}
+        </div>
+      )}
+    </div>
   )
 }
