@@ -326,10 +326,10 @@ export default function ProposalsPage() {
       <div key={proposal.id} className="border-b border-gray-100 last:border-b-0">
         {/* Proposal row */}
         <div className="flex items-center py-3 px-2 hover:bg-gray-50 group">
-          {/* Expand toggle */}
+          {/* Expand toggle - 44px tap target on mobile */}
           <button
             onClick={(e) => { e.stopPropagation(); if (hasProjects) toggleProposal(proposal.id) }}
-            className={`w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 ${!hasProjects ? 'invisible' : ''}`}
+            className={`min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 ${!hasProjects ? 'invisible' : ''}`}
             disabled={!hasProjects}
           >
             {isExpanded ? '▼' : '▶'}
@@ -370,19 +370,19 @@ export default function ProposalsPage() {
             {proposal.status === 'WITHDRAWN' && <Badge variant="neutral">WITHDRAWN</Badge>}
           </div>
 
-          {/* Navigate button */}
+          {/* Navigate button - 44px tap target */}
           <button
             onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0"
             title="View proposal"
           >
             →
           </button>
         </div>
 
-        {/* Expanded projects */}
+        {/* Expanded projects - 8px indent mobile, 16px desktop */}
         {isExpanded && hasProjects && (
-          <div className="ml-4 md:ml-8 border-l-2 border-gray-200">
+          <div className="ml-2 md:ml-4 border-l-2 border-gray-200">
             {projects.length === 0 ? (
               <div className="py-2 px-4 text-sm text-gray-400">Loading projects...</div>
             ) : (
@@ -404,43 +404,43 @@ export default function ProposalsPage() {
     return (
       <div key={project.id}>
         {/* Project row */}
-        <div className="flex items-center py-2 px-2 hover:bg-gray-50">
-          {/* Expand toggle */}
+        <div className="flex items-center py-1 md:py-2 px-1 md:px-2 hover:bg-gray-50">
+          {/* Expand toggle - 44px tap target on mobile */}
           <button
             onClick={(e) => { e.stopPropagation(); if (hasTasks) toggleProject(project.id) }}
-            className={`w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 text-sm ${!hasTasks ? 'invisible' : ''}`}
+            className={`min-w-[44px] min-h-[44px] md:w-7 md:h-7 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 text-sm ${!hasTasks ? 'invisible' : ''}`}
             disabled={!hasTasks}
           >
             {isExpanded ? '▼' : '▶'}
           </button>
 
           {/* Project info */}
-          <div className="flex-1 min-w-0 ml-1">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500">📁</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1 md:gap-2">
+              <span className="text-gray-500 text-sm">📁</span>
               <Text variant="small" weight="semibold" className="truncate">{project.name}</Text>
               <span className="text-sm">{statusIcon}</span>
             </div>
             {project.taskCount > 0 && (
-              <Text variant="small" color="muted" className="ml-6">
-                {project.tasksCompleted} of {project.taskCount} tasks ✓
+              <Text variant="small" color="muted" className="ml-5 md:ml-6">
+                {project.tasksCompleted}/{project.taskCount} tasks
               </Text>
             )}
           </div>
 
-          {/* Navigate button */}
+          {/* Navigate button - 44px tap target */}
           <button
             onClick={() => router.push(`/bands/${slug}/projects/${project.id}`)}
-            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-sm"
+            className="min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-sm"
             title="View project"
           >
             →
           </button>
         </div>
 
-        {/* Expanded tasks */}
+        {/* Expanded tasks - 8px indent mobile, 16px desktop */}
         {isExpanded && hasTasks && (
-          <div className="ml-4 md:ml-7 border-l-2 border-gray-100">
+          <div className="ml-2 md:ml-4 border-l-2 border-gray-100">
             {tasks.length === 0 ? (
               <div className="py-2 px-4 text-sm text-gray-400">Loading tasks...</div>
             ) : (
@@ -463,45 +463,45 @@ export default function ProposalsPage() {
     return (
       <div key={task.id}>
         {/* Task row */}
-        <div className="flex items-center py-2 px-2 hover:bg-gray-50">
-          {/* Expand toggle */}
+        <div className="flex items-center py-1 md:py-2 px-1 md:px-2 hover:bg-gray-50">
+          {/* Expand toggle - 44px tap target on mobile */}
           <button
             onClick={(e) => { e.stopPropagation(); if (hasChecklist) toggleTask(task.id) }}
-            className={`w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 text-xs ${!hasChecklist ? 'invisible' : ''}`}
+            className={`min-w-[44px] min-h-[44px] md:w-6 md:h-6 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 text-xs ${!hasChecklist ? 'invisible' : ''}`}
             disabled={!hasChecklist}
           >
             {isExpanded ? '▼' : '▶'}
           </button>
 
           {/* Task info */}
-          <div className="flex-1 min-w-0 ml-1">
-            <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1 md:gap-2 flex-wrap">
               <span className="text-sm">{statusIcon}</span>
               <Text variant="small" className="truncate">{task.name}</Text>
               {task.assignee && (
-                <Text variant="small" color="muted">({task.assignee.name})</Text>
+                <Text variant="small" color="muted" className="hidden sm:inline">({task.assignee.name})</Text>
               )}
             </div>
             {hasChecklist && (
-              <Text variant="small" color="muted" className="ml-5">
-                {task.checklistCompleted} of {task.checklistCount} items ✓
+              <Text variant="small" color="muted" className="ml-4 md:ml-5">
+                {task.checklistCompleted}/{task.checklistCount} items
               </Text>
             )}
           </div>
 
-          {/* Navigate button */}
+          {/* Navigate button - 44px tap target */}
           <button
             onClick={() => router.push(`/bands/${slug}/tasks/${task.id}`)}
-            className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-xs"
+            className="min-w-[44px] min-h-[44px] md:w-7 md:h-7 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-xs"
             title="View task"
           >
             →
           </button>
         </div>
 
-        {/* Expanded checklist */}
+        {/* Expanded checklist - 8px indent mobile, 16px desktop */}
         {isExpanded && hasChecklist && (
-          <div className="ml-4 md:ml-6 border-l-2 border-gray-50">
+          <div className="ml-2 md:ml-4 border-l-2 border-gray-50">
             {checklistItems.length === 0 ? (
               <div className="py-1 px-4 text-sm text-gray-400">Loading checklist...</div>
             ) : (
@@ -516,13 +516,13 @@ export default function ProposalsPage() {
   // Render a checklist item row
   const renderChecklistRow = (item: ChecklistData, taskId: string) => {
     return (
-      <div key={item.id} className="flex items-center py-1 px-2 hover:bg-gray-50">
-        {/* Spacer for alignment */}
-        <div className="w-6 flex-shrink-0" />
+      <div key={item.id} className="flex items-center py-1 px-1 md:px-2 hover:bg-gray-50 min-h-[44px] md:min-h-0">
+        {/* Spacer for alignment - smaller on mobile */}
+        <div className="w-4 md:w-6 flex-shrink-0" />
 
         {/* Checklist info */}
-        <div className="flex-1 min-w-0 ml-1">
-          <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1 md:gap-2">
             <span className="text-sm">{item.isCompleted ? '☑️' : '☐'}</span>
             <Text variant="small" className={`truncate ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}>
               {item.description}
@@ -530,10 +530,10 @@ export default function ProposalsPage() {
           </div>
         </div>
 
-        {/* Navigate button */}
+        {/* Navigate button - 44px tap target */}
         <button
           onClick={() => router.push(`/bands/${slug}/tasks/${taskId}/checklist/${item.id}`)}
-          className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-xs"
+          className="min-w-[44px] min-h-[44px] md:w-6 md:h-6 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-xs"
           title="View checklist item"
         >
           →
