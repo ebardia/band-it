@@ -220,173 +220,129 @@ export function ProjectTasksHierarchy({
 
     return (
       <div key={task.id} className={`border-b border-gray-100 last:border-b-0 ${isHighlighted ? 'bg-blue-50' : ''}`}>
-        {/* Task row */}
-        <div className="flex items-start py-3 px-2 hover:bg-gray-50 group">
-          {/* Expand toggle - 44px tap target on mobile */}
+        {/* Task row - single line compact */}
+        <div className="flex items-center py-1.5 px-2 hover:bg-gray-50 gap-2 min-h-[40px]">
+          {/* Expand toggle */}
           <button
             onClick={(e) => { e.stopPropagation(); if (hasChecklist) toggleTask(task.id) }}
-            className={`min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 ${!hasChecklist ? 'invisible' : ''}`}
+            className={`w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 text-xs ${!hasChecklist ? 'invisible' : ''}`}
             disabled={!hasChecklist}
           >
             {isExpanded ? '▼' : '▶'}
           </button>
 
-          {/* Task info */}
-          <div className="flex-1 min-w-0 ml-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm">{statusIcon}</span>
-              <button
-                onClick={() => router.push(`/bands/${bandSlug}/tasks/${task.id}`)}
-                className="flex items-center gap-2 hover:text-blue-600 transition-colors group/nav"
-                title="View task"
-              >
-                <Text weight="semibold" className={`truncate group-hover/nav:text-blue-600 ${isCompleted ? 'line-through text-gray-400' : ''}`}>
-                  {task.name}
-                </Text>
-                <span className="text-blue-500 font-bold text-lg">→</span>
-              </button>
-              {task.requiresVerification && !isCompleted && (
-                <Badge variant="info">Needs Verification</Badge>
-              )}
-            </div>
+          {/* Status icon + Name + Arrow */}
+          <span className="text-sm flex-shrink-0">{statusIcon}</span>
+          <button
+            onClick={() => router.push(`/bands/${bandSlug}/tasks/${task.id}`)}
+            className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav min-w-0"
+            title="View task"
+          >
+            <span className={`text-sm font-medium truncate group-hover/nav:text-blue-600 ${isCompleted ? 'line-through text-gray-400' : ''}`}>
+              {task.name}
+            </span>
+            <span className="text-blue-500 font-bold text-sm flex-shrink-0">→</span>
+          </button>
 
-            <div className="flex items-center gap-2 text-sm text-gray-500 flex-wrap mt-1">
-              {getStatusBadge(task.status)}
-              {task.assignee ? (
-                <span>Assigned: {task.assignee.name}</span>
-              ) : (
-                <Badge variant="warning">Unassigned</Badge>
-              )}
-              {hasChecklist && (
-                <span>{checklistCompleted}/{checklistCount} items</span>
-              )}
-              {task.dueDate && (
-                <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
-              )}
-            </div>
+          {/* Metadata - compact inline */}
+          <div className="flex items-center gap-2 text-xs text-gray-500 flex-shrink-0 ml-auto">
+            {task.assignee && <span className="hidden sm:inline">{task.assignee.name}</span>}
+            {!task.assignee && <span className="text-orange-500">unassigned</span>}
+            {hasChecklist && <span>{checklistCompleted}/{checklistCount}</span>}
+            {task.dueDate && <span className="hidden md:inline">{new Date(task.dueDate).toLocaleDateString()}</span>}
+            {task.requiresVerification && !isCompleted && <span className="text-blue-500">🔍</span>}
+          </div>
 
-            {/* Action buttons */}
-            {canModifyTask && !isCompleted && (
-              <Flex gap="sm" className="flex-wrap mt-2">
-                {task.status === 'TODO' && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, 'IN_PROGRESS') }}
-                    disabled={isUpdating}
-                  >
-                    Start
-                  </Button>
-                )}
-                {task.status === 'IN_PROGRESS' && (
-                  <>
-                    {task.requiresVerification ? (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); onSubmitForVerification(task) }}
-                        disabled={isUpdating}
-                      >
-                        Submit for Review
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, 'COMPLETED') }}
-                        disabled={isUpdating}
-                      >
-                        Complete
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, 'BLOCKED') }}
+          {/* Inline action buttons */}
+          {canModifyTask && !isCompleted && (
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {task.status === 'TODO' && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, 'IN_PROGRESS') }}
+                  disabled={isUpdating}
+                  className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                >
+                  Start
+                </button>
+              )}
+              {task.status === 'IN_PROGRESS' && (
+                <>
+                  {task.requiresVerification ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onSubmitForVerification(task) }}
                       disabled={isUpdating}
+                      className="text-xs px-2 py-1 bg-green-50 text-green-600 rounded hover:bg-green-100"
                     >
-                      Blocked
-                    </Button>
-                  </>
-                )}
-                {task.status === 'BLOCKED' && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, 'IN_PROGRESS') }}
+                      Submit
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, 'COMPLETED') }}
+                      disabled={isUpdating}
+                      className="text-xs px-2 py-1 bg-green-50 text-green-600 rounded hover:bg-green-100"
+                    >
+                      Done
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, 'BLOCKED') }}
                     disabled={isUpdating}
+                    className="text-xs px-2 py-1 text-gray-500 hover:bg-gray-100 rounded"
                   >
-                    Unblock
-                  </Button>
-                )}
-              </Flex>
-            )}
-
-            {task.status === 'IN_REVIEW' && canVerify && (
-              <div className="mt-2">
-                <Button
-                  variant="primary"
-                  size="sm"
+                    Block
+                  </button>
+                </>
+              )}
+              {task.status === 'BLOCKED' && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, 'IN_PROGRESS') }}
+                  disabled={isUpdating}
+                  className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                >
+                  Unblock
+                </button>
+              )}
+              {task.status === 'IN_REVIEW' && canVerify && (
+                <button
                   onClick={(e) => { e.stopPropagation(); onReview(task) }}
+                  className="text-xs px-2 py-1 bg-purple-50 text-purple-600 rounded hover:bg-purple-100"
                 >
                   Review
-                </Button>
-              </div>
-            )}
+                </button>
+              )}
+            </div>
+          )}
 
-            {/* Verification status */}
-            {task.verificationStatus && (
-              <div className="mt-2 pt-2 border-t border-gray-100">
-                <Flex gap="sm" align="center" className="flex-wrap">
-                  <Badge
-                    variant={
-                      task.verificationStatus === 'APPROVED'
-                        ? 'success'
-                        : task.verificationStatus === 'REJECTED'
-                          ? 'danger'
-                          : 'warning'
-                    }
-                  >
-                    {task.verificationStatus}
-                  </Badge>
-                  {task.verifiedBy && (
-                    <Text variant="small" className="text-gray-500">
-                      by {task.verifiedBy.name}
-                    </Text>
-                  )}
-                </Flex>
-              </div>
-            )}
-          </div>
+          {/* Verification status badge - inline */}
+          {task.verificationStatus && (
+            <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${
+              task.verificationStatus === 'APPROVED' ? 'bg-green-100 text-green-700' :
+              task.verificationStatus === 'REJECTED' ? 'bg-red-100 text-red-700' :
+              'bg-yellow-100 text-yellow-700'
+            }`}>
+              {task.verificationStatus === 'APPROVED' ? '✓' : task.verificationStatus === 'REJECTED' ? '✗' : '?'}
+            </span>
+          )}
         </div>
 
-        {/* Expanded checklist - 8px indent mobile, 16px desktop */}
+        {/* Expanded checklist - compact */}
         {isExpanded && hasChecklist && (
-          <div className="ml-2 md:ml-4 border-l-2 border-gray-200">
+          <div className="ml-6 border-l border-gray-200 pl-2">
             {checklistItems.length === 0 ? (
-              <div className="py-2 px-4 text-sm text-gray-400">Loading checklist...</div>
+              <div className="py-1 text-xs text-gray-400">Loading...</div>
             ) : (
               checklistItems.map((item: ChecklistData) => (
-                <div key={item.id} className="flex items-center py-1 px-1 md:px-2 hover:bg-gray-50 min-h-[44px] md:min-h-0">
-                  {/* Spacer for alignment */}
-                  <div className="w-4 md:w-6 flex-shrink-0" />
-
-                  {/* Checklist info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1 md:gap-2">
-                      <span className="text-sm">{item.isCompleted ? '☑️' : '☐'}</span>
-                      <button
-                        onClick={() => router.push(`/bands/${bandSlug}/tasks/${task.id}/checklist/${item.id}`)}
-                        className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav min-h-[44px] md:min-h-0"
-                        title="View checklist item"
-                      >
-                        <Text variant="small" className={`truncate group-hover/nav:text-blue-600 ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}>
-                          {item.description}
-                        </Text>
-                        <span className="text-blue-500 font-bold text-sm">→</span>
-                      </button>
-                    </div>
-                  </div>
+                <div key={item.id} className="flex items-center py-0.5 hover:bg-gray-50 gap-1">
+                  <span className="text-xs">{item.isCompleted ? '☑️' : '☐'}</span>
+                  <button
+                    onClick={() => router.push(`/bands/${bandSlug}/tasks/${task.id}/checklist/${item.id}`)}
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav text-xs"
+                  >
+                    <span className={`truncate group-hover/nav:text-blue-600 ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}>
+                      {item.description}
+                    </span>
+                    <span className="text-blue-500 font-bold">→</span>
+                  </button>
                 </div>
               ))
             )}

@@ -20,10 +20,8 @@ import {
   IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
-import { ProjectHeader } from './components/ProjectHeader'
+import { ProjectHeaderCompact } from './components/ProjectHeaderCompact'
 import { ProjectEditForm } from './components/ProjectEditForm'
-import { ProjectStatusBar } from './components/ProjectStatusBar'
-import { ProjectInfoCard } from './components/ProjectInfoCard'
 import { ProjectTasksHierarchy } from './components/ProjectTasksHierarchy'
 import { TaskVerifyModal } from './components/TaskVerifyModal'
 import { TaskSubmitModal } from './components/TaskSubmitModal'
@@ -524,53 +522,40 @@ export default function ProjectDetailPage() {
           />
         }
       >
-        <Stack spacing="lg">
+        <Stack spacing="md">
           {/* Breadcrumb */}
-          <Flex gap="sm" align="center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push(`/bands/${slug}/projects`)}
-            >
-              ← Projects
-            </Button>
-          </Flex>
+          <button
+            onClick={() => router.push(`/bands/${slug}/projects`)}
+            className="text-sm text-gray-500 hover:text-blue-600"
+          >
+            ← Projects
+          </button>
 
-          <Card>
-            <Stack spacing="xl">
-              {isEditing ? (
-                <ProjectEditForm
-                  project={project}
-                  bandMembers={band.members}
-                  onSave={handleSaveProject}
-                  onCancel={() => setIsEditing(false)}
-                  isSaving={updateProjectMutation.isPending}
-                />
-              ) : (
-                <ProjectHeader
-                  project={project}
-                  proposal={proposal}
-                  canUpdateProject={canUpdateProject || false}
-                  onEdit={() => setIsEditing(true)}
-                  onValidate={() => validateProjectMutation.mutate({ projectId, userId: userId! })}
-                  isValidating={validateProjectMutation.isPending}
-                />
-              )}
-
-              {canUpdateProject && !isEditing && (
-                <ProjectStatusBar
-                  currentStatus={project.status}
-                  onStatusChange={handleStatusChange}
-                  isUpdating={updateProjectMutation.isPending}
-                />
-              )}
-            </Stack>
-          </Card>
-
-          <ProjectInfoCard
-            project={project}
-            bandMembers={band.members}
-          />
+          {isEditing ? (
+            <Card>
+              <ProjectEditForm
+                project={project}
+                bandMembers={band.members}
+                onSave={handleSaveProject}
+                onCancel={() => setIsEditing(false)}
+                isSaving={updateProjectMutation.isPending}
+              />
+            </Card>
+          ) : (
+            <Card className="p-4">
+              <ProjectHeaderCompact
+                project={project}
+                proposal={proposal}
+                bandSlug={slug}
+                canUpdateProject={canUpdateProject || false}
+                onEdit={() => setIsEditing(true)}
+                onValidate={() => validateProjectMutation.mutate({ projectId, userId: userId! })}
+                isValidating={validateProjectMutation.isPending}
+                onStatusChange={handleStatusChange}
+                isUpdatingStatus={updateProjectMutation.isPending}
+              />
+            </Card>
+          )}
 
           <Card>
             <ProjectTasksHierarchy
@@ -603,40 +588,21 @@ export default function ProjectDetailPage() {
             />
           </Card>
 
-          {/* Deliverables Link Card */}
-          <Card>
-            <Stack spacing="md">
-              <Flex justify="between" align="center">
-                <div>
-                  <Heading level={2}>Project Deliverables</Heading>
-                  <Text variant="small" color="muted">
-                    Knowledge captured from completed tasks
-                  </Text>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => router.push(`/bands/${slug}/projects/${projectId}/deliverables`)}
-                >
-                  View All Deliverables →
-                </Button>
-              </Flex>
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack spacing="md">
-              <Heading level={2}>Original Proposal</Heading>
-              <Text weight="semibold">{proposal.title}</Text>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-              >
-                View Full Proposal →
-              </Button>
-            </Stack>
-          </Card>
+          {/* Quick Links */}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => router.push(`/bands/${slug}/projects/${projectId}/deliverables`)}
+              className="text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1"
+            >
+              📦 Deliverables →
+            </button>
+            <button
+              onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
+              className="text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1"
+            >
+              📋 Original Proposal →
+            </button>
+          </div>
         </Stack>
 
         <TaskSubmitModal
