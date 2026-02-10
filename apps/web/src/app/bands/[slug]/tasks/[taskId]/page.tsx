@@ -25,6 +25,7 @@ import {
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { TrainAIButton } from '@/components/ai'
+import { TaskHeaderCompact } from './components/TaskHeaderCompact'
 
 const CAN_UPDATE_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 const CAN_VERIFY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
@@ -453,38 +454,6 @@ export default function TaskDetailPage() {
     router.push(`/bands/${slug}/tasks/${taskId}/checklist/${itemId}`)
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'TODO':
-        return <Badge variant="neutral">To Do</Badge>
-      case 'IN_PROGRESS':
-        return <Badge variant="info">In Progress</Badge>
-      case 'IN_REVIEW':
-        return <Badge variant="warning">In Review</Badge>
-      case 'COMPLETED':
-        return <Badge variant="success">Completed</Badge>
-      case 'BLOCKED':
-        return <Badge variant="danger">Blocked</Badge>
-      default:
-        return <Badge variant="neutral">{status}</Badge>
-    }
-  }
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case 'LOW':
-        return <Badge variant="neutral">Low</Badge>
-      case 'MEDIUM':
-        return <Badge variant="info">Medium</Badge>
-      case 'HIGH':
-        return <Badge variant="warning">High</Badge>
-      case 'URGENT':
-        return <Badge variant="danger">Urgent</Badge>
-      default:
-        return <Badge variant="neutral">{priority}</Badge>
-    }
-  }
-
   if (taskLoading) {
     return (
       <>
@@ -535,7 +504,6 @@ export default function TaskDetailPage() {
   const canUseAI = currentMember && CAN_USE_AI.includes(currentMember.role)
   const isAssignee = task.assigneeId === userId
 
-  const statusOptions: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED', 'BLOCKED']
   const priorityOptions: TaskPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 
   return (
@@ -549,13 +517,6 @@ export default function TaskDetailPage() {
         canApprove={canApprove || false}
         isMember={isMember}
         wide={true}
-        action={
-          (canUpdate || isAssignee) ? (
-            <Button variant="secondary" size="md" onClick={handleOpenEditModal}>
-              Edit Task
-            </Button>
-          ) : undefined
-        }
         rightSidebar={
           <DiscussionSidebar
             taskId={taskId}
@@ -564,112 +525,33 @@ export default function TaskDetailPage() {
           />
         }
       >
-        <Stack spacing="lg">
+        <Stack spacing="md">
           {/* Breadcrumb */}
           <Flex gap="sm" align="center">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`/bands/${slug}/tasks`)}
-            >
-              ← Tasks
-            </Button>
-            <Text color="muted">/</Text>
-            <Button
-              variant="ghost"
-              size="sm"
               onClick={() => router.push(`/bands/${slug}/projects/${task.projectId}`)}
             >
-              {task.project.name}
+              ← {task.project.name}
             </Button>
           </Flex>
 
-          {/* Task Info */}
+          {/* Compact Task Header */}
           <Card>
-            <Stack spacing="lg">
-              <Flex gap="sm" className="flex-wrap">
-                {getStatusBadge(task.status)}
-                {getPriorityBadge(task.priority)}
-                {task.assignee && (
-                  <Badge variant="neutral">Assigned: {task.assignee.name}</Badge>
-                )}
-                {!task.assignee && (
-                  <Badge variant="warning">Unassigned</Badge>
-                )}
-                {task.requiresVerification && (
-                  <Badge variant="info">Requires Verification</Badge>
-                )}
-              </Flex>
-
-              {task.description && (
-                <Text style={{ whiteSpace: 'pre-wrap' }}>{task.description}</Text>
-              )}
-
-              <Flex gap="lg" className="flex-wrap">
-                {task.dueDate && (
-                  <Stack spacing="xs">
-                    <Text variant="small" weight="semibold">Due Date</Text>
-                    <Text variant="small">{new Date(task.dueDate).toLocaleDateString()}</Text>
-                  </Stack>
-                )}
-                {task.estimatedHours && (
-                  <Stack spacing="xs">
-                    <Text variant="small" weight="semibold">Estimated</Text>
-                    <Text variant="small">{task.estimatedHours} hours</Text>
-                  </Stack>
-                )}
-                {task.actualHours && (
-                  <Stack spacing="xs">
-                    <Text variant="small" weight="semibold">Actual</Text>
-                    <Text variant="small">{task.actualHours} hours</Text>
-                  </Stack>
-                )}
-                <Stack spacing="xs">
-                  <Text variant="small" weight="semibold">Created</Text>
-                  <Text variant="small">{new Date(task.createdAt).toLocaleDateString()}</Text>
-                </Stack>
-              </Flex>
-            </Stack>
+            <TaskHeaderCompact
+              task={task}
+              bandSlug={slug}
+              canUpdate={!!canUpdate}
+              isAssignee={isAssignee}
+              isMember={isMember}
+              onEdit={handleOpenEditModal}
+              onStatusChange={handleStatusChange}
+              onClaim={handleClaimTask}
+              isUpdating={updateTaskMutation.isPending}
+              isClaiming={claimTaskMutation.isPending}
+            />
           </Card>
-
-          {/* Claim Task - show when unassigned and user is a member */}
-          {isMember && !task.assigneeId && task.status !== 'COMPLETED' && (
-            <Alert variant="info">
-              <Flex justify="between" align="center" className="flex-wrap gap-2">
-                <Text>This task is unassigned. Claim it to start working on it.</Text>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleClaimTask}
-                  disabled={claimTaskMutation.isPending}
-                >
-                  {claimTaskMutation.isPending ? 'Claiming...' : 'Claim Task'}
-                </Button>
-              </Flex>
-            </Alert>
-          )}
-
-          {/* Status Update */}
-          {(canUpdate || isAssignee) && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Update Status</Heading>
-                <Flex gap="sm" className="flex-wrap">
-                  {statusOptions.map((status) => (
-                    <Button
-                      key={status}
-                      variant={task.status === status ? 'primary' : 'ghost'}
-                      size="sm"
-                      onClick={() => handleStatusChange(status)}
-                      disabled={updateTaskMutation.isPending}
-                    >
-                      {status.replace('_', ' ')}
-                    </Button>
-                  ))}
-                </Flex>
-              </Stack>
-            </Card>
-          )}
 
           {/* Checklist */}
           <Card>
@@ -909,51 +791,6 @@ export default function TaskDetailPage() {
             </Stack>
           </Card>
 
-          {/* Verification Status */}
-          {task.requiresVerification && task.verificationStatus && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Verification</Heading>
-                <Flex gap="md" align="center">
-                  <Badge 
-                    variant={
-                      task.verificationStatus === 'APPROVED' ? 'success' : 
-                      task.verificationStatus === 'REJECTED' ? 'danger' : 'warning'
-                    }
-                  >
-                    {task.verificationStatus}
-                  </Badge>
-                  {task.verifiedBy && task.verifiedAt && (
-                    <Text variant="small" color="muted">
-                      by {task.verifiedBy.name} on {new Date(task.verifiedAt).toLocaleDateString()}
-                    </Text>
-                  )}
-                </Flex>
-                {task.verificationNotes && (
-                  <Text variant="small">{task.verificationNotes}</Text>
-                )}
-              </Stack>
-            </Card>
-          )}
-
-          {/* Proof/Evidence */}
-          {task.proofDescription && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Proof of Completion</Heading>
-                <Text>{task.proofDescription}</Text>
-              </Stack>
-            </Card>
-          )}
-
-          {/* Back to Project */}
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={() => router.push(`/bands/${slug}/projects/${task.projectId}`)}
-          >
-            ← Back to Project
-          </Button>
         </Stack>
 
         {/* Edit Modal */}
