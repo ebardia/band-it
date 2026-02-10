@@ -720,56 +720,68 @@ export default function ProposalsPage() {
             </Alert>
           )}
 
-          {/* Drafts & Pending Review Section */}
-          <div id="drafts-section">
+          {/* Drafts & Pending Review Section - only show if not empty */}
+          {counts.drafts > 0 && (
+            <div id="drafts-section">
+              <SectionHeader
+                icon="📝"
+                title="Drafts & Pending Review"
+                count={counts.drafts}
+                proposals={proposals.drafts}
+                renderProposalRow={renderProposalRow}
+                slug={slug}
+                router={router}
+              />
+            </div>
+          )}
+
+          {/* Open for Voting Section - only show if not empty */}
+          {counts.voting > 0 && (
             <SectionHeader
-              icon="📝"
-              title="Drafts & Pending Review"
-              count={counts.drafts}
-              proposals={proposals.drafts}
-              emptyMessage="No drafts. Start a new proposal above."
+              icon="🗳️"
+              title="Open for Voting"
+              count={counts.voting}
+              proposals={proposals.voting}
               renderProposalRow={renderProposalRow}
               slug={slug}
               router={router}
             />
-          </div>
+          )}
 
-          {/* Open for Voting Section */}
-          <SectionHeader
-            icon="🗳️"
-            title="Open for Voting"
-            count={counts.voting}
-            proposals={proposals.voting}
-            emptyMessage="No proposals currently open for voting."
-            renderProposalRow={renderProposalRow}
-            slug={slug}
-            router={router}
-          />
+          {/* In Progress Section - only show if not empty */}
+          {counts.inProgress > 0 && (
+            <SectionHeader
+              icon="⚙️"
+              title="In Progress"
+              count={counts.inProgress}
+              proposals={proposals.inProgress}
+              renderProposalRow={renderProposalRow}
+              slug={slug}
+              router={router}
+            />
+          )}
 
-          {/* In Progress Section */}
-          <SectionHeader
-            icon="⚙️"
-            title="In Progress"
-            count={counts.inProgress}
-            proposals={proposals.inProgress}
-            emptyMessage="No approved proposals in progress."
-            renderProposalRow={renderProposalRow}
-            slug={slug}
-            router={router}
-          />
+          {/* Past Section - only show if not empty */}
+          {counts.past > 0 && (
+            <SectionHeader
+              icon="📁"
+              title="Past"
+              count={counts.past}
+              proposals={proposals.past}
+              renderProposalRow={renderProposalRow}
+              defaultCollapsed={counts.past > 5}
+              slug={slug}
+              router={router}
+            />
+          )}
 
-          {/* Past Section */}
-          <SectionHeader
-            icon="📁"
-            title="Past"
-            count={counts.past}
-            proposals={proposals.past}
-            emptyMessage="No past proposals yet."
-            renderProposalRow={renderProposalRow}
-            defaultCollapsed={counts.past > 5}
-            slug={slug}
-            router={router}
-          />
+          {/* Show message if no proposals at all */}
+          {counts.drafts === 0 && counts.voting === 0 && counts.inProgress === 0 && counts.past === 0 && (
+            <div className="text-center py-12 text-gray-500">
+              <p className="text-lg mb-2">No proposals yet</p>
+              <p className="text-sm">Create your first proposal to get started.</p>
+            </div>
+          )}
         </Stack>
       </BandLayout>
     </>
@@ -782,21 +794,17 @@ function SectionHeader({
   title,
   count,
   proposals,
-  emptyMessage,
   renderProposalRow,
   defaultCollapsed = false,
-  slug,
-  router,
 }: {
   icon: string
   title: string
   count: number
   proposals: ProposalData[]
-  emptyMessage: string
   renderProposalRow: (proposal: ProposalData) => React.ReactNode
   defaultCollapsed?: boolean
-  slug: string
-  router: any
+  slug?: string
+  router?: any
 }) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
 
@@ -815,13 +823,7 @@ function SectionHeader({
 
       {!isCollapsed && (
         <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-          {proposals.length === 0 ? (
-            <div className="py-6 px-4 text-center text-gray-500">
-              {emptyMessage}
-            </div>
-          ) : (
-            proposals.map(proposal => renderProposalRow(proposal))
-          )}
+          {proposals.map(proposal => renderProposalRow(proposal))}
         </div>
       )}
     </div>
