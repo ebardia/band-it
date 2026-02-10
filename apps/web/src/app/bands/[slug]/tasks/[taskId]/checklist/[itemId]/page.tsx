@@ -25,6 +25,7 @@ import {
   IntegrityWarningModal,
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import { ChecklistItemHeaderCompact } from './components/ChecklistItemHeaderCompact'
 
 const CAN_UPDATE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
 
@@ -535,316 +536,173 @@ export default function ChecklistItemDetailPage() {
         isMember={isMember}
         wide={true}
       >
-        <Stack spacing="lg">
+        <Stack spacing="md">
           {/* Breadcrumb */}
-          <Flex gap="sm" align="center" className="flex-wrap">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push(`/bands/${slug}/tasks`)}
-            >
-              ← Tasks
-            </Button>
-            <Text color="muted">/</Text>
+          <Flex gap="sm" align="center">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.push(`/bands/${slug}/tasks/${taskId}`)}
             >
-              {task.name}
+              ← {task.name}
             </Button>
-            <Text color="muted">/</Text>
-            <Text variant="small" color="muted">Checklist Item</Text>
           </Flex>
 
-          {/* Status & Info Card */}
+          {/* Compact Header */}
           <Card>
-            <Stack spacing="lg">
-              <Flex gap="sm" align="center" className="flex-wrap">
-                <Badge variant={item.isCompleted ? 'success' : 'warning'}>
-                  {item.isCompleted ? '✓ Completed' : '○ Pending'}
-                </Badge>
-                {item.assignee && (
-                  <Badge variant="info">Assigned: {item.assignee.name}</Badge>
-                )}
-                {item.dueDate && (
-                  <Badge variant={new Date(item.dueDate) < new Date() && !item.isCompleted ? 'danger' : 'neutral'}>
-                    Due: {new Date(item.dueDate).toLocaleDateString()}
-                  </Badge>
-                )}
-                {item.files && item.files.length > 0 && (
-                  <Badge variant="neutral">📎 {item.files.length} file(s)</Badge>
-                )}
-              </Flex>
-
-              <Stack spacing="sm">
-                <Text variant="small" weight="semibold" color="muted">Description</Text>
-                <Text>{item.description}</Text>
-              </Stack>
-
-              {item.notes && (
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold" color="muted">Notes</Text>
-                  <Text style={{ whiteSpace: 'pre-wrap' }}>{item.notes}</Text>
-                </Stack>
-              )}
-
-              <Flex gap="lg" className="flex-wrap">
-                <Stack spacing="xs">
-                  <Text variant="small" weight="semibold" color="muted">Created</Text>
-                  <Text variant="small">{new Date(item.createdAt).toLocaleDateString()}</Text>
-                </Stack>
-                {item.completedAt && (
-                  <Stack spacing="xs">
-                    <Text variant="small" weight="semibold" color="muted">Completed</Text>
-                    <Text variant="small">
-                      {new Date(item.completedAt).toLocaleDateString()}
-                      {item.completedBy && ` by ${item.completedBy.name}`}
-                    </Text>
-                  </Stack>
-                )}
-              </Flex>
-
-              {/* Claim Button - show when unassigned and user is a member */}
-              {isMember && !item.assigneeId && !item.isCompleted && (
-                <Alert variant="info">
-                  <Flex justify="between" align="center" className="flex-wrap gap-2">
-                    <Text>This item is unassigned. Claim it to start working on it.</Text>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={handleClaim}
-                      disabled={claimMutation.isPending}
-                    >
-                      {claimMutation.isPending ? 'Claiming...' : 'Claim Item'}
-                    </Button>
-                  </Flex>
-                </Alert>
-              )}
-
-              {/* Actions */}
-              {(canUpdate || isAssignee) && (() => {
-                const needsDeliverable = item.requiresDeliverable && !item.isCompleted && summary.trim().length < 30
-                return (
-                  <Stack spacing="sm">
-                    <Flex gap="sm" className="flex-wrap">
-                      <Button
-                        variant="secondary"
-                        onClick={handleOpenEditModal}
-                      >
-                        Edit Item
-                      </Button>
-                      <Button
-                        variant={item.isCompleted ? 'secondary' : 'primary'}
-                        onClick={handleToggle}
-                        disabled={toggleMutation.isPending || needsDeliverable}
-                      >
-                        {toggleMutation.isPending
-                          ? 'Updating...'
-                          : item.isCompleted
-                            ? 'Mark as Pending'
-                            : 'Mark as Completed'
-                        }
-                      </Button>
-                      <Button
-                        variant="danger"
-                        onClick={handleDelete}
-                        disabled={deleteItemMutation.isPending}
-                      >
-                        {deleteItemMutation.isPending ? 'Deleting...' : 'Delete'}
-                      </Button>
-                    </Flex>
-                    {needsDeliverable && (
-                      <Text variant="small" color="muted">
-                        Fill in the deliverable section below (min 30 chars) before completing
-                      </Text>
-                    )}
-                  </Stack>
-                )
-              })()}
-            </Stack>
+            <ChecklistItemHeaderCompact
+              item={item}
+              task={task}
+              bandSlug={slug}
+              canUpdate={!!canUpdate}
+              isAssignee={isAssignee}
+              isMember={isMember}
+              onEdit={handleOpenEditModal}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
+              onClaim={handleClaim}
+              isToggling={toggleMutation.isPending}
+              isDeleting={deleteItemMutation.isPending}
+              isClaiming={claimMutation.isPending}
+              needsDeliverable={item.requiresDeliverable && !item.isCompleted && summary.trim().length < 30}
+            />
           </Card>
 
-          {/* Deliverable Section - shown when user can complete and item requires deliverable or has one */}
+          {/* Compact Deliverable Section */}
           {(isAssignee || canUpdate) && (item.requiresDeliverable || deliverableData?.deliverable) && (
-            <Card className="overflow-hidden">
-              <Stack spacing="md" className="overflow-hidden">
-                <Flex justify="between" align="center">
-                  <Heading level={3}>
-                    Deliverable {item.requiresDeliverable && <span className="text-red-500">*</span>}
-                  </Heading>
+            <div className="border border-gray-200 rounded-lg bg-white p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">
+                  Deliverable {item.requiresDeliverable && <span className="text-red-500">*</span>}
+                </span>
+                <div className="flex items-center gap-2">
                   {deliverableData?.deliverable && (
-                    <Badge variant="success">Saved</Badge>
+                    <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Saved</span>
                   )}
-                </Flex>
+                  <span className="text-xs text-gray-500">{summary.trim().length}/30</span>
+                </div>
+              </div>
 
-                {item.verificationStatus === 'REJECTED' && item.rejectionReason && (
-                  <Alert variant="danger">
-                    <Text weight="semibold">Feedback from reviewer:</Text>
-                    <Text>{item.rejectionReason}</Text>
-                  </Alert>
+              <textarea
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Describe the work completed..."
+                rows={3}
+                className="w-full text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+
+              {/* Links - compact */}
+              {links.length > 0 && (
+                <div className="space-y-1">
+                  {links.map((link, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gray-50 px-2 py-1 rounded text-xs">
+                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
+                        {link.title}
+                      </a>
+                      <button
+                        onClick={() => handleRemoveLink(index)}
+                        className="text-red-500 hover:text-red-700 ml-2"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2 flex-wrap">
+                <input
+                  type="url"
+                  value={newLinkUrl}
+                  onChange={(e) => setNewLinkUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="flex-1 min-w-[120px] text-sm px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <input
+                  type="text"
+                  value={newLinkTitle}
+                  onChange={(e) => setNewLinkTitle(e.target.value)}
+                  placeholder="Title"
+                  className="flex-1 min-w-[80px] text-sm px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleAddLink}
+                  disabled={!newLinkUrl.trim() || !newLinkTitle.trim()}
+                  className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+                >
+                  + Link
+                </button>
+              </div>
+
+              <textarea
+                value={nextSteps}
+                onChange={(e) => setNextSteps(e.target.value)}
+                placeholder="Next steps / notes for future (optional)..."
+                rows={2}
+                className="w-full text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={handleSaveDeliverable}
+                  disabled={updateDeliverableMutation.isPending || summary.trim().length < 30}
+                  className="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+                >
+                  {updateDeliverableMutation.isPending ? 'Saving...' : 'Save'}
+                </button>
+
+                {item.requiresVerification && !item.isCompleted && item.verificationStatus !== 'PENDING' && (
+                  <button
+                    onClick={handleSubmitForVerification}
+                    disabled={submitMutation.isPending || updateDeliverableMutation.isPending || (item.requiresDeliverable && summary.trim().length < 30)}
+                    className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {submitMutation.isPending ? 'Submitting...' : 'Submit for Verification'}
+                  </button>
                 )}
 
-                <Stack spacing="sm">
-                  <Flex justify="between" align="center">
-                    <Text variant="small" weight="semibold">
-                      What was accomplished?
-                    </Text>
-                    <Text variant="small" color="muted">
-                      {summary.trim().length}/30 min
-                    </Text>
-                  </Flex>
-                  <Textarea
-                    value={summary}
-                    onChange={(e) => setSummary(e.target.value)}
-                    placeholder="Describe the work completed, decisions made, outcomes achieved..."
-                    rows={4}
-                  />
-                  {item.requiresDeliverable && summary.trim().length > 0 && summary.trim().length < 30 && (
-                    <Text variant="small" color="muted" className="text-red-500">
-                      Summary must be at least 30 characters ({30 - summary.trim().length} more needed)
-                    </Text>
-                  )}
-                </Stack>
-
-                {/* Links */}
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">Related Links (optional)</Text>
-
-                  {links.length > 0 && (
-                    <Stack spacing="xs">
-                      {links.map((link, index) => (
-                        <Flex key={index} gap="sm" align="center" className="bg-gray-50 p-2 rounded overflow-hidden">
-                          <div className="flex-1 min-w-0 overflow-hidden">
-                            <Text variant="small" weight="semibold" className="truncate block">{link.title}</Text>
-                            <Text variant="small" color="muted" className="truncate block" style={{ wordBreak: 'break-all' }}>{link.url}</Text>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveLink(index)}
-                            className="text-red-500 hover:text-red-700 shrink-0"
-                          >
-                            Remove
-                          </Button>
-                        </Flex>
-                      ))}
-                    </Stack>
-                  )}
-
-                  <Flex gap="sm" className="flex-wrap md:flex-nowrap">
-                    <Input
-                      type="url"
-                      value={newLinkUrl}
-                      onChange={(e) => setNewLinkUrl(e.target.value)}
-                      placeholder="https://..."
-                    />
-                    <Input
-                      type="text"
-                      value={newLinkTitle}
-                      onChange={(e) => setNewLinkTitle(e.target.value)}
-                      placeholder="Link title"
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleAddLink}
-                      disabled={!newLinkUrl.trim() || !newLinkTitle.trim()}
-                    >
-                      Add
-                    </Button>
-                  </Flex>
-                </Stack>
-
-                {/* Next Steps */}
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">Next Steps / Notes for Future (optional)</Text>
-                  <Textarea
-                    value={nextSteps}
-                    onChange={(e) => setNextSteps(e.target.value)}
-                    placeholder="Any follow-up work needed, lessons learned, or notes for whoever picks this up next..."
-                    rows={2}
-                  />
-                </Stack>
-
-                {/* Action buttons */}
-                <Flex gap="sm" className="flex-wrap">
-                  <Button
-                    variant="secondary"
-                    onClick={handleSaveDeliverable}
-                    disabled={updateDeliverableMutation.isPending || summary.trim().length < 30}
+                {item.verificationStatus === 'REJECTED' && (
+                  <button
+                    onClick={handleRetry}
+                    disabled={retryMutation.isPending || updateDeliverableMutation.isPending || (item.requiresDeliverable && summary.trim().length < 30)}
+                    className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {updateDeliverableMutation.isPending ? 'Saving...' : 'Save Deliverable'}
-                  </Button>
-
-                  {item.requiresVerification && !item.isCompleted && item.verificationStatus !== 'PENDING' && (
-                    <Button
-                      variant="primary"
-                      onClick={handleSubmitForVerification}
-                      disabled={
-                        submitMutation.isPending ||
-                        updateDeliverableMutation.isPending ||
-                        (item.requiresDeliverable && summary.trim().length < 30)
-                      }
-                    >
-                      {submitMutation.isPending ? 'Submitting...' : 'Submit for Verification'}
-                    </Button>
-                  )}
-
-                  {item.verificationStatus === 'REJECTED' && (
-                    <Button
-                      variant="primary"
-                      onClick={handleRetry}
-                      disabled={
-                        retryMutation.isPending ||
-                        updateDeliverableMutation.isPending ||
-                        (item.requiresDeliverable && summary.trim().length < 30)
-                      }
-                    >
-                      {retryMutation.isPending ? 'Resubmitting...' : 'Resubmit for Verification'}
-                    </Button>
-                  )}
-                </Flex>
-              </Stack>
-            </Card>
+                    {retryMutation.isPending ? 'Resubmitting...' : 'Resubmit'}
+                  </button>
+                )}
+              </div>
+            </div>
           )}
 
-          {/* Files Section */}
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Attachments</Heading>
-              
-              {item.files && item.files.length > 0 ? (
-                <FileList
-                  files={item.files}
-                  onDelete={handleDeleteFile}
-                  canDelete={canUpdate || isAssignee}
-                  currentUserId={userId}
-                  isDeleting={deleteFileMutation.isPending}
-                />
-              ) : (
-                <Text variant="small" color="muted">No files attached yet.</Text>
-              )}
+          {/* Compact Files Section */}
+          <div className="border border-gray-200 rounded-lg bg-white p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">
+                Attachments {item.files && item.files.length > 0 && `(${item.files.length})`}
+              </span>
+            </div>
 
-              {(canUpdate || isAssignee) && (
-                <FileUpload
-                  onUpload={handleFileUpload}
-                  label="Upload File"
-                  description="Attach proof, receipts, or related documents"
-                  isUploading={uploadFileMutation.isPending}
-                />
-              )}
-            </Stack>
-          </Card>
+            {item.files && item.files.length > 0 ? (
+              <FileList
+                files={item.files}
+                onDelete={handleDeleteFile}
+                canDelete={canUpdate || isAssignee}
+                currentUserId={userId}
+                isDeleting={deleteFileMutation.isPending}
+              />
+            ) : (
+              <Text variant="small" color="muted">No files attached.</Text>
+            )}
 
-          {/* Back to Task */}
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={() => router.push(`/bands/${slug}/tasks/${taskId}`)}
-          >
-            ← Back to Task
-          </Button>
+            {(canUpdate || isAssignee) && (
+              <FileUpload
+                onUpload={handleFileUpload}
+                label="Upload"
+                description="Attach proof or documents"
+                isUploading={uploadFileMutation.isPending}
+              />
+            )}
+          </div>
         </Stack>
 
         {/* Edit Modal */}
