@@ -23,7 +23,7 @@ export const getTasksByProject = publicProcedure
     const { projectId, status } = input
 
     const tasks = await prisma.task.findMany({
-      where: { 
+      where: {
         projectId,
         ...(status && { status })
       },
@@ -36,6 +36,9 @@ export const getTasksByProject = publicProcedure
         },
         verifiedBy: {
           select: { id: true, name: true }
+        },
+        _count: {
+          select: { checklistItems: true }
         },
       },
       orderBy: [

@@ -24,7 +24,7 @@ import { ProjectHeader } from './components/ProjectHeader'
 import { ProjectEditForm } from './components/ProjectEditForm'
 import { ProjectStatusBar } from './components/ProjectStatusBar'
 import { ProjectInfoCard } from './components/ProjectInfoCard'
-import { ProjectTasks } from './components/ProjectTasks'
+import { ProjectTasksHierarchy } from './components/ProjectTasksHierarchy'
 import { TaskVerifyModal } from './components/TaskVerifyModal'
 import { TaskSubmitModal } from './components/TaskSubmitModal'
 
@@ -573,7 +573,7 @@ export default function ProjectDetailPage() {
           />
 
           <Card>
-            <ProjectTasks
+            <ProjectTasksHierarchy
               tasks={tasks}
               bandSlug={slug}
               bandId={band.id}

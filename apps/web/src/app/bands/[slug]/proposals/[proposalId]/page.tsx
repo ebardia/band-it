@@ -22,7 +22,7 @@ import {
   List,
   ListItem,
   Modal,
-  ProposalProjects,
+  ProposalProjectsHierarchy,
   IntegrityBlockModal,
   IntegrityWarningModal,
 } from '@/components/ui'
@@ -923,7 +923,7 @@ export default function ProposalDetailPage() {
           )}
 
           {/* Projects Section - Only shows for approved proposals */}
-          <ProposalProjects
+          <ProposalProjectsHierarchy
             proposalId={proposalId}
             proposalStatus={proposal.status}
             bandSlug={slug}
