@@ -75,13 +75,45 @@ interface ChecklistData {
   assignee: { id: string; name: string } | null
 }
 
+// LocalStorage key for expansion state
+const EXPANSION_STATE_KEY = 'proposals-expansion-state'
+
+// Helper to get stored expansion state
+function getStoredExpansionState(slug: string): { proposals: string[], projects: string[], tasks: string[] } | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const stored = localStorage.getItem(`${EXPANSION_STATE_KEY}-${slug}`)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+  } catch (e) {
+    console.error('Failed to parse expansion state:', e)
+  }
+  return null
+}
+
+// Helper to save expansion state
+function saveExpansionState(slug: string, proposals: Set<string>, projects: Set<string>, tasks: Set<string>) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(`${EXPANSION_STATE_KEY}-${slug}`, JSON.stringify({
+      proposals: Array.from(proposals),
+      projects: Array.from(projects),
+      tasks: Array.from(tasks),
+    }))
+  } catch (e) {
+    console.error('Failed to save expansion state:', e)
+  }
+}
+
 export default function ProposalsPage() {
   const router = useRouter()
   const params = useParams()
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
+  const [expansionRestored, setExpansionRestored] = useState(false)
 
-  // Expansion state
+  // Expansion state - will be restored from localStorage
   const [expandedProposals, setExpandedProposals] = useState<Set<string>>(new Set())
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
@@ -90,6 +122,26 @@ export default function ProposalsPage() {
   const [projectsCache, setProjectsCache] = useState<Record<string, ProjectData[]>>({})
   const [tasksCache, setTasksCache] = useState<Record<string, TaskData[]>>({})
   const [checklistCache, setChecklistCache] = useState<Record<string, ChecklistData[]>>({})
+
+  // Restore expansion state from localStorage on mount
+  useEffect(() => {
+    if (slug && !expansionRestored) {
+      const stored = getStoredExpansionState(slug)
+      if (stored) {
+        setExpandedProposals(new Set(stored.proposals))
+        setExpandedProjects(new Set(stored.projects))
+        setExpandedTasks(new Set(stored.tasks))
+      }
+      setExpansionRestored(true)
+    }
+  }, [slug, expansionRestored])
+
+  // Save expansion state to localStorage when it changes
+  useEffect(() => {
+    if (slug && expansionRestored) {
+      saveExpansionState(slug, expandedProposals, expandedProjects, expandedTasks)
+    }
+  }, [slug, expandedProposals, expandedProjects, expandedTasks, expansionRestored])
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -338,10 +390,24 @@ export default function ProposalsPage() {
           {/* Proposal info */}
           <div className="flex-1 min-w-0 ml-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <Text weight="semibold" className="truncate">{proposal.title}</Text>
+              <button
+                onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
+                className="flex items-center gap-2 hover:text-blue-600 transition-colors group/nav"
+                title="View proposal"
+              >
+                <Text weight="semibold" className="truncate group-hover/nav:text-blue-600">{proposal.title}</Text>
+                <span className="text-blue-500 font-bold text-lg">→</span>
+              </button>
               {proposal.allProjectsComplete && proposal.status === 'APPROVED' && (
                 <Badge variant="success">✅ All complete</Badge>
               )}
+              {/* Status badge - inline on mobile */}
+              {proposal.status === 'DRAFT' && <Badge variant="neutral">DRAFT</Badge>}
+              {proposal.status === 'PENDING_REVIEW' && <Badge variant="warning">PENDING</Badge>}
+              {proposal.status === 'APPROVED' && !proposal.allProjectsComplete && <Badge variant="info">IN PROGRESS</Badge>}
+              {proposal.status === 'REJECTED' && <Badge variant="danger">REJECTED</Badge>}
+              {proposal.status === 'CLOSED' && <Badge variant="neutral">CLOSED</Badge>}
+              {proposal.status === 'WITHDRAWN' && <Badge variant="neutral">WITHDRAWN</Badge>}
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
               {proposal.status === 'OPEN' && (
@@ -359,25 +425,6 @@ export default function ProposalsPage() {
               <span>by {proposal.createdBy.name}</span>
             </div>
           </div>
-
-          {/* Status badge */}
-          <div className="hidden sm:block mx-2">
-            {proposal.status === 'DRAFT' && <Badge variant="neutral">DRAFT</Badge>}
-            {proposal.status === 'PENDING_REVIEW' && <Badge variant="warning">PENDING</Badge>}
-            {proposal.status === 'APPROVED' && !proposal.allProjectsComplete && <Badge variant="info">IN PROGRESS</Badge>}
-            {proposal.status === 'REJECTED' && <Badge variant="danger">REJECTED</Badge>}
-            {proposal.status === 'CLOSED' && <Badge variant="neutral">CLOSED</Badge>}
-            {proposal.status === 'WITHDRAWN' && <Badge variant="neutral">WITHDRAWN</Badge>}
-          </div>
-
-          {/* Navigate button - 44px tap target */}
-          <button
-            onClick={() => router.push(`/bands/${slug}/proposals/${proposal.id}`)}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0"
-            title="View proposal"
-          >
-            →
-          </button>
         </div>
 
         {/* Expanded projects - 8px indent mobile, 16px desktop */}
@@ -418,7 +465,14 @@ export default function ProposalsPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1 md:gap-2">
               <span className="text-gray-500 text-sm">📁</span>
-              <Text variant="small" weight="semibold" className="truncate">{project.name}</Text>
+              <button
+                onClick={() => router.push(`/bands/${slug}/projects/${project.id}`)}
+                className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav"
+                title="View project"
+              >
+                <Text variant="small" weight="semibold" className="truncate group-hover/nav:text-blue-600">{project.name}</Text>
+                <span className="text-blue-500 font-bold">→</span>
+              </button>
               <span className="text-sm">{statusIcon}</span>
             </div>
             {project.taskCount > 0 && (
@@ -427,15 +481,6 @@ export default function ProposalsPage() {
               </Text>
             )}
           </div>
-
-          {/* Navigate button - 44px tap target */}
-          <button
-            onClick={() => router.push(`/bands/${slug}/projects/${project.id}`)}
-            className="min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-sm"
-            title="View project"
-          >
-            →
-          </button>
         </div>
 
         {/* Expanded tasks - 8px indent mobile, 16px desktop */}
@@ -477,7 +522,14 @@ export default function ProposalsPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1 md:gap-2 flex-wrap">
               <span className="text-sm">{statusIcon}</span>
-              <Text variant="small" className="truncate">{task.name}</Text>
+              <button
+                onClick={() => router.push(`/bands/${slug}/tasks/${task.id}`)}
+                className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav"
+                title="View task"
+              >
+                <Text variant="small" className="truncate group-hover/nav:text-blue-600">{task.name}</Text>
+                <span className="text-blue-500 font-bold text-sm">→</span>
+              </button>
               {task.assignee && (
                 <Text variant="small" color="muted" className="hidden sm:inline">({task.assignee.name})</Text>
               )}
@@ -488,15 +540,6 @@ export default function ProposalsPage() {
               </Text>
             )}
           </div>
-
-          {/* Navigate button - 44px tap target */}
-          <button
-            onClick={() => router.push(`/bands/${slug}/tasks/${task.id}`)}
-            className="min-w-[44px] min-h-[44px] md:w-7 md:h-7 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-xs"
-            title="View task"
-          >
-            →
-          </button>
         </div>
 
         {/* Expanded checklist - 8px indent mobile, 16px desktop */}
@@ -524,20 +567,18 @@ export default function ProposalsPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1 md:gap-2">
             <span className="text-sm">{item.isCompleted ? '☑️' : '☐'}</span>
-            <Text variant="small" className={`truncate ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}>
-              {item.description}
-            </Text>
+            <button
+              onClick={() => router.push(`/bands/${slug}/tasks/${taskId}/checklist/${item.id}`)}
+              className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav min-h-[44px] md:min-h-0"
+              title="View checklist item"
+            >
+              <Text variant="small" className={`truncate group-hover/nav:text-blue-600 ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}>
+                {item.description}
+              </Text>
+              <span className="text-blue-500 font-bold text-sm">→</span>
+            </button>
           </div>
         </div>
-
-        {/* Navigate button - 44px tap target */}
-        <button
-          onClick={() => router.push(`/bands/${slug}/tasks/${taskId}/checklist/${item.id}`)}
-          className="min-w-[44px] min-h-[44px] md:w-6 md:h-6 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 text-xs"
-          title="View checklist item"
-        >
-          →
-        </button>
       </div>
     )
   }
