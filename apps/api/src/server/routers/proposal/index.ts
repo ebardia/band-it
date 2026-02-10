@@ -5,6 +5,7 @@ import { proposalUpdateRouter } from './proposal.update'
 import { proposalVoteRouter } from './proposal.vote'
 import { proposalAiRouter } from './proposal.ai'
 import { proposalReviewRouter } from './proposal.review'
+import { proposalHierarchyRouter } from './proposal.hierarchy'
 
 export const proposalRouter = router({
   // Create
@@ -15,6 +16,12 @@ export const proposalRouter = router({
   getById: proposalQueryRouter.getById,
   getMyPendingVotes: proposalQueryRouter.getMyPendingVotes,
   getMyProposals: proposalQueryRouter.getMyProposals,
+
+  // Hierarchy (expandable proposals page)
+  getProposalsList: proposalHierarchyRouter.getProposalsList,
+  getProjectsForProposal: proposalHierarchyRouter.getProjectsForProposal,
+  getTasksForProject: proposalHierarchyRouter.getTasksForProject,
+  getChecklistForTask: proposalHierarchyRouter.getChecklistForTask,
 
   // Update/Edit
   edit: proposalUpdateRouter.edit,
