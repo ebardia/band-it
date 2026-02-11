@@ -16,13 +16,62 @@ import {
   Badge,
   Loading,
   Alert,
-  List,
-  ListItem,
   BandLayout,
   Modal,
   BillingBanner
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+
+// Expandable text component
+function ExpandableText({ text, maxLength = 150 }: { text: string; maxLength?: number }) {
+  const [expanded, setExpanded] = useState(false)
+  const isLong = text.length > maxLength
+
+  if (!isLong) return <Text color="muted">{text}</Text>
+
+  return (
+    <div>
+      <Text color="muted" className={!expanded ? 'line-clamp-2' : ''}>
+        {text}
+      </Text>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="text-sm text-blue-600 hover:underline mt-1"
+      >
+        {expanded ? 'Show less' : 'Show more'}
+      </button>
+    </div>
+  )
+}
+
+// Expandable section component
+function ExpandableSection({ title, children, defaultExpanded = false }: {
+  title: string
+  children: React.ReactNode
+  defaultExpanded?: boolean
+}) {
+  const [expanded, setExpanded] = useState(defaultExpanded)
+
+  return (
+    <div className="border-b border-gray-100 last:border-b-0">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between py-3 text-left hover:bg-gray-50 -mx-4 px-4"
+      >
+        <Text weight="semibold">{title}</Text>
+        <svg
+          className={`w-5 h-5 text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {expanded && <div className="pb-3">{children}</div>}
+    </div>
+  )
+}
 
 export default function BandAboutPage() {
   const router = useRouter()
@@ -31,6 +80,7 @@ export default function BandAboutPage() {
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
   const [showLeaveModal, setShowLeaveModal] = useState(false)
+  const [showMoreDetails, setShowMoreDetails] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -145,116 +195,150 @@ export default function BandAboutPage() {
           ) : undefined
         }
       >
-        <Stack spacing="lg">
-          <Card className="p-8">
-            <Stack spacing="xl">
-              {getStatusBadge(band.status)}
+        <Stack spacing="md">
+          {/* Status Alert */}
+          {band.status === 'PENDING' && (
+            <Alert variant="warning">
+              <Text variant="small">This band needs {MIN_MEMBERS_TO_ACTIVATE - band.members.length} more active member(s) to become active.</Text>
+            </Alert>
+          )}
 
-              {band.status === 'PENDING' && (
-                <Alert variant="warning">
-                  <Text variant="small" weight="semibold">Band is Pending</Text>
-                  <Text variant="small">This band needs {MIN_MEMBERS_TO_ACTIVATE - band.members.length} more active member(s) to become active.</Text>
-                </Alert>
+          {/* Billing Banner */}
+          {isMember && userId && (
+            <BillingBanner bandId={band.id} bandSlug={slug} userId={userId} />
+          )}
+
+          {/* Main Info Card - Compact */}
+          <Card>
+            {/* Header Row: Status + Member Count + Location */}
+            <Flex gap="sm" align="center" className="mb-3">
+              {getStatusBadge(band.status)}
+              <Badge variant="info">{band.members.length} members</Badge>
+              {band.zipcode && <Badge variant="neutral">📍 {band.zipcode}</Badge>}
+            </Flex>
+
+            {/* Description */}
+            {band.description && (
+              <div className="mb-3">
+                <ExpandableText text={band.description} maxLength={200} />
+              </div>
+            )}
+
+            {/* Mission - inline if short */}
+            {band.mission && (
+              <div className="mb-3">
+                <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Mission</Text>
+                <ExpandableText text={band.mission} maxLength={150} />
+              </div>
+            )}
+
+            {/* Values - as tags */}
+            {band.values && band.values.length > 0 && (
+              <div className="mb-3">
+                <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Values</Text>
+                <Flex gap="sm" wrap="wrap">
+                  {band.values.map((value: string, index: number) => (
+                    <span key={index} className="text-sm bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                      {value}
+                    </span>
+                  ))}
+                </Flex>
+              </div>
+            )}
+
+            {/* More Details - Expandable */}
+            <button
+              onClick={() => setShowMoreDetails(!showMoreDetails)}
+              className="flex items-center gap-1 text-sm text-blue-600 hover:underline mt-2"
+            >
+              {showMoreDetails ? 'Hide details' : 'More details'}
+              <svg
+                className={`w-4 h-4 transition-transform ${showMoreDetails ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {showMoreDetails && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <Stack spacing="md">
+                  {/* Skills Looking For */}
+                  {band.skillsLookingFor && band.skillsLookingFor.length > 0 && (
+                    <div>
+                      <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Skills We're Looking For</Text>
+                      <Flex gap="sm" wrap="wrap">
+                        {band.skillsLookingFor.map((skill: string, index: number) => (
+                          <span key={index} className="text-sm bg-green-50 text-green-700 px-2 py-0.5 rounded">
+                            {skill}
+                          </span>
+                        ))}
+                      </Flex>
+                    </div>
+                  )}
+
+                  {/* What Members Will Learn */}
+                  {band.whatMembersWillLearn && band.whatMembersWillLearn.length > 0 && (
+                    <div>
+                      <Text variant="small" weight="semibold" className="text-gray-500 mb-1">What You'll Learn</Text>
+                      <Flex gap="sm" wrap="wrap">
+                        {band.whatMembersWillLearn.map((item: string, index: number) => (
+                          <span key={index} className="text-sm bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
+                            {item}
+                          </span>
+                        ))}
+                      </Flex>
+                    </div>
+                  )}
+
+                  {/* Membership Requirements */}
+                  {band.membershipRequirements && (
+                    <div>
+                      <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Membership Requirements</Text>
+                      <Text variant="small" color="muted">{band.membershipRequirements}</Text>
+                    </div>
+                  )}
+
+                  {/* Who Can Approve */}
+                  {band.whoCanApprove && band.whoCanApprove.length > 0 && (
+                    <div>
+                      <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Who Can Approve Members</Text>
+                      <Flex gap="sm" wrap="wrap">
+                        {band.whoCanApprove.map((role: string, index: number) => (
+                          <Badge key={index} variant="neutral">{role.replace('_', ' ')}</Badge>
+                        ))}
+                      </Flex>
+                    </div>
+                  )}
+                </Stack>
+              </div>
+            )}
+          </Card>
+
+          {/* Members Card - Compact */}
+          <Card>
+            <Flex justify="between" align="center" className="mb-2">
+              <Text weight="semibold">Members ({band.members.length})</Text>
+              <Button variant="ghost" size="sm" onClick={() => router.push(`/bands/${slug}/members`)}>
+                View all
+              </Button>
+            </Flex>
+            <Stack spacing="xs">
+              {band.members.slice(0, 5).map((member: any) => (
+                <Flex key={member.id} justify="between" align="center" className="py-1">
+                  <Text variant="small">{member.user.name}</Text>
+                  <Badge variant="info" className="text-xs">{member.role.replace('_', ' ')}</Badge>
+                </Flex>
+              ))}
+              {band.members.length > 5 && (
+                <Text variant="small" color="muted" className="text-center py-1">
+                  +{band.members.length - 5} more members
+                </Text>
               )}
             </Stack>
           </Card>
-
-          {/* Billing Banner - shown to members when payment action needed */}
-          {isMember && userId && (
-            <BillingBanner
-              bandId={band.id}
-              bandSlug={slug}
-              userId={userId}
-            />
-          )}
-
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>About</Heading>
-              <Text>{band.description}</Text>
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Mission</Heading>
-              <Text>{band.mission}</Text>
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Our Values</Heading>
-              <List>
-                {band.values.map((value: string, index: number) => (
-                  <ListItem key={index}>{value}</ListItem>
-                ))}
-              </List>
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Skills We're Looking For</Heading>
-              <List>
-                {band.skillsLookingFor.map((skill: string, index: number) => (
-                  <ListItem key={index}>{skill}</ListItem>
-                ))}
-              </List>
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>What Members Will Learn</Heading>
-              <List>
-                {band.whatMembersWillLearn.map((item: string, index: number) => (
-                  <ListItem key={index}>{item}</ListItem>
-                ))}
-              </List>
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Membership Requirements</Heading>
-              <Text>{band.membershipRequirements}</Text>
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Who Can Approve Members</Heading>
-              <List>
-                {band.whoCanApprove.map((role: string, index: number) => (
-                  <ListItem key={index}>{role.replace('_', ' ')}</ListItem>
-                ))}
-              </List>
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack spacing="md">
-              <Heading level={3}>Members ({band.members.length})</Heading>
-              <Stack spacing="sm">
-                {band.members.map((member: any) => (
-                  <Flex key={member.id} justify="between">
-                    <Text variant="small">{member.user.name}</Text>
-                    <Badge variant="info">{member.role.replace('_', ' ')}</Badge>
-                  </Flex>
-                ))}
-              </Stack>
-            </Stack>
-          </Card>
-
-          {band.zipcode && (
-            <Card>
-              <Stack spacing="sm">
-                <Heading level={3}>Location</Heading>
-                <Text variant="small">Zipcode: {band.zipcode}</Text>
-              </Stack>
-            </Card>
-          )}
         </Stack>
 
         <Modal isOpen={showLeaveModal} onClose={() => setShowLeaveModal(false)}>

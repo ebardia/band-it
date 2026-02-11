@@ -17,7 +17,8 @@ import {
   Badge,
   Loading,
   Alert,
-  QuickActionsWidget
+  QuickActionsWidget,
+  BandCardCompact
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { DashboardSidebar } from '@/components/DashboardSidebar'
@@ -204,53 +205,14 @@ export default function OverviewDashboard() {
 
                 {/* Recommended Bands */}
                 {recommendationsData?.recommendations && recommendationsData.recommendations.length > 0 ? (
-                  <Stack spacing="md">
+                  <Stack spacing="sm">
                     {recommendationsData.recommendations.map((rec: any) => (
-                      <Card key={rec.band.id}>
-                        <Flex justify="between" align="start">
-                          <Stack spacing="sm" className="flex-1">
-                            <Flex justify="between" align="center">
-                              <Heading level={4}>{rec.band.name}</Heading>
-                              {rec.matchScore > 0 && (
-                                <Badge variant="success">{rec.matchScore}% match</Badge>
-                              )}
-                            </Flex>
-                            <Text variant="small" color="muted">{rec.band.description}</Text>
-
-                            {/* Match Reasons */}
-                            {rec.matchReasons && rec.matchReasons.length > 0 && (
-                              <Stack spacing="xs">
-                                {rec.matchReasons.map((reason: string, idx: number) => (
-                                  <Text key={idx} variant="small" className="text-green-700">
-                                    {reason}
-                                  </Text>
-                                ))}
-                              </Stack>
-                            )}
-
-                            <Flex gap="sm">
-                              <Badge variant="info">{rec.band.memberCount} members</Badge>
-                              <Badge variant="success">{rec.band.status}</Badge>
-                            </Flex>
-                          </Stack>
-                          <Flex gap="sm" className="ml-4">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => router.push(`/bands/${rec.band.slug}`)}
-                            >
-                              View
-                            </Button>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => router.push(`/bands/${rec.band.slug}/apply`)}
-                            >
-                              Apply
-                            </Button>
-                          </Flex>
-                        </Flex>
-                      </Card>
+                      <BandCardCompact
+                        key={rec.band.id}
+                        band={rec.band}
+                        matchScore={rec.matchScore}
+                        matchReasons={rec.matchReasons}
+                      />
                     ))}
                   </Stack>
                 ) : (
