@@ -393,6 +393,30 @@ export const authRouter = router({
         )
       }
 
+      // Get all bands where user is a member (to reassign content to founders)
+      const userMemberships = await prisma.member.findMany({
+        where: { userId: input.userId, status: 'ACTIVE' },
+        include: {
+          band: {
+            include: {
+              members: {
+                where: { role: 'FOUNDER', status: 'ACTIVE' },
+                take: 1,
+              },
+            },
+          },
+        },
+      })
+
+      // Build a map of bandId -> founderId for reassignment
+      const bandFounderMap = new Map<string, string>()
+      for (const membership of userMemberships) {
+        const founder = membership.band.members[0]
+        if (founder && founder.userId !== input.userId) {
+          bandFounderMap.set(membership.bandId, founder.userId)
+        }
+      }
+
       // Delete all related records in correct order to avoid FK constraints
       await prisma.$transaction(async (tx) => {
         const userId = input.userId
@@ -421,7 +445,18 @@ export const authRouter = router({
         // Delete channel read statuses
         await tx.channelReadStatus.deleteMany({ where: { userId } })
 
-        // Delete messages authored (this will cascade to edits, mentions, reactions on those messages)
+        // Reassign messages to band founder instead of deleting
+        // (Messages are tied to channels which are tied to bands)
+        for (const [bandId, founderId] of bandFounderMap) {
+          await tx.message.updateMany({
+            where: {
+              authorId: userId,
+              channel: { bandId },
+            },
+            data: { authorId: founderId },
+          })
+        }
+        // Delete any remaining messages not in a band we have a founder for
         await tx.message.deleteMany({ where: { authorId: userId } })
 
         // Delete comments authored
@@ -504,21 +539,48 @@ export const authRouter = router({
           where: { verifiedById: userId },
           data: { verifiedById: null },
         })
-        // createdById is required, so delete tasks created by user
-        await tx.task.deleteMany({ where: { createdById: userId } })
+
+        // REASSIGN band content to founder instead of deleting
+        // Tasks
+        for (const [bandId, founderId] of bandFounderMap) {
+          await tx.task.updateMany({
+            where: { createdById: userId, bandId },
+            data: { createdById: founderId },
+          })
+        }
+        await tx.task.deleteMany({ where: { createdById: userId } }) // Delete any without a band
 
         // Nullify optional user references on projects (leadId is optional)
         await tx.project.updateMany({
           where: { leadId: userId },
           data: { leadId: null },
         })
-        // createdById is required, so delete projects created by user
+
+        // Projects
+        for (const [bandId, founderId] of bandFounderMap) {
+          await tx.project.updateMany({
+            where: { createdById: userId, bandId },
+            data: { createdById: founderId },
+          })
+        }
         await tx.project.deleteMany({ where: { createdById: userId } })
 
-        // createdById is required on proposals, so delete proposals created by user
+        // Proposals
+        for (const [bandId, founderId] of bandFounderMap) {
+          await tx.proposal.updateMany({
+            where: { createdById: userId, bandId },
+            data: { createdById: founderId },
+          })
+        }
         await tx.proposal.deleteMany({ where: { createdById: userId } })
 
-        // createdById is required on events, so delete events created by user
+        // Events
+        for (const [bandId, founderId] of bandFounderMap) {
+          await tx.event.updateMany({
+            where: { createdById: userId, bandId },
+            data: { createdById: founderId },
+          })
+        }
         await tx.event.deleteMany({ where: { createdById: userId } })
 
         // Delete feedback votes by user
@@ -527,16 +589,43 @@ export const authRouter = router({
         // Delete feedback submitted by user
         await tx.feedback.deleteMany({ where: { submittedById: userId } })
 
-        // Delete post responses authored by user (before posts)
+        // Post responses - reassign to founder
+        for (const [bandId, founderId] of bandFounderMap) {
+          await tx.postResponse.updateMany({
+            where: {
+              authorId: userId,
+              post: { bandId },
+            },
+            data: { authorId: founderId },
+          })
+        }
         await tx.postResponse.deleteMany({ where: { authorId: userId } })
 
-        // Delete posts authored by user (before categories)
+        // Posts - reassign to founder
+        for (const [bandId, founderId] of bandFounderMap) {
+          await tx.post.updateMany({
+            where: { authorId: userId, bandId },
+            data: { authorId: founderId },
+          })
+        }
         await tx.post.deleteMany({ where: { authorId: userId } })
 
-        // Delete post categories created by user
+        // Post categories - reassign to founder
+        for (const [bandId, founderId] of bandFounderMap) {
+          await tx.postCategory.updateMany({
+            where: { createdById: userId, bandId },
+            data: { createdById: founderId },
+          })
+        }
         await tx.postCategory.deleteMany({ where: { createdById: userId } })
 
-        // createdById is required on channels, so delete channels created by user
+        // Channels - reassign to founder
+        for (const [bandId, founderId] of bandFounderMap) {
+          await tx.channel.updateMany({
+            where: { createdById: userId, bandId },
+            data: { createdById: founderId },
+          })
+        }
         await tx.channel.deleteMany({ where: { createdById: userId } })
 
         // Delete pending invites created by user (invitedById is required)
