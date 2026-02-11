@@ -477,7 +477,7 @@ export default function HomePage() {
                     <iframe
                       width="100%"
                       height="100%"
-                      src="https://www.youtube.com/embed/Ws7LzBIHE0Y"
+                      src="https://www.youtube.com/embed/ZS0eFM2S-vU"
                       title="Band It Overview"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
