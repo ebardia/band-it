@@ -1,5 +1,5 @@
 // AUTO-GENERATED from docs/help-context.yaml - DO NOT EDIT DIRECTLY
-// Generated at: 2026-02-11T15:46:42.870Z
+// Generated at: 2026-02-11T15:50:27.122Z
 // To update, edit docs/help-context.yaml and run: npm run generate-help-context
 
 export const PLATFORM_CONTEXT = `

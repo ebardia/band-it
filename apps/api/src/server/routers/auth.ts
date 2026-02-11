@@ -521,6 +521,15 @@ export const authRouter = router({
         // createdById is required on events, so delete events created by user
         await tx.event.deleteMany({ where: { createdById: userId } })
 
+        // Delete post responses authored by user (before posts)
+        await tx.postResponse.deleteMany({ where: { authorId: userId } })
+
+        // Delete posts authored by user (before categories)
+        await tx.post.deleteMany({ where: { authorId: userId } })
+
+        // Delete post categories created by user
+        await tx.postCategory.deleteMany({ where: { createdById: userId } })
+
         // createdById is required on channels, so delete channels created by user
         await tx.channel.deleteMany({ where: { createdById: userId } })
 
