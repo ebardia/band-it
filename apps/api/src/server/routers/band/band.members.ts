@@ -424,3 +424,113 @@ export const proposeRemoval = publicProcedure
 
     return { proposal }
   })
+
+/**
+ * Transfer band ownership from current founder to another member
+ * - Only the current FOUNDER can transfer ownership
+ * - Target must be an ACTIVE member of the band
+ * - Current founder becomes GOVERNOR after transfer
+ * - Band's createdById is updated to new founder
+ */
+export const transferOwnership = publicProcedure
+  .input(z.object({
+    bandId: z.string(),
+    newFounderUserId: z.string(),
+    userId: z.string(), // Current user (must be founder)
+  }))
+  .mutation(async ({ input }) => {
+    const { bandId, newFounderUserId, userId } = input
+
+    // Get the band with members
+    const band = await prisma.band.findUnique({
+      where: { id: bandId },
+      include: {
+        members: {
+          where: { status: 'ACTIVE' },
+          include: { user: { select: { id: true, name: true } } }
+        }
+      }
+    })
+
+    if (!band) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Band not found'
+      })
+    }
+
+    // Verify the acting user is the current FOUNDER
+    const currentFounder = band.members.find(m => m.userId === userId)
+    if (!currentFounder || currentFounder.role !== 'FOUNDER') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'Only the current founder can transfer ownership'
+      })
+    }
+
+    // Verify the target is an active member
+    const newFounder = band.members.find(m => m.userId === newFounderUserId)
+    if (!newFounder) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Target user is not an active member of this band'
+      })
+    }
+
+    // Cannot transfer to yourself
+    if (newFounderUserId === userId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'You are already the founder'
+      })
+    }
+
+    // Perform the transfer in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Update the new founder's role to FOUNDER
+      await tx.member.update({
+        where: { id: newFounder.id },
+        data: { role: 'FOUNDER' }
+      })
+
+      // Update the current founder's role to GOVERNOR
+      await tx.member.update({
+        where: { id: currentFounder.id },
+        data: { role: 'GOVERNOR' }
+      })
+
+      // Update the band's createdById to the new founder
+      await tx.band.update({
+        where: { id: bandId },
+        data: { createdById: newFounderUserId }
+      })
+    })
+
+    // Notify the new founder
+    await notificationService.create({
+      userId: newFounderUserId,
+      type: 'BAND_STATUS_CHANGED',
+      title: 'You are now the Founder',
+      message: `${currentFounder.user.name} has transferred ownership of ${band.name} to you. You are now the Founder.`,
+      relatedId: bandId,
+      relatedType: 'band',
+      actionUrl: `/bands/${band.slug}`,
+      priority: 'HIGH',
+    })
+
+    // Notify the former founder
+    await notificationService.create({
+      userId: userId,
+      type: 'BAND_STATUS_CHANGED',
+      title: 'Ownership Transferred',
+      message: `You have transferred ownership of ${band.name} to ${newFounder.user.name}. You are now a Governor.`,
+      relatedId: bandId,
+      relatedType: 'band',
+      actionUrl: `/bands/${band.slug}`,
+    })
+
+    return {
+      success: true,
+      newFounderName: newFounder.user.name,
+    }
+  })

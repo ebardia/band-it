@@ -1,5 +1,5 @@
 // AUTO-GENERATED from docs/help-context.yaml - DO NOT EDIT DIRECTLY
-// Generated at: 2026-02-07T18:13:42.920Z
+// Generated at: 2026-02-11T15:40:49.281Z
 // To update, edit docs/help-context.yaml and run: npm run generate-help-context
 
 export const PLATFORM_CONTEXT = `
@@ -176,6 +176,9 @@ Founder (full control), Governor (leadership), Moderator (moderate discussions),
 ### how do mentions work?
 Type @ followed by a name or role. Select from dropdown. Mentioned users get notified. Roles: @everyone, @governors, @moderators, @conductors, @channel
 
+### How do I transfer band ownership?
+Only the founder can transfer ownership. Go to Band Settings → scroll to Transfer Ownership section → Select the member who will become the new founder → Type TRANSFER to confirm. After transfer, the previous founder becomes a Governor and the selected member becomes the new Founder.
+
 ## TROUBLESHOOTING
 
 ### I can't see a channel
@@ -186,6 +189,9 @@ Proposals in PENDING_REVIEW status need approval from a Moderator, Governor, or 
 
 ### I can't dissolve my band
 With the minimum number of members or more, dissolution requires a unanimous vote via proposal. With fewer than the minimum, only the founder can dissolve directly.
+
+### How do I transfer band ownership to someone else?
+Only the founder can transfer ownership. Go to Band Settings → Transfer Ownership section → Select a member → Confirm by typing TRANSFER. You will become a Governor and they will become the new Founder. This action cannot be undone without the new founder's consent.
 
 ### Payment not showing up
 Manual payments require confirmation from the other party. Check the Manual Payments tab for pending confirmations.

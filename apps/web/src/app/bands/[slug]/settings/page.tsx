@@ -14,6 +14,7 @@ import {
   BandDetailsSettings,
   BillingSettings,
   DissolveBandSection,
+  TransferOwnershipSection,
   GovernanceSettings
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
@@ -155,6 +156,17 @@ export default function BandSettingsPage() {
               bandId={band.id}
               bandSlug={slug}
               userId={userId}
+            />
+          )}
+
+          {/* Transfer Ownership - shown only to FOUNDER */}
+          {userId && currentMember && (
+            <TransferOwnershipSection
+              bandId={band.id}
+              bandSlug={slug}
+              bandName={band.name}
+              userId={userId}
+              userRole={currentMember.role}
             />
           )}
 

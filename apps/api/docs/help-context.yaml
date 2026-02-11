@@ -45,6 +45,7 @@ bands:
     dissolve:
       under_minimum_members: "Only founder can dissolve directly"
       at_or_above_minimum_members: "Requires a dissolution proposal with unanimous approval from all voting members"
+    transfer_ownership: "Only the founder can transfer ownership. Go to Band Settings → Transfer Ownership → Select new founder → Confirm by typing TRANSFER. The current founder becomes a Governor, and the selected member becomes the new Founder."
 
 proposals:
   what: Decisions voted on by band members. All significant decisions go through the proposal process for transparency.
@@ -181,6 +182,7 @@ common_questions:
   how_do_i_confirm_a_payment: "Go to band's Billing → Manual Payments tab → Find the pending payment → Click Confirm"
   what_are_the_different_roles: "Founder (full control), Governor (leadership), Moderator (moderate discussions), Conductor (lead projects), Voting Member (standard participation), Observer (view only)"
   how_do_mentions_work: "Type @ followed by a name or role. Select from dropdown. Mentioned users get notified. Roles: @everyone, @governors, @moderators, @conductors, @channel"
+  how_do_i_transfer_band_ownership: "Only the founder can transfer ownership. Go to Band Settings → scroll to Transfer Ownership section → Select the member who will become the new founder → Type TRANSFER to confirm. After transfer, the previous founder becomes a Governor and the selected member becomes the new Founder."
 
 troubleshooting:
   - issue: "I can't see a channel"
@@ -189,6 +191,8 @@ troubleshooting:
     solution: "Proposals in PENDING_REVIEW status need approval from a Moderator, Governor, or Founder. Contact your band leadership."
   - issue: "I can't dissolve my band"
     solution: "With the minimum number of members or more, dissolution requires a unanimous vote via proposal. With fewer than the minimum, only the founder can dissolve directly."
+  - issue: "How do I transfer band ownership to someone else?"
+    solution: "Only the founder can transfer ownership. Go to Band Settings → Transfer Ownership section → Select a member → Confirm by typing TRANSFER. You will become a Governor and they will become the new Founder. This action cannot be undone without the new founder's consent."
   - issue: "Payment not showing up"
     solution: "Manual payments require confirmation from the other party. Check the Manual Payments tab for pending confirmations."
   - issue: "I'm not receiving notifications"
