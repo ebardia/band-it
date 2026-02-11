@@ -32,6 +32,7 @@ function VerifyEmailContent() {
   const [email, setEmail] = useState<string>('')
   const [userId, setUserId] = useState<string>('')
   const [verifying, setVerifying] = useState(false)
+  const [checkingStatus, setCheckingStatus] = useState(false)
   const hasVerified = useRef(false)
 
   useEffect(() => {
@@ -48,6 +49,26 @@ function VerifyEmailContent() {
       }
     }
   }, [])
+
+  // Poll to check if email was verified on another device
+  const { data: profileData, refetch: refetchProfile } = trpc.auth.getProfile.useQuery(
+    { userId },
+    {
+      enabled: !!userId && !token && !hasVerified.current,
+      refetchInterval: 5000, // Poll every 5 seconds
+    }
+  )
+
+  // Redirect if email is verified (detected via polling)
+  useEffect(() => {
+    if (profileData?.user?.emailVerified && !hasVerified.current) {
+      hasVerified.current = true
+      showToast('Email verified! Redirecting...', 'success')
+      setTimeout(() => {
+        router.push('/profile')
+      }, 1500)
+    }
+  }, [profileData, router, showToast])
 
   const verifyEmailMutation = trpc.auth.verifyEmail.useMutation({
     onSuccess: () => {
@@ -142,6 +163,30 @@ function VerifyEmailContent() {
                 <ListItem>Complete your profile</ListItem>
               </List>
             </Alert>
+
+            <Center>
+              <Text variant="small">Already verified on another device?</Text>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setCheckingStatus(true)
+                  refetchProfile().then((result) => {
+                    setCheckingStatus(false)
+                    if (result.data?.user?.emailVerified) {
+                      hasVerified.current = true
+                      showToast('Email verified! Redirecting...', 'success')
+                      setTimeout(() => router.push('/profile'), 1500)
+                    } else {
+                      showToast('Email not verified yet', 'info')
+                    }
+                  })
+                }}
+                disabled={checkingStatus}
+              >
+                {checkingStatus ? 'Checking...' : 'Check verification status'}
+              </Button>
+            </Center>
 
             <Center>
               <Text variant="small">Didn't receive the email?</Text>
