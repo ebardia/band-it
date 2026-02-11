@@ -521,6 +521,12 @@ export const authRouter = router({
         // createdById is required on events, so delete events created by user
         await tx.event.deleteMany({ where: { createdById: userId } })
 
+        // Delete feedback votes by user
+        await tx.feedbackVote.deleteMany({ where: { userId } })
+
+        // Delete feedback submitted by user
+        await tx.feedback.deleteMany({ where: { submittedById: userId } })
+
         // Delete post responses authored by user (before posts)
         await tx.postResponse.deleteMany({ where: { authorId: userId } })
 
