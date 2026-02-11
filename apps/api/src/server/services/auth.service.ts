@@ -69,6 +69,9 @@ export const authService = {
       },
     })
 
+    // Add user to the practice band (band-it-practice) as CONDUCTOR
+    await this.addToPracticeBand(user.id)
+
     // Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user.id)
 
@@ -295,6 +298,57 @@ export const authService = {
         code: 'UNAUTHORIZED',
         message: 'Invalid or expired token',
       })
+    }
+  },
+
+  /**
+   * Add new user to the practice band (band-it-practice) as CONDUCTOR
+   * This runs silently - if the band doesn't exist, it just skips
+   */
+  async addToPracticeBand(userId: string) {
+    const PRACTICE_BAND_SLUG = 'band-it-practice'
+
+    try {
+      // Find the practice band
+      const practiceBand = await prisma.band.findUnique({
+        where: { slug: PRACTICE_BAND_SLUG },
+        select: { id: true },
+      })
+
+      if (!practiceBand) {
+        console.log(`Practice band "${PRACTICE_BAND_SLUG}" not found, skipping`)
+        return
+      }
+
+      // Check if user is already a member (shouldn't happen on registration, but safety check)
+      const existingMember = await prisma.member.findUnique({
+        where: {
+          userId_bandId: {
+            userId,
+            bandId: practiceBand.id,
+          },
+        },
+      })
+
+      if (existingMember) {
+        console.log(`User ${userId} is already a member of practice band`)
+        return
+      }
+
+      // Add user to practice band as CONDUCTOR with ACTIVE status
+      await prisma.member.create({
+        data: {
+          userId,
+          bandId: practiceBand.id,
+          role: 'CONDUCTOR',
+          status: 'ACTIVE',
+        },
+      })
+
+      console.log(`Added user ${userId} to practice band as CONDUCTOR`)
+    } catch (error) {
+      // Log but don't fail registration if this fails
+      console.error('Failed to add user to practice band:', error)
     }
   },
 }
