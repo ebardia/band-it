@@ -42,7 +42,8 @@ export function TransferOwnershipSection({ bandId, bandSlug, bandName, userId, u
   // Transfer ownership mutation
   const transferMutation = trpc.band.transferOwnership.useMutation({
     onSuccess: (data) => {
-      showToast(`Ownership transferred to ${data.newFounderName}`, 'success')
+      const newFounderName = data?.newFounderName || 'the new founder'
+      showToast(`Ownership transferred to ${newFounderName}`, 'success')
       setShowConfirm(false)
       setSelectedMemberId('')
       setConfirmText('')
@@ -59,8 +60,9 @@ export function TransferOwnershipSection({ bandId, bandSlug, bandName, userId, u
     return null
   }
 
-  // Filter out the current founder from the list
-  const eligibleMembers = membersData?.members?.filter(m => m.userId !== userId) || []
+  // Filter out the current founder from the list, and ensure user data exists
+  const eligibleMembers = (membersData?.members || [])
+    .filter(m => m.userId !== userId && m.user?.name)
 
   if (eligibleMembers.length === 0) {
     return (
@@ -140,16 +142,16 @@ export function TransferOwnershipSection({ bandId, bandSlug, bandName, userId, u
                 <option value="">Choose a member...</option>
                 {eligibleMembers.map((member) => (
                   <option key={member.userId} value={member.userId}>
-                    {member.user.name} ({member.role.replace('_', ' ')})
+                    {String(member.user?.name || 'Unknown')} ({String(member.role || '').replace('_', ' ')})
                   </option>
                 ))}
               </select>
             </div>
 
-            {selectedMember && (
+            {selectedMember?.user?.name && (
               <Alert variant="info">
                 <Text variant="small">
-                  <strong>{selectedMember.user.name}</strong> will become the new Founder of this band.
+                  <strong>{String(selectedMember.user.name)}</strong> will become the new Founder of this band.
                 </Text>
               </Alert>
             )}
