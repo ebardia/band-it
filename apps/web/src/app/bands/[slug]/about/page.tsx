@@ -361,19 +361,19 @@ export default function BandAboutPage() {
             </Card>
           )}
 
-          {/* Sub-bands Card - For Big Bands */}
+          {/* Bands Card - For Big Bands */}
           {band.subBands && band.subBands.length > 0 && (
             <Card>
               <Stack spacing="md">
                 <Flex justify="between" align="center">
-                  <Text weight="semibold">Sub-bands ({band.subBands.length})</Text>
+                  <Text weight="semibold">Bands ({band.subBands.length})</Text>
                   {currentMember && ['FOUNDER', 'GOVERNOR'].includes(currentMember.role) && (
                     <Button
                       variant="primary"
                       size="sm"
                       onClick={() => router.push(`/bands/create?parentBandId=${band.id}&parentBandName=${encodeURIComponent(band.name)}`)}
                     >
-                      Create Sub-band
+                      Create Band
                     </Button>
                   )}
                 </Flex>
@@ -400,24 +400,6 @@ export default function BandAboutPage() {
             </Card>
           )}
 
-          {/* Create Sub-band Button - For Big Bands without sub-bands yet */}
-          {!band.parentBandId && band.subBands?.length === 0 && currentMember && ['FOUNDER', 'GOVERNOR'].includes(currentMember.role) && (
-            <Card>
-              <Flex justify="between" align="center">
-                <Stack spacing="xs">
-                  <Text weight="semibold">Sub-bands</Text>
-                  <Text variant="small" color="muted">No sub-bands created yet</Text>
-                </Stack>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => router.push(`/bands/create?parentBandId=${band.id}&parentBandName=${encodeURIComponent(band.name)}`)}
-                >
-                  Create Sub-band
-                </Button>
-              </Flex>
-            </Card>
-          )}
         </Stack>
 
         <Modal isOpen={showLeaveModal} onClose={() => setShowLeaveModal(false)}>
