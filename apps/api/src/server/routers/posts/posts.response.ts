@@ -132,7 +132,7 @@ export const createResponse = publicProcedure
         },
         include: {
           author: {
-            select: { id: true, name: true },
+            select: { id: true, name: true, deletedAt: true },
           },
         },
       })

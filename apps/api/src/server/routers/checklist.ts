@@ -64,7 +64,7 @@ export const checklistRouter = router({
           files: {
             include: {
               uploadedBy: {
-                select: { id: true, name: true }
+                select: { id: true, name: true, deletedAt: true }
               }
             },
             orderBy: { createdAt: 'desc' }
@@ -378,7 +378,7 @@ export const checklistRouter = router({
           files: {
             include: {
               uploadedBy: {
-                select: { id: true, name: true }
+                select: { id: true, name: true, deletedAt: true }
               }
             }
           }

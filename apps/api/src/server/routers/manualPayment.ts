@@ -26,7 +26,7 @@ async function getBandTreasurers(bandId: string) {
       status: 'ACTIVE',
     },
     include: {
-      user: { select: { id: true, name: true, email: true } },
+      user: { select: { id: true, name: true, email: true, deletedAt: true } },
     },
   })
 
@@ -38,7 +38,7 @@ async function getBandTreasurers(bandId: string) {
         status: 'ACTIVE',
       },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, deletedAt: true } },
       },
     })
     return founder ? [founder] : []
@@ -112,7 +112,7 @@ async function getMemberForUser(userId: string, bandId: string) {
       userId_bandId: { userId, bandId },
     },
     include: {
-      user: { select: { id: true, name: true, email: true } },
+      user: { select: { id: true, name: true, email: true, deletedAt: true } },
     },
   })
 }
@@ -150,7 +150,7 @@ export const manualPaymentRouter = router({
       const member = await prisma.member.findUnique({
         where: { id: memberId },
         include: {
-          user: { select: { id: true, name: true, email: true } },
+          user: { select: { id: true, name: true, email: true, deletedAt: true } },
         },
       })
       if (!member || member.bandId !== bandId) {
@@ -207,7 +207,7 @@ export const manualPaymentRouter = router({
           member: {
             include: { user: { select: { id: true, name: true } } },
           },
-          initiatedBy: { select: { id: true, name: true } },
+          initiatedBy: { select: { id: true, name: true, deletedAt: true } },
         },
       })
 
@@ -275,8 +275,8 @@ export const manualPaymentRouter = router({
         where: { id: paymentId },
         include: {
           band: { select: { id: true, name: true, slug: true } },
-          member: { include: { user: { select: { id: true, name: true } } } },
-          initiatedBy: { select: { id: true, name: true } },
+          member: { include: { user: { select: { id: true, name: true, deletedAt: true } } } },
+          initiatedBy: { select: { id: true, name: true, deletedAt: true } },
         },
       })
 
@@ -375,8 +375,8 @@ export const manualPaymentRouter = router({
         where: { id: paymentId },
         include: {
           band: { select: { id: true, name: true, slug: true } },
-          member: { include: { user: { select: { id: true, name: true } } } },
-          initiatedBy: { select: { id: true, name: true } },
+          member: { include: { user: { select: { id: true, name: true, deletedAt: true } } } },
+          initiatedBy: { select: { id: true, name: true, deletedAt: true } },
         },
       })
 
@@ -490,8 +490,8 @@ export const manualPaymentRouter = router({
         where: { id: paymentId },
         include: {
           band: { select: { id: true, name: true, slug: true } },
-          member: { include: { user: { select: { id: true, name: true } } } },
-          initiatedBy: { select: { id: true, name: true } },
+          member: { include: { user: { select: { id: true, name: true, deletedAt: true } } } },
+          initiatedBy: { select: { id: true, name: true, deletedAt: true } },
         },
       })
 
@@ -628,10 +628,10 @@ export const manualPaymentRouter = router({
           member: {
             include: { user: { select: { id: true, name: true } } },
           },
-          initiatedBy: { select: { id: true, name: true } },
-          confirmedBy: { select: { id: true, name: true } },
-          disputedBy: { select: { id: true, name: true } },
-          resolvedBy: { select: { id: true, name: true } },
+          initiatedBy: { select: { id: true, name: true, deletedAt: true } },
+          confirmedBy: { select: { id: true, name: true, deletedAt: true } },
+          disputedBy: { select: { id: true, name: true, deletedAt: true } },
+          resolvedBy: { select: { id: true, name: true, deletedAt: true } },
           files: { select: { id: true, filename: true, url: true, category: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -700,7 +700,7 @@ export const manualPaymentRouter = router({
           member: {
             include: { user: { select: { id: true, name: true } } },
           },
-          initiatedBy: { select: { id: true, name: true } },
+          initiatedBy: { select: { id: true, name: true, deletedAt: true } },
           files: { select: { id: true, filename: true, url: true, category: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -727,12 +727,12 @@ export const manualPaymentRouter = router({
         include: {
           band: { select: { id: true, name: true, slug: true } },
           member: {
-            include: { user: { select: { id: true, name: true, email: true } } },
+            include: { user: { select: { id: true, name: true, email: true, deletedAt: true } } },
           },
-          initiatedBy: { select: { id: true, name: true } },
-          confirmedBy: { select: { id: true, name: true } },
-          disputedBy: { select: { id: true, name: true } },
-          resolvedBy: { select: { id: true, name: true } },
+          initiatedBy: { select: { id: true, name: true, deletedAt: true } },
+          confirmedBy: { select: { id: true, name: true, deletedAt: true } },
+          disputedBy: { select: { id: true, name: true, deletedAt: true } },
+          resolvedBy: { select: { id: true, name: true, deletedAt: true } },
           files: { select: { id: true, filename: true, url: true, category: true, originalName: true } },
         },
       })
@@ -789,8 +789,8 @@ export const manualPaymentRouter = router({
           member: {
             include: { user: { select: { id: true, name: true } } },
           },
-          initiatedBy: { select: { id: true, name: true } },
-          disputedBy: { select: { id: true, name: true } },
+          initiatedBy: { select: { id: true, name: true, deletedAt: true } },
+          disputedBy: { select: { id: true, name: true, deletedAt: true } },
           files: { select: { id: true, filename: true, url: true, category: true } },
         },
         orderBy: { disputedAt: 'desc' },
@@ -824,7 +824,7 @@ export const manualPaymentRouter = router({
           status: 'ACTIVE',
         },
         include: {
-          user: { select: { id: true, name: true, email: true } },
+          user: { select: { id: true, name: true, email: true, deletedAt: true } },
         },
         orderBy: { user: { name: 'asc' } },
       })

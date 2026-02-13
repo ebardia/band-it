@@ -84,7 +84,7 @@ export const listMessages = publicProcedure
       },
       include: {
         author: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, email: true, deletedAt: true },
         },
         _count: {
           select: { replies: true },
@@ -169,7 +169,7 @@ export const getThread = publicProcedure
       where: { id: messageId },
       include: {
         author: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, email: true, deletedAt: true },
         },
         channel: {
           include: {
@@ -249,7 +249,7 @@ export const getThread = publicProcedure
       },
       include: {
         author: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, email: true, deletedAt: true },
         },
         reactions: {
           include: {
@@ -388,7 +388,7 @@ export const searchMessages = publicProcedure
       },
       include: {
         author: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, email: true, deletedAt: true },
         },
         _count: {
           select: { replies: true },

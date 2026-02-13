@@ -417,7 +417,7 @@ export const authRouter = router({
         }
       }
 
-      // Delete all related records in correct order to avoid FK constraints
+      // Soft delete user and clean up related records
       await prisma.$transaction(async (tx) => {
         const userId = input.userId
 
@@ -506,15 +506,12 @@ export const authRouter = router({
         // Delete flagged content authored
         await tx.flaggedContent.deleteMany({ where: { authorId: userId } })
 
-        // Delete blocked terms created by user
-        await tx.blockedTerm.deleteMany({ where: { createdById: userId } })
+        // KEEP blocked terms - they are valuable moderation data
+        // BlockedTerms created by this user remain in the system
 
-        // Delete band member billings
-        await tx.bandMemberBilling.deleteMany({ where: { memberUserId: userId } })
-
-        // Delete manual payments where user is the member
-        await tx.manualPayment.deleteMany({ where: { memberUserId: userId } })
-        // Nullify optional user references on remaining manual payments
+        // KEEP financial records for audit trail
+        // BandMemberBilling and ManualPayment records are preserved
+        // Nullify optional user references on manual payments
         await tx.manualPayment.updateMany({
           where: { confirmedById: userId },
           data: { confirmedById: null },
@@ -527,8 +524,6 @@ export const authRouter = router({
           where: { resolvedById: userId },
           data: { resolvedById: null },
         })
-        // initiatedById is required, so delete any remaining payments initiated by user
-        await tx.manualPayment.deleteMany({ where: { initiatedById: userId } })
 
         // Nullify optional user references on tasks (assigneeId and verifiedById are optional)
         await tx.task.updateMany({
@@ -649,8 +644,8 @@ export const authRouter = router({
           },
         })
 
-        // Delete files uploaded
-        await tx.file.deleteMany({ where: { uploadedById: userId } })
+        // KEEP files - they may be attached to financial records or other important data
+        // Files uploaded by this user remain in the system
 
         // Delete notifications and preferences
         await tx.notification.deleteMany({ where: { userId } })
@@ -662,8 +657,45 @@ export const authRouter = router({
         // Delete sessions
         await tx.session.deleteMany({ where: { userId } })
 
-        // Finally delete the user
-        await tx.user.delete({ where: { id: userId } })
+        // Soft delete the user: clear PII but keep id and name for audit trail
+        // Email is set to a unique placeholder to allow re-registration
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            deletedAt: new Date(),
+            email: `deleted_${userId}@deleted.local`,
+            password: '',
+            zipcode: null,
+            strengths: [],
+            weaknesses: [],
+            passions: [],
+            developmentPath: [],
+            emailVerified: false,
+            emailVerifiedAt: null,
+            verificationToken: null,
+            passwordResetToken: null,
+            passwordResetExpires: null,
+            stripeCustomerId: null,
+            stripeSubscriptionId: null,
+            subscriptionStatus: 'INCOMPLETE',
+            subscriptionStartedAt: null,
+            profileCompleted: false,
+            guidelinesAcceptedAt: null,
+            guidelinesVersion: null,
+            tosAcceptedAt: null,
+            tosVersion: null,
+            isAdmin: false,
+            warningCount: 0,
+            suspendedUntil: null,
+            suspensionReason: null,
+            bannedAt: null,
+            banReason: null,
+            emailNotificationFrequency: 'DAILY',
+            digestFrequency: 'DAILY',
+            digestWeeklyDay: null,
+            digestLastSentAt: null,
+          },
+        })
       })
 
       return {

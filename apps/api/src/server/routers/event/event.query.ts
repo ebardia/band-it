@@ -124,7 +124,7 @@ export const getEventById = publicProcedure
         files: {
           include: {
             uploadedBy: {
-              select: { id: true, name: true }
+              select: { id: true, name: true, deletedAt: true }
             }
           },
           orderBy: { createdAt: 'desc' }

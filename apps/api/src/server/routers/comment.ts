@@ -149,7 +149,7 @@ export const commentRouter = router({
           },
           replies: {
             include: {
-              author: { select: { id: true, name: true, email: true } }
+              author: { select: { id: true, name: true, email: true, deletedAt: true } }
             }
           },
           reactions: true,
@@ -279,7 +279,7 @@ export const commentRouter = router({
           editedAt: new Date(),
         },
         include: {
-          author: { select: { id: true, name: true, email: true } },
+          author: { select: { id: true, name: true, email: true, deletedAt: true } },
           reactions: true,
           mentions: true,
         }

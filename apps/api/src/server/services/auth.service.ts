@@ -206,6 +206,14 @@ export const authService = {
       })
     }
 
+    // Check if user account has been deleted
+    if (user.deletedAt) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'Invalid email or password',
+      })
+    }
+
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password)
 

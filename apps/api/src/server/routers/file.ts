@@ -140,7 +140,7 @@ export const fileRouter = router({
         },
         include: {
           uploadedBy: {
-            select: { id: true, name: true }
+            select: { id: true, name: true, deletedAt: true }
           }
         }
       })
@@ -179,7 +179,7 @@ export const fileRouter = router({
         where,
         include: {
           uploadedBy: {
-            select: { id: true, name: true }
+            select: { id: true, name: true, deletedAt: true }
           }
         },
         orderBy: { createdAt: 'desc' }
@@ -197,7 +197,7 @@ export const fileRouter = router({
         where: { id: input.fileId },
         include: {
           uploadedBy: {
-            select: { id: true, name: true }
+            select: { id: true, name: true, deletedAt: true }
           }
         }
       })

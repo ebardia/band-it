@@ -76,7 +76,7 @@ export const listPosts = publicProcedure
       },
       include: {
         author: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, deletedAt: true },
         },
       },
       orderBy: [
@@ -156,7 +156,7 @@ export const getPost = publicProcedure
       },
       include: {
         author: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, deletedAt: true },
         },
         category: {
           select: { id: true, name: true, slug: true, visibility: true, isArchived: true },
@@ -165,7 +165,7 @@ export const getPost = publicProcedure
           where: { deletedAt: null },
           include: {
             author: {
-              select: { id: true, name: true },
+              select: { id: true, name: true, deletedAt: true },
             },
           },
           orderBy: { createdAt: 'asc' },
@@ -422,7 +422,7 @@ export const updatePost = publicProcedure
       data: updateData,
       include: {
         author: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, deletedAt: true },
         },
         category: {
           select: { id: true, name: true, slug: true },

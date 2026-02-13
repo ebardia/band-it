@@ -185,7 +185,7 @@ export async function getQuickActionsForUser(
       include: {
         message: {
           include: {
-            author: { select: { id: true, name: true } },
+            author: { select: { id: true, name: true, deletedAt: true } },
             channel: {
               select: {
                 id: true,
