@@ -3,7 +3,7 @@ import { bandBillingService } from '../server/services/band-billing.service'
 import { notificationService } from '../services/notification.service'
 import { prisma } from '../lib/prisma'
 import { emailService } from '../server/services/email.service'
-import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
+import { MIN_MEMBERS_TO_ACTIVATE, REQUIRE_PAYMENT_TO_ACTIVATE } from '@band-it/shared'
 
 /**
  * Initialize all billing-related cron jobs
@@ -46,6 +46,12 @@ export function initBillingCron() {
  * Check and deactivate bands past grace period
  */
 async function checkGracePeriods() {
+  // Skip if billing is disabled (test mode)
+  if (!REQUIRE_PAYMENT_TO_ACTIVATE) {
+    console.log('[CRON] Skipping grace period check - billing disabled (test mode)')
+    return
+  }
+
   try {
     const deactivatedBandIds = await bandBillingService.checkGracePeriods()
 
@@ -93,6 +99,12 @@ async function checkGracePeriods() {
  * (have active subscription but no billing owner)
  */
 async function checkBillingOwnerNeeded() {
+  // Skip if billing is disabled (test mode)
+  if (!REQUIRE_PAYMENT_TO_ACTIVATE) {
+    console.log('[CRON] Skipping billing owner check - billing disabled (test mode)')
+    return
+  }
+
   try {
     const bandsNeedingOwner = await prisma.band.findMany({
       where: {
@@ -141,6 +153,12 @@ async function checkBillingOwnerNeeded() {
  * These bands will be deactivated at the end of their billing cycle
  */
 async function checkLowMemberCount() {
+  // Skip if billing is disabled (test mode)
+  if (!REQUIRE_PAYMENT_TO_ACTIVATE) {
+    console.log('[CRON] Skipping low member count check - billing disabled (test mode)')
+    return
+  }
+
   try {
     const bandsWithSubscription = await prisma.band.findMany({
       where: {
