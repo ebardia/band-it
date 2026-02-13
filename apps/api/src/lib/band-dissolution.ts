@@ -31,6 +31,10 @@ export async function checkDissolutionEligibility(
         where: { status: 'ACTIVE' },
         select: { userId: true, role: true },
       },
+      subBands: {
+        where: { dissolvedAt: null },
+        select: { name: true },
+      },
     },
   })
 
@@ -40,6 +44,16 @@ export async function checkDissolutionEligibility(
 
   if (band.dissolvedAt) {
     return { canDissolve: false, method: null, reason: 'Band is already dissolved' }
+  }
+
+  // Block Big Band dissolution if active sub-bands exist
+  if (band.subBands.length > 0) {
+    const subBandNames = band.subBands.map(sb => sb.name).join(', ')
+    return {
+      canDissolve: false,
+      method: null,
+      reason: `Cannot dissolve a Big Band with active sub-bands. Please dissolve these sub-bands first: ${subBandNames}`,
+    }
   }
 
   const memberCount = band.members.length

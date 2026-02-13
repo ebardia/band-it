@@ -164,11 +164,17 @@ export const adminRouter = router({
             status: true,
             billingStatus: true,
             createdAt: true,
+            parentBandId: true,
             _count: {
               select: {
                 members: true,
                 proposals: true,
                 projects: true,
+                subBands: {
+                  where: {
+                    dissolvedAt: null,
+                  },
+                },
               },
             },
           },
@@ -1452,5 +1458,151 @@ export const adminRouter = router({
       })
 
       return { items }
+    }),
+
+  // ============================================
+  // BIG BAND MANAGEMENT
+  // ============================================
+
+  /**
+   * Search users for founder selection when creating a Big Band
+   */
+  searchUsersForFounder: publicProcedure
+    .input(
+      z.object({
+        adminUserId: z.string(),
+        search: z.string().min(2, 'Search term must be at least 2 characters'),
+      })
+    )
+    .query(async ({ input }) => {
+      await requireAdmin(input.adminUserId)
+
+      const users = await prisma.user.findMany({
+        where: {
+          OR: [
+            { name: { contains: input.search, mode: 'insensitive' } },
+            { email: { contains: input.search, mode: 'insensitive' } },
+          ],
+          // Exclude banned or deleted users
+          bannedAt: null,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          emailVerified: true,
+        },
+        orderBy: { name: 'asc' },
+        take: 10,
+      })
+
+      return { users }
+    }),
+
+  /**
+   * Create a Big Band with an assigned founder
+   */
+  createBigBand: publicProcedure
+    .input(
+      z.object({
+        adminUserId: z.string(),
+        founderId: z.string(),
+        name: z.string().min(2, 'Band name must be at least 2 characters'),
+        description: z.string().min(10, 'Description must be at least 10 characters'),
+        mission: z.string().min(10, 'Mission must be at least 10 characters'),
+        values: z.string().min(1, 'Please enter at least one value'),
+        membershipRequirements: z.string().min(10, 'Please describe membership requirements'),
+        zipcode: z.string().length(5).optional(),
+        imageUrl: z.string().url().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.adminUserId)
+
+      // Verify founder exists and is not banned
+      const founder = await prisma.user.findUnique({
+        where: { id: input.founderId },
+        select: { id: true, name: true, bannedAt: true, deletedAt: true },
+      })
+
+      if (!founder) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Founder user not found',
+        })
+      }
+
+      if (founder.bannedAt || founder.deletedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot assign a banned or deleted user as founder',
+        })
+      }
+
+      // Generate unique slug
+      let baseSlug = input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      let slug = baseSlug
+      let counter = 1
+
+      while (await prisma.band.findUnique({ where: { slug } })) {
+        slug = `${baseSlug}-${counter}`
+        counter++
+      }
+
+      // Convert comma-separated values to array
+      const valuesArray = input.values.split(',').map(v => v.trim()).filter(Boolean)
+
+      // Create the Big Band
+      const band = await prisma.band.create({
+        data: {
+          name: input.name,
+          slug,
+          description: input.description,
+          mission: input.mission,
+          values: valuesArray,
+          skillsLookingFor: [],
+          whatMembersWillLearn: [],
+          membershipRequirements: input.membershipRequirements,
+          whoCanApprove: ['FOUNDER', 'GOVERNOR'],
+          whoCanCreateProposals: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'],
+          zipcode: input.zipcode || null,
+          imageUrl: input.imageUrl || null,
+          createdById: input.founderId,
+          parentBandId: null, // Big Band has no parent
+          status: 'ACTIVE', // Big Bands start active immediately
+          activatedAt: new Date(),
+        },
+      })
+
+      // Add founder as ACTIVE member with FOUNDER role
+      await prisma.member.create({
+        data: {
+          userId: input.founderId,
+          bandId: band.id,
+          role: 'FOUNDER',
+          status: 'ACTIVE',
+        },
+      })
+
+      // Create audit log
+      await prisma.auditLog.create({
+        data: {
+          bandId: band.id,
+          action: 'created',
+          entityType: 'Band',
+          entityId: band.id,
+          entityName: band.name,
+          actorId: input.adminUserId,
+          actorType: 'user',
+          changes: {
+            type: 'big_band',
+            founderId: input.founderId,
+            founderName: founder.name,
+          },
+        },
+      })
+
+      return { band }
     }),
 })

@@ -145,7 +145,10 @@ export default function BrowseBandsPage() {
                     <Card key={band.id} hover>
                       <Stack spacing="md">
                         <Flex justify="between" align="center">
-                          <Heading level={2}>{band.name}</Heading>
+                          <Flex gap="sm" align="center">
+                            <Heading level={2}>{band.name}</Heading>
+                            {band._count?.subBands > 0 && <Badge variant="info">Big Band</Badge>}
+                          </Flex>
                           {getStatusBadge(band.status)}
                         </Flex>
                         <Text color="muted" className="line-clamp-3">{band.description}</Text>
@@ -153,9 +156,16 @@ export default function BrowseBandsPage() {
                           <Text variant="small">
                             Founded by: <Text variant="small" weight="semibold">{band.createdBy.name}</Text>
                           </Text>
-                          <Text variant="small">
-                            Members: <Text variant="small" weight="semibold">{band._count?.members || 0}</Text>
-                          </Text>
+                          <Flex gap="md">
+                            {band._count?.subBands > 0 && (
+                              <Text variant="small">
+                                Sub-bands: <Text variant="small" weight="semibold">{band._count.subBands}</Text>
+                              </Text>
+                            )}
+                            <Text variant="small">
+                              Members: <Text variant="small" weight="semibold">{band._count?.members || 0}</Text>
+                            </Text>
+                          </Flex>
                         </Flex>
                         <Flex gap="sm">
                           <Button

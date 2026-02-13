@@ -339,6 +339,85 @@ export default function BandAboutPage() {
               )}
             </Stack>
           </Card>
+
+          {/* Parent Band Card - For Sub-bands */}
+          {band.parentBand && (
+            <Card>
+              <Stack spacing="sm">
+                <Text weight="semibold">Part of Big Band</Text>
+                <Flex
+                  justify="between"
+                  align="center"
+                  className="p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100"
+                  onClick={() => router.push(`/bands/${band.parentBand!.slug}`)}
+                >
+                  <Stack spacing="xs">
+                    <Text weight="semibold">{band.parentBand.name}</Text>
+                    <Text variant="small" color="muted">Click to view Big Band</Text>
+                  </Stack>
+                  <Badge variant="info">Big Band</Badge>
+                </Flex>
+              </Stack>
+            </Card>
+          )}
+
+          {/* Sub-bands Card - For Big Bands */}
+          {band.subBands && band.subBands.length > 0 && (
+            <Card>
+              <Stack spacing="md">
+                <Flex justify="between" align="center">
+                  <Text weight="semibold">Sub-bands ({band.subBands.length})</Text>
+                  {currentMember && ['FOUNDER', 'GOVERNOR'].includes(currentMember.role) && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => router.push(`/bands/create?parentBandId=${band.id}&parentBandName=${encodeURIComponent(band.name)}`)}
+                    >
+                      Create Sub-band
+                    </Button>
+                  )}
+                </Flex>
+                <Stack spacing="xs">
+                  {band.subBands.map((subBand: any) => (
+                    <Flex
+                      key={subBand.id}
+                      justify="between"
+                      align="center"
+                      className="py-2 px-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
+                      onClick={() => router.push(`/bands/${subBand.slug}`)}
+                    >
+                      <Stack spacing="xs">
+                        <Text weight="semibold">{subBand.name}</Text>
+                        <Text variant="small" color="muted">
+                          {subBand._count?.members || 0} member{subBand._count?.members !== 1 ? 's' : ''}
+                        </Text>
+                      </Stack>
+                      {getStatusBadge(subBand.status)}
+                    </Flex>
+                  ))}
+                </Stack>
+              </Stack>
+            </Card>
+          )}
+
+          {/* Create Sub-band Button - For Big Bands without sub-bands yet */}
+          {!band.parentBandId && band.subBands?.length === 0 && currentMember && ['FOUNDER', 'GOVERNOR'].includes(currentMember.role) && (
+            <Card>
+              <Flex justify="between" align="center">
+                <Stack spacing="xs">
+                  <Text weight="semibold">Sub-bands</Text>
+                  <Text variant="small" color="muted">No sub-bands created yet</Text>
+                </Stack>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => router.push(`/bands/create?parentBandId=${band.id}&parentBandName=${encodeURIComponent(band.name)}`)}
+                >
+                  Create Sub-band
+                </Button>
+              </Flex>
+            </Card>
+          )}
         </Stack>
 
         <Modal isOpen={showLeaveModal} onClose={() => setShowLeaveModal(false)}>

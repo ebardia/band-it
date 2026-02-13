@@ -122,7 +122,13 @@ export default function MyBandsPage() {
                     <Card key={band.id} hover onClick={() => router.push(`/bands/${band.slug}`)}>
                       <Stack spacing="md">
                         <Flex justify="between" align="center">
-                          <Heading level={2}>{band.name}</Heading>
+                          <Flex gap="sm" align="center">
+                            {band.isSubBand && band.parentBand && (
+                              <Text color="muted">{band.parentBand.name} &gt;</Text>
+                            )}
+                            <Heading level={2}>{band.name}</Heading>
+                            {band.isBigBand && <Badge variant="info">Big Band</Badge>}
+                          </Flex>
                           {getStatusBadge(band.status)}
                         </Flex>
                         <Text color="muted" className="line-clamp-3">{band.description}</Text>
@@ -130,9 +136,16 @@ export default function MyBandsPage() {
                           <Text variant="small">
                             Role: <Text variant="small" weight="semibold">{band.myRole.replace('_', ' ')}</Text>
                           </Text>
-                          <Text variant="small">
-                            Members: <Text variant="small" weight="semibold">{band._count?.members || 0}</Text>
-                          </Text>
+                          <Flex gap="md">
+                            {band.isBigBand && (
+                              <Text variant="small">
+                                Sub-bands: <Text variant="small" weight="semibold">{band._count?.subBands || 0}</Text>
+                              </Text>
+                            )}
+                            <Text variant="small">
+                              Members: <Text variant="small" weight="semibold">{band._count?.members || 0}</Text>
+                            </Text>
+                          </Flex>
                         </Flex>
                       </Stack>
                     </Card>

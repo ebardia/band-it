@@ -118,6 +118,13 @@ export default function AdminBandsPage() {
               className="flex-1"
             />
             <Button
+              variant="primary"
+              size="sm"
+              onClick={() => router.push('/admin/bands/create-big-band')}
+            >
+              Create Big Band
+            </Button>
+            <Button
               variant="secondary"
               size="sm"
               onClick={() => router.push('/admin/archived-bands')}
@@ -143,12 +150,20 @@ export default function AdminBandsPage() {
                       <Stack spacing="xs">
                         <Flex gap="sm" align="center">
                           <Text weight="semibold">{band.name}</Text>
+                          {band._count?.subBands > 0 && (
+                            <Badge variant="info">Big Band</Badge>
+                          )}
+                          {band.parentBandId && (
+                            <Badge variant="neutral">Sub-band</Badge>
+                          )}
                           {getStatusBadge(band.status)}
                           {getBillingBadge(band.billingStatus)}
                         </Flex>
                         <Text variant="small" color="muted">/{band.slug}</Text>
                         <Text variant="small" color="muted">
-                          {band._count.members} member{band._count.members !== 1 ? 's' : ''} · {band._count.proposals} proposal{band._count.proposals !== 1 ? 's' : ''} · {band._count.projects} project{band._count.projects !== 1 ? 's' : ''} · Created {new Date(band.createdAt).toLocaleDateString()}
+                          {band._count.members} member{band._count.members !== 1 ? 's' : ''} · {band._count.proposals} proposal{band._count.proposals !== 1 ? 's' : ''} · {band._count.projects} project{band._count.projects !== 1 ? 's' : ''}
+                          {band._count?.subBands > 0 && ` · ${band._count.subBands} sub-band${band._count.subBands !== 1 ? 's' : ''}`}
+                          {' '}· Created {new Date(band.createdAt).toLocaleDateString()}
                         </Text>
                       </Stack>
                       <Flex gap="sm">

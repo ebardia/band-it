@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { TRPCError } from '@trpc/server'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { createDefaultChannel } from '../channel'
@@ -34,9 +35,57 @@ export const bandCreateRouter = router({
           (val) => (val === '' ? undefined : val),
           z.string().url('Must be a valid URL').optional()
         ),
+        // Big Band - parent band ID for creating sub-bands
+        parentBandId: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
+      // If creating a sub-band, validate parent band
+      if (input.parentBandId) {
+        const parentBand = await prisma.band.findUnique({
+          where: { id: input.parentBandId },
+          include: {
+            members: {
+              where: {
+                userId: input.userId,
+                status: 'ACTIVE',
+              },
+            },
+          },
+        })
+
+        if (!parentBand) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Parent band not found',
+          })
+        }
+
+        if (parentBand.dissolvedAt) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Cannot create sub-band under a dissolved band',
+          })
+        }
+
+        // Prevent nesting - parent cannot itself be a sub-band
+        if (parentBand.parentBandId) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Cannot create nested sub-bands. Parent band is already a sub-band.',
+          })
+        }
+
+        // Check if user is FOUNDER or GOVERNOR of parent band
+        const membership = parentBand.members[0]
+        if (!membership || !['FOUNDER', 'GOVERNOR'].includes(membership.role)) {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'Only Founders and Governors of the Big Band can create sub-bands',
+          })
+        }
+      }
+
       // Convert comma-separated strings to arrays
       const valuesArray = input.values.split(',').map(v => v.trim()).filter(Boolean)
       const skillsArray = input.skillsLookingFor.split(',').map(s => s.trim()).filter(Boolean)
@@ -74,6 +123,7 @@ export const bandCreateRouter = router({
           zipcode: input.zipcode,
           imageUrl: input.imageUrl,
           createdById: input.userId,
+          parentBandId: input.parentBandId || null,
           status: 'PENDING', // Starts as pending (only 1 member)
         },
       })
@@ -97,7 +147,12 @@ export const bandCreateRouter = router({
       // Track band creation event
       await analyticsService.trackEvent('band_created', {
         userId: input.userId,
-        metadata: { bandId: band.id, bandName: band.name },
+        metadata: {
+          bandId: band.id,
+          bandName: band.name,
+          isSubBand: !!input.parentBandId,
+          parentBandId: input.parentBandId || null,
+        },
       })
 
       return {

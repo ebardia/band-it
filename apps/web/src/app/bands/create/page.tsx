@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import { MIN_MEMBERS_TO_ACTIVATE, REQUIRE_PAYMENT_TO_ACTIVATE } from '@band-it/shared'
@@ -25,8 +25,12 @@ import Image from 'next/image'
 
 export default function CreateBandPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { showToast } = useToast()
   const [userId, setUserId] = useState<string | null>(null)
+  const parentBandId = searchParams.get('parentBandId')
+  const parentBandName = searchParams.get('parentBandName')
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -129,6 +133,7 @@ export default function CreateBandPage() {
       ...formData,
       whoCanApprove: whoCanApprove as any,
       whoCanCreateProposals: whoCanCreateProposals as any,
+      parentBandId: parentBandId || undefined,
     })
   }
 
@@ -177,10 +182,14 @@ export default function CreateBandPage() {
       <DashboardContainer>
         <div className="max-w-3xl mx-auto">
           <Stack spacing="xl">
-            <Heading level={1}>Create a New Band</Heading>
-            <Text variant="muted">Fill out the information below to create your band. You'll be the founder!</Text>
+            <Heading level={1}>{parentBandId ? 'Create a Sub-band' : 'Create a New Band'}</Heading>
+            <Text variant="muted">
+              {parentBandId
+                ? 'Fill out the information below to create your sub-band. You\'ll be the founder!'
+                : 'Fill out the information below to create your band. You\'ll be the founder!'}
+            </Text>
 
-            {(MIN_MEMBERS_TO_ACTIVATE > 1 || REQUIRE_PAYMENT_TO_ACTIVATE) && (
+            {(MIN_MEMBERS_TO_ACTIVATE > 1 || REQUIRE_PAYMENT_TO_ACTIVATE) && !parentBandId && (
               <Alert variant="info">
                 <Text variant="small">
                   {REQUIRE_PAYMENT_TO_ACTIVATE
@@ -188,6 +197,20 @@ export default function CreateBandPage() {
                     : `Your band will start in PENDING status. Once you have ${MIN_MEMBERS_TO_ACTIVATE} active member${MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'}, it will automatically become ACTIVE.`
                   }
                 </Text>
+              </Alert>
+            )}
+
+            {parentBandId && (
+              <Alert variant="info">
+                <Stack spacing="xs">
+                  <Text variant="small" weight="semibold">Creating a Sub-band</Text>
+                  <Text variant="small">
+                    {parentBandName
+                      ? `This band will be created as a sub-band under "${parentBandName}".`
+                      : 'This band will be created as a sub-band under the selected Big Band.'
+                    }
+                  </Text>
+                </Stack>
               </Alert>
             )}
 

@@ -513,6 +513,11 @@ model Band {
   dissolutionMethod DissolutionMethod? // How the band was dissolved
   dissolutionReason String? @db.Text   // Required reason for dissolution
 
+  // Big Band Relations
+  parentBandId    String?
+  parentBand      Band?    @relation("BigBandSubBands", fields: [parentBandId], references: [id])
+  subBands        Band[]   @relation("BigBandSubBands")
+
   // Billing
   billingOwnerId        String?
   stripeCustomerId      String?   @unique
@@ -573,6 +578,7 @@ model Band {
   @@index([status])
   @@index([billingOwnerId])
   @@index([billingStatus])
+  @@index([parentBandId])
 }
 
 enum BandStatus {

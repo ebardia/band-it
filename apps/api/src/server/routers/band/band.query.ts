@@ -27,6 +27,7 @@ export const bandQueryRouter = router({
     const bands = await prisma.band.findMany({
       where: {
         dissolvedAt: null, // Exclude dissolved bands
+        parentBandId: null, // Exclude sub-bands from browse
         ...(excludeBandIds.length > 0 && { id: { notIn: excludeBandIds } }),
       },
       include: {
@@ -41,6 +42,11 @@ export const bandQueryRouter = router({
             members: {
               where: {
                 status: 'ACTIVE',
+              },
+            },
+            subBands: {
+              where: {
+                dissolvedAt: null,
               },
             },
           },
@@ -78,11 +84,23 @@ export const bandQueryRouter = router({
         include: {
           band: {
             include: {
+              parentBand: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
               _count: {
                 select: {
                   members: {
                     where: {
                       status: 'ACTIVE',
+                    },
+                  },
+                  subBands: {
+                    where: {
+                      dissolvedAt: null,
                     },
                   },
                 },
@@ -100,6 +118,8 @@ export const bandQueryRouter = router({
         bands: memberships.map((m) => ({
           ...m.band,
           myRole: m.role,
+          isBigBand: m.band._count.subBands > 0,
+          isSubBand: !!m.band.parentBandId,
         })),
       }
     }),
@@ -147,6 +167,37 @@ export const bandQueryRouter = router({
             },
           },
           financeSettings: true,
+          // Big Band relations
+          parentBand: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          subBands: {
+            where: {
+              dissolvedAt: null,
+            },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              status: true,
+              _count: {
+                select: {
+                  members: {
+                    where: {
+                      status: 'ACTIVE',
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              name: 'asc',
+            },
+          },
         },
       })
 
