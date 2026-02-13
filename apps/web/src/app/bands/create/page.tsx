@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
@@ -19,11 +19,20 @@ import {
   DashboardContainer,
   Flex,
   Box,
-  FileUpload
+  FileUpload,
+  Loading
 } from '@/components/ui'
 import Image from 'next/image'
 
 export default function CreateBandPage() {
+  return (
+    <Suspense fallback={<PageWrapper variant="dashboard"><Loading message="Loading..." /></PageWrapper>}>
+      <CreateBandContent />
+    </Suspense>
+  )
+}
+
+function CreateBandContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { showToast } = useToast()
