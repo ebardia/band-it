@@ -147,7 +147,7 @@ export default function BrowseBandsPage() {
                         <Flex justify="between" align="center">
                           <Flex gap="sm" align="center">
                             <Heading level={2}>{band.name}</Heading>
-                            {band._count?.subBands > 0 && <Badge variant="info">Big Band</Badge>}
+                            {band.isBigBand && <Badge variant="info">Big Band</Badge>}
                           </Flex>
                           {getStatusBadge(band.status)}
                         </Flex>
@@ -157,9 +157,9 @@ export default function BrowseBandsPage() {
                             Founded by: <Text variant="small" weight="semibold">{band.createdBy.name}</Text>
                           </Text>
                           <Flex gap="md">
-                            {band._count?.subBands > 0 && (
+                            {band.isBigBand && (
                               <Text variant="small">
-                                Sub-bands: <Text variant="small" weight="semibold">{band._count.subBands}</Text>
+                                Bands: <Text variant="small" weight="semibold">{band._count?.subBands || 0}</Text>
                               </Text>
                             )}
                             <Text variant="small">

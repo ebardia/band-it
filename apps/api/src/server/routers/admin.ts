@@ -166,6 +166,7 @@ export const adminRouter = router({
             billingStatus: true,
             createdAt: true,
             parentBandId: true,
+            isBigBand: true,
             _count: {
               select: {
                 members: true,

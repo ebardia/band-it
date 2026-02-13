@@ -150,7 +150,7 @@ export default function AdminBandsPage() {
                       <Stack spacing="xs">
                         <Flex gap="sm" align="center">
                           <Text weight="semibold">{band.name}</Text>
-                          {band._count?.subBands > 0 && (
+                          {band.isBigBand && (
                             <Badge variant="info">Big Band</Badge>
                           )}
                           {band.parentBandId && (
@@ -162,7 +162,7 @@ export default function AdminBandsPage() {
                         <Text variant="small" color="muted">/{band.slug}</Text>
                         <Text variant="small" color="muted">
                           {band._count.members} member{band._count.members !== 1 ? 's' : ''} · {band._count.proposals} proposal{band._count.proposals !== 1 ? 's' : ''} · {band._count.projects} project{band._count.projects !== 1 ? 's' : ''}
-                          {band._count?.subBands > 0 && ` · ${band._count.subBands} sub-band${band._count.subBands !== 1 ? 's' : ''}`}
+                          {band.isBigBand && ` · ${band._count.subBands || 0} band${band._count.subBands !== 1 ? 's' : ''}`}
                           {' '}· Created {new Date(band.createdAt).toLocaleDateString()}
                         </Text>
                       </Stack>

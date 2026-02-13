@@ -118,7 +118,6 @@ export const bandQueryRouter = router({
         bands: memberships.map((m) => ({
           ...m.band,
           myRole: m.role,
-          isBigBand: m.band._count.subBands > 0,
           isSubBand: !!m.band.parentBandId,
         })),
       }

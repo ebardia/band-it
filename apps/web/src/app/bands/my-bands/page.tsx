@@ -139,7 +139,7 @@ export default function MyBandsPage() {
                           <Flex gap="md">
                             {band.isBigBand && (
                               <Text variant="small">
-                                Sub-bands: <Text variant="small" weight="semibold">{band._count?.subBands || 0}</Text>
+                                Bands: <Text variant="small" weight="semibold">{band._count?.subBands || 0}</Text>
                               </Text>
                             )}
                             <Text variant="small">
