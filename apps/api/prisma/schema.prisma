@@ -1152,6 +1152,7 @@ enum ProposalType {
   POLICY
   MEMBERSHIP
   DISSOLUTION
+  ADD_FOUNDER
 }
 
 // What happens when a proposal is approved

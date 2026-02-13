@@ -99,14 +99,13 @@ export default function ProfilePage() {
             <form onSubmit={handleSubmit}>
               <Stack spacing="lg">
                 <Input
-                  label="Zipcode"
+                  label="Postal Code"
                   type="text"
                   required
                   value={formData.zipcode}
                   onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
-                  placeholder="12345"
-                  maxLength={5}
-                  pattern="[0-9]{5}"
+                  placeholder="e.g. 12345, SW1A 1AA"
+                  maxLength={10}
                 />
 
                 <Textarea

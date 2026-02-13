@@ -171,7 +171,7 @@ export const authRouter = router({
     .input(
       z.object({
         userId: z.string(),
-        zipcode: z.string().length(5, 'Zipcode must be 5 digits'),
+        zipcode: z.string().min(3, 'Postal code must be at least 3 characters').max(10, 'Postal code must be at most 10 characters'),
         strengths: z.string().min(1, 'Please enter at least one strength'),
         weaknesses: z.string().min(1, 'Please enter at least one area for improvement'),
         passions: z.string().min(1, 'Please enter at least one passion'),

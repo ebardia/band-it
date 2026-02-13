@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../services/notification.service'
 import { emailService } from '../services/email.service'
 import { clearModerationCache } from '../../services/content-moderation.service'
+import { createDefaultChannel } from './channel'
 
 // Helper to check if user is admin
 async function requireAdmin(userId: string) {
@@ -1513,7 +1514,7 @@ export const adminRouter = router({
         mission: z.string().min(10, 'Mission must be at least 10 characters'),
         values: z.string().min(1, 'Please enter at least one value'),
         membershipRequirements: z.string().min(10, 'Please describe membership requirements'),
-        zipcode: z.string().length(5).optional(),
+        zipcode: z.string().min(3).max(10).optional(),
         imageUrl: z.string().url().optional(),
       })
     )
@@ -1584,6 +1585,9 @@ export const adminRouter = router({
           status: 'ACTIVE',
         },
       })
+
+      // Create the default General channel for discussions
+      await createDefaultChannel(band.id, input.founderId)
 
       // Create audit log
       await prisma.auditLog.create({

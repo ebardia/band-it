@@ -51,8 +51,10 @@ export default function MemberActionsPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [showRoleModal, setShowRoleModal] = useState(false)
   const [showRemoveModal, setShowRemoveModal] = useState(false)
+  const [showNominateModal, setShowNominateModal] = useState(false)
   const [newRole, setNewRole] = useState<string>('')
   const [removalReason, setRemovalReason] = useState('')
+  const [nominationReason, setNominationReason] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -108,6 +110,18 @@ export default function MemberActionsPage() {
     }
   })
 
+  const nominateFounderMutation = trpc.band.nominateAsFounder.useMutation({
+    onSuccess: (data: { proposalId: string }) => {
+      showToast('Founder nomination proposal created!', 'success')
+      setShowNominateModal(false)
+      setNominationReason('')
+      router.push(`/bands/${slug}/proposals/${data.proposalId}`)
+    },
+    onError: (error: { message: string }) => {
+      showToast(error.message, 'error')
+    }
+  })
+
   const handleChangeRole = () => {
     if (!profileData?.member || !newRole || !userId || !bandData?.band) return
     changeRoleMutation.mutate({
@@ -124,6 +138,16 @@ export default function MemberActionsPage() {
       bandId: bandData.band.id,
       memberId: profileData.member.id,
       reason: removalReason,
+      userId,
+    })
+  }
+
+  const handleNominateAsFounder = () => {
+    if (!profileData?.member || !nominationReason || !userId || !bandData?.band) return
+    nominateFounderMutation.mutate({
+      bandId: bandData.band.id,
+      targetMemberId: profileData.member.id,
+      reason: nominationReason,
       userId,
     })
   }
@@ -181,6 +205,9 @@ export default function MemberActionsPage() {
   const canApprove = currentMember && band.whoCanApprove.includes(currentMember.role)
   const canChangeRoles = currentMember && whoCanChangeRoles.includes(currentMember.role)
   const canCreateProposals = currentMember && band.whoCanCreateProposals.includes(currentMember.role)
+  const canNominateAsFounder = currentMember?.role === 'FOUNDER' &&
+    member.role !== 'FOUNDER' &&
+    member.userId !== userId
 
   // Check if user has any management permissions
   const canManage = canChangeRoles || canCreateProposals
@@ -298,12 +325,34 @@ export default function MemberActionsPage() {
                   </Card>
                 )}
 
+                {/* Nominate as Founder */}
+                {canNominateAsFounder && (
+                  <Card className="border-purple-100 bg-purple-50">
+                    <Flex justify="between" align="center">
+                      <Stack spacing="xs">
+                        <Text weight="semibold" className="text-purple-800">Nominate as Co-Founder</Text>
+                        <Text variant="small" className="text-purple-600">
+                          Propose this member to become a co-founder. Requires unanimous approval from all current founders.
+                        </Text>
+                      </Stack>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setShowNominateModal(true)}
+                        className="bg-purple-600 text-white hover:bg-purple-700"
+                      >
+                        Nominate
+                      </Button>
+                    </Flex>
+                  </Card>
+                )}
+
                 {/* Future Actions Placeholder */}
                 <Card className="bg-gray-50 border-dashed border-2 border-gray-200">
                   <Stack spacing="xs">
                     <Text weight="semibold" className="text-gray-400">Coming Soon</Text>
                     <Text variant="small" className="text-gray-400">
-                      Additional actions like issuing warnings, creating development plans, 
+                      Additional actions like issuing warnings, creating development plans,
                       and adding private notes will be available here.
                     </Text>
                   </Stack>
@@ -406,7 +455,7 @@ export default function MemberActionsPage() {
       <Modal isOpen={showRemoveModal} onClose={() => setShowRemoveModal(false)}>
         <Stack spacing="lg">
           <Heading level={2}>Propose Member Removal</Heading>
-          
+
           <Stack spacing="md">
             <Alert variant="warning">
               <Text variant="small" weight="semibold">This will create a proposal</Text>
@@ -446,6 +495,61 @@ export default function MemberActionsPage() {
                 disabled={proposeRemovalMutation.isPending || removalReason.length < 10}
               >
                 {proposeRemovalMutation.isPending ? 'Creating Proposal...' : 'Create Removal Proposal'}
+              </Button>
+            </Flex>
+          </Stack>
+        </Stack>
+      </Modal>
+
+      {/* Nominate as Founder Modal */}
+      <Modal isOpen={showNominateModal} onClose={() => setShowNominateModal(false)}>
+        <Stack spacing="lg">
+          <Heading level={2}>Nominate as Co-Founder</Heading>
+
+          <Stack spacing="md">
+            <Alert variant="info">
+              <Text variant="small" weight="semibold">Unanimous Approval Required</Text>
+              <Text variant="small">
+                Founder nominations require unanimous YES votes from ALL current founders.
+                Any single NO vote will reject the nomination.
+              </Text>
+            </Alert>
+
+            <Text>
+              Nominate <strong>{member.user.name}</strong> to become a co-founder of this band.
+            </Text>
+
+            <Stack spacing="xs">
+              <Text variant="small" weight="semibold">Reason for Nomination *</Text>
+              <textarea
+                value={nominationReason}
+                onChange={(e) => setNominationReason(e.target.value)}
+                placeholder="Explain why this member should become a co-founder..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                rows={4}
+              />
+              <Text variant="small" className="text-gray-500">
+                Minimum 10 characters required
+              </Text>
+            </Stack>
+
+            <Flex gap="md" justify="end">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowNominateModal(false)
+                  setNominationReason('')
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleNominateAsFounder}
+                disabled={nominateFounderMutation.isPending || nominationReason.length < 10}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {nominateFounderMutation.isPending ? 'Creating Proposal...' : 'Create Nomination Proposal'}
               </Button>
             </Flex>
           </Stack>

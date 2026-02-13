@@ -243,12 +243,12 @@ export default function CreateBigBandPage() {
 
                 <Flex gap="md">
                   <Input
-                    label="Zipcode (Optional)"
+                    label="Postal Code (Optional)"
                     type="text"
                     value={formData.zipcode}
                     onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
-                    placeholder="12345"
-                    maxLength={5}
+                    placeholder="e.g. 12345, SW1A 1AA"
+                    maxLength={10}
                   />
                   <Input
                     label="Image URL (Optional)"

@@ -21,7 +21,7 @@ export const bandUpdateRouter = router({
         membershipRequirements: z.string().min(10, 'Please describe membership requirements').optional(),
         zipcode: z.preprocess(
           (val) => (val === '' ? undefined : val),
-          z.string().length(5, 'Zipcode must be 5 digits').optional()
+          z.string().min(3, 'Postal code must be at least 3 characters').max(10, 'Postal code must be at most 10 characters').optional()
         ),
         imageUrl: z.preprocess(
           (val) => (val === '' ? undefined : val),

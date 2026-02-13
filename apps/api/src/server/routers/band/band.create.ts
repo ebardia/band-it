@@ -29,7 +29,7 @@ export const bandCreateRouter = router({
         whoCanCreateProposals: z.array(z.enum(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'])).default(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']),
         zipcode: z.preprocess(
           (val) => (val === '' ? undefined : val),
-          z.string().length(5, 'Zipcode must be 5 digits').optional()
+          z.string().min(3, 'Postal code must be at least 3 characters').max(10, 'Postal code must be at most 10 characters').optional()
         ),
         imageUrl: z.preprocess(
           (val) => (val === '' ? undefined : val),

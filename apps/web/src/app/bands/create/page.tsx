@@ -390,13 +390,12 @@ function CreateBandContent() {
                 </div>
 
                 <Input
-                  label="Zipcode (Optional)"
+                  label="Postal Code (Optional)"
                   type="text"
                   value={formData.zipcode}
                   onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
-                  placeholder="12345"
-                  maxLength={5}
-                  pattern="[0-9]{5}"
+                  placeholder="e.g. 12345, SW1A 1AA"
+                  maxLength={10}
                   helperText="Leave blank if your band covers a large area"
                 />
 

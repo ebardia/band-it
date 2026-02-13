@@ -14,7 +14,7 @@ export const proposalQueryRouter = router({
       z.object({
         bandId: z.string(),
         status: z.enum(['DRAFT', 'PENDING_REVIEW', 'OPEN', 'CLOSED', 'APPROVED', 'REJECTED', 'WITHDRAWN']).optional(),
-        type: z.enum(['GENERAL', 'BUDGET', 'PROJECT', 'POLICY', 'MEMBERSHIP']).optional(),
+        type: z.enum(['GENERAL', 'BUDGET', 'PROJECT', 'POLICY', 'MEMBERSHIP', 'DISSOLUTION', 'ADD_FOUNDER']).optional(),
       })
     )
     .query(async ({ input }) => {

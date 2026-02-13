@@ -59,12 +59,24 @@ export const proposalVoteRouter = router({
         throw new Error('Your role does not have permission to vote')
       }
 
+      // ADD_FOUNDER: only founders can vote
+      if (proposal.type === 'ADD_FOUNDER') {
+        if (membership.role !== 'FOUNDER') {
+          throw new Error('Only founders can vote on founder nomination proposals')
+        }
+      }
+
       // Check dues standing
       await requireGoodStanding(proposal.bandId, input.userId)
 
       // Dissolution proposals don't allow abstain
       if (proposal.type === 'DISSOLUTION' && input.vote === 'ABSTAIN') {
         throw new Error('Abstaining is not allowed on dissolution proposals. You must vote YES or NO.')
+      }
+
+      // ADD_FOUNDER proposals don't allow abstain
+      if (proposal.type === 'ADD_FOUNDER' && input.vote === 'ABSTAIN') {
+        throw new Error('Abstaining is not allowed on founder nomination proposals. You must vote YES or NO.')
       }
 
       // Check if already voted
@@ -206,6 +218,28 @@ export const proposalVoteRouter = router({
           // All voters said YES
           approved = true
         }
+      } else if (proposal.type === 'ADD_FOUNDER') {
+        // ADD_FOUNDER: Requires unanimous YES from all founders who voted
+        // Get all active founders
+        const founders = await prisma.member.findMany({
+          where: { bandId: proposal.bandId, status: 'ACTIVE', role: 'FOUNDER' }
+        })
+
+        const founderVotes = proposal.votes.filter(v =>
+          founders.some(f => f.userId === v.userId)
+        )
+        const founderNoVotes = founderVotes.filter(v => v.vote === 'NO').length
+
+        if (founderVotes.length === 0) {
+          approved = false
+          rejectionReason = 'No founders voted'
+        } else if (founderNoVotes > 0) {
+          approved = false
+          rejectionReason = `Founder nomination requires unanimous YES votes. ${founderNoVotes} founder(s) voted NO.`
+        } else {
+          // All founder voters said YES
+          approved = true
+        }
       } else if (!quorumMet) {
         // Quorum not met - proposal fails
         approved = false
@@ -258,6 +292,43 @@ export const proposalVoteRouter = router({
             executionResult = {
               success: false,
               error: error instanceof Error ? error.message : 'Failed to execute dissolution',
+            }
+          }
+        } else if (proposal.type === 'ADD_FOUNDER') {
+          // Execute the role change directly
+          try {
+            const effects = proposal.effects as any[]
+            const effect = effects?.[0]
+            const targetMemberId = effect?.payload?.targetMemberId
+            const targetUserId = effect?.payload?.targetUserId
+
+            if (targetMemberId && targetUserId) {
+              await prisma.member.update({
+                where: { id: targetMemberId },
+                data: { role: 'FOUNDER' }
+              })
+
+              // Notify new founder
+              await notificationService.create({
+                userId: targetUserId,
+                type: 'BAND_STATUS_CHANGED',
+                title: 'You are now a Co-Founder!',
+                message: `The founders unanimously approved your nomination in ${proposal.band.name}. You now have full founder privileges.`,
+                actionUrl: `/bands/${proposal.band.slug}`,
+                priority: 'HIGH',
+              })
+
+              executionResult = { success: true }
+            } else {
+              executionResult = {
+                success: false,
+                error: 'Missing target member information in proposal effects',
+              }
+            }
+          } catch (error) {
+            executionResult = {
+              success: false,
+              error: error instanceof Error ? error.message : 'Failed to promote member to founder',
             }
           }
         } else {

@@ -38,6 +38,7 @@ const TYPE_LABELS: Record<string, string> = {
   POLICY: 'Policy',
   MEMBERSHIP: 'Membership',
   DISSOLUTION: 'Dissolution',
+  ADD_FOUNDER: 'Founder Nomination',
 }
 
 const PRIORITY_VARIANTS: Record<string, string> = {
@@ -47,7 +48,7 @@ const PRIORITY_VARIANTS: Record<string, string> = {
   URGENT: 'danger',
 }
 
-type ProposalType = 'GENERAL' | 'BUDGET' | 'PROJECT' | 'POLICY' | 'MEMBERSHIP' | 'DISSOLUTION'
+type ProposalType = 'GENERAL' | 'BUDGET' | 'PROJECT' | 'POLICY' | 'MEMBERSHIP' | 'DISSOLUTION' | 'ADD_FOUNDER'
 type ProposalPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 
 export default function ProposalDetailPage() {
@@ -501,7 +502,7 @@ export default function ProposalDetailPage() {
           )}
 
           {/* Compact Voting Section */}
-          {isOpen && canVote && !votingEnded && (
+          {isOpen && (proposal.type === 'ADD_FOUNDER' ? currentMember?.role === 'FOUNDER' && canVote : canVote) && !votingEnded && (
             <div className="border border-gray-200 rounded-lg bg-white p-3 space-y-2">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <span className="text-sm font-medium text-gray-700">
@@ -530,7 +531,7 @@ export default function ProposalDetailPage() {
                   >
                     👎 No
                   </button>
-                  {proposal.type !== 'DISSOLUTION' && (
+                  {proposal.type !== 'DISSOLUTION' && proposal.type !== 'ADD_FOUNDER' && (
                     <button
                       onClick={() => handleVote('ABSTAIN')}
                       disabled={voteMutation.isPending}
@@ -550,6 +551,11 @@ export default function ProposalDetailPage() {
                   ⚠️ Dissolution requires unanimous approval. Any NO vote will fail.
                 </div>
               )}
+              {proposal.type === 'ADD_FOUNDER' && (
+                <div className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                  👥 Only founders can vote. Requires unanimous YES from all founders.
+                </div>
+              )}
               <input
                 type="text"
                 value={comment}
@@ -566,9 +572,15 @@ export default function ProposalDetailPage() {
             </Alert>
           )}
 
-          {isOpen && !canVote && isMember && (
+          {isOpen && !canVote && isMember && proposal.type !== 'ADD_FOUNDER' && (
             <Alert variant="info">
               <Text>Your role does not have voting permissions.</Text>
+            </Alert>
+          )}
+
+          {isOpen && isMember && proposal.type === 'ADD_FOUNDER' && currentMember?.role !== 'FOUNDER' && (
+            <Alert variant="info">
+              <Text>Only founders can vote on founder nomination proposals.</Text>
             </Alert>
           )}
 

@@ -534,3 +534,162 @@ export const transferOwnership = publicProcedure
       newFounderName: newFounder.user.name,
     }
   })
+
+/**
+ * Nominate an active member to become a co-founder
+ * - Only FOUNDERS can nominate
+ * - Target must be an active member, not self, not already a founder
+ * - Creates an ADD_FOUNDER proposal requiring unanimous approval from all founders
+ */
+export const nominateAsFounder = publicProcedure
+  .input(z.object({
+    bandId: z.string(),
+    targetMemberId: z.string(),
+    userId: z.string(),
+    reason: z.string().min(10, 'Please provide a reason for the nomination'),
+  }))
+  .mutation(async ({ input }) => {
+    const { bandId, targetMemberId, userId, reason } = input
+
+    // Get the band with members
+    const band = await prisma.band.findUnique({
+      where: { id: bandId },
+      include: {
+        members: {
+          where: { status: 'ACTIVE' },
+          include: { user: { select: { id: true, name: true } } }
+        }
+      }
+    })
+
+    if (!band) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Band not found'
+      })
+    }
+
+    // Verify the acting user is a FOUNDER
+    const actingMember = band.members.find(m => m.userId === userId)
+    if (!actingMember || actingMember.role !== 'FOUNDER') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'Only founders can nominate new co-founders'
+      })
+    }
+
+    // Find the target member
+    const targetMember = band.members.find(m => m.id === targetMemberId)
+    if (!targetMember) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Target member not found or not active'
+      })
+    }
+
+    // Cannot nominate yourself
+    if (targetMember.userId === userId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'You cannot nominate yourself as a co-founder'
+      })
+    }
+
+    // Cannot nominate someone who is already a founder
+    if (targetMember.role === 'FOUNDER') {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'This member is already a founder'
+      })
+    }
+
+    // Check for existing pending ADD_FOUNDER proposal for this member
+    const existingProposal = await prisma.proposal.findFirst({
+      where: {
+        bandId,
+        type: 'ADD_FOUNDER',
+        status: 'OPEN',
+        effects: {
+          path: ['0', 'payload', 'targetMemberId'],
+          equals: targetMemberId
+        }
+      }
+    })
+
+    if (existingProposal) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'There is already a pending founder nomination for this member'
+      })
+    }
+
+    // Calculate voting end date
+    const votingEndsAt = new Date()
+    votingEndsAt.setDate(votingEndsAt.getDate() + band.votingPeriodDays)
+
+    // Determine initial status based on band settings
+    const initialStatus = band.requireProposalReview ? 'PENDING_REVIEW' : 'OPEN'
+
+    // Create the proposal
+    const proposal = await prisma.proposal.create({
+      data: {
+        bandId,
+        createdById: userId,
+        title: `Nominate ${targetMember.user.name} as Co-Founder`,
+        description: `This proposal nominates ${targetMember.user.name} to become a co-founder of ${band.name}.\n\n**Reason for nomination:**\n${reason}\n\n**Important:** This nomination requires unanimous YES votes from ALL current founders to pass. Any NO vote will reject the nomination.`,
+        type: 'ADD_FOUNDER',
+        executionType: 'GOVERNANCE',
+        priority: 'HIGH',
+        problemStatement: reason,
+        expectedOutcome: `${targetMember.user.name} will become a co-founder with full founder privileges.`,
+        status: initialStatus,
+        votingEndsAt: initialStatus === 'OPEN' ? votingEndsAt : null,
+        votingStartedAt: initialStatus === 'OPEN' ? new Date() : null,
+        effects: [{
+          type: 'PROMOTE_TO_FOUNDER',
+          payload: {
+            targetMemberId: targetMember.id,
+            targetUserId: targetMember.userId,
+            targetUserName: targetMember.user.name,
+          }
+        }],
+      }
+    })
+
+    // Get all founders to notify
+    const founders = band.members.filter(m => m.role === 'FOUNDER')
+
+    // Notify other founders
+    for (const founder of founders) {
+      if (founder.userId !== userId) {
+        await notificationService.create({
+          userId: founder.userId,
+          type: 'PROPOSAL_VOTE_NEEDED',
+          title: 'Founder Nomination Vote',
+          message: `${actingMember.user.name} has nominated ${targetMember.user.name} to become a co-founder. Your vote is required.`,
+          relatedId: proposal.id,
+          relatedType: 'proposal',
+          actionUrl: `/bands/${band.slug}/proposals/${proposal.id}`,
+          priority: 'HIGH',
+        })
+      }
+    }
+
+    // Notify the nominee
+    await notificationService.create({
+      userId: targetMember.userId,
+      type: 'PROPOSAL_CREATED',
+      title: 'You Have Been Nominated',
+      message: `${actingMember.user.name} has nominated you to become a co-founder of ${band.name}. The founders will vote on this nomination.`,
+      relatedId: proposal.id,
+      relatedType: 'proposal',
+      actionUrl: `/bands/${band.slug}/proposals/${proposal.id}`,
+      priority: 'HIGH',
+    })
+
+    return {
+      success: true,
+      proposalId: proposal.id,
+      message: `Founder nomination proposal created for ${targetMember.user.name}`,
+    }
+  })
