@@ -10,11 +10,16 @@ const STATUS_GROUPS = {
   past: ['CLOSED', 'REJECTED', 'WITHDRAWN'],
 } as const
 
+// Proposal types that don't have follow-up work after approval
+const INSTANT_COMPLETION_TYPES = ['DISSOLUTION', 'ADD_FOUNDER']
+
 type ProposalStatus = 'DRAFT' | 'PENDING_REVIEW' | 'OPEN' | 'CLOSED' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN'
 
-function getStatusGroup(status: ProposalStatus): keyof typeof STATUS_GROUPS {
+function getStatusGroup(status: ProposalStatus, type?: string): keyof typeof STATUS_GROUPS {
   if (STATUS_GROUPS.drafts.includes(status as any)) return 'drafts'
   if (STATUS_GROUPS.voting.includes(status as any)) return 'voting'
+  // DISSOLUTION and ADD_FOUNDER go straight to 'past' when approved (no follow-up work)
+  if (status === 'APPROVED' && type && INSTANT_COMPLETION_TYPES.includes(type)) return 'past'
   if (STATUS_GROUPS.inProgress.includes(status as any)) return 'inProgress'
   return 'past'
 }
@@ -97,10 +102,10 @@ export const proposalHierarchyRouter = router({
 
       // Group by status
       const grouped = {
-        drafts: proposalsWithCounts.filter(p => getStatusGroup(p.status as ProposalStatus) === 'drafts'),
-        voting: proposalsWithCounts.filter(p => getStatusGroup(p.status as ProposalStatus) === 'voting'),
-        inProgress: proposalsWithCounts.filter(p => getStatusGroup(p.status as ProposalStatus) === 'inProgress'),
-        past: proposalsWithCounts.filter(p => getStatusGroup(p.status as ProposalStatus) === 'past'),
+        drafts: proposalsWithCounts.filter(p => getStatusGroup(p.status as ProposalStatus, p.type) === 'drafts'),
+        voting: proposalsWithCounts.filter(p => getStatusGroup(p.status as ProposalStatus, p.type) === 'voting'),
+        inProgress: proposalsWithCounts.filter(p => getStatusGroup(p.status as ProposalStatus, p.type) === 'inProgress'),
+        past: proposalsWithCounts.filter(p => getStatusGroup(p.status as ProposalStatus, p.type) === 'past'),
       }
 
       return {
