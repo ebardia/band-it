@@ -362,11 +362,11 @@ export default function BandAboutPage() {
           )}
 
           {/* Bands Card - For Big Bands */}
-          {band.subBands && band.subBands.length > 0 && (
+          {band.isBigBand && (
             <Card>
               <Stack spacing="md">
                 <Flex justify="between" align="center">
-                  <Text weight="semibold">Bands ({band.subBands.length})</Text>
+                  <Text weight="semibold">Bands {band.subBands && band.subBands.length > 0 ? `(${band.subBands.length})` : ''}</Text>
                   {currentMember && ['FOUNDER', 'GOVERNOR'].includes(currentMember.role) && (
                     <Button
                       variant="primary"
@@ -377,26 +377,49 @@ export default function BandAboutPage() {
                     </Button>
                   )}
                 </Flex>
-                <Stack spacing="xs">
-                  {band.subBands.map((subBand: any) => (
-                    <Flex
-                      key={subBand.id}
-                      justify="between"
-                      align="center"
-                      className="py-2 px-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
-                      onClick={() => router.push(`/bands/${subBand.slug}`)}
-                    >
-                      <Stack spacing="xs">
-                        <Text weight="semibold">{subBand.name}</Text>
-                        <Text variant="small" color="muted">
-                          {subBand._count?.members || 0} member{subBand._count?.members !== 1 ? 's' : ''}
-                        </Text>
-                      </Stack>
-                      {getStatusBadge(subBand.status)}
-                    </Flex>
-                  ))}
-                </Stack>
+                {band.subBands && band.subBands.length > 0 ? (
+                  <Stack spacing="xs">
+                    {band.subBands.map((subBand: any) => (
+                      <Flex
+                        key={subBand.id}
+                        justify="between"
+                        align="center"
+                        className="py-2 px-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
+                        onClick={() => router.push(`/bands/${subBand.slug}`)}
+                      >
+                        <Stack spacing="xs">
+                          <Text weight="semibold">{subBand.name}</Text>
+                          <Text variant="small" color="muted">
+                            {subBand._count?.members || 0} member{subBand._count?.members !== 1 ? 's' : ''}
+                          </Text>
+                        </Stack>
+                        {getStatusBadge(subBand.status)}
+                      </Flex>
+                    ))}
+                  </Stack>
+                ) : (
+                  <Text variant="small" color="muted">No bands created yet</Text>
+                )}
               </Stack>
+            </Card>
+          )}
+
+          {/* Edit Band Settings - For Founders/Governors */}
+          {currentMember && ['FOUNDER', 'GOVERNOR'].includes(currentMember.role) && (
+            <Card>
+              <Flex justify="between" align="center">
+                <Stack spacing="xs">
+                  <Text weight="semibold">Band Settings</Text>
+                  <Text variant="small" color="muted">Edit band details, governance, and more</Text>
+                </Stack>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => router.push(`/bands/${band.slug}/settings`)}
+                >
+                  Edit Settings
+                </Button>
+              </Flex>
             </Card>
           )}
 

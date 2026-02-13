@@ -517,6 +517,7 @@ model Band {
   parentBandId    String?
   parentBand      Band?    @relation("BigBandSubBands", fields: [parentBandId], references: [id])
   subBands        Band[]   @relation("BigBandSubBands")
+  isBigBand       Boolean  @default(false)  // Explicitly marks this as a Big Band that can have sub-bands
 
   // Billing
   billingOwnerId        String?

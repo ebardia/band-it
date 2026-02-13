@@ -1571,6 +1571,7 @@ export const adminRouter = router({
           imageUrl: input.imageUrl || null,
           createdById: input.founderId,
           parentBandId: null, // Big Band has no parent
+          isBigBand: true,   // Explicitly mark as Big Band
           status: 'ACTIVE', // Big Bands start active immediately
           activatedAt: new Date(),
         },
