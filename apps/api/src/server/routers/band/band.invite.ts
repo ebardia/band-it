@@ -266,24 +266,25 @@ export const bandInviteRouter = router({
         data: { status: 'ACTIVE' },
       })
 
-      // Notify inviter
+      // Notify inviter - link to new member's profile
       if (inviter) {
         await notificationService.create({
           userId: inviter.id,
           type: 'BAND_INVITE_ACCEPTED',
-          actionUrl: `/bands/${membership.band.slug}`,
+          actionUrl: `/bands/${membership.band.slug}/members/${membership.id}/actions`,
           priority: 'MEDIUM',
           metadata: {
             userName: membership.user.name,
             bandName: membership.band.name,
             bandSlug: membership.band.slug,
+            memberId: membership.id,
           },
           relatedId: membership.bandId,
           relatedType: 'BAND',
         })
       }
 
-      // Notify all band members
+      // Notify all band members - link to new member's profile
       const allMembers = await prisma.member.findMany({
         where: {
           bandId: membership.bandId,
@@ -297,12 +298,13 @@ export const bandInviteRouter = router({
         await notificationService.create({
           userId: member.userId,
           type: 'BAND_MEMBER_JOINED',
-          actionUrl: `/bands/${membership.band.slug}/members`,
+          actionUrl: `/bands/${membership.band.slug}/members/${membership.id}/actions`,
           priority: 'LOW',
           metadata: {
             userName: membership.user.name,
             bandName: membership.band.name,
             bandSlug: membership.band.slug,
+            memberId: membership.id,
           },
           relatedId: membership.bandId,
           relatedType: 'BAND',
