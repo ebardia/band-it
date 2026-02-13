@@ -9,7 +9,7 @@ import { bandDissolveRouter } from './band.dissolve'
 import { bandGovernanceRouter } from './band.governance'
 import { bandUpdateRouter } from './band.update'
 import { bandAIInstructionRouter } from './band.aiInstruction'
-import { getMembers, getMemberProfile, changeRole, proposeRemoval, transferOwnership } from './band.members'
+import { getMembers, getMemberProfile, changeRole, proposeRemoval, transferOwnership, nominateAsFounder } from './band.members'
 
 export const bandRouter = router({
   // Create
@@ -48,6 +48,7 @@ export const bandRouter = router({
   changeRole: changeRole,
   proposeRemoval: proposeRemoval,
   transferOwnership: transferOwnership,
+  nominateAsFounder: nominateAsFounder,
 
   // Billing
   getBillingInfo: bandBillingRouter.getBillingInfo,

@@ -335,14 +335,12 @@ export default function MemberActionsPage() {
                           Propose this member to become a co-founder. Requires unanimous approval from all current founders.
                         </Text>
                       </Stack>
-                      <Button
-                        variant="secondary"
-                        size="sm"
+                      <button
                         onClick={() => setShowNominateModal(true)}
-                        className="bg-purple-600 text-white hover:bg-purple-700"
+                        className="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                       >
                         Nominate
-                      </Button>
+                      </button>
                     </Flex>
                   </Card>
                 )}
@@ -543,14 +541,13 @@ export default function MemberActionsPage() {
               >
                 Cancel
               </Button>
-              <Button
-                variant="primary"
+              <button
                 onClick={handleNominateAsFounder}
                 disabled={nominateFounderMutation.isPending || nominationReason.length < 10}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {nominateFounderMutation.isPending ? 'Creating Proposal...' : 'Create Nomination Proposal'}
-              </Button>
+              </button>
             </Flex>
           </Stack>
         </Stack>
