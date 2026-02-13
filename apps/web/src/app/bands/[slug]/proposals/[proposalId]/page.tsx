@@ -625,13 +625,15 @@ export default function ProposalDetailPage() {
             </div>
           )}
 
-          {/* Projects Section - Only shows for approved proposals */}
-          <ProposalProjectsHierarchy
-            proposalId={proposalId}
-            proposalStatus={proposal.status}
-            bandSlug={slug}
-            canCreateProject={!!canCreateProject}
-          />
+          {/* Projects Section - Only shows for approved proposals (not for DISSOLUTION or ADD_FOUNDER) */}
+          {proposal.type !== 'DISSOLUTION' && proposal.type !== 'ADD_FOUNDER' && (
+            <ProposalProjectsHierarchy
+              proposalId={proposalId}
+              proposalStatus={proposal.status}
+              bandSlug={slug}
+              canCreateProject={!!canCreateProject}
+            />
+          )}
 
           {/* Compact Vote List */}
           {proposal.votes.length > 0 && (
