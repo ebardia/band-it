@@ -10,7 +10,6 @@ import {
   Stack,
   Button,
   Flex,
-  Card,
   Badge,
   Loading,
   Alert,
@@ -166,73 +165,62 @@ export default function BandTasksPage() {
         bandId={bandData?.band?.id}
         userId={userId || undefined}
       >
-        <Stack spacing="xl">
+        <Stack spacing="md">
           {/* Summary Stats */}
-          <Flex gap="md" className="flex-wrap">
-            <Card className="flex-1 min-w-[100px]">
-              <Stack spacing="xs">
-                <Text variant="small" color="muted">To Do</Text>
-                <Heading level={2}>{statusCounts.TODO}</Heading>
-              </Stack>
-            </Card>
-            <Card className="flex-1 min-w-[100px]">
-              <Stack spacing="xs">
-                <Text variant="small" color="muted">In Progress</Text>
-                <Heading level={2}>{statusCounts.IN_PROGRESS}</Heading>
-              </Stack>
-            </Card>
-            <Card className="flex-1 min-w-[100px]">
-              <Stack spacing="xs">
-                <Text variant="small" color="muted">In Review</Text>
-                <Heading level={2}>{statusCounts.IN_REVIEW}</Heading>
-              </Stack>
-            </Card>
-            <Card className="flex-1 min-w-[100px]">
-              <Stack spacing="xs">
-                <Text variant="small" color="muted">Completed</Text>
-                <Heading level={2}>{statusCounts.COMPLETED}</Heading>
-              </Stack>
-            </Card>
-          </Flex>
+          <div className="flex gap-2 md:gap-4 flex-wrap">
+            <div className="flex-1 min-w-[70px] bg-white border border-gray-200 rounded-lg p-3 text-center">
+              <Text variant="small" color="muted">To Do</Text>
+              <div className="text-xl font-bold">{statusCounts.TODO}</div>
+            </div>
+            <div className="flex-1 min-w-[70px] bg-white border border-gray-200 rounded-lg p-3 text-center">
+              <Text variant="small" color="muted">In Progress</Text>
+              <div className="text-xl font-bold">{statusCounts.IN_PROGRESS}</div>
+            </div>
+            <div className="flex-1 min-w-[70px] bg-white border border-gray-200 rounded-lg p-3 text-center">
+              <Text variant="small" color="muted">In Review</Text>
+              <div className="text-xl font-bold">{statusCounts.IN_REVIEW}</div>
+            </div>
+            <div className="flex-1 min-w-[70px] bg-white border border-gray-200 rounded-lg p-3 text-center">
+              <Text variant="small" color="muted">Completed</Text>
+              <div className="text-xl font-bold">{statusCounts.COMPLETED}</div>
+            </div>
+          </div>
 
           {/* My Tasks Quick View */}
           {myTasks.length > 0 && (
-            <Card>
-              <Stack spacing="md">
-                <Heading level={3}>My Tasks ({myTasks.length})</Heading>
-                <Stack spacing="sm">
-                  {myTasks.slice(0, 3).map((task: any) => (
-                    <div 
-                      key={task.id}
-                      className="p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100"
-                      onClick={() => router.push(`/bands/${slug}/tasks/${task.id}`)}
-                    >
-                      <Flex justify="between" align="center">
-                        <Stack spacing="xs">
-                          <Text weight="semibold">{task.name}</Text>
-                          <Text variant="small" color="muted">
-                            {task.project.name}
-                          </Text>
-                        </Stack>
-                        <Flex gap="sm">
-                          {getStatusBadge(task.status)}
-                          {getPriorityBadge(task.priority)}
-                        </Flex>
-                      </Flex>
+            <div className="border border-blue-200 rounded-lg bg-blue-50 overflow-hidden">
+              <div className="px-3 py-2 border-b border-blue-200 bg-blue-100">
+                <Text weight="semibold">My Tasks ({myTasks.length})</Text>
+              </div>
+              {myTasks.slice(0, 3).map((task: any) => (
+                <div
+                  key={task.id}
+                  className="flex items-center py-2 px-3 border-b border-blue-100 last:border-b-0 cursor-pointer hover:bg-blue-100"
+                  onClick={() => router.push(`/bands/${slug}/tasks/${task.id}`)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Text weight="semibold" className="truncate">{task.name}</Text>
+                      {getStatusBadge(task.status)}
+                      {getPriorityBadge(task.priority)}
                     </div>
-                  ))}
-                  {myTasks.length > 3 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setAssigneeFilter(userId!)}
-                    >
-                      View all {myTasks.length} tasks →
-                    </Button>
-                  )}
-                </Stack>
-              </Stack>
-            </Card>
+                    <Text variant="small" color="muted">{task.project.name}</Text>
+                  </div>
+                  <span className="text-gray-400 ml-2">→</span>
+                </div>
+              ))}
+              {myTasks.length > 3 && (
+                <div className="px-3 py-2 bg-blue-100">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAssigneeFilter(userId!)}
+                  >
+                    View all {myTasks.length} tasks →
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
 
           {/* Filters */}
@@ -277,69 +265,62 @@ export default function BandTasksPage() {
 
           {/* Tasks List */}
           {tasks.length > 0 ? (
-            <Stack spacing="md">
+            <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
               {tasks.map((task: any) => (
-                <Card 
+                <div
                   key={task.id}
-                  hover
+                  className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer"
                   onClick={() => router.push(`/bands/${slug}/tasks/${task.id}`)}
                 >
-                  <Flex justify="between" align="start">
-                    <Stack spacing="sm">
-                      <Flex gap="sm" align="center">
-                        <Heading level={3}>{task.name}</Heading>
-                      </Flex>
-                      <Text variant="small" color="muted">
-                        Project: {task.project.name}
-                      </Text>
-                      <Flex gap="sm" className="flex-wrap">
+                  <div className="flex items-center py-3 px-3 md:px-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Text weight="semibold" className="truncate">{task.name}</Text>
                         {getStatusBadge(task.status)}
                         {getPriorityBadge(task.priority)}
+                        {!task.assignee && <Badge variant="warning">Unassigned</Badge>}
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-gray-500 mt-1 flex-wrap">
+                        <span>{task.project.name}</span>
                         {task.assignee && (
-                          <Badge variant="neutral">
-                            Assigned: {task.assignee.name}
-                          </Badge>
+                          <>
+                            <span>•</span>
+                            <span>{task.assignee.name}</span>
+                          </>
                         )}
-                        {!task.assignee && (
-                          <Badge variant="warning">Unassigned</Badge>
-                        )}
-                      </Flex>
-                      <Flex gap="md" className="flex-wrap">
                         {task.dueDate && (
-                          <Text variant="small" color="muted">
-                            Due: {new Date(task.dueDate).toLocaleDateString()}
-                          </Text>
+                          <>
+                            <span>•</span>
+                            <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
+                          </>
                         )}
                         {task.estimatedHours && (
-                          <Text variant="small" color="muted">
-                            Est: {task.estimatedHours}h
-                          </Text>
+                          <>
+                            <span>•</span>
+                            <span>{task.estimatedHours}h</span>
+                          </>
                         )}
-                      </Flex>
-                    </Stack>
-                    <Button variant="secondary" size="sm">
-                      View →
-                    </Button>
-                  </Flex>
-                </Card>
+                      </div>
+                    </div>
+                    <span className="text-gray-400 ml-2">→</span>
+                  </div>
+                </div>
               ))}
-            </Stack>
+            </div>
           ) : (
-            <Alert variant="info">
-              <Stack spacing="sm">
-                <Text>No tasks found.</Text>
-                <Text variant="small" color="muted">
-                  Tasks are created within projects. Go to a project to create tasks.
-                </Text>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => router.push(`/bands/${slug}/projects`)}
-                >
-                  View Projects
-                </Button>
-              </Stack>
-            </Alert>
+            <div className="border border-gray-200 rounded-lg bg-white p-6 text-center">
+              <Text color="muted" className="mb-2">No tasks found.</Text>
+              <Text variant="small" color="muted" className="mb-4">
+                Tasks are created within projects. Go to a project to create tasks.
+              </Text>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => router.push(`/bands/${slug}/projects`)}
+              >
+                View Projects
+              </Button>
+            </div>
           )}
         </Stack>
       </BandLayout>
