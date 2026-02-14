@@ -16,7 +16,7 @@ interface PinnedMessagesHeaderProps {
   bandId: string
   channelId: string
   userId: string | null
-  onMessageClick: (messageId: string) => void
+  onMessageClick?: (messageId: string) => void
 }
 
 export function PinnedMessagesHeader({ bandId, channelId, userId, onMessageClick }: PinnedMessagesHeaderProps) {
@@ -60,10 +60,9 @@ export function PinnedMessagesHeader({ bandId, channelId, userId, onMessageClick
       {isExpanded && (
         <div className="px-4 pb-3 space-y-2">
           {pinnedMessages.map((msg: PinnedMessage) => (
-            <button
+            <div
               key={msg.id}
-              onClick={() => onMessageClick(msg.id)}
-              className="w-full text-left p-2 rounded bg-white hover:bg-gray-50 border border-gray-200 transition-colors"
+              className="w-full text-left p-2 rounded bg-white border border-gray-200"
             >
               <Flex justify="between" align="start" className="mb-1">
                 <Text variant="small" weight="semibold">{msg.authorName}</Text>
@@ -72,7 +71,7 @@ export function PinnedMessagesHeader({ bandId, channelId, userId, onMessageClick
               <Text variant="small" className="line-clamp-2">
                 {msg.content}
               </Text>
-            </button>
+            </div>
           ))}
         </div>
       )}

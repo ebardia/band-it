@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { trpc } from '@/lib/trpc'
 import { Stack, Flex, Text, Button, Badge, Loading, Textarea, useToast } from '@/components/ui'
 import { ReactionBar } from './ReactionBar'
+import { MessageComposer } from './MessageComposer'
 
 // Helper to highlight @mentions in content
 function highlightMentions(content: string): React.ReactNode[] {
@@ -41,10 +42,9 @@ interface MessageListProps {
   channelId: string
   userId: string | null
   userRole?: string
-  onOpenThread: (messageId: string) => void
 }
 
-export function MessageList({ bandId, channelId, userId, userRole, onOpenThread }: MessageListProps) {
+export function MessageList({ bandId, channelId, userId, userRole }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const utils = trpc.useUtils()
 
@@ -133,10 +133,10 @@ export function MessageList({ bandId, channelId, userId, userRole, onOpenThread 
           <MessageItem
             key={message.id}
             bandId={bandId}
+            channelId={channelId}
             message={message}
             userId={userId}
             userRole={userRole}
-            onOpenThread={() => onOpenThread(message.id)}
           />
         ))}
       </Stack>
@@ -155,6 +155,7 @@ interface Reaction {
 
 interface MessageItemProps {
   bandId: string
+  channelId: string
   message: {
     id: string
     content: string
@@ -168,14 +169,104 @@ interface MessageItemProps {
   }
   userId: string | null
   userRole?: string
-  onOpenThread: () => void
 }
 
-function MessageItem({ bandId, message, userId, userRole, onOpenThread }: MessageItemProps) {
+interface InlineReplyProps {
+  reply: {
+    id: string
+    content: string
+    author: { id: string; name: string }
+    createdAt: string
+    isEdited: boolean
+    reactions?: Reaction[]
+  }
+  userId: string | null
+  userRole?: string
+  bandId: string
+}
+
+function InlineReply({ reply, userId, userRole, bandId }: InlineReplyProps) {
+  const utils = trpc.useUtils()
+  const isAuthor = reply.author.id === userId
+  const canModerate = userRole && ['FOUNDER', 'GOVERNOR', 'MODERATOR'].includes(userRole)
+  const canDelete = isAuthor || canModerate
+
+  const deleteMutation = trpc.message.delete.useMutation({
+    onSuccess: () => {
+      utils.message.getThread.invalidate()
+      utils.message.list.invalidate()
+    },
+  })
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  return (
+    <div className="py-1">
+      <Flex gap="sm" align="start">
+        <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+          <Text variant="small" className="text-xs">
+            {reply.author.name.charAt(0).toUpperCase()}
+          </Text>
+        </div>
+        <div className="flex-1 min-w-0">
+          <Flex gap="sm" align="center">
+            <Text variant="small" weight="semibold">{reply.author.name}</Text>
+            <Text variant="small" color="muted">{formatTime(reply.createdAt)}</Text>
+            {reply.isEdited && <Text variant="small" color="muted">(edited)</Text>}
+          </Flex>
+          <Text variant="small" className="whitespace-pre-wrap break-words">
+            {highlightMentions(reply.content)}
+          </Text>
+          <Flex gap="sm" align="center" className="mt-1">
+            <ReactionBar
+              messageId={reply.id}
+              userId={userId}
+              reactions={reply.reactions || []}
+              compact
+            />
+            {canDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (confirm('Delete this reply?')) {
+                    deleteMutation.mutate({ messageId: reply.id, userId: userId! })
+                  }
+                }}
+                className="text-red-600 text-xs"
+              >
+                Delete
+              </Button>
+            )}
+          </Flex>
+        </div>
+      </Flex>
+    </div>
+  )
+}
+
+function MessageItem({ bandId, channelId, message, userId, userRole }: MessageItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState(message.content)
+  const [isExpanded, setIsExpanded] = useState(false)
   const utils = trpc.useUtils()
   const { showToast } = useToast()
+
+  // Fetch thread data when expanded
+  const { data: threadData, refetch: refetchThread } = trpc.message.getThread.useQuery(
+    { messageId: message.id, userId: userId || '', limit: 100 },
+    { enabled: isExpanded && !!userId }
+  )
+
+  // Poll for new replies when expanded
+  useEffect(() => {
+    if (!isExpanded) return
+    const interval = setInterval(() => refetchThread(), 5000)
+    return () => clearInterval(interval)
+  }, [isExpanded, refetchThread])
 
   const pinMutation = trpc.message.pin.useMutation({
     onSuccess: () => utils.message.list.invalidate(),
@@ -317,8 +408,9 @@ function MessageItem({ bandId, message, userId, userRole, onOpenThread }: Messag
                 userId={userId}
                 reactions={message.reactions || []}
               />
-              <Button variant="ghost" size="sm" onClick={onOpenThread}>
+              <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
                 💬 {message.replyCount > 0 ? `${message.replyCount} replies` : 'Reply'}
+                {isExpanded ? ' ▲' : ''}
               </Button>
               {canEdit && (
                 <Button variant="ghost" size="sm" onClick={handleStartEdit}>
@@ -336,6 +428,41 @@ function MessageItem({ bandId, message, userId, userRole, onOpenThread }: Messag
                 </Button>
               )}
             </Flex>
+          )}
+
+          {/* Inline Thread Expansion */}
+          {isExpanded && (
+            <div className="mt-2 ml-6 pl-4 border-l-2 border-gray-200">
+              {/* Replies */}
+              <Stack spacing="xs">
+                {threadData?.replies?.length === 0 ? (
+                  <Text variant="small" color="muted" className="py-2">
+                    No replies yet
+                  </Text>
+                ) : (
+                  threadData?.replies?.map((reply) => (
+                    <InlineReply
+                      key={reply.id}
+                      reply={reply}
+                      userId={userId}
+                      userRole={userRole}
+                      bandId={bandId}
+                    />
+                  ))
+                )}
+              </Stack>
+
+              {/* Compact Reply Composer */}
+              <div className="mt-2">
+                <MessageComposer
+                  channelId={channelId}
+                  userId={userId}
+                  threadId={message.id}
+                  placeholder="Reply..."
+                  onMessageSent={() => refetchThread()}
+                />
+              </div>
+            </div>
           )}
         </div>
       </Flex>

@@ -22,7 +22,6 @@ import {
   ChannelList,
   MessageList,
   MessageComposer,
-  ThreadView,
   CreateChannelModal,
   ChannelSettingsModal,
   PinnedMessagesHeader,
@@ -37,7 +36,6 @@ export default function BandDiscussionsPage() {
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
-  const [openThreadId, setOpenThreadId] = useState<string | null>(null)
   const [showCreateChannel, setShowCreateChannel] = useState(false)
   const [showChannelSettings, setShowChannelSettings] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
@@ -307,7 +305,6 @@ export default function BandDiscussionsPage() {
                     onClick={() => {
                       setSelectedChannelId(channel.id)
                       setShowMobileChannels(false)
-                      setOpenThreadId(null)
                     }}
                     className={`w-full flex items-center gap-2 px-4 py-2 text-left text-sm ${
                       channel.id === selectedChannelId ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
@@ -419,10 +416,7 @@ export default function BandDiscussionsPage() {
                       bandId={band.id}
                       userId={userId}
                       selectedChannelId={selectedChannelId}
-                      onSelectChannel={(id) => {
-                        setSelectedChannelId(id)
-                        setOpenThreadId(null)
-                      }}
+                      onSelectChannel={(id) => setSelectedChannelId(id)}
                       onCreateChannel={() => setShowCreateChannel(true)}
                       userRole={userRole}
                     />
@@ -437,7 +431,6 @@ export default function BandDiscussionsPage() {
                           bandId={band.id}
                           channelId={selectedChannelId}
                           userId={userId}
-                          onMessageClick={setOpenThreadId}
                         />
                         {/* Message Composer - at top for mobile accessibility */}
                         {!selectedChannel?.isArchived && (
@@ -456,7 +449,6 @@ export default function BandDiscussionsPage() {
                           channelId={selectedChannelId}
                           userId={userId}
                           userRole={userRole}
-                          onOpenThread={setOpenThreadId}
                         />
                       </>
                     ) : selectedChannel && !selectedChannel.hasAccess ? (
@@ -473,20 +465,6 @@ export default function BandDiscussionsPage() {
                       </div>
                     )}
                   </div>
-
-                  {/* Thread Panel - Hidden on mobile */}
-                  {openThreadId && selectedChannelId && (
-                    <div className="hidden lg:block flex-shrink-0">
-                      <ThreadView
-                        messageId={openThreadId}
-                        channelId={selectedChannelId}
-                        bandId={band.id}
-                        userId={userId}
-                        userRole={userRole}
-                        onClose={() => setOpenThreadId(null)}
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
             </Flex>
@@ -544,9 +522,8 @@ export default function BandDiscussionsPage() {
           bandId={band.id}
           userId={userId}
           channels={channelsData?.channels || []}
-          onResultClick={(channelId, messageId) => {
+          onResultClick={(channelId) => {
             setSelectedChannelId(channelId)
-            setOpenThreadId(messageId)
           }}
         />
       )}
