@@ -396,8 +396,8 @@ export default function BandDiscussionsPage() {
           )}
 
           {/* Main Content */}
-          <div className="flex-1 pb-4">
-            <Flex gap="md" align="stretch" className="flex-col md:flex-row h-full">
+          <div className="flex-1 pb-4 min-h-0">
+            <div className="flex flex-col md:flex-row gap-4 h-full">
               {/* Left Sidebar - Band Navigation (hidden on mobile) */}
               <BandSidebar
                 bandSlug={slug}
@@ -467,7 +467,7 @@ export default function BandDiscussionsPage() {
                   </div>
                 </div>
               </div>
-            </Flex>
+            </div>
           </div>
         </div>
       </div>
