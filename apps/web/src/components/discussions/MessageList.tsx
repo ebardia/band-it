@@ -322,7 +322,7 @@ function MessageItem({ bandId, message, userId, userRole, onOpenThread }: Messag
 
           {/* Actions - only show when not editing */}
           {!isEditing && (
-            <Flex gap="sm" className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Flex gap="sm" className="mt-2">
               <Button variant="ghost" size="sm" onClick={onOpenThread}>
                 💬 {message.replyCount > 0 ? `${message.replyCount} replies` : 'Reply'}
               </Button>

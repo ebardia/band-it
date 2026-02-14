@@ -245,9 +245,9 @@ function ThreadMessage({ bandId, message, userId, userRole, isParent }: ThreadMe
               variant="ghost"
               size="sm"
               onClick={handleDelete}
-              className="opacity-0 group-hover:opacity-100 text-red-600 mt-1"
+              className="text-red-600 mt-1"
             >
-              Delete
+              🗑️ Delete
             </Button>
           )}
         </div>
