@@ -57,10 +57,6 @@ const findMatches = (userItems: string[], bandItems: string[]): string[] => {
   return matches
 }
 
-// Helper: check if zipcodes are in the same region (first 3 digits)
-const sameRegion = (zip1: string, zip2: string): boolean => {
-  return zip1.substring(0, 3) === zip2.substring(0, 3)
-}
 
 // Match tier thresholds
 const MATCH_TIERS = [
@@ -80,14 +76,11 @@ export function calculateMatchScore(user: UserProfile, band: BandProfile): Match
   }
   const matchReasons: string[] = []
 
-  // 1. Location match (exact or nearby) - 25% weight
+  // 1. Location match (exact) - 25% weight
   if (user.zipcode && band.zipcode) {
-    if (user.zipcode === band.zipcode) {
+    if (user.zipcode.toLowerCase() === band.zipcode.toLowerCase()) {
       scores.location = 100
       matchReasons.push('📍 In your area')
-    } else if (sameRegion(user.zipcode, band.zipcode)) {
-      scores.location = 50
-      matchReasons.push('📍 Near your area')
     }
   }
 
