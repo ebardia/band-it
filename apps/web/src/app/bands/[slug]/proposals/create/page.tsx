@@ -91,6 +91,7 @@ export default function CreateProposalPage() {
   const [executionSubtype, setExecutionSubtype] = useState<string>('')
   const [financeEffects, setFinanceEffects] = useState<FinanceEffect[]>([])
   const [showEffectsBuilder, setShowEffectsBuilder] = useState(false)
+  const [showMemberSelect, setShowMemberSelect] = useState<'ADD_TREASURER' | 'REMOVE_TREASURER' | null>(null)
 
   // Integrity Guard state
   const [validationIssues, setValidationIssues] = useState<any[]>([])
@@ -557,23 +558,7 @@ export default function CreateProposalPage() {
                               type="button"
                               variant="secondary"
                               size="sm"
-                              onClick={() => {
-                                const memberName = prompt('Enter member name to add as treasurer:')
-                                if (memberName) {
-                                  const member = band.members.find((m: any) =>
-                                    m.user.name.toLowerCase() === memberName.toLowerCase()
-                                  )
-                                  if (member) {
-                                    setFinanceEffects([...financeEffects, {
-                                      type: 'ADD_TREASURER',
-                                      payload: { userId: member.user.id },
-                                      order: financeEffects.length + 1
-                                    }])
-                                  } else {
-                                    showToast('Member not found', 'error')
-                                  }
-                                }
-                              }}
+                              onClick={() => setShowMemberSelect('ADD_TREASURER')}
                             >
                               + Add Treasurer
                             </Button>
@@ -581,23 +566,7 @@ export default function CreateProposalPage() {
                               type="button"
                               variant="secondary"
                               size="sm"
-                              onClick={() => {
-                                const memberName = prompt('Enter member name to remove as treasurer:')
-                                if (memberName) {
-                                  const member = band.members.find((m: any) =>
-                                    m.user.name.toLowerCase() === memberName.toLowerCase()
-                                  )
-                                  if (member) {
-                                    setFinanceEffects([...financeEffects, {
-                                      type: 'REMOVE_TREASURER',
-                                      payload: { userId: member.user.id },
-                                      order: financeEffects.length + 1
-                                    }])
-                                  } else {
-                                    showToast('Member not found', 'error')
-                                  }
-                                }
-                              }}
+                              onClick={() => setShowMemberSelect('REMOVE_TREASURER')}
                             >
                               - Remove Treasurer
                             </Button>
@@ -646,6 +615,45 @@ export default function CreateProposalPage() {
                               Set Policy
                             </Button>
                           </Flex>
+
+                          {/* Member Selection for Treasurer */}
+                          {showMemberSelect && (
+                            <Card className="border-2 border-blue-200 bg-blue-50">
+                              <Stack spacing="sm">
+                                <Text weight="semibold">
+                                  {showMemberSelect === 'ADD_TREASURER' ? 'Select member to add as treasurer:' : 'Select member to remove as treasurer:'}
+                                </Text>
+                                <Flex gap="sm" className="flex-wrap">
+                                  {band.members.map((m: any) => (
+                                    <Button
+                                      key={m.user.id}
+                                      type="button"
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => {
+                                        setFinanceEffects([...financeEffects, {
+                                          type: showMemberSelect,
+                                          payload: { userId: m.user.id },
+                                          order: financeEffects.length + 1
+                                        }])
+                                        setShowMemberSelect(null)
+                                      }}
+                                    >
+                                      {m.user.name} ({m.role})
+                                    </Button>
+                                  ))}
+                                </Flex>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setShowMemberSelect(null)}
+                                >
+                                  Cancel
+                                </Button>
+                              </Stack>
+                            </Card>
+                          )}
                         </Stack>
 
                         {financeEffects.length === 0 && (
