@@ -227,8 +227,8 @@ export default function BandDiscussionsPage() {
   return (
     <>
       <AppNav />
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto px-2 md:px-4 max-w-[1600px]">
+      <div className="h-[calc(100vh-64px)] bg-gray-50 flex flex-col overflow-hidden">
+        <div className="mx-auto px-2 md:px-4 max-w-[1600px] flex flex-col flex-1 min-h-0">
           {/* Mobile Header */}
           <div className="md:hidden py-3">
             <div className="flex items-center justify-between mb-3">
@@ -396,8 +396,8 @@ export default function BandDiscussionsPage() {
           )}
 
           {/* Main Content */}
-          <div className="pb-4">
-            <Flex gap="md" align="start" className="flex-col md:flex-row">
+          <div className="flex-1 pb-4">
+            <Flex gap="md" align="stretch" className="flex-col md:flex-row h-full">
               {/* Left Sidebar - Band Navigation (hidden on mobile) */}
               <BandSidebar
                 bandSlug={slug}
@@ -408,7 +408,7 @@ export default function BandDiscussionsPage() {
               />
 
               {/* Discussion Area */}
-              <div className="w-full md:flex-1 bg-white rounded-lg shadow" style={{ height: 'calc(100vh - 200px)', minHeight: '400px' }}>
+              <div className="w-full md:flex-1 bg-white rounded-lg shadow h-full" style={{ minHeight: '400px' }}>
                 <div className="flex h-full">
                   {/* Channel List - Hidden on mobile */}
                   <div className="hidden md:block w-56 flex-shrink-0 h-full overflow-y-auto">
