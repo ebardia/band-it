@@ -408,8 +408,8 @@ export default function BandDiscussionsPage() {
               />
 
               {/* Discussion Area */}
-              <div className="w-full md:flex-1 bg-white rounded-lg shadow" style={{ height: 'calc(100vh - 200px)', minHeight: '400px' }}>
-                <div className="flex h-full">
+              <div className="w-full md:flex-1 bg-white rounded-lg shadow">
+                <div className="flex">
                   {/* Channel List - Hidden on mobile */}
                   <div className="hidden md:block w-56 flex-shrink-0">
                     <ChannelList
