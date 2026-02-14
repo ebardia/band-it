@@ -227,10 +227,10 @@ export default function BandDiscussionsPage() {
   return (
     <>
       <AppNav />
-      <div className="h-[calc(100vh-64px)] bg-gray-50 flex flex-col">
-        <div className="mx-auto px-2 md:px-4 max-w-[1600px] flex flex-col flex-1 min-h-0">
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto px-2 md:px-4 max-w-[1600px]">
           {/* Mobile Header */}
-          <div className="md:hidden py-3 flex-shrink-0">
+          <div className="md:hidden py-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {band.imageUrl && (
@@ -319,7 +319,7 @@ export default function BandDiscussionsPage() {
           </div>
 
           {/* Desktop Page Header */}
-          <div className="hidden md:block py-6 flex-shrink-0">
+          <div className="hidden md:block py-6">
             <Flex gap="md" align="start">
               {/* Left: Band Image (in sidebar area) */}
               <div className="w-64 flex-shrink-0 flex justify-center">
@@ -376,7 +376,7 @@ export default function BandDiscussionsPage() {
 
           {/* Billing Banner */}
           {isMember && userId && (
-            <div className="pb-2 flex-shrink-0">
+            <div className="pb-2">
               <Flex gap="md" className="flex-col md:flex-row">
                 <div className="hidden md:block w-64 flex-shrink-0" />
                 <div className="flex-1">
@@ -396,8 +396,8 @@ export default function BandDiscussionsPage() {
           )}
 
           {/* Main Content */}
-          <div className="flex-1 pb-4 min-h-0">
-            <div className="flex flex-col md:flex-row gap-4 h-full">
+          <div className="pb-4">
+            <Flex gap="md" align="start" className="flex-col md:flex-row">
               {/* Left Sidebar - Band Navigation (hidden on mobile) */}
               <BandSidebar
                 bandSlug={slug}
@@ -408,10 +408,10 @@ export default function BandDiscussionsPage() {
               />
 
               {/* Discussion Area */}
-              <div className="w-full md:flex-1 bg-white rounded-lg shadow h-full" style={{ minHeight: '400px' }}>
+              <div className="w-full md:flex-1 bg-white rounded-lg shadow" style={{ height: 'calc(100vh - 200px)', minHeight: '400px' }}>
                 <div className="flex h-full">
                   {/* Channel List - Hidden on mobile */}
-                  <div className="hidden md:block w-56 flex-shrink-0 h-full overflow-y-auto">
+                  <div className="hidden md:block w-56 flex-shrink-0">
                     <ChannelList
                       bandId={band.id}
                       userId={userId}
@@ -467,7 +467,7 @@ export default function BandDiscussionsPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Flex>
           </div>
         </div>
       </div>
@@ -522,9 +522,7 @@ export default function BandDiscussionsPage() {
           bandId={band.id}
           userId={userId}
           channels={channelsData?.channels || []}
-          onResultClick={(channelId) => {
-            setSelectedChannelId(channelId)
-          }}
+          onResultClick={(channelId) => setSelectedChannelId(channelId)}
         />
       )}
     </>
