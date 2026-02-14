@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { trpc } from '@/lib/trpc'
 import { Stack, Flex, Text, Button, Badge, Loading, Textarea, useToast } from '@/components/ui'
 import { ReactionBar } from './ReactionBar'
@@ -45,7 +45,6 @@ interface MessageListProps {
 }
 
 export function MessageList({ bandId, channelId, userId, userRole }: MessageListProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
   const utils = trpc.useUtils()
 
   const { data, isLoading, refetch } = trpc.message.list.useQuery(
@@ -67,37 +66,6 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
     }
   }, [channelId, userId])
 
-  // Track message count to detect NEW messages (not just refetches)
-  const prevMessageCount = useRef<number>(0)
-  const hasInitialized = useRef(false)
-
-  // Reset when channel changes
-  useEffect(() => {
-    prevMessageCount.current = 0
-    hasInitialized.current = false
-  }, [channelId])
-
-  // Scroll to bottom only when NEW messages arrive (count increases)
-  useEffect(() => {
-    const currentCount = data?.messages?.length || 0
-
-    // Skip the first render after channel change (initial load)
-    if (!hasInitialized.current) {
-      hasInitialized.current = true
-      prevMessageCount.current = currentCount
-      return
-    }
-
-    // Only scroll if message count INCREASED (new message added)
-    if (currentCount > prevMessageCount.current) {
-      messagesEndRef.current?.scrollIntoView({
-        behavior: 'smooth'
-      })
-    }
-
-    prevMessageCount.current = currentCount
-  }, [data?.messages])
-
   // Set up polling for new messages
   useEffect(() => {
     const interval = setInterval(() => {
@@ -115,8 +83,8 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
     )
   }
 
-  // Messages come in reverse order (newest first), reverse to show oldest first
-  const messages = [...(data?.messages || [])].reverse()
+  // Messages come from API newest first - keep that order
+  const messages = data?.messages || []
 
   if (messages.length === 0) {
     return (
@@ -140,8 +108,6 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
           />
         ))}
       </Stack>
-
-      <div ref={messagesEndRef} />
     </div>
   )
 }
