@@ -128,7 +128,7 @@ export function MessageList({ bandId, channelId, userId, userRole, onOpenThread 
 
   return (
     <div className="flex-1 overflow-y-auto p-4">
-      <Stack spacing="md">
+      <Stack spacing="sm">
         {messages.map((message) => (
           <MessageItem
             key={message.id}
@@ -309,20 +309,14 @@ function MessageItem({ bandId, message, userId, userRole, onOpenThread }: Messag
             </Text>
           )}
 
-          {/* Reactions */}
+          {/* Reactions & Actions - single row */}
           {!isEditing && (
-            <div className="mt-2">
+            <Flex gap="sm" align="center" className="mt-1 flex-wrap">
               <ReactionBar
                 messageId={message.id}
                 userId={userId}
                 reactions={message.reactions || []}
               />
-            </div>
-          )}
-
-          {/* Actions - only show when not editing */}
-          {!isEditing && (
-            <Flex gap="sm" className="mt-2">
               <Button variant="ghost" size="sm" onClick={onOpenThread}>
                 💬 {message.replyCount > 0 ? `${message.replyCount} replies` : 'Reply'}
               </Button>

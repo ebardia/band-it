@@ -107,7 +107,7 @@ export function ThreadView({ messageId, channelId, bandId, userId, userRole, onC
 
       {/* Replies */}
       <div className="flex-1 overflow-y-auto p-4">
-        <Stack spacing="md">
+        <Stack spacing="sm">
           {replies.length === 0 ? (
             <Text variant="small" color="muted" className="text-center py-4">
               No replies yet. Start the conversation!
@@ -222,34 +222,32 @@ function ThreadMessage({ bandId, message, userId, userRole, isParent }: ThreadMe
             {highlightMentions(message.content)}
           </Text>
 
-          {/* Reactions */}
-          <div className="mt-1">
+          {/* Reactions & Actions */}
+          <Flex gap="sm" align="center" className="mt-1 flex-wrap">
             <ReactionBar
               messageId={message.id}
               userId={userId}
               reactions={message.reactions || []}
               compact
             />
-          </div>
-
-          {/* Reply count for parent */}
-          {isParent && message.replyCount !== undefined && message.replyCount > 0 && (
-            <Text variant="small" color="muted" className="mt-2">
-              {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
-            </Text>
-          )}
-
-          {/* Delete action */}
-          {canDelete && !isParent && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              className="text-red-600 mt-1"
-            >
-              🗑️ Delete
-            </Button>
-          )}
+            {/* Reply count for parent */}
+            {isParent && message.replyCount !== undefined && message.replyCount > 0 && (
+              <Text variant="small" color="muted">
+                {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
+              </Text>
+            )}
+            {/* Delete action */}
+            {canDelete && !isParent && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDelete}
+                className="text-red-600"
+              >
+                🗑️ Delete
+              </Button>
+            )}
+          </Flex>
         </div>
       </Flex>
     </div>
