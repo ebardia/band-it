@@ -227,10 +227,10 @@ export default function BandDiscussionsPage() {
   return (
     <>
       <AppNav />
-      <div className="h-[calc(100vh-64px)] bg-gray-50 flex flex-col overflow-hidden">
+      <div className="h-[calc(100vh-64px)] bg-gray-50 flex flex-col">
         <div className="mx-auto px-2 md:px-4 max-w-[1600px] flex flex-col flex-1 min-h-0">
           {/* Mobile Header */}
-          <div className="md:hidden py-3">
+          <div className="md:hidden py-3 flex-shrink-0">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {band.imageUrl && (
@@ -319,7 +319,7 @@ export default function BandDiscussionsPage() {
           </div>
 
           {/* Desktop Page Header */}
-          <div className="hidden md:block py-6">
+          <div className="hidden md:block py-6 flex-shrink-0">
             <Flex gap="md" align="start">
               {/* Left: Band Image (in sidebar area) */}
               <div className="w-64 flex-shrink-0 flex justify-center">
@@ -376,7 +376,7 @@ export default function BandDiscussionsPage() {
 
           {/* Billing Banner */}
           {isMember && userId && (
-            <div className="pb-2">
+            <div className="pb-2 flex-shrink-0">
               <Flex gap="md" className="flex-col md:flex-row">
                 <div className="hidden md:block w-64 flex-shrink-0" />
                 <div className="flex-1">
