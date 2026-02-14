@@ -8,13 +8,10 @@ import {
   Heading,
   Text,
   Stack,
-  Button,
   PageWrapper,
   Flex,
-  Card,
   Badge,
-  Loading,
-  Alert
+  Loading
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { DashboardSidebar } from '@/components/DashboardSidebar'
@@ -105,47 +102,45 @@ export default function MyProposalsPage() {
 
         {/* Main Content Area */}
         <div className="flex-1">
-          <Stack spacing="lg">
+          <Stack spacing="md">
             <Stack spacing="xs">
               <Heading level={1}>My Proposals</Heading>
               <Text color="muted">Proposals you've created across all bands</Text>
             </Stack>
-              {proposals.length > 0 ? (
-                <Stack spacing="md">
-                  {proposals.map((proposal: any) => (
-                    <Card 
-                      key={proposal.id}
-                      hover
-                      onClick={() => router.push(`/bands/${proposal.band.slug}/proposals/${proposal.id}`)}
-                    >
-                      <Flex justify="between" align="start">
-                        <Stack spacing="sm">
-                          <Heading level={3}>{proposal.title}</Heading>
-                          <Text variant="small" color="muted">
-                            Band: {proposal.band.name}
-                          </Text>
-                          <Flex gap="sm">
-                            {getStatusBadge(proposal.status)}
-                            <Badge variant="neutral">{proposal._count.votes} votes</Badge>
-                          </Flex>
-                        </Stack>
-                        <Button variant="secondary" size="sm">
-                          View →
-                        </Button>
-                      </Flex>
-                    </Card>
-                  ))}
-                </Stack>
-              ) : (
-                <Alert variant="info">
-                  <Stack spacing="sm">
-                    <Text>You haven't created any proposals yet.</Text>
-                    <Text variant="small" color="muted">
-                      Go to one of your bands to create a proposal.
-                    </Text>
-                  </Stack>
-                </Alert>
-              )}
+
+            {proposals.length > 0 ? (
+              <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                {proposals.map((proposal: any) => (
+                  <div
+                    key={proposal.id}
+                    className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => router.push(`/bands/${proposal.band.slug}/proposals/${proposal.id}`)}
+                  >
+                    <div className="flex items-center py-3 px-3 md:px-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Text weight="semibold" className="truncate">{proposal.title}</Text>
+                          {getStatusBadge(proposal.status)}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-500 mt-1 flex-wrap">
+                          <span>{proposal.band.name}</span>
+                          <span>•</span>
+                          <span>{proposal._count.votes} votes</span>
+                        </div>
+                      </div>
+                      <span className="text-gray-400 ml-2">→</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border border-gray-200 rounded-lg bg-white p-6 text-center">
+                <Text color="muted" className="mb-2">You haven't created any proposals yet.</Text>
+                <Text variant="small" color="muted">
+                  Go to one of your bands to create a proposal.
+                </Text>
+              </div>
+            )}
           </Stack>
         </div>
       </div>
