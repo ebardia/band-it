@@ -408,10 +408,10 @@ export default function BandDiscussionsPage() {
               />
 
               {/* Discussion Area */}
-              <div className="w-full md:flex-1 bg-white rounded-lg shadow h-[calc(100vh-180px)] md:h-[calc(100vh-280px)] flex flex-col">
-                <div className="flex flex-1 min-h-0">
+              <div className="w-full md:flex-1 bg-white rounded-lg shadow" style={{ height: 'calc(100vh - 200px)', minHeight: '400px' }}>
+                <div className="flex h-full">
                   {/* Channel List - Hidden on mobile */}
-                  <div className="hidden md:block w-56 flex-shrink-0">
+                  <div className="hidden md:block w-56 flex-shrink-0 h-full overflow-y-auto">
                     <ChannelList
                       bandId={band.id}
                       userId={userId}
@@ -423,7 +423,7 @@ export default function BandDiscussionsPage() {
                   </div>
 
                   {/* Messages Area */}
-                  <div className="flex-1 flex flex-col border-l-0 md:border-l border-gray-200 min-w-0 min-h-0">
+                  <div className="flex-1 flex flex-col border-l-0 md:border-l border-gray-200 min-w-0 overflow-hidden">
                     {selectedChannelId && selectedChannel?.hasAccess ? (
                       <>
                         {/* Pinned Messages Header */}
