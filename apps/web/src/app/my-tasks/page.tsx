@@ -11,10 +11,8 @@ import {
   Button,
   PageWrapper,
   Flex,
-  Card,
   Badge,
-  Loading,
-  Alert
+  Loading
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { DashboardSidebar } from '@/components/DashboardSidebar'
@@ -132,7 +130,7 @@ export default function MyTasksPage() {
 
         {/* Main Content Area */}
         <div className="flex-1">
-          <Stack spacing="lg">
+          <Stack spacing="md">
             <Stack spacing="xs">
               <Heading level={1}>My Tasks</Heading>
               <Text color="muted">Tasks assigned to you across all bands</Text>
@@ -153,45 +151,44 @@ export default function MyTasksPage() {
             </Flex>
 
             {tasks.length > 0 ? (
-                <Stack spacing="md">
-                  {tasks.map((task: any) => (
-                    <Card 
-                      key={task.id}
-                      hover
-                      onClick={() => router.push(`/bands/${task.band.slug}/tasks/${task.id}`)}
-                    >
-                      <Flex justify="between" align="start">
-                        <Stack spacing="sm">
-                          <Heading level={3}>{task.name}</Heading>
-                          <Text variant="small" color="muted">
-                            Band: {task.band.name} • Project: {task.project.name}
-                          </Text>
-                          <Flex gap="sm" className="flex-wrap">
-                            {getStatusBadge(task.status)}
-                            {getPriorityBadge(task.priority)}
-                            {task.dueDate && (
-                              <Badge variant="neutral">
-                                Due: {new Date(task.dueDate).toLocaleDateString()}
-                              </Badge>
-                            )}
-                          </Flex>
-                        </Stack>
-                        <Button variant="secondary" size="sm">
-                          View →
-                        </Button>
-                      </Flex>
-                    </Card>
-                  ))}
-                </Stack>
-              ) : (
-                <Alert variant="info">
-                  <Stack spacing="sm">
-                    <Text>No tasks assigned to you{statusFilter ? ' with this status' : ''}.</Text>
-                    <Text variant="small" color="muted">
-                      Tasks are created within projects and can be assigned to band members.
-                    </Text>
-                  </Stack>
-                </Alert>
+              <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                {tasks.map((task: any) => (
+                  <div
+                    key={task.id}
+                    className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => router.push(`/bands/${task.band.slug}/tasks/${task.id}`)}
+                  >
+                    <div className="flex items-center py-3 px-3 md:px-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Text weight="semibold" className="truncate">{task.name}</Text>
+                          {getStatusBadge(task.status)}
+                          {getPriorityBadge(task.priority)}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-500 mt-1 flex-wrap">
+                          <span>{task.band.name}</span>
+                          <span>•</span>
+                          <span>{task.project.name}</span>
+                          {task.dueDate && (
+                            <>
+                              <span>•</span>
+                              <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-gray-400 ml-2">→</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border border-gray-200 rounded-lg bg-white p-6 text-center">
+                <Text color="muted" className="mb-2">No tasks assigned to you{statusFilter ? ' with this status' : ''}.</Text>
+                <Text variant="small" color="muted">
+                  Tasks are created within projects and can be assigned to band members.
+                </Text>
+              </div>
             )}
           </Stack>
         </div>
