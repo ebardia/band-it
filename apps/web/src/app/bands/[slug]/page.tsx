@@ -232,12 +232,22 @@ export default function BandDiscussionsPage() {
           {/* Mobile Header */}
           <div className="md:hidden py-3">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {/* Back to dashboard button */}
+                <button
+                  onClick={() => router.push('/user-dashboard')}
+                  className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 active:bg-gray-200 flex-shrink-0"
+                  aria-label="Back to dashboard"
+                >
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
                 {band.imageUrl && (
                   <img src={band.imageUrl} alt={band.name} className="w-10 h-10 object-cover rounded-lg flex-shrink-0" />
                 )}
                 <div className="min-w-0">
-                  <h1 className="text-2xl font-bold text-gray-900 truncate">{band.name}</h1>
+                  <h1 className="text-xl font-bold text-gray-900 truncate">{band.name}</h1>
                   <Text color="muted" className="text-sm truncate">Discussions</Text>
                 </div>
               </div>
