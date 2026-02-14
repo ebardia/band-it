@@ -440,7 +440,7 @@ export default function BandDiscussionsPage() {
                   </div>
 
                   {/* Messages Area */}
-                  <div className="flex-1 flex flex-col border-l-0 md:border-l border-gray-200 min-w-0 overflow-hidden">
+                  <div className="flex-1 flex flex-col border-l-0 md:border-l border-gray-200 min-w-0 md:overflow-hidden">
                     {selectedChannelId && selectedChannel?.hasAccess ? (
                       <>
                         {/* Pinned Messages Header */}

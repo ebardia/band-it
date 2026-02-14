@@ -126,7 +126,7 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto p-4 relative"
+      className="flex-1 md:overflow-y-auto p-4 relative"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
