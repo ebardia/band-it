@@ -8,13 +8,10 @@ import {
   Heading,
   Text,
   Stack,
-  Button,
   PageWrapper,
   Flex,
-  Card,
   Badge,
-  Loading,
-  Alert
+  Loading
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { DashboardSidebar } from '@/components/DashboardSidebar'
@@ -107,50 +104,51 @@ export default function MyProjectsPage() {
 
         {/* Main Content Area */}
         <div className="flex-1">
-          <Stack spacing="lg">
+          <Stack spacing="md">
             <Stack spacing="xs">
               <Heading level={1}>My Projects</Heading>
               <Text color="muted">Projects you lead or created across all bands</Text>
             </Stack>
-              {projects.length > 0 ? (
-                <Stack spacing="md">
-                  {projects.map((project: any) => (
-                    <Card 
-                      key={project.id}
-                      hover
-                      onClick={() => router.push(`/bands/${project.band.slug}/projects/${project.id}`)}
-                    >
-                      <Flex justify="between" align="start">
-                        <Stack spacing="sm">
-                          <Heading level={3}>{project.name}</Heading>
-                          <Text variant="small" color="muted">
-                            Band: {project.band.name}
-                          </Text>
-                          <Flex gap="sm">
-                            {getStatusBadge(project.status)}
-                            <Badge variant="neutral">{project._count.tasks} tasks</Badge>
-                            {project.lead && (
-                              <Badge variant="info">Lead: {project.lead.name}</Badge>
-                            )}
-                          </Flex>
-                        </Stack>
-                        <Button variant="secondary" size="sm">
-                          View →
-                        </Button>
-                      </Flex>
-                    </Card>
-                  ))}
-                </Stack>
-              ) : (
-                <Alert variant="info">
-                  <Stack spacing="sm">
-                    <Text>You're not leading any projects yet.</Text>
-                    <Text variant="small" color="muted">
-                      Projects are created from approved proposals.
-                    </Text>
-                  </Stack>
-                </Alert>
-              )}
+
+            {projects.length > 0 ? (
+              <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                {projects.map((project: any) => (
+                  <div
+                    key={project.id}
+                    className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => router.push(`/bands/${project.band.slug}/projects/${project.id}`)}
+                  >
+                    <div className="flex items-center py-3 px-3 md:px-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Text weight="semibold" className="truncate">{project.name}</Text>
+                          {getStatusBadge(project.status)}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-500 mt-1 flex-wrap">
+                          <span>{project.band.name}</span>
+                          <span>•</span>
+                          <span>{project._count.tasks} tasks</span>
+                          {project.lead && (
+                            <>
+                              <span>•</span>
+                              <span>Lead: {project.lead.name}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-gray-400 ml-2">→</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border border-gray-200 rounded-lg bg-white p-6 text-center">
+                <Text color="muted" className="mb-2">You're not leading any projects yet.</Text>
+                <Text variant="small" color="muted">
+                  Projects are created from approved proposals.
+                </Text>
+              </div>
+            )}
           </Stack>
         </div>
       </div>
