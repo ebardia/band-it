@@ -9,11 +9,9 @@ import {
   Text,
   Stack,
   Button,
-  useToast,
   PageWrapper,
   DashboardContainer,
   Flex,
-  Card,
   Badge,
   Loading
 } from '@/components/ui'
@@ -22,7 +20,6 @@ import { DashboardSidebar } from '@/components/DashboardSidebar'
 
 export default function MyBandsPage() {
   const router = useRouter()
-  const { showToast } = useToast()
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -108,7 +105,7 @@ export default function MyBandsPage() {
           />
 
           <div className="flex-1">
-            <Stack spacing="xl">
+            <Stack spacing="md">
               <Flex justify="between" align="center">
                 <Heading level={1}>My Bands</Heading>
                 <Button variant="primary" size="md" onClick={() => router.push('/bands/create')}>
@@ -117,54 +114,54 @@ export default function MyBandsPage() {
               </Flex>
 
               {myBandsData?.bands && myBandsData.bands.length > 0 ? (
-                <Stack spacing="md">
+                <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
                   {myBandsData.bands.map((band: any) => (
-                    <Card key={band.id} hover onClick={() => router.push(`/bands/${band.slug}`)}>
-                      <Stack spacing="md">
-                        <Flex justify="between" align="center">
-                          <Flex gap="sm" align="center">
+                    <div
+                      key={band.id}
+                      className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => router.push(`/bands/${band.slug}`)}
+                    >
+                      <div className="flex items-center py-3 px-3 md:px-4">
+                        {/* Band info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
                             {band.isSubBand && band.parentBand && (
-                              <Text color="muted">{band.parentBand.name} &gt;</Text>
+                              <Text variant="small" color="muted">{band.parentBand.name} &gt;</Text>
                             )}
-                            <Heading level={2}>{band.name}</Heading>
+                            <Text weight="semibold" className="truncate">{band.name}</Text>
                             {band.isBigBand && <Badge variant="info">Big Band</Badge>}
-                          </Flex>
-                          {getStatusBadge(band.status)}
-                        </Flex>
-                        <Text color="muted" className="line-clamp-3">{band.description}</Text>
-                        <Flex justify="between">
-                          <Text variant="small">
-                            Role: <Text variant="small" weight="semibold">{band.myRole.replace('_', ' ')}</Text>
-                          </Text>
-                          <Flex gap="md">
+                            {getStatusBadge(band.status)}
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-gray-500 mt-1 flex-wrap">
+                            <span>{band.myRole.replace('_', ' ')}</span>
+                            <span>•</span>
+                            <span>{band._count?.members || 0} members</span>
                             {band.isBigBand && (
-                              <Text variant="small">
-                                Bands: <Text variant="small" weight="semibold">{band._count?.subBands || 0}</Text>
-                              </Text>
+                              <>
+                                <span>•</span>
+                                <span>{band._count?.subBands || 0} bands</span>
+                              </>
                             )}
-                            <Text variant="small">
-                              Members: <Text variant="small" weight="semibold">{band._count?.members || 0}</Text>
-                            </Text>
-                          </Flex>
-                        </Flex>
-                      </Stack>
-                    </Card>
+                          </div>
+                        </div>
+                        {/* Arrow */}
+                        <span className="text-gray-400 ml-2">→</span>
+                      </div>
+                    </div>
                   ))}
-                </Stack>
+                </div>
               ) : (
-                <Card>
-                  <Stack spacing="md" align="center">
-                    <Text>You're not a member of any bands yet.</Text>
-                    <Flex gap="md">
-                      <Button variant="primary" size="md" onClick={() => router.push('/bands/create')}>
-                        Create Your First Band
-                      </Button>
-                      <Button variant="secondary" size="md" onClick={() => router.push('/bands')}>
-                        Browse Bands
-                      </Button>
-                    </Flex>
-                  </Stack>
-                </Card>
+                <div className="border border-gray-200 rounded-lg bg-white p-6 text-center">
+                  <Text color="muted" className="mb-4">You're not a member of any bands yet.</Text>
+                  <Flex gap="md" justify="center">
+                    <Button variant="primary" size="md" onClick={() => router.push('/bands/create')}>
+                      Create Your First Band
+                    </Button>
+                    <Button variant="secondary" size="md" onClick={() => router.push('/bands')}>
+                      Browse Bands
+                    </Button>
+                  </Flex>
+                </div>
               )}
             </Stack>
           </div>
