@@ -87,6 +87,20 @@ export default function OverviewDashboard() {
     { enabled: !!userId }
   )
 
+  // Mobile redirect for single-band users
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const isMobile = window.innerWidth < 768
+
+    if (isMobile && myBandsData?.bands) {
+      const activeBands = myBandsData.bands.filter((b: any) => b.status === 'ACTIVE')
+      if (activeBands.length === 1) {
+        router.replace(`/bands/${activeBands[0].slug}`)
+      }
+    }
+  }, [myBandsData, router])
+
   // Mutations
   const acceptInviteMutation = trpc.band.acceptInvitation.useMutation({
     onSuccess: () => {
@@ -152,14 +166,58 @@ export default function OverviewDashboard() {
     <PageWrapper variant="dashboard">
       <AppNav />
 
-      {/* Mobile View - Quick Actions Only */}
+      {/* Mobile View */}
       <div className="md:hidden min-h-screen bg-gray-50 px-4 py-4">
+        {/* Quick Actions - compact */}
         <QuickActionsWidget userId={userId} />
-        <div className="text-center mt-8">
-          <Text color="muted" className="text-sm">
-            For full dashboard, use a larger screen
-          </Text>
-        </div>
+
+        {/* My Bands Section */}
+        {myBandsData?.bands && myBandsData.bands.filter((b: any) => b.status === 'ACTIVE').length > 0 ? (
+          <div className="mt-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">My Bands</h2>
+            <div className="space-y-3">
+              {myBandsData.bands
+                .filter((b: any) => b.status === 'ACTIVE')
+                .map((band: any) => (
+                  <button
+                    key={band.id}
+                    onClick={() => router.push(`/bands/${band.slug}`)}
+                    className="w-full bg-white rounded-lg shadow p-4 flex items-center gap-3 hover:bg-gray-50"
+                  >
+                    {band.imageUrl ? (
+                      <img src={band.imageUrl} alt={band.name} className="w-12 h-12 rounded-lg object-cover" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                        <span className="text-xl">🎸</span>
+                      </div>
+                    )}
+                    <div className="flex-1 text-left">
+                      <p className="font-medium text-gray-900">{band.name}</p>
+                      <p className="text-sm text-gray-500">Tap to open discussions</p>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ))}
+            </div>
+          </div>
+        ) : (
+          /* New User - No Bands */
+          <div className="mt-4">
+            <div className="bg-white rounded-lg shadow p-6 text-center">
+              <span className="text-4xl mb-3 block">🎵</span>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Welcome to Band-It!</h2>
+              <p className="text-gray-500 mb-4">Find a band to join and start collaborating</p>
+              <button
+                onClick={() => router.push('/discover')}
+                className="w-full bg-blue-600 text-white rounded-lg py-3 font-medium hover:bg-blue-700"
+              >
+                Discover Bands
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Desktop View - Full Dashboard */}
