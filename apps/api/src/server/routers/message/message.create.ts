@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server'
 import { canAccessChannel } from '../channel'
 import { processMentions } from './message.mention'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
+import { notificationService } from '../../../services/notification.service'
 
 /**
  * Create a new message in a channel
@@ -143,6 +144,31 @@ export const createMessage = publicProcedure
       channel.name,
       channel.band.slug
     ).catch(err => console.error('Error processing mentions:', err))
+
+    // Notify parent message author if this is a reply
+    if (threadId) {
+      const parentMessage = await prisma.message.findUnique({
+        where: { id: threadId },
+        select: { authorId: true },
+      })
+
+      if (parentMessage && parentMessage.authorId !== userId) {
+        notificationService.create({
+          userId: parentMessage.authorId,
+          type: 'MESSAGE_REPLY_RECEIVED',
+          title: `${message.author.name} replied to your message`,
+          message: content.length > 100 ? content.substring(0, 100) + '...' : content,
+          actionUrl: `/bands/${channel.band.slug}`,
+          relatedId: message.id,
+          relatedType: 'MESSAGE',
+          bandId: channel.band.id,
+          metadata: {
+            replierName: message.author.name,
+            channelName: channel.name,
+          },
+        }).catch(err => console.error('Error creating reply notification:', err))
+      }
+    }
 
     return {
       message: {

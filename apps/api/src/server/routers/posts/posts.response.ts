@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { MemberRole } from '@prisma/client'
 import { canAccessPostCategory, canCreatePost } from './posts.category'
+import { notificationService } from '../../../services/notification.service'
 
 // Roles that can moderate responses
 const CAN_MODERATE: MemberRole[] = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
@@ -148,6 +149,71 @@ export const createResponse = publicProcedure
 
       return newResponse
     })
+
+    // Notify the appropriate user about the response
+    // Get full post details for notification
+    const postDetails = await prisma.post.findUnique({
+      where: { id: postId },
+      select: {
+        authorId: true,
+        title: true,
+        slug: true,
+        bandId: true,
+        category: {
+          select: { slug: true },
+        },
+        band: {
+          select: { slug: true },
+        },
+      },
+    })
+
+    if (postDetails) {
+      const actionUrl = `/bands/${postDetails.band.slug}/posts/${postDetails.category.slug}/${postDetails.slug}`
+
+      if (parentId) {
+        // Notify parent response author
+        const parentResponse = await prisma.postResponse.findUnique({
+          where: { id: parentId },
+          select: { authorId: true },
+        })
+
+        if (parentResponse && parentResponse.authorId !== userId) {
+          notificationService.create({
+            userId: parentResponse.authorId,
+            type: 'POST_RESPONSE_RECEIVED',
+            title: `${response.author.name} replied to your comment`,
+            message: content.length > 100 ? content.substring(0, 100) + '...' : content,
+            actionUrl,
+            relatedId: response.id,
+            relatedType: 'POST_RESPONSE',
+            bandId: postDetails.bandId,
+            metadata: {
+              replierName: response.author.name,
+              postTitle: postDetails.title,
+            },
+          }).catch(err => console.error('Error creating post response notification:', err))
+        }
+      } else {
+        // Notify post author (direct response to post)
+        if (postDetails.authorId !== userId) {
+          notificationService.create({
+            userId: postDetails.authorId,
+            type: 'POST_RESPONSE_RECEIVED',
+            title: `${response.author.name} responded to your post`,
+            message: content.length > 100 ? content.substring(0, 100) + '...' : content,
+            actionUrl,
+            relatedId: response.id,
+            relatedType: 'POST_RESPONSE',
+            bandId: postDetails.bandId,
+            metadata: {
+              replierName: response.author.name,
+              postTitle: postDetails.title,
+            },
+          }).catch(err => console.error('Error creating post response notification:', err))
+        }
+      }
+    }
 
     return {
       response: {

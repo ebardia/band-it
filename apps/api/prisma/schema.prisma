@@ -445,6 +445,10 @@ enum NotificationType {
   POST_CREATED
   POST_RESPONSE_RECEIVED
   POST_MENTIONED
+
+  // Replies & Comments
+  MESSAGE_REPLY_RECEIVED     // Someone replied to your discussion message
+  COMMENT_REPLY_RECEIVED     // Someone replied to your comment
 }
 
 enum NotificationPriority {

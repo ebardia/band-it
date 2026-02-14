@@ -170,6 +170,63 @@ export const commentRouter = router({
         )
       }
 
+      // Notify parent comment author if this is a reply
+      if (parentId) {
+        const parentComment = await prisma.comment.findUnique({
+          where: { id: parentId },
+          select: { authorId: true },
+        })
+
+        if (parentComment && parentComment.authorId !== authorId) {
+          // Get entity info for actionUrl
+          let actionUrl = '/'
+          let resolvedBandId: string | undefined = enforcementBandId
+
+          if (proposalId) {
+            const proposal = await prisma.proposal.findUnique({
+              where: { id: proposalId },
+              include: { band: true }
+            })
+            if (proposal) {
+              actionUrl = `/bands/${proposal.band.slug}/proposals/${proposal.id}`
+              resolvedBandId = proposal.bandId
+            }
+          } else if (projectId) {
+            const project = await prisma.project.findUnique({
+              where: { id: projectId },
+              include: { band: true }
+            })
+            if (project) {
+              actionUrl = `/bands/${project.band.slug}/projects/${project.id}`
+              resolvedBandId = project.bandId
+            }
+          } else if (taskId) {
+            const task = await prisma.task.findUnique({
+              where: { id: taskId },
+              include: { band: true }
+            })
+            if (task) {
+              actionUrl = `/bands/${task.band.slug}/tasks/${task.id}`
+              resolvedBandId = task.bandId
+            }
+          }
+
+          notificationService.create({
+            userId: parentComment.authorId,
+            type: 'COMMENT_REPLY_RECEIVED',
+            title: `${author.name} replied to your comment`,
+            message: content.length > 100 ? content.substring(0, 100) + '...' : content,
+            actionUrl,
+            relatedId: comment.id,
+            relatedType: 'COMMENT',
+            bandId: resolvedBandId,
+            metadata: {
+              replierName: author.name,
+            },
+          }).catch(err => console.error('Error creating comment reply notification:', err))
+        }
+      }
+
       // Create mentions and notify users
       if (mentionedUserIds && mentionedUserIds.length > 0) {
         const mentionPromises = mentionedUserIds.map(async (userId) => {
