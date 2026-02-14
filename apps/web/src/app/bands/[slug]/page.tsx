@@ -432,15 +432,17 @@ export default function BandDiscussionsPage() {
                           channelId={selectedChannelId}
                           userId={userId}
                         />
-                        {/* Message Composer - at top for mobile accessibility */}
+                        {/* Message Composer - bottom on mobile (thumb-friendly), top on desktop */}
                         {!selectedChannel?.isArchived && (
-                          <MessageComposer
-                            channelId={selectedChannelId}
-                            userId={userId}
-                          />
+                          <div className="order-1 md:order-none">
+                            <MessageComposer
+                              channelId={selectedChannelId}
+                              userId={userId}
+                            />
+                          </div>
                         )}
                         {selectedChannel?.isArchived && (
-                          <div className="p-4 bg-gray-100 border-b text-center">
+                          <div className="order-1 md:order-none p-4 bg-gray-100 border-b md:border-b border-t md:border-t-0 text-center">
                             <Text color="muted">This channel is archived. Messages are read-only.</Text>
                           </div>
                         )}
