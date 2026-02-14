@@ -104,7 +104,7 @@ export function MessageComposer({
   const isSubmitting = createMutation.isPending
 
   return (
-    <div className="border-t border-gray-200 p-4 bg-white relative" data-guide="message-composer">
+    <div className="border-t border-gray-200 p-3 md:p-4 bg-white relative" data-guide="message-composer">
       <Flex gap="sm" align="end">
         <div className="flex-1 relative">
           <textarea
@@ -117,10 +117,11 @@ export function MessageComposer({
             disabled={disabled || isSubmitting || !userId}
             rows={1}
             className={`
-              w-full resize-none rounded-lg border border-gray-300 px-4 py-2
+              w-full resize-none rounded-lg border border-gray-300 px-3 py-2 md:px-4
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
               disabled:bg-gray-100 disabled:cursor-not-allowed
-              min-h-[40px] max-h-[200px]
+              min-h-[44px] md:min-h-[40px] max-h-[150px] md:max-h-[200px]
+              text-base md:text-sm
             `}
           />
 
@@ -140,8 +141,9 @@ export function MessageComposer({
           variant="primary"
           onClick={handleSubmit}
           disabled={!content.trim() || disabled || isSubmitting || !userId}
+          className="min-h-[44px] md:min-h-0 px-4 md:px-3"
         >
-          {isSubmitting ? 'Sending...' : 'Send'}
+          {isSubmitting ? '...' : 'Send'}
         </Button>
       </Flex>
       {!userId && (

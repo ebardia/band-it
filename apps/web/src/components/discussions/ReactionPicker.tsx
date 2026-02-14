@@ -51,16 +51,18 @@ export function ReactionPicker({ onSelect, onClose, position = 'bottom' }: React
       className={`
         absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-2
         ${position === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'}
+        left-0 md:left-auto
+        max-w-[calc(100vw-2rem)] md:max-w-none
       `}
     >
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap md:flex-nowrap justify-center md:justify-start">
         {QUICK_EMOJIS.map(emoji => (
           <button
             key={emoji}
             onClick={(e) => handleSelect(emoji, e)}
             className="
-              w-8 h-8 flex items-center justify-center text-lg
-              rounded hover:bg-gray-100 transition-colors
+              w-11 h-11 md:w-8 md:h-8 flex items-center justify-center text-xl md:text-lg
+              rounded hover:bg-gray-100 active:bg-gray-200 transition-colors
             "
             title={`React with ${emoji}`}
           >
@@ -83,7 +85,7 @@ export function ReactionButton({ onQuickReact, onOpenPicker }: ReactionButtonPro
       <button
         onClick={onQuickReact}
         className="
-          w-6 h-6 flex items-center justify-center text-sm
+          w-11 h-11 md:w-6 md:h-6 flex items-center justify-center text-base md:text-sm
           rounded-l hover:bg-gray-100 text-gray-400 hover:text-gray-600
           transition-colors border-r border-gray-200
         "
@@ -94,7 +96,7 @@ export function ReactionButton({ onQuickReact, onOpenPicker }: ReactionButtonPro
       <button
         onClick={onOpenPicker}
         className="
-          w-4 h-6 flex items-center justify-center text-xs
+          w-8 h-11 md:w-4 md:h-6 flex items-center justify-center text-sm md:text-xs
           rounded-r hover:bg-gray-100 text-gray-400 hover:text-gray-600
           transition-colors
         "

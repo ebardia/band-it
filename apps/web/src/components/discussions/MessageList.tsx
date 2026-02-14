@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { trpc } from '@/lib/trpc'
 import { Stack, Flex, Text, Button, Badge, Loading, Textarea, useToast } from '@/components/ui'
 import { ReactionBar } from './ReactionBar'
@@ -46,6 +46,11 @@ interface MessageListProps {
 
 export function MessageList({ bandId, channelId, userId, userRole }: MessageListProps) {
   const utils = trpc.useUtils()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [pullDistance, setPullDistance] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const touchStartY = useRef(0)
+  const PULL_THRESHOLD = 80
 
   const { data, isLoading, refetch } = trpc.message.list.useQuery(
     { channelId, userId: userId || '', limit: 100 },
@@ -75,6 +80,30 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
     return () => clearInterval(interval)
   }, [refetch])
 
+  // Pull-to-refresh handlers (mobile only)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (containerRef.current?.scrollTop === 0) {
+      touchStartY.current = e.touches[0].clientY
+    }
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (containerRef.current?.scrollTop === 0 && touchStartY.current > 0) {
+      const distance = Math.max(0, e.touches[0].clientY - touchStartY.current)
+      setPullDistance(Math.min(distance * 0.5, PULL_THRESHOLD * 1.5))
+    }
+  }, [])
+
+  const handleTouchEnd = useCallback(async () => {
+    if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
+      setIsRefreshing(true)
+      await refetch()
+      setIsRefreshing(false)
+    }
+    setPullDistance(0)
+    touchStartY.current = 0
+  }, [pullDistance, isRefreshing, refetch])
+
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -95,19 +124,38 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4">
-      <Stack spacing="sm">
-        {messages.map((message) => (
-          <MessageItem
-            key={message.id}
-            bandId={bandId}
-            channelId={channelId}
-            message={message}
-            userId={userId}
-            userRole={userRole}
-          />
-        ))}
-      </Stack>
+    <div
+      ref={containerRef}
+      className="flex-1 overflow-y-auto p-4 relative"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull-to-refresh indicator (mobile only) */}
+      {(pullDistance > 0 || isRefreshing) && (
+        <div
+          className="md:hidden absolute left-0 right-0 flex justify-center items-center transition-all z-10"
+          style={{ top: -40 + pullDistance, height: 40 }}
+        >
+          <div className={`text-gray-500 text-sm ${isRefreshing ? 'animate-spin' : ''}`}>
+            {isRefreshing ? '↻' : pullDistance >= PULL_THRESHOLD ? '↓ Release to refresh' : '↓ Pull to refresh'}
+          </div>
+        </div>
+      )}
+      <div style={{ transform: `translateY(${pullDistance}px)`, transition: pullDistance === 0 ? 'transform 0.2s' : 'none' }}>
+        <Stack spacing="sm">
+          {messages.map((message) => (
+            <MessageItem
+              key={message.id}
+              bandId={bandId}
+              channelId={channelId}
+              message={message}
+              userId={userId}
+              userRole={userRole}
+            />
+          ))}
+        </Stack>
+      </div>
     </div>
   )
 }
@@ -178,8 +226,8 @@ function InlineReply({ reply, userId, userRole, bandId }: InlineReplyProps) {
           </Text>
         </div>
         <div className="flex-1 min-w-0">
-          <Flex gap="sm" align="center">
-            <Text variant="small" weight="semibold">{reply.author.name}</Text>
+          <Flex gap="sm" align="center" className="flex-wrap">
+            <Text variant="small" weight="semibold" className="truncate max-w-[120px] md:max-w-none">{reply.author.name}</Text>
             <Text variant="small" color="muted">{formatTime(reply.createdAt)}</Text>
             {reply.isEdited && <Text variant="small" color="muted">(edited)</Text>}
           </Flex>
@@ -202,7 +250,7 @@ function InlineReply({ reply, userId, userRole, bandId }: InlineReplyProps) {
                     deleteMutation.mutate({ messageId: reply.id, userId: userId! })
                   }
                 }}
-                className="text-red-600 text-xs"
+                className="min-h-[44px] md:min-h-0 px-3 md:px-2 text-red-600 text-xs"
               >
                 Delete
               </Button>
@@ -374,31 +422,32 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
                 userId={userId}
                 reactions={message.reactions || []}
               />
-              <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
+              {/* Action buttons with mobile-friendly touch targets (44px min) */}
+              <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="min-h-[44px] md:min-h-0 px-3 md:px-2">
                 💬 {message.replyCount > 0 ? `${message.replyCount} replies` : 'Reply'}
                 {isExpanded ? ' ▲' : ''}
               </Button>
               {canEdit && (
-                <Button variant="ghost" size="sm" onClick={handleStartEdit}>
+                <Button variant="ghost" size="sm" onClick={handleStartEdit} className="min-h-[44px] md:min-h-0 px-3 md:px-2">
                   ✏️ Edit
                 </Button>
               )}
               {canPin && (
-                <Button variant="ghost" size="sm" onClick={handlePin}>
+                <Button variant="ghost" size="sm" onClick={handlePin} className="min-h-[44px] md:min-h-0 px-3 md:px-2">
                   {message.isPinned ? '📌 Unpin' : '📌 Pin'}
                 </Button>
               )}
               {canDelete && (
-                <Button variant="ghost" size="sm" onClick={handleDelete} className="text-red-600">
+                <Button variant="ghost" size="sm" onClick={handleDelete} className="min-h-[44px] md:min-h-0 px-3 md:px-2 text-red-600">
                   🗑️ Delete
                 </Button>
               )}
             </Flex>
           )}
 
-          {/* Inline Thread Expansion */}
+          {/* Inline Thread Expansion - reduced indent on mobile */}
           {isExpanded && (
-            <div className="mt-2 ml-6 pl-4 border-l-2 border-gray-200">
+            <div className="mt-2 ml-2 pl-2 md:ml-6 md:pl-4 border-l-2 border-gray-200">
               {/* Replies */}
               <Stack spacing="xs">
                 {threadData?.replies?.length === 0 ? (

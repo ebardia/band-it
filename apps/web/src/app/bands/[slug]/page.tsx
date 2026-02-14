@@ -283,22 +283,22 @@ export default function BandDiscussionsPage() {
               )}
             </div>
 
-            {/* Mobile Channel Selector */}
+            {/* Mobile Channel Selector - larger touch target */}
             <button
               onClick={() => setShowMobileChannels(!showMobileChannels)}
-              className="w-full flex items-center justify-between px-4 py-2 bg-blue-50 rounded-lg border border-blue-200 text-sm"
+              className="w-full flex items-center justify-between px-4 py-3 min-h-[48px] bg-blue-50 rounded-lg border border-blue-200 text-base"
             >
               <span className="flex items-center gap-2">
-                <span>#</span>
+                <span className="text-blue-600 font-bold">#</span>
                 <span className="font-medium">{selectedChannel?.name || 'Select channel'}</span>
               </span>
-              <svg className={`w-4 h-4 text-blue-500 transition-transform ${showMobileChannels ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 text-blue-500 transition-transform ${showMobileChannels ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {showMobileChannels && (
-              <div className="mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-48 overflow-y-auto">
+              <div className="mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-64 overflow-y-auto">
                 {channelsData?.channels?.filter(c => c.hasAccess && !c.isArchived).map((channel) => (
                   <button
                     key={channel.id}
@@ -306,12 +306,19 @@ export default function BandDiscussionsPage() {
                       setSelectedChannelId(channel.id)
                       setShowMobileChannels(false)
                     }}
-                    className={`w-full flex items-center gap-2 px-4 py-2 text-left text-sm ${
-                      channel.id === selectedChannelId ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    className={`w-full flex items-center justify-between gap-2 px-4 py-3 min-h-[48px] text-left text-base border-b border-gray-100 last:border-b-0 ${
+                      channel.id === selectedChannelId ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 active:bg-gray-100'
                     }`}
                   >
-                    <span>#</span>
-                    <span>{channel.name}</span>
+                    <span className="flex items-center gap-2">
+                      <span className={channel.id === selectedChannelId ? 'text-blue-600' : 'text-gray-400'}>#</span>
+                      <span>{channel.name}</span>
+                    </span>
+                    {channel.id === selectedChannelId && (
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
                   </button>
                 ))}
               </div>

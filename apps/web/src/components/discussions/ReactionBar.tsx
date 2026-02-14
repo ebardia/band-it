@@ -63,15 +63,15 @@ export function ReactionBar({
   return (
     <div className="relative">
       <div className="flex items-center gap-1 flex-wrap">
-        {/* Existing reactions */}
+        {/* Existing reactions - mobile-friendly touch targets */}
         {reactions.map(reaction => (
           <button
             key={reaction.emoji}
             onClick={() => handleReaction(reaction.emoji)}
             disabled={!userId || toggleMutation.isPending}
             className={`
-              inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm
-              border transition-colors
+              inline-flex items-center gap-1 px-3 py-2 md:px-2 md:py-0.5 rounded-full text-sm
+              border transition-colors min-h-[44px] md:min-h-0
               ${reaction.includesMe
                 ? 'bg-blue-50 border-blue-300 text-blue-700'
                 : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
