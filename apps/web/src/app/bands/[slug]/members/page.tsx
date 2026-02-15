@@ -11,7 +11,6 @@ import {
   Button,
   useToast,
   Flex,
-  Card,
   Badge,
   Loading,
   Alert,
@@ -178,7 +177,7 @@ export default function BandMembersPage() {
           ) : undefined
         }
       >
-        <Stack spacing="xl">
+        <Stack spacing="md">
           {/* Role Summary */}
           <Flex gap="sm" className="flex-wrap">
             {ROLE_ORDER.filter(role => roleCounts[role]).map(role => (
@@ -189,169 +188,131 @@ export default function BandMembersPage() {
           </Flex>
 
           {/* Members List */}
-          <Stack spacing="md">
-            {sortedMembers.map((member: any) => (
-              <Card key={member.id} className="hover:shadow-md transition">
-                <Flex justify="between" align="start">
-                  <Stack spacing="sm" className="flex-1">
-                    <Flex gap="sm" align="center">
-                      <Text weight="semibold">{member.user.name}</Text>
-                      <Badge variant={ROLE_COLORS[member.role]}>
-                        {ROLE_LABELS[member.role]}
-                      </Badge>
-                      {member.status !== 'ACTIVE' && (
-                        <Badge variant="warning">{member.status}</Badge>
-                      )}
-                    </Flex>
-                    {member.stats && (
-                      <Flex gap="md" className="text-gray-500">
-                        <Text variant="small">
-                          {member.stats.tasksCompleted} tasks completed
-                        </Text>
-                        <Text variant="small">
-                          {member.stats.proposalsCreated} proposals
-                        </Text>
-                        <Text variant="small">
-                          {member.stats.votesCount} votes
-                        </Text>
-                      </Flex>
-                    )}
-                    <Text variant="small" className="text-gray-400">
-                      Joined {new Date(member.createdAt).toLocaleDateString()}
-                    </Text>
-                  </Stack>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openProfileModal(member)}
-                  >
-                    View Profile
-                  </Button>
-                </Flex>
-              </Card>
-            ))}
-          </Stack>
-
-          {members.length === 0 && (
-            <Alert variant="info">
-              <Text>No members found.</Text>
-            </Alert>
+          {sortedMembers.length > 0 ? (
+            <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+              {sortedMembers.map((member: any) => (
+                <div
+                  key={member.id}
+                  className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                  onClick={() => openProfileModal(member)}
+                >
+                  <div className="flex items-center py-3 px-3 md:px-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Text weight="semibold">{member.user.name}</Text>
+                        <Badge variant={ROLE_COLORS[member.role]}>
+                          {ROLE_LABELS[member.role]}
+                        </Badge>
+                        {member.status !== 'ACTIVE' && (
+                          <Badge variant="warning">{member.status}</Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-gray-500 mt-1 flex-wrap">
+                        {member.stats && (
+                          <>
+                            <span>{member.stats.tasksCompleted} tasks</span>
+                            <span>•</span>
+                            <span>{member.stats.proposalsCreated} proposals</span>
+                            <span>•</span>
+                            <span>{member.stats.votesCount} votes</span>
+                            <span>•</span>
+                          </>
+                        )}
+                        <span>Joined {new Date(member.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <span className="text-gray-400 ml-2">→</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Text variant="small" color="muted">No members found.</Text>
           )}
         </Stack>
 
         {/* Member Profile Modal */}
         <Modal isOpen={showProfileModal} onClose={closeProfileModal}>
-          <Stack spacing="lg">
-            <Heading level={2}>Member Profile</Heading>
-
+          <Stack spacing="md">
             {profileLoading ? (
               <Loading message="Loading profile..." />
             ) : profileData?.member ? (
-              <Stack spacing="md">
-                <Stack spacing="xs">
+              <>
+                <div className="flex items-center gap-2">
                   <Text weight="semibold" className="text-lg">{profileData.member.user.name}</Text>
                   <Badge variant={ROLE_COLORS[profileData.member.role]}>
                     {ROLE_LABELS[profileData.member.role]}
                   </Badge>
-                </Stack>
+                </div>
 
-                <Card className="bg-gray-50">
-                  <Stack spacing="sm">
-                    <Heading level={4}>Contribution Stats</Heading>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Stack spacing="xs">
-                        <Text variant="small" className="text-gray-500">Tasks Completed</Text>
-                        <Text weight="semibold">{profileData.stats.tasksCompleted}</Text>
-                      </Stack>
-                      <Stack spacing="xs">
-                        <Text variant="small" className="text-gray-500">Tasks In Progress</Text>
-                        <Text weight="semibold">{profileData.stats.tasksInProgress}</Text>
-                      </Stack>
-                      <Stack spacing="xs">
-                        <Text variant="small" className="text-gray-500">Proposals Created</Text>
-                        <Text weight="semibold">{profileData.stats.proposalsCreated}</Text>
-                      </Stack>
-                      <Stack spacing="xs">
-                        <Text variant="small" className="text-gray-500">Proposals Approved</Text>
-                        <Text weight="semibold">{profileData.stats.proposalsApproved}</Text>
-                      </Stack>
-                      <Stack spacing="xs">
-                        <Text variant="small" className="text-gray-500">Votes Cast</Text>
-                        <Text weight="semibold">{profileData.stats.votesCount}</Text>
-                      </Stack>
-                      <Stack spacing="xs">
-                        <Text variant="small" className="text-gray-500">Projects Led</Text>
-                        <Text weight="semibold">{profileData.stats.projectsLed}</Text>
-                      </Stack>
-                    </div>
-                  </Stack>
-                </Card>
+                <div className="bg-gray-50 rounded p-3">
+                  <Text variant="small" weight="semibold" className="mb-2">Stats</Text>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div><span className="text-gray-500">Tasks: </span><span className="font-medium">{profileData.stats.tasksCompleted}</span></div>
+                    <div><span className="text-gray-500">In Progress: </span><span className="font-medium">{profileData.stats.tasksInProgress}</span></div>
+                    <div><span className="text-gray-500">Proposals: </span><span className="font-medium">{profileData.stats.proposalsCreated}</span></div>
+                    <div><span className="text-gray-500">Approved: </span><span className="font-medium">{profileData.stats.proposalsApproved}</span></div>
+                    <div><span className="text-gray-500">Votes: </span><span className="font-medium">{profileData.stats.votesCount}</span></div>
+                    <div><span className="text-gray-500">Projects: </span><span className="font-medium">{profileData.stats.projectsLed}</span></div>
+                  </div>
+                </div>
 
                 {profileData.member.user.strengths?.length > 0 && (
-                  <Stack spacing="xs">
-                    <Text weight="semibold">Strengths</Text>
-                    <Flex gap="sm" className="flex-wrap">
+                  <div>
+                    <Text variant="small" weight="semibold">Strengths</Text>
+                    <Flex gap="sm" className="flex-wrap mt-1">
                       {profileData.member.user.strengths.map((s: string, i: number) => (
                         <Badge key={i} variant="neutral">{s}</Badge>
                       ))}
                     </Flex>
-                  </Stack>
+                  </div>
                 )}
 
                 {profileData.member.user.passions?.length > 0 && (
-                  <Stack spacing="xs">
-                    <Text weight="semibold">Passions</Text>
-                    <Flex gap="sm" className="flex-wrap">
+                  <div>
+                    <Text variant="small" weight="semibold">Passions</Text>
+                    <Flex gap="sm" className="flex-wrap mt-1">
                       {profileData.member.user.passions.map((p: string, i: number) => (
                         <Badge key={i} variant="info">{p}</Badge>
                       ))}
                     </Flex>
-                  </Stack>
+                  </div>
                 )}
 
                 {profileData.recentActivity.tasks.length > 0 && (
-                  <Stack spacing="xs">
-                    <Text weight="semibold">Recent Tasks</Text>
-                    {profileData.recentActivity.tasks.map((task: any) => (
-                      <Flex key={task.id} justify="between" className="text-sm py-1">
-                        <Text variant="small">{task.name}</Text>
-                        <Badge variant={task.status === 'COMPLETED' ? 'success' : 'neutral'}>
-                          {task.status}
-                        </Badge>
-                      </Flex>
-                    ))}
-                  </Stack>
+                  <div>
+                    <Text variant="small" weight="semibold">Recent Tasks</Text>
+                    <div className="mt-1">
+                      {profileData.recentActivity.tasks.map((task: any) => (
+                        <div key={task.id} className="flex justify-between text-sm py-1">
+                          <span>{task.name}</span>
+                          <Badge variant={task.status === 'COMPLETED' ? 'success' : 'neutral'}>
+                            {task.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
-                <Text variant="small" className="text-gray-400">
+                <Text variant="small" color="muted">
                   Member since {new Date(profileData.member.createdAt).toLocaleDateString()}
                 </Text>
 
-                {/* Manage Member Link - only for authorized users, not for self, not for founder */}
-                {canManageMembers &&
-                 selectedMember?.userId !== userId &&
-                 selectedMember?.role !== 'FOUNDER' && (
-                  <div className="pt-4 border-t border-gray-200">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => goToMemberActions(selectedMember.id)}
-                    >
-                      Manage Member
+                <Flex gap="sm" justify="between" className="pt-2 border-t border-gray-200">
+                  {canManageMembers && selectedMember?.userId !== userId && selectedMember?.role !== 'FOUNDER' && (
+                    <Button variant="secondary" size="sm" onClick={() => goToMemberActions(selectedMember.id)}>
+                      Manage
                     </Button>
-                  </div>
-                )}
-              </Stack>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={closeProfileModal}>Close</Button>
+                </Flex>
+              </>
             ) : (
               <Alert variant="danger">
                 <Text>Could not load member profile</Text>
               </Alert>
             )}
-
-            <Button variant="ghost" onClick={closeProfileModal}>
-              Close
-            </Button>
           </Stack>
         </Modal>
       </BandLayout>
