@@ -98,12 +98,45 @@ export const bandGovernanceRouter = router({
         })
       }
 
-      // Build update data
+      // Get current settings for audit log comparison
+      const currentBand = await prisma.band.findUnique({
+        where: { id: input.bandId },
+        select: {
+          name: true,
+          votingMethod: true,
+          votingPeriodDays: true,
+          quorumPercentage: true,
+          requireProposalReview: true,
+        },
+      })
+
+      if (!currentBand) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Band not found',
+        })
+      }
+
+      // Build update data and changes for audit
       const updateData: any = {}
-      if (input.votingMethod !== undefined) updateData.votingMethod = input.votingMethod
-      if (input.votingPeriodDays !== undefined) updateData.votingPeriodDays = input.votingPeriodDays
-      if (input.quorumPercentage !== undefined) updateData.quorumPercentage = input.quorumPercentage
-      if (input.requireProposalReview !== undefined) updateData.requireProposalReview = input.requireProposalReview
+      const changes: Record<string, { from: any; to: any }> = {}
+
+      if (input.votingMethod !== undefined && input.votingMethod !== currentBand.votingMethod) {
+        updateData.votingMethod = input.votingMethod
+        changes.votingMethod = { from: currentBand.votingMethod, to: input.votingMethod }
+      }
+      if (input.votingPeriodDays !== undefined && input.votingPeriodDays !== currentBand.votingPeriodDays) {
+        updateData.votingPeriodDays = input.votingPeriodDays
+        changes.votingPeriodDays = { from: currentBand.votingPeriodDays, to: input.votingPeriodDays }
+      }
+      if (input.quorumPercentage !== undefined && input.quorumPercentage !== currentBand.quorumPercentage) {
+        updateData.quorumPercentage = input.quorumPercentage
+        changes.quorumPercentage = { from: currentBand.quorumPercentage, to: input.quorumPercentage }
+      }
+      if (input.requireProposalReview !== undefined && input.requireProposalReview !== currentBand.requireProposalReview) {
+        updateData.requireProposalReview = input.requireProposalReview
+        changes.requireProposalReview = { from: currentBand.requireProposalReview, to: input.requireProposalReview }
+      }
 
       if (Object.keys(updateData).length === 0) {
         throw new TRPCError({
@@ -124,16 +157,17 @@ export const bandGovernanceRouter = router({
         },
       })
 
-      // Log to audit
+      // Log to audit - use entityType 'Band' so formatter handles it correctly
       await prisma.auditLog.create({
         data: {
           bandId: input.bandId,
           action: 'updated',
-          entityType: 'GovernanceSettings',
+          entityType: 'Band',
           entityId: input.bandId,
+          entityName: currentBand.name,
           actorId: input.userId,
           actorType: 'user',
-          changes: updateData,
+          changes,
         },
       })
 

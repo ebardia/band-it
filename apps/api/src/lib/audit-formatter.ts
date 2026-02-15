@@ -47,12 +47,12 @@ export function getAuditCategory(entityType: string, action: string, changes: Re
     case 'EventAttendance':
       return 'events'
     case 'Band':
-      // Check if it's a settings change
+      // Check if it's a governance settings change
       if (changes && (
         'votingMethod' in changes ||
         'votingPeriodDays' in changes ||
-        'requireProposalReview' in changes ||
-        'quorumPercentage' in changes
+        'quorumPercentage' in changes ||
+        'requireProposalReview' in changes
       )) {
         return 'settings'
       }
@@ -348,6 +348,9 @@ export function formatAuditDescription(entry: AuditEntry): FormattedAudit {
       }
       if (changes?.votingPeriodDays) {
         return { description: `${actor} changed voting period to ${changes.votingPeriodDays.to} days`, category }
+      }
+      if (changes?.quorumPercentage !== undefined) {
+        return { description: `${actor} changed quorum to ${changes.quorumPercentage.to}%`, category }
       }
       if (changes?.requireProposalReview !== undefined) {
         const enabled = changes.requireProposalReview.to ? 'enabled' : 'disabled'
