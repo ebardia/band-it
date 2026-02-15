@@ -336,9 +336,14 @@ export default function FinancePage() {
             <div className="flex justify-between items-center mb-2">
               <Text weight="semibold">Payment Processing</Text>
               {stripeStatus?.connected && canManageStripe && (
-                <Button variant="ghost" size="sm" onClick={handleRefreshStripe} disabled={stripeLoading}>
-                  Refresh
-                </Button>
+                <Flex gap="sm">
+                  <Button variant="ghost" size="sm" onClick={handleRefreshStripe} disabled={stripeLoading}>
+                    Refresh
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => setShowDisconnectModal(true)}>
+                    Disconnect
+                  </Button>
+                </Flex>
               )}
             </div>
 
@@ -377,14 +382,6 @@ export default function FinancePage() {
                       Stripe Dashboard
                     </a>
                   </Text>
-                )}
-
-                {canManageStripe && (
-                  <div className="flex justify-end">
-                    <Button variant="danger" size="sm" onClick={() => setShowDisconnectModal(true)}>
-                      Disconnect
-                    </Button>
-                  </div>
                 )}
               </div>
             ) : (
