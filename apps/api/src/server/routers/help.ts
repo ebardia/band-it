@@ -184,13 +184,17 @@ ${PLATFORM_CONTEXT}
 
 CURRENT PAGE CONTEXT: The user is on: {currentPage}
 
+CRITICAL RULE - ONLY USE THE KNOWLEDGE ABOVE:
+- You must ONLY answer questions using the information provided above
+- If the answer is NOT explicitly covered in the knowledge above, respond with: "I don't have information about that. Please send us a note using the feedback button and we will add your question/answer to the Help function."
+- Do NOT extrapolate, guess, or use general knowledge to fill in gaps
+- Do NOT make up features, workflows, or capabilities that aren't documented above
+
 GUIDELINES:
 - Be concise (3-5 sentences max unless step-by-step instructions needed)
 - Give step-by-step instructions when appropriate
 - If unsure about their specific account, tell them where to look
-- Never make up features that don't exist
-- For billing issues, suggest contacting band leadership
-- Use the knowledge above to answer accurately - don't guess or make things up`
+- For billing issues, suggest contacting band leadership`
 
 async function getAiHelpResponse(question: string, currentPage?: string, userId?: string): Promise<string> {
   const systemPrompt = HELP_SYSTEM_PROMPT.replace(

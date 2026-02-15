@@ -3,7 +3,7 @@
 # This file is the source of truth for the AI help assistant.
 # Update this when features change.
 #
-# Last reviewed: 2026-02-01
+# Last reviewed: 2026-02-15
 # Reviewer: Claude Code
 
 platform:
@@ -39,6 +39,22 @@ bands:
     CONDUCTOR: Can lead projects and tasks, but cannot review proposals
     VOTING_MEMBER: Standard participation with voting rights
     OBSERVER: Can view content but cannot vote or post
+  big_bands:
+    what: A Big Band is a parent organization that contains sub-bands. Sub-bands are regular bands that belong to a Big Band.
+    features:
+      - Big Bands can have multiple sub-bands
+      - Sub-bands inherit some settings from their parent Big Band
+      - Only Founders and Governors of a Big Band can create sub-bands
+      - Members can belong to both the Big Band and its sub-bands
+    creating_sub_band: "Go to Big Band's About page → Click '+ Create' in the Bands section → Fill in sub-band details → Create"
+  governance_settings:
+    what: Settings that control how proposals and voting work in the band
+    settings:
+      voting_method: "How votes are counted (Simple Majority >50%, Supermajority >66%, Supermajority >75%, Unanimous 100%)"
+      voting_period: "How long members have to vote (1-30 days, default 7)"
+      quorum_percentage: "Minimum percentage of eligible voters that must participate for a vote to be valid (0-100%)"
+      require_proposal_review: "When enabled, proposals must be approved by a moderator/governor before going to vote"
+    who_can_change: "Only Founders and Governors can change governance settings"
   workflows:
     create: "Overview → Create Band → Fill details (name, mission, values) → Invite members → Reach minimum members → Band is Active (in test mode, no payment needed)"
     join: "Discover Bands → Browse/search → Click Apply → Wait for approval → See band in Overview"
@@ -99,6 +115,56 @@ discussions:
   workflows:
     create_channel: "Discussions page → New Channel → Enter name and description → Choose visibility → Create"
     post_message: "Select channel → Type message → Send (or use @ to mention)"
+
+posts:
+  what: Long-form discussions organized into categories. Unlike real-time discussions in channels, posts are threaded conversations that persist and are easier to find later.
+  categories:
+    what: Posts are organized into categories (like forums). Each category can have its own visibility settings.
+    visibility:
+      PUBLIC: All band members can access
+      MODERATOR: Moderators, Governors, and Founders only
+      GOVERNANCE: Governors and Founders only
+    who_can_create_categories: "Founders, Governors, and Moderators can create and manage categories"
+  features:
+    - Create posts within categories
+    - Reply to posts (threaded responses)
+    - Pin important posts
+    - Lock posts to prevent new replies
+    - Archive categories
+  workflows:
+    create_category: "Posts page → New Category → Enter name, description, visibility → Create"
+    create_post: "Select category → New Post → Enter title and content → Submit"
+    reply_to_post: "Open post → Scroll to bottom → Write reply → Submit"
+
+finance:
+  what: Financial management features for bands, including treasurers and fund buckets.
+  treasurers:
+    what: Members designated to manage band finances
+    how_to_add: "Create a Governance proposal with 'Add Treasurer' action → Vote passes → Member becomes treasurer"
+    who_can_be_treasurer: "Any active band member can be designated as a treasurer"
+  buckets:
+    what: Virtual containers for organizing band funds by purpose
+    types:
+      OPERATING: General operating funds
+      PROJECT: Funds allocated to specific projects
+      RESTRICTED: Funds with usage restrictions (e.g., grants)
+      UNRESTRICTED: General purpose funds
+      COMMITMENT: Funds committed to future expenses
+    visibility:
+      PUBLIC: All members can see
+      TREASURER_ONLY: Only treasurers can see
+      GOVERNANCE_ONLY: Only governors and founders can see
+    management_policy:
+      TREASURER_ONLY: Only treasurers can manage buckets
+      OFFICER_TIER: Officers (Moderators and above) can manage buckets
+    how_to_create: "Create a Governance proposal with 'Create Bucket' action → Vote passes → Bucket is created"
+  stripe_connect:
+    what: Bands can connect their own Stripe account to receive payments directly
+    who_can_connect: "Only Founders and Governors can connect/disconnect Stripe"
+    features:
+      - Receive member dues directly to band's Stripe account
+      - Process payments without going through Band It
+      - Full control over your Stripe dashboard
 
 billing:
   note: "Band subscriptions are disabled in test mode - bands auto-activate without payment"
