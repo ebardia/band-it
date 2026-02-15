@@ -11,7 +11,6 @@ import {
   Button,
   useToast,
   Flex,
-  Card,
   Badge,
   Loading,
   Alert,
@@ -332,261 +331,181 @@ export default function FinancePage() {
         bandId={band.id}
         userId={userId || undefined}
       >
-        <Stack spacing="xl">
+        <Stack spacing="md">
           {/* Stripe Connect Section */}
-          <Card>
-            <Stack spacing="lg">
-              <Flex justify="between" align="center">
-                <Stack spacing="sm">
-                  <Heading level={2}>Payment Processing</Heading>
-                  <Text color="muted">Connect a Stripe account to receive payments directly</Text>
-                </Stack>
-                {stripeStatus?.connected && canManageStripe && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRefreshStripe}
-                    disabled={stripeLoading}
-                  >
-                    Refresh Status
-                  </Button>
-                )}
-              </Flex>
-
-              {stripeLoading ? (
-                <Loading message="Loading Stripe status..." />
-              ) : stripeStatus?.connected ? (
-                <Stack spacing="md">
-                  <Flex gap="md" align="center" className="flex-wrap">
-                    <Badge variant="success">Connected</Badge>
-                    {stripeStatus.chargesEnabled ? (
-                      <Badge variant="success">Charges Enabled</Badge>
-                    ) : (
-                      <Badge variant="warning">Charges Not Enabled</Badge>
-                    )}
-                    {stripeStatus.detailsSubmitted ? (
-                      <Badge variant="success">Details Complete</Badge>
-                    ) : (
-                      <Badge variant="warning">Details Incomplete</Badge>
-                    )}
-                  </Flex>
-
-                  <Card className="bg-gray-50">
-                    <Stack spacing="sm">
-                      <Flex justify="between">
-                        <Text variant="small" color="muted">Stripe Account ID</Text>
-                        <Text variant="small" className="font-mono">{stripeStatus.stripeAccountId}</Text>
-                      </Flex>
-                      {stripeStatus.connectedAt && (
-                        <Flex justify="between">
-                          <Text variant="small" color="muted">Connected</Text>
-                          <Text variant="small">{new Date(stripeStatus.connectedAt).toLocaleDateString()}</Text>
-                        </Flex>
-                      )}
-                    </Stack>
-                  </Card>
-
-                  {!stripeStatus.chargesEnabled && (
-                    <Alert variant="warning">
-                      <Text>
-                        Your Stripe account setup is incomplete. Please complete your account setup in the{' '}
-                        <a
-                          href="https://dashboard.stripe.com"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          Stripe Dashboard
-                        </a>{' '}
-                        to start accepting payments.
-                      </Text>
-                    </Alert>
-                  )}
-
-                  {canManageStripe && (
-                    <Flex justify="end">
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => setShowDisconnectModal(true)}
-                      >
-                        Disconnect Stripe
-                      </Button>
-                    </Flex>
-                  )}
-                </Stack>
-              ) : (
-                <Stack spacing="md">
-                  <Alert variant="info">
-                    <Text>
-                      No Stripe account connected. Connect a Stripe account to allow the band to receive
-                      payments directly. Band-It never touches your funds - payments go straight to your account.
-                    </Text>
-                  </Alert>
-
-                  {canManageStripe ? (
-                    <Button
-                      variant="primary"
-                      onClick={handleConnectStripe}
-                      disabled={connectingStripe}
-                    >
-                      {connectingStripe ? 'Connecting...' : 'Connect Stripe Account'}
-                    </Button>
-                  ) : (
-                    <Text variant="small" color="muted">
-                      Only Founders and Governors can connect Stripe accounts.
-                    </Text>
-                  )}
-                </Stack>
-              )}
-            </Stack>
-          </Card>
-
-          {/* Treasurers Section */}
-          <Card>
-            <Stack spacing="lg">
-              <Stack spacing="sm">
-                <Heading level={2}>Treasurers</Heading>
-                <Text color="muted">
-                  Treasurers are trusted members responsible for managing the band's finances.
-                  They can view all financial information, manage buckets (depending on policy),
-                  and oversee fund allocations. This is a responsibility flag, not a role change.
-                </Text>
-              </Stack>
-
-              {treasurers.length > 0 ? (
-                <Stack spacing="sm">
-                  {treasurers.map((member: any) => (
-                    <Flex key={member.id} justify="between" align="center" className="py-2 border-b border-gray-100 last:border-0">
-                      <Flex gap="sm" align="center">
-                        <Text weight="semibold">{member.user.name}</Text>
-                        <Badge variant="info">{member.role.replace('_', ' ')}</Badge>
-                      </Flex>
-                      <Badge variant="success">Treasurer</Badge>
-                    </Flex>
-                  ))}
-                </Stack>
-              ) : (
-                <Card className="bg-gray-50 border-dashed">
-                  <Stack spacing="sm">
-                    <Text weight="semibold">No treasurers assigned yet</Text>
-                    <Text variant="small" color="muted">
-                      To add a treasurer, create a Governance proposal with the "Add Treasurer" effect.
-                      Once approved by the band, the member will gain treasurer responsibilities.
-                    </Text>
-                  </Stack>
-                </Card>
-              )}
-            </Stack>
-          </Card>
-
-          {/* Buckets Section */}
-          <Card>
-            <Stack spacing="lg">
-              <Stack spacing="sm">
-                <Heading level={2}>Buckets</Heading>
-                <Text color="muted">
-                  Buckets are virtual containers for organizing and tracking the band's funds by purpose.
-                  They help ensure money is allocated appropriately and spent according to band decisions.
-                  Think of them like separate "accounts" within your overall treasury.
-                </Text>
-              </Stack>
-
-              {financeSettings && (
-                <Card className="bg-gray-50">
-                  <Flex gap="sm" align="center">
-                    <Text variant="small" weight="semibold">Management Policy:</Text>
-                    <Badge variant={financeSettings.bucketManagementPolicy === 'TREASURER_ONLY' ? 'warning' : 'info'}>
-                      {financeSettings.bucketManagementPolicy === 'TREASURER_ONLY' ? 'Treasurer Only' : 'Officer Tier'}
-                    </Badge>
-                    <Text variant="small" color="muted">
-                      {financeSettings.bucketManagementPolicy === 'TREASURER_ONLY'
-                        ? '— Only treasurers can manage bucket funds'
-                        : '— Officers (Conductor+) can manage bucket funds'}
-                    </Text>
-                  </Flex>
-                </Card>
-              )}
-
-              {buckets.length > 0 ? (
-                <Stack spacing="sm">
-                  {buckets.filter((b: any) => b.isActive).map((bucket: any) => (
-                    <Card key={bucket.id} className="bg-gray-50">
-                      <Flex justify="between" align="start">
-                        <Stack spacing="sm">
-                          <Text weight="semibold">{bucket.name}</Text>
-                          <Flex gap="sm">
-                            {getBucketTypeBadge(bucket.type)}
-                            {getVisibilityBadge(bucket.visibility)}
-                          </Flex>
-                          <Text variant="small" color="muted">
-                            {getBucketTypeDescription(bucket.type)}
-                          </Text>
-                        </Stack>
-                      </Flex>
-                    </Card>
-                  ))}
-                </Stack>
-              ) : (
-                <Card className="bg-gray-50 border-dashed">
-                  <Stack spacing="md">
-                    <Text weight="semibold">No buckets created yet</Text>
-                    <Text variant="small" color="muted">
-                      To create buckets, submit a Governance proposal with "Create Bucket" effects.
-                      Once approved, the buckets will appear here.
-                    </Text>
-                    <Stack spacing="sm">
-                      <Text variant="small" weight="semibold">Bucket Types:</Text>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-                        <div><Badge variant="success">OPERATING</Badge> — Day-to-day expenses</div>
-                        <div><Badge variant="info">PROJECT</Badge> — Funds for specific projects</div>
-                        <div><Badge variant="danger">RESTRICTED</Badge> — Specific usage restrictions</div>
-                        <div><Badge variant="neutral">UNRESTRICTED</Badge> — General purpose funds</div>
-                        <div><Badge variant="warning">COMMITMENT</Badge> — Future obligations</div>
-                      </div>
-                    </Stack>
-                  </Stack>
-                </Card>
-              )}
-            </Stack>
-          </Card>
-
-          {/* Finance Governance Info */}
-          <Card className="bg-blue-50 border-blue-200">
-            <Stack spacing="md">
-              <Heading level={3}>How to Manage Band Finances</Heading>
-              <Text variant="small">
-                All finance changes require band approval through governance proposals. This ensures
-                transparency and democratic control over the band's money.
-              </Text>
-
-              <Stack spacing="sm">
-                <Text variant="small" weight="semibold">Available Finance Actions:</Text>
-                <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-                  <li><strong>Add/Remove Treasurer</strong> — Assign or remove treasurer responsibilities from a member</li>
-                  <li><strong>Create Bucket</strong> — Create a new fund category for organizing money</li>
-                  <li><strong>Update Bucket</strong> — Change a bucket's name, type, or visibility</li>
-                  <li><strong>Deactivate Bucket</strong> — Archive a bucket that's no longer needed</li>
-                  <li><strong>Set Management Policy</strong> — Control who can manage bucket funds</li>
-                </ul>
-              </Stack>
-
-              <Text variant="small" color="muted">
-                To make changes, create a new proposal, select "Governance" as the execution type,
-                and choose "Finance Bucket Governance" as the subtype.
-              </Text>
-
-              {isMember && (
+          <div className="border border-gray-200 rounded-lg bg-white p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <Heading level={2}>Payment Processing</Heading>
+                <Text variant="small" color="muted">Connect a Stripe account to receive payments directly</Text>
+              </div>
+              {stripeStatus?.connected && canManageStripe && (
                 <Button
-                  variant="primary"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => router.push(`/bands/${slug}/proposals/create`)}
+                  onClick={handleRefreshStripe}
+                  disabled={stripeLoading}
                 >
-                  Create Finance Proposal
+                  Refresh
                 </Button>
               )}
-            </Stack>
-          </Card>
+            </div>
+
+            {stripeLoading ? (
+              <Loading message="Loading Stripe status..." />
+            ) : stripeStatus?.connected ? (
+              <Stack spacing="sm">
+                <Flex gap="sm" align="center" className="flex-wrap">
+                  <Badge variant="success">Connected</Badge>
+                  {stripeStatus.chargesEnabled ? (
+                    <Badge variant="success">Charges Enabled</Badge>
+                  ) : (
+                    <Badge variant="warning">Charges Not Enabled</Badge>
+                  )}
+                  {stripeStatus.detailsSubmitted ? (
+                    <Badge variant="success">Details Complete</Badge>
+                  ) : (
+                    <Badge variant="warning">Details Incomplete</Badge>
+                  )}
+                </Flex>
+
+                <div className="flex items-center gap-4 text-sm text-gray-500 py-2 px-3 bg-gray-50 rounded">
+                  <span>ID: <span className="font-mono">{stripeStatus.stripeAccountId}</span></span>
+                  {stripeStatus.connectedAt && (
+                    <>
+                      <span>•</span>
+                      <span>Connected: {new Date(stripeStatus.connectedAt).toLocaleDateString()}</span>
+                    </>
+                  )}
+                </div>
+
+                {!stripeStatus.chargesEnabled && (
+                  <Alert variant="warning">
+                    <Text variant="small">
+                      Setup incomplete. Complete your account in the{' '}
+                      <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        Stripe Dashboard
+                      </a>.
+                    </Text>
+                  </Alert>
+                )}
+
+                {canManageStripe && (
+                  <div className="flex justify-end pt-2">
+                    <Button variant="danger" size="sm" onClick={() => setShowDisconnectModal(true)}>
+                      Disconnect
+                    </Button>
+                  </div>
+                )}
+              </Stack>
+            ) : (
+              <Stack spacing="sm">
+                <Text variant="small" color="muted">
+                  No Stripe account connected. Connect to receive payments directly.
+                </Text>
+                {canManageStripe ? (
+                  <Button variant="primary" size="sm" onClick={handleConnectStripe} disabled={connectingStripe}>
+                    {connectingStripe ? 'Connecting...' : 'Connect Stripe Account'}
+                  </Button>
+                ) : (
+                  <Text variant="small" color="muted">Only Founders and Governors can connect Stripe.</Text>
+                )}
+              </Stack>
+            )}
+          </div>
+
+          {/* Treasurers Section */}
+          <div className="border border-gray-200 rounded-lg bg-white p-4">
+            <div className="mb-2">
+              <Heading level={2}>Treasurers</Heading>
+              <Text variant="small" color="muted">Members responsible for managing band finances</Text>
+            </div>
+
+            {treasurers.length > 0 ? (
+              <div className="border border-gray-100 rounded overflow-hidden mt-3">
+                {treasurers.map((member: any) => (
+                  <div key={member.id} className="flex items-center justify-between py-2 px-3 border-b border-gray-100 last:border-0">
+                    <div className="flex items-center gap-2">
+                      <Text weight="semibold">{member.user.name}</Text>
+                      <Badge variant="info">{member.role.replace('_', ' ')}</Badge>
+                    </div>
+                    <Badge variant="success">Treasurer</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-gray-50 border border-dashed border-gray-200 rounded p-3 mt-3">
+                <Text variant="small" color="muted">
+                  No treasurers yet. Create a Governance proposal with "Add Treasurer" to assign one.
+                </Text>
+              </div>
+            )}
+          </div>
+
+          {/* Buckets Section */}
+          <div className="border border-gray-200 rounded-lg bg-white p-4">
+            <div className="mb-2">
+              <Heading level={2}>Buckets</Heading>
+              <Text variant="small" color="muted">Virtual containers for organizing funds by purpose</Text>
+            </div>
+
+            {financeSettings && (
+              <div className="flex items-center gap-2 text-sm py-2 px-3 bg-gray-50 rounded mt-3">
+                <span className="font-medium">Policy:</span>
+                <Badge variant={financeSettings.bucketManagementPolicy === 'TREASURER_ONLY' ? 'warning' : 'info'}>
+                  {financeSettings.bucketManagementPolicy === 'TREASURER_ONLY' ? 'Treasurer Only' : 'Officer Tier'}
+                </Badge>
+              </div>
+            )}
+
+            {buckets.length > 0 ? (
+              <div className="border border-gray-100 rounded overflow-hidden mt-3">
+                {buckets.filter((b: any) => b.isActive).map((bucket: any) => (
+                  <div key={bucket.id} className="py-2 px-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Text weight="semibold">{bucket.name}</Text>
+                      {getBucketTypeBadge(bucket.type)}
+                      {getVisibilityBadge(bucket.visibility)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-gray-50 border border-dashed border-gray-200 rounded p-3 mt-3">
+                <Text variant="small" color="muted" className="mb-2">
+                  No buckets yet. Create via Governance proposal with "Create Bucket".
+                </Text>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <span><Badge variant="success">OPERATING</Badge></span>
+                  <span><Badge variant="info">PROJECT</Badge></span>
+                  <span><Badge variant="danger">RESTRICTED</Badge></span>
+                  <span><Badge variant="neutral">UNRESTRICTED</Badge></span>
+                  <span><Badge variant="warning">COMMITMENT</Badge></span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Finance Governance Info */}
+          <div className="border border-blue-200 rounded-lg bg-blue-50 p-4">
+            <Heading level={3}>How to Manage Finances</Heading>
+            <Text variant="small" color="muted" className="mt-1">
+              All changes require approval via governance proposals for transparency.
+            </Text>
+
+            <div className="mt-3 text-sm text-gray-600">
+              <span className="font-medium">Actions: </span>
+              Add/Remove Treasurer • Create/Update/Deactivate Bucket • Set Management Policy
+            </div>
+
+            {isMember && (
+              <div className="mt-3">
+                <Button variant="primary" size="sm" onClick={() => router.push(`/bands/${slug}/proposals/create`)}>
+                  Create Finance Proposal
+                </Button>
+              </div>
+            )}
+          </div>
         </Stack>
 
         {/* Disconnect Confirmation Modal */}
