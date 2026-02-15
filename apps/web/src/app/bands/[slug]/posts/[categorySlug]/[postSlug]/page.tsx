@@ -112,7 +112,7 @@ function ResponseThread({
               )}
             </Flex>
           </Flex>
-          <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+          <div dir="auto" style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', textAlign: 'start', unicodeBidi: 'plaintext' }}>
             {response.content}
           </div>
         </Stack>
@@ -467,13 +467,18 @@ export default function PostDetailPage() {
                   </Flex>
                 )}
               </Flex>
-              <div style={{
-                whiteSpace: 'pre-wrap',
-                fontFamily: 'inherit',
-                padding: '16px',
-                backgroundColor: 'var(--color-surface-hover, #f5f5f5)',
-                borderRadius: '8px',
-              }}>
+              <div
+                dir="auto"
+                style={{
+                  whiteSpace: 'pre-wrap',
+                  fontFamily: 'inherit',
+                  padding: '16px',
+                  backgroundColor: 'var(--color-surface-hover, #f5f5f5)',
+                  borderRadius: '8px',
+                  textAlign: 'start',
+                  unicodeBidi: 'plaintext',
+                }}
+              >
                 {post.content}
               </div>
             </Stack>
@@ -606,6 +611,7 @@ export default function PostDetailPage() {
           isOpen={editPostModal}
           onClose={() => setEditPostModal(false)}
           title="Edit Post"
+          size="4xl"
         >
           <Stack spacing="md">
             <Input
@@ -614,13 +620,18 @@ export default function PostDetailPage() {
               onChange={(e) => setEditPostTitle(e.target.value)}
               maxLength={200}
             />
-            <Textarea
-              label="Content"
-              value={editPostContent}
-              onChange={(e) => setEditPostContent(e.target.value)}
-              rows={10}
-              placeholder="Post content (Markdown supported)..."
-            />
+            <div>
+              <Text variant="small" weight="semibold" className="mb-1">Content</Text>
+              <textarea
+                dir="auto"
+                value={editPostContent}
+                onChange={(e) => setEditPostContent(e.target.value)}
+                rows={25}
+                placeholder="Post content (Markdown supported)..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[400px]"
+                style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}
+              />
+            </div>
             <Flex justify="end" gap="sm">
               <Button variant="ghost" onClick={() => setEditPostModal(false)}>
                 Cancel

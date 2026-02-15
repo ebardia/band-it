@@ -231,9 +231,11 @@ function InlineReply({ reply, userId, userRole, bandId }: InlineReplyProps) {
             <Text variant="small" color="muted">{formatTime(reply.createdAt)}</Text>
             {reply.isEdited && <Text variant="small" color="muted">(edited)</Text>}
           </Flex>
-          <Text variant="small" className="whitespace-pre-wrap break-words">
-            {highlightMentions(reply.content)}
-          </Text>
+          <div dir="auto" style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}>
+            <Text variant="small" className="whitespace-pre-wrap break-words">
+              {highlightMentions(reply.content)}
+            </Text>
+          </div>
           <Flex gap="sm" align="center" className="mt-1">
             <ReactionBar
               messageId={reply.id}
@@ -409,9 +411,11 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
               </Flex>
             </Stack>
           ) : (
-            <Text className="whitespace-pre-wrap break-words">
-              {highlightMentions(message.content)}
-            </Text>
+            <div dir="auto" style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}>
+              <Text className="whitespace-pre-wrap break-words">
+                {highlightMentions(message.content)}
+              </Text>
+            </div>
           )}
 
           {/* Reactions & Actions - single row */}

@@ -218,9 +218,11 @@ function ThreadMessage({ bandId, message, userId, userRole, isParent }: ThreadMe
           </Flex>
 
           {/* Content */}
-          <Text variant="small" className="whitespace-pre-wrap break-words">
-            {highlightMentions(message.content)}
-          </Text>
+          <div dir="auto" style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}>
+            <Text variant="small" className="whitespace-pre-wrap break-words">
+              {highlightMentions(message.content)}
+            </Text>
+          </div>
 
           {/* Reactions & Actions */}
           <Flex gap="sm" align="center" className="mt-1 flex-wrap">
