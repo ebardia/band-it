@@ -5,7 +5,6 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import {
-  Heading,
   Text,
   Stack,
   Button,
@@ -333,28 +332,20 @@ export default function FinancePage() {
       >
         <Stack spacing="md">
           {/* Stripe Connect Section */}
-          <div className="border border-gray-200 rounded-lg bg-white p-4">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <Heading level={2}>Payment Processing</Heading>
-                <Text variant="small" color="muted">Connect a Stripe account to receive payments directly</Text>
-              </div>
+          <div className="border border-gray-200 rounded-lg bg-white p-3">
+            <div className="flex justify-between items-center mb-2">
+              <Text weight="semibold">Payment Processing</Text>
               {stripeStatus?.connected && canManageStripe && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRefreshStripe}
-                  disabled={stripeLoading}
-                >
+                <Button variant="ghost" size="sm" onClick={handleRefreshStripe} disabled={stripeLoading}>
                   Refresh
                 </Button>
               )}
             </div>
 
             {stripeLoading ? (
-              <Loading message="Loading Stripe status..." />
+              <Loading message="Loading..." />
             ) : stripeStatus?.connected ? (
-              <Stack spacing="sm">
+              <div className="space-y-2">
                 <Flex gap="sm" align="center" className="flex-wrap">
                   <Badge variant="success">Connected</Badge>
                   {stripeStatus.chargesEnabled ? (
@@ -369,64 +360,56 @@ export default function FinancePage() {
                   )}
                 </Flex>
 
-                <div className="flex items-center gap-4 text-sm text-gray-500 py-2 px-3 bg-gray-50 rounded">
-                  <span>ID: <span className="font-mono">{stripeStatus.stripeAccountId}</span></span>
+                <div className="flex items-center gap-3 text-xs text-gray-500 py-1.5 px-2 bg-gray-50 rounded">
+                  <span className="font-mono">{stripeStatus.stripeAccountId}</span>
                   {stripeStatus.connectedAt && (
                     <>
                       <span>•</span>
-                      <span>Connected: {new Date(stripeStatus.connectedAt).toLocaleDateString()}</span>
+                      <span>Connected {new Date(stripeStatus.connectedAt).toLocaleDateString()}</span>
                     </>
                   )}
                 </div>
 
                 {!stripeStatus.chargesEnabled && (
-                  <Alert variant="warning">
-                    <Text variant="small">
-                      Setup incomplete. Complete your account in the{' '}
-                      <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        Stripe Dashboard
-                      </a>.
-                    </Text>
-                  </Alert>
+                  <Text variant="small" color="muted">
+                    Complete setup in{' '}
+                    <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      Stripe Dashboard
+                    </a>
+                  </Text>
                 )}
 
                 {canManageStripe && (
-                  <div className="flex justify-end pt-2">
+                  <div className="flex justify-end">
                     <Button variant="danger" size="sm" onClick={() => setShowDisconnectModal(true)}>
                       Disconnect
                     </Button>
                   </div>
                 )}
-              </Stack>
+              </div>
             ) : (
-              <Stack spacing="sm">
-                <Text variant="small" color="muted">
-                  No Stripe account connected. Connect to receive payments directly.
-                </Text>
+              <div className="flex items-center justify-between">
+                <Text variant="small" color="muted">No Stripe account connected</Text>
                 {canManageStripe ? (
                   <Button variant="primary" size="sm" onClick={handleConnectStripe} disabled={connectingStripe}>
-                    {connectingStripe ? 'Connecting...' : 'Connect Stripe Account'}
+                    {connectingStripe ? 'Connecting...' : 'Connect Stripe'}
                   </Button>
                 ) : (
-                  <Text variant="small" color="muted">Only Founders and Governors can connect Stripe.</Text>
+                  <Text variant="small" color="muted">Founders/Governors only</Text>
                 )}
-              </Stack>
+              </div>
             )}
           </div>
 
           {/* Treasurers Section */}
-          <div className="border border-gray-200 rounded-lg bg-white p-4">
-            <div className="mb-2">
-              <Heading level={2}>Treasurers</Heading>
-              <Text variant="small" color="muted">Members responsible for managing band finances</Text>
-            </div>
-
+          <div className="border border-gray-200 rounded-lg bg-white p-3">
+            <Text weight="semibold" className="mb-2">Treasurers</Text>
             {treasurers.length > 0 ? (
-              <div className="border border-gray-100 rounded overflow-hidden mt-3">
+              <div className="space-y-1">
                 {treasurers.map((member: any) => (
-                  <div key={member.id} className="flex items-center justify-between py-2 px-3 border-b border-gray-100 last:border-0">
+                  <div key={member.id} className="flex items-center justify-between py-1">
                     <div className="flex items-center gap-2">
-                      <Text weight="semibold">{member.user.name}</Text>
+                      <Text variant="small">{member.user.name}</Text>
                       <Badge variant="info">{member.role.replace('_', ' ')}</Badge>
                     </div>
                     <Badge variant="success">Treasurer</Badge>
@@ -434,105 +417,63 @@ export default function FinancePage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-gray-50 border border-dashed border-gray-200 rounded p-3 mt-3">
-                <Text variant="small" color="muted">
-                  No treasurers yet. Create a Governance proposal with "Add Treasurer" to assign one.
-                </Text>
-              </div>
+              <Text variant="small" color="muted">None yet. Add via Governance proposal.</Text>
             )}
           </div>
 
           {/* Buckets Section */}
-          <div className="border border-gray-200 rounded-lg bg-white p-4">
-            <div className="mb-2">
-              <Heading level={2}>Buckets</Heading>
-              <Text variant="small" color="muted">Virtual containers for organizing funds by purpose</Text>
-            </div>
-
-            {financeSettings && (
-              <div className="flex items-center gap-2 text-sm py-2 px-3 bg-gray-50 rounded mt-3">
-                <span className="font-medium">Policy:</span>
+          <div className="border border-gray-200 rounded-lg bg-white p-3">
+            <div className="flex items-center justify-between mb-2">
+              <Text weight="semibold">Buckets</Text>
+              {financeSettings && (
                 <Badge variant={financeSettings.bucketManagementPolicy === 'TREASURER_ONLY' ? 'warning' : 'info'}>
                   {financeSettings.bucketManagementPolicy === 'TREASURER_ONLY' ? 'Treasurer Only' : 'Officer Tier'}
                 </Badge>
-              </div>
-            )}
-
+              )}
+            </div>
             {buckets.length > 0 ? (
-              <div className="border border-gray-100 rounded overflow-hidden mt-3">
+              <div className="space-y-1">
                 {buckets.filter((b: any) => b.isActive).map((bucket: any) => (
-                  <div key={bucket.id} className="py-2 px-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Text weight="semibold">{bucket.name}</Text>
-                      {getBucketTypeBadge(bucket.type)}
-                      {getVisibilityBadge(bucket.visibility)}
-                    </div>
+                  <div key={bucket.id} className="flex items-center gap-2 py-1 flex-wrap">
+                    <Text variant="small">{bucket.name}</Text>
+                    {getBucketTypeBadge(bucket.type)}
+                    {getVisibilityBadge(bucket.visibility)}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="bg-gray-50 border border-dashed border-gray-200 rounded p-3 mt-3">
-                <Text variant="small" color="muted" className="mb-2">
-                  No buckets yet. Create via Governance proposal with "Create Bucket".
-                </Text>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <span><Badge variant="success">OPERATING</Badge></span>
-                  <span><Badge variant="info">PROJECT</Badge></span>
-                  <span><Badge variant="danger">RESTRICTED</Badge></span>
-                  <span><Badge variant="neutral">UNRESTRICTED</Badge></span>
-                  <span><Badge variant="warning">COMMITMENT</Badge></span>
-                </div>
-              </div>
+              <Text variant="small" color="muted">None yet. Create via Governance proposal.</Text>
             )}
           </div>
 
           {/* Finance Governance Info */}
-          <div className="border border-blue-200 rounded-lg bg-blue-50 p-4">
-            <Heading level={3}>How to Manage Finances</Heading>
-            <Text variant="small" color="muted" className="mt-1">
-              All changes require approval via governance proposals for transparency.
-            </Text>
-
-            <div className="mt-3 text-sm text-gray-600">
-              <span className="font-medium">Actions: </span>
-              Add/Remove Treasurer • Create/Update/Deactivate Bucket • Set Management Policy
-            </div>
-
-            {isMember && (
-              <div className="mt-3">
-                <Button variant="primary" size="sm" onClick={() => router.push(`/bands/${slug}/proposals/create`)}>
-                  Create Finance Proposal
-                </Button>
+          <div className="border border-blue-200 rounded-lg bg-blue-50 p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <Text weight="semibold">Manage via Proposals</Text>
+                <Text variant="small" color="muted">Add/Remove Treasurer • Create Bucket • Set Policy</Text>
               </div>
-            )}
+              {isMember && (
+                <Button variant="primary" size="sm" onClick={() => router.push(`/bands/${slug}/proposals/create`)}>
+                  Create Proposal
+                </Button>
+              )}
+            </div>
           </div>
         </Stack>
 
         {/* Disconnect Confirmation Modal */}
         <Modal isOpen={showDisconnectModal} onClose={() => setShowDisconnectModal(false)}>
-          <Stack spacing="lg">
-            <Heading level={2}>Disconnect Stripe Account?</Heading>
-            <Text>
-              Are you sure you want to disconnect the Stripe account? The band will no longer
-              be able to receive payments until a new account is connected.
-            </Text>
-            <Text variant="small" color="muted">
-              This action does not affect your Stripe account itself - you can reconnect
-              the same account or a different one at any time.
-            </Text>
-            <Flex gap="md" justify="end">
-              <Button
-                variant="ghost"
-                onClick={() => setShowDisconnectModal(false)}
-                disabled={disconnectingStripe}
-              >
+          <Stack spacing="md">
+            <Text weight="semibold" className="text-lg">Disconnect Stripe Account?</Text>
+            <Alert variant="warning">
+              <Text variant="small">The band will no longer receive payments until reconnected.</Text>
+            </Alert>
+            <Flex gap="sm" justify="end">
+              <Button variant="ghost" size="sm" onClick={() => setShowDisconnectModal(false)} disabled={disconnectingStripe}>
                 Cancel
               </Button>
-              <Button
-                variant="danger"
-                onClick={handleDisconnectStripe}
-                disabled={disconnectingStripe}
-              >
+              <Button variant="danger" size="sm" onClick={handleDisconnectStripe} disabled={disconnectingStripe}>
                 {disconnectingStripe ? 'Disconnecting...' : 'Disconnect'}
               </Button>
             </Flex>
