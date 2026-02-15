@@ -16,6 +16,7 @@ import {
   Alert,
   BandLayout,
   Textarea,
+  Input,
   Modal,
   useToast
 } from '@/components/ui'
@@ -153,6 +154,12 @@ export default function PostDetailPage() {
   const [editContent, setEditContent] = useState('')
   const [deleteModal, setDeleteModal] = useState<string | null>(null)
 
+  // Post edit/delete state
+  const [editPostModal, setEditPostModal] = useState(false)
+  const [editPostTitle, setEditPostTitle] = useState('')
+  const [editPostContent, setEditPostContent] = useState('')
+  const [deletePostModal, setDeletePostModal] = useState(false)
+
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
@@ -224,6 +231,32 @@ export default function PostDetailPage() {
   const toggleLockMutation = trpc.posts.toggleLockPost.useMutation({
     onSuccess: () => {
       refetchPost()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
+  const updatePostMutation = trpc.posts.updatePost.useMutation({
+    onSuccess: (data) => {
+      showToast('Post updated!', 'success')
+      setEditPostModal(false)
+      // If slug changed, navigate to new URL
+      if (data.post.slug !== postSlug) {
+        router.replace(`/bands/${slug}/posts/${categorySlug}/${data.post.slug}`)
+      } else {
+        refetchPost()
+      }
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
+  const deletePostMutation = trpc.posts.deletePost.useMutation({
+    onSuccess: () => {
+      showToast('Post deleted.', 'success')
+      router.push(`/bands/${slug}/posts/${categorySlug}`)
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -335,6 +368,30 @@ export default function PostDetailPage() {
     })
   }
 
+  const handleOpenEditPost = () => {
+    setEditPostTitle(post.title)
+    setEditPostContent(post.content)
+    setEditPostModal(true)
+  }
+
+  const handleUpdatePost = () => {
+    if (!editPostTitle.trim() || !editPostContent.trim()) return
+
+    updatePostMutation.mutate({
+      postId: post.id,
+      userId: userId!,
+      title: editPostTitle.trim(),
+      content: editPostContent.trim(),
+    })
+  }
+
+  const handleDeletePost = () => {
+    deletePostMutation.mutate({
+      postId: post.id,
+      userId: userId!,
+    })
+  }
+
   return (
     <>
       <AppNav />
@@ -394,6 +451,21 @@ export default function PostDetailPage() {
                     {post.isEdited && ` • Edited ${formatDate(post.editedAt!)}`}
                   </Text>
                 </Stack>
+                {/* Author edit/delete buttons */}
+                {(postData.canEdit || postData.canDelete) && (
+                  <Flex gap="xs">
+                    {postData.canEdit && (
+                      <Button variant="ghost" size="sm" onClick={handleOpenEditPost}>
+                        Edit
+                      </Button>
+                    )}
+                    {postData.canDelete && (
+                      <Button variant="ghost" size="sm" onClick={() => setDeletePostModal(true)}>
+                        Delete
+                      </Button>
+                    )}
+                  </Flex>
+                )}
               </Flex>
               <div style={{
                 whiteSpace: 'pre-wrap',
@@ -524,6 +596,64 @@ export default function PostDetailPage() {
                 disabled={deleteResponseMutation.isPending}
               >
                 {deleteResponseMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </Flex>
+          </Stack>
+        </Modal>
+
+        {/* Edit Post modal */}
+        <Modal
+          isOpen={editPostModal}
+          onClose={() => setEditPostModal(false)}
+          title="Edit Post"
+        >
+          <Stack spacing="md">
+            <Input
+              label="Title"
+              value={editPostTitle}
+              onChange={(e) => setEditPostTitle(e.target.value)}
+              maxLength={200}
+            />
+            <Textarea
+              label="Content"
+              value={editPostContent}
+              onChange={(e) => setEditPostContent(e.target.value)}
+              rows={10}
+              placeholder="Post content (Markdown supported)..."
+            />
+            <Flex justify="end" gap="sm">
+              <Button variant="ghost" onClick={() => setEditPostModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleUpdatePost}
+                disabled={!editPostTitle.trim() || !editPostContent.trim() || updatePostMutation.isPending}
+              >
+                {updatePostMutation.isPending ? 'Saving...' : 'Save'}
+              </Button>
+            </Flex>
+          </Stack>
+        </Modal>
+
+        {/* Delete Post modal */}
+        <Modal
+          isOpen={deletePostModal}
+          onClose={() => setDeletePostModal(false)}
+          title="Delete Post"
+        >
+          <Stack spacing="md">
+            <Text>Are you sure you want to delete this post? All responses will also be deleted. This action cannot be undone.</Text>
+            <Flex justify="end" gap="sm">
+              <Button variant="ghost" onClick={() => setDeletePostModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDeletePost}
+                disabled={deletePostMutation.isPending}
+              >
+                {deletePostMutation.isPending ? 'Deleting...' : 'Delete Post'}
               </Button>
             </Flex>
           </Stack>
