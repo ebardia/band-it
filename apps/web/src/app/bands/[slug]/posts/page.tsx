@@ -5,12 +5,10 @@ import { useRouter, useParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import {
-  Heading,
   Text,
   Stack,
   Button,
   Flex,
-  Card,
   Badge,
   Loading,
   Alert,
@@ -240,138 +238,76 @@ export default function PostsPage() {
           ) : undefined
         }
       >
-        <Stack spacing="xl">
-          <Stack spacing="sm">
-            <Text color="muted">
-              Long-form discussions and conversations for your band.
-            </Text>
-          </Stack>
-
+        <Stack spacing="md">
           {categories.length === 0 ? (
-            <Alert variant="info">
-              <Text>No post categories yet. Check back later!</Text>
-            </Alert>
+            <div className="border border-gray-200 rounded-lg bg-white p-4 text-center">
+              <Text color="muted">No post categories yet.</Text>
+            </div>
           ) : (
-            <Stack spacing="md">
+            <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
               {categories.map((category: any) => (
-                <Card
+                <div
                   key={category.id}
-                  style={{
-                    cursor: category.hasAccess ? 'pointer' : 'default',
-                    opacity: category.hasAccess ? 1 : 0.6,
-                  }}
+                  className={`border-b border-gray-100 last:border-b-0 ${category.hasAccess ? 'hover:bg-gray-50 cursor-pointer' : 'opacity-60'}`}
                   onClick={() => {
                     if (category.hasAccess) {
                       router.push(`/bands/${slug}/posts/${category.slug}`)
                     }
                   }}
                 >
-                  <Flex justify="between" align="center">
-                    <Stack spacing="xs">
-                      <Flex align="center" gap="sm">
-                        <Heading level={3}>{category.name}</Heading>
+                  <div className="flex items-center justify-between py-3 px-3 md:px-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Text weight="semibold">{category.name}</Text>
                         {getVisibilityBadge(category.visibility)}
                         {category.isArchived && <Badge variant="neutral">Archived</Badge>}
-                      </Flex>
+                        {!category.hasAccess && <Badge variant="danger">Restricted</Badge>}
+                      </div>
                       {category.description && (
-                        <Text variant="small" color="muted">
-                          {category.description}
-                        </Text>
+                        <Text variant="small" color="muted" className="line-clamp-1">{category.description}</Text>
                       )}
-                      {!category.hasAccess && (
-                        <Text variant="small" color="danger">
-                          Access restricted
-                        </Text>
-                      )}
-                    </Stack>
-                    <Flex align="center" gap="md">
+                    </div>
+                    <div className="flex items-center gap-3 ml-3">
                       {category.hasAccess && (
-                        <div style={{ textAlign: 'right' }}>
-                          <Stack spacing="xs">
-                            <Text variant="small" weight="semibold">
-                              {category.postCount} {category.postCount === 1 ? 'post' : 'posts'}
-                            </Text>
-                            <Text variant="small" color="muted">
-                              Last activity: {formatDate(category.lastPostAt)}
-                            </Text>
-                          </Stack>
+                        <div className="text-right text-sm">
+                          <span className="font-medium">{category.postCount}</span>
+                          <span className="text-gray-500 ml-1">{category.postCount === 1 ? 'post' : 'posts'}</span>
+                          <span className="text-gray-400 mx-1">•</span>
+                          <span className="text-gray-500">{formatDate(category.lastPostAt)}</span>
                         </div>
                       )}
                       {canManageCategories && (
                         <Flex gap="xs">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => openEditModal(category, e)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => openDeleteModal(category, e)}
-                            disabled={category.postCount > 0}
-                          >
-                            Delete
-                          </Button>
+                          <Button variant="ghost" size="sm" onClick={(e) => openEditModal(category, e)}>Edit</Button>
+                          <Button variant="ghost" size="sm" onClick={(e) => openDeleteModal(category, e)} disabled={category.postCount > 0}>Delete</Button>
                         </Flex>
                       )}
-                    </Flex>
-                  </Flex>
-                </Card>
+                      {category.hasAccess && <span className="text-gray-400">→</span>}
+                    </div>
+                  </div>
+                </div>
               ))}
-            </Stack>
+            </div>
           )}
         </Stack>
 
         {/* Create Category Modal */}
-        <Modal
-          isOpen={createModal}
-          onClose={() => setCreateModal(false)}
-          title="Create New Category"
-        >
+        <Modal isOpen={createModal} onClose={() => setCreateModal(false)}>
           <Stack spacing="md">
-            <Stack spacing="xs">
-              <Text weight="semibold">Name</Text>
-              <Input
-                placeholder="Category name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                maxLength={80}
-              />
-            </Stack>
-
-            <Stack spacing="xs">
-              <Text weight="semibold">Description (optional)</Text>
-              <Textarea
-                placeholder="Brief description of this category"
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                rows={2}
-              />
-            </Stack>
-
-            <Stack spacing="xs">
-              <Text weight="semibold">Visibility</Text>
-              <Select
-                value={newVisibility}
-                onChange={(e) => setNewVisibility(e.target.value as any)}
-              >
-                <option value="PUBLIC">Public - All members</option>
-                <option value="MODERATOR">Moderators+ only</option>
-                <option value="GOVERNANCE">Governors+ only</option>
+            <Text weight="semibold" className="text-lg">New Category</Text>
+            <Input label="Name" placeholder="Category name" value={newName} onChange={(e) => setNewName(e.target.value)} maxLength={80} />
+            <Textarea label="Description" placeholder="Brief description (optional)" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} rows={2} />
+            <div>
+              <Text variant="small" weight="semibold" className="mb-1">Visibility</Text>
+              <Select value={newVisibility} onChange={(e) => setNewVisibility(e.target.value as any)}>
+                <option value="PUBLIC">All members</option>
+                <option value="MODERATOR">Moderators+</option>
+                <option value="GOVERNANCE">Governors+</option>
               </Select>
-            </Stack>
-
+            </div>
             <Flex justify="end" gap="sm">
-              <Button variant="ghost" onClick={() => setCreateModal(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleCreate}
-                disabled={!newName.trim() || createMutation.isPending}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setCreateModal(false)}>Cancel</Button>
+              <Button variant="primary" size="sm" onClick={handleCreate} disabled={!newName.trim() || createMutation.isPending}>
                 {createMutation.isPending ? 'Creating...' : 'Create'}
               </Button>
             </Flex>
@@ -379,53 +315,22 @@ export default function PostsPage() {
         </Modal>
 
         {/* Edit Category Modal */}
-        <Modal
-          isOpen={!!editModal}
-          onClose={() => setEditModal(null)}
-          title="Edit Category"
-        >
+        <Modal isOpen={!!editModal} onClose={() => setEditModal(null)}>
           <Stack spacing="md">
-            <Stack spacing="xs">
-              <Text weight="semibold">Name</Text>
-              <Input
-                placeholder="Category name"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                maxLength={80}
-              />
-            </Stack>
-
-            <Stack spacing="xs">
-              <Text weight="semibold">Description (optional)</Text>
-              <Textarea
-                placeholder="Brief description of this category"
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                rows={2}
-              />
-            </Stack>
-
-            <Stack spacing="xs">
-              <Text weight="semibold">Visibility</Text>
-              <Select
-                value={editVisibility}
-                onChange={(e) => setEditVisibility(e.target.value as any)}
-              >
-                <option value="PUBLIC">Public - All members</option>
-                <option value="MODERATOR">Moderators+ only</option>
-                <option value="GOVERNANCE">Governors+ only</option>
+            <Text weight="semibold" className="text-lg">Edit Category</Text>
+            <Input label="Name" placeholder="Category name" value={editName} onChange={(e) => setEditName(e.target.value)} maxLength={80} />
+            <Textarea label="Description" placeholder="Brief description (optional)" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={2} />
+            <div>
+              <Text variant="small" weight="semibold" className="mb-1">Visibility</Text>
+              <Select value={editVisibility} onChange={(e) => setEditVisibility(e.target.value as any)}>
+                <option value="PUBLIC">All members</option>
+                <option value="MODERATOR">Moderators+</option>
+                <option value="GOVERNANCE">Governors+</option>
               </Select>
-            </Stack>
-
+            </div>
             <Flex justify="end" gap="sm">
-              <Button variant="ghost" onClick={() => setEditModal(null)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleEdit}
-                disabled={!editName.trim() || updateMutation.isPending}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setEditModal(null)}>Cancel</Button>
+              <Button variant="primary" size="sm" onClick={handleEdit} disabled={!editName.trim() || updateMutation.isPending}>
                 {updateMutation.isPending ? 'Saving...' : 'Save'}
               </Button>
             </Flex>
@@ -433,35 +338,19 @@ export default function PostsPage() {
         </Modal>
 
         {/* Delete Category Modal */}
-        <Modal
-          isOpen={!!deleteModal}
-          onClose={() => setDeleteModal(null)}
-          title="Delete Category"
-        >
+        <Modal isOpen={!!deleteModal} onClose={() => setDeleteModal(null)}>
           <Stack spacing="md">
+            <Text weight="semibold" className="text-lg">Delete Category</Text>
             {deleteModal && deleteModal.category.postCount > 0 ? (
               <Alert variant="warning">
-                <Text>
-                  Cannot delete "{deleteModal.category.name}" because it contains {deleteModal.category.postCount} post(s).
-                  Please delete all posts first.
-                </Text>
+                <Text variant="small">Cannot delete - contains {deleteModal.category.postCount} post(s).</Text>
               </Alert>
             ) : (
-              <Text>
-                Are you sure you want to delete the category "{deleteModal?.category.name}"?
-                This action cannot be undone.
-              </Text>
+              <Text variant="small">Delete "{deleteModal?.category.name}"? This cannot be undone.</Text>
             )}
-
             <Flex justify="end" gap="sm">
-              <Button variant="ghost" onClick={() => setDeleteModal(null)}>
-                Cancel
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending || (deleteModal?.category.postCount > 0)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setDeleteModal(null)}>Cancel</Button>
+              <Button variant="danger" size="sm" onClick={handleDelete} disabled={deleteMutation.isPending || (deleteModal?.category.postCount > 0)}>
                 {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
               </Button>
             </Flex>

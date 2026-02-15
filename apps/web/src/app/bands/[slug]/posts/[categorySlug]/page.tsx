@@ -5,12 +5,10 @@ import { useRouter, useParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import {
-  Heading,
   Text,
   Stack,
   Button,
   Flex,
-  Card,
   Badge,
   Loading,
   Alert,
@@ -168,77 +166,67 @@ export default function PostCategoryPage() {
           ) : undefined
         }
       >
-        <Stack spacing="xl">
-          <Flex justify="between" align="center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push(`/bands/${slug}/posts`)}
-            >
-              &larr; Back to Posts
-            </Button>
-          </Flex>
+        <Stack spacing="md">
+          <Button variant="ghost" size="sm" onClick={() => router.push(`/bands/${slug}/posts`)}>
+            ← Back to Posts
+          </Button>
 
           {category.isArchived && (
             <Alert variant="warning">
-              <Text>This category is archived. No new posts can be created.</Text>
+              <Text variant="small">This category is archived. No new posts allowed.</Text>
             </Alert>
           )}
 
           {postsLoading ? (
             <Loading message="Loading posts..." />
           ) : allPosts.length === 0 ? (
-            <Alert variant="info">
-              <Text>No posts in this category yet. {canCreatePost ? 'Be the first to start a discussion!' : ''}</Text>
-            </Alert>
+            <div className="border border-gray-200 rounded-lg bg-white p-4 text-center">
+              <Text color="muted">No posts yet.{canCreatePost ? ' Be the first!' : ''}</Text>
+            </div>
           ) : (
-            <Stack spacing="md">
+            <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
               {allPosts.map((post: any) => (
-                <Card
+                <div
                   key={post.id}
-                  style={{ cursor: 'pointer' }}
+                  className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer"
                   onClick={() => router.push(`/bands/${slug}/posts/${categorySlug}/${post.slug}`)}
                 >
-                  <Flex justify="between" align="center">
-                    <Stack spacing="xs">
-                      <Flex align="center" gap="sm">
+                  <div className="flex items-center justify-between py-3 px-3 md:px-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         {post.isPinned && <Badge variant="info">Pinned</Badge>}
                         {post.isLocked && <Badge variant="warning">Locked</Badge>}
-                        <Heading level={3}>{post.title}</Heading>
-                      </Flex>
-                      <Text variant="small" color="muted">
-                        By {post.author.name} • {formatDate(post.createdAt)}
-                        {post.isEdited && ' (edited)'}
-                      </Text>
-                    </Stack>
-                    <div style={{ textAlign: 'right' }}>
-                      <Stack spacing="xs">
-                        <Text variant="small" weight="semibold">
-                          {post.responseCount} {post.responseCount === 1 ? 'response' : 'responses'}
-                        </Text>
-                        {post.lastResponseAt && (
-                          <Text variant="small" color="muted">
-                            Last reply: {formatDate(post.lastResponseAt)}
-                          </Text>
-                        )}
-                      </Stack>
+                        <Text weight="semibold">{post.title}</Text>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                        <span>{post.author.name}</span>
+                        <span>•</span>
+                        <span>{formatDate(post.createdAt)}</span>
+                        {post.isEdited && <span className="text-gray-400">(edited)</span>}
+                      </div>
                     </div>
-                  </Flex>
-                </Card>
+                    <div className="flex items-center gap-3 ml-3 text-sm">
+                      <div className="text-right">
+                        <span className="font-medium">{post.responseCount}</span>
+                        <span className="text-gray-500 ml-1">{post.responseCount === 1 ? 'reply' : 'replies'}</span>
+                        {post.lastResponseAt && (
+                          <div className="text-gray-400 text-xs">{formatDate(post.lastResponseAt)}</div>
+                        )}
+                      </div>
+                      <span className="text-gray-400">→</span>
+                    </div>
+                  </div>
+                </div>
               ))}
+            </div>
+          )}
 
-              {hasNextPage && (
-                <Flex justify="center">
-                  <Button
-                    variant="secondary"
-                    onClick={() => fetchNextPage()}
-                    disabled={isFetchingNextPage}
-                  >
-                    {isFetchingNextPage ? 'Loading...' : 'Load More'}
-                  </Button>
-                </Flex>
-              )}
-            </Stack>
+          {hasNextPage && (
+            <Flex justify="center">
+              <Button variant="secondary" size="sm" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+                {isFetchingNextPage ? 'Loading...' : 'Load More'}
+              </Button>
+            </Flex>
           )}
         </Stack>
       </BandLayout>
