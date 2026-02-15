@@ -31,9 +31,13 @@ export function MentionAutocomplete({
   const [selectedIndex, setSelectedIndex] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
 
-  const { data, isLoading } = trpc.message.getMentionableUsers.useQuery(
-    { channelId, userId, search: search || undefined },
-    { enabled: !!channelId && !!userId }
+  const { data, isLoading, isFetching } = trpc.message.getMentionableUsers.useQuery(
+    { channelId, userId, search: search.trim() || undefined },
+    {
+      enabled: !!channelId && !!userId,
+      staleTime: 0, // Always refetch when search changes
+      refetchOnMount: true,
+    }
   )
 
   const users = data?.users || []
@@ -97,10 +101,10 @@ export function MentionAutocomplete({
     }
   }, [selectedIndex])
 
-  if (isLoading) {
+  if (isLoading || (isFetching && options.length === 0)) {
     return (
       <div
-        className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3"
+        className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
         style={{ top: position.top, left: position.left }}
       >
         <Text variant="small" color="muted">Loading...</Text>
@@ -111,7 +115,7 @@ export function MentionAutocomplete({
   if (options.length === 0) {
     return (
       <div
-        className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3"
+        className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
         style={{ top: position.top, left: position.left }}
       >
         <Text variant="small" color="muted">No matches found</Text>
@@ -122,7 +126,7 @@ export function MentionAutocomplete({
   return (
     <div
       ref={listRef}
-      className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto w-64"
+      className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto w-72"
       style={{ top: position.top, left: position.left }}
     >
       {options.map((option, index) => (
