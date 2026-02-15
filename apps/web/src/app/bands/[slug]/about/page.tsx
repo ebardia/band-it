@@ -12,7 +12,6 @@ import {
   Button,
   useToast,
   Flex,
-  Card,
   Badge,
   Loading,
   Alert,
@@ -208,219 +207,175 @@ export default function BandAboutPage() {
             <BillingBanner bandId={band.id} bandSlug={slug} userId={userId} />
           )}
 
-          {/* Main Info Card - Compact */}
-          <Card>
-            {/* Header Row: Status + Member Count + Location */}
-            <Flex gap="sm" align="center" className="mb-3">
+          {/* Main Info */}
+          <div className="border border-gray-200 rounded-lg bg-white p-4">
+            <Flex gap="sm" align="center" className="mb-2">
               {getStatusBadge(band.status)}
               <Badge variant="info">{band.members.length} members</Badge>
               {band.zipcode && <Badge variant="neutral">📍 {band.zipcode}</Badge>}
             </Flex>
 
-            {/* Description */}
             {band.description && (
-              <div className="mb-3">
+              <div className="mb-2">
                 <ExpandableText text={band.description} maxLength={200} />
               </div>
             )}
 
-            {/* Mission - inline if short */}
             {band.mission && (
-              <div className="mb-3">
-                <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Mission</Text>
+              <div className="mb-2">
+                <Text variant="small" weight="semibold" className="text-gray-500">Mission</Text>
                 <ExpandableText text={band.mission} maxLength={150} />
               </div>
             )}
 
-            {/* Values - as tags */}
             {band.values && band.values.length > 0 && (
-              <div className="mb-3">
-                <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Values</Text>
-                <Flex gap="sm" wrap="wrap">
+              <div className="mb-2">
+                <Text variant="small" weight="semibold" className="text-gray-500">Values</Text>
+                <Flex gap="sm" wrap="wrap" className="mt-1">
                   {band.values.map((value: string, index: number) => (
-                    <span key={index} className="text-sm bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
-                      {value}
-                    </span>
+                    <span key={index} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">{value}</span>
                   ))}
                 </Flex>
               </div>
             )}
 
-            {/* More Details - Expandable */}
             <button
               onClick={() => setShowMoreDetails(!showMoreDetails)}
-              className="flex items-center gap-1 text-sm text-blue-600 hover:underline mt-2"
+              className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
             >
-              {showMoreDetails ? 'Hide details' : 'More details'}
-              <svg
-                className={`w-4 h-4 transition-transform ${showMoreDetails ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              {showMoreDetails ? 'Less' : 'More'}
+              <svg className={`w-4 h-4 transition-transform ${showMoreDetails ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {showMoreDetails && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <Stack spacing="md">
-                  {/* Skills Looking For */}
-                  {band.skillsLookingFor && band.skillsLookingFor.length > 0 && (
-                    <div>
-                      <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Skills We're Looking For</Text>
-                      <Flex gap="sm" wrap="wrap">
-                        {band.skillsLookingFor.map((skill: string, index: number) => (
-                          <span key={index} className="text-sm bg-green-50 text-green-700 px-2 py-0.5 rounded">
-                            {skill}
-                          </span>
-                        ))}
-                      </Flex>
-                    </div>
-                  )}
-
-                  {/* What Members Will Learn */}
-                  {band.whatMembersWillLearn && band.whatMembersWillLearn.length > 0 && (
-                    <div>
-                      <Text variant="small" weight="semibold" className="text-gray-500 mb-1">What You'll Learn</Text>
-                      <Flex gap="sm" wrap="wrap">
-                        {band.whatMembersWillLearn.map((item: string, index: number) => (
-                          <span key={index} className="text-sm bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
-                            {item}
-                          </span>
-                        ))}
-                      </Flex>
-                    </div>
-                  )}
-
-                  {/* Membership Requirements */}
-                  {band.membershipRequirements && (
-                    <div>
-                      <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Membership Requirements</Text>
-                      <Text variant="small" color="muted">{band.membershipRequirements}</Text>
-                    </div>
-                  )}
-
-                  {/* Who Can Approve */}
-                  {band.whoCanApprove && band.whoCanApprove.length > 0 && (
-                    <div>
-                      <Text variant="small" weight="semibold" className="text-gray-500 mb-1">Who Can Approve Members</Text>
-                      <Flex gap="sm" wrap="wrap">
-                        {band.whoCanApprove.map((role: string, index: number) => (
-                          <Badge key={index} variant="neutral">{role.replace('_', ' ')}</Badge>
-                        ))}
-                      </Flex>
-                    </div>
-                  )}
-                </Stack>
+              <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                {band.skillsLookingFor?.length > 0 && (
+                  <div>
+                    <Text variant="small" weight="semibold" className="text-gray-500">Skills Needed</Text>
+                    <Flex gap="sm" wrap="wrap" className="mt-1">
+                      {band.skillsLookingFor.map((skill: string, i: number) => (
+                        <span key={i} className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded">{skill}</span>
+                      ))}
+                    </Flex>
+                  </div>
+                )}
+                {band.whatMembersWillLearn?.length > 0 && (
+                  <div>
+                    <Text variant="small" weight="semibold" className="text-gray-500">You'll Learn</Text>
+                    <Flex gap="sm" wrap="wrap" className="mt-1">
+                      {band.whatMembersWillLearn.map((item: string, i: number) => (
+                        <span key={i} className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded">{item}</span>
+                      ))}
+                    </Flex>
+                  </div>
+                )}
+                {band.membershipRequirements && (
+                  <div>
+                    <Text variant="small" weight="semibold" className="text-gray-500">Requirements</Text>
+                    <Text variant="small" color="muted">{band.membershipRequirements}</Text>
+                  </div>
+                )}
+                {band.whoCanApprove?.length > 0 && (
+                  <div>
+                    <Text variant="small" weight="semibold" className="text-gray-500">Approvers</Text>
+                    <Flex gap="sm" wrap="wrap" className="mt-1">
+                      {band.whoCanApprove.map((role: string, i: number) => (
+                        <Badge key={i} variant="neutral">{role.replace('_', ' ')}</Badge>
+                      ))}
+                    </Flex>
+                  </div>
+                )}
               </div>
             )}
-          </Card>
+          </div>
 
-          {/* Members Card - Compact */}
-          <Card>
+          {/* Members */}
+          <div className="border border-gray-200 rounded-lg bg-white p-4">
             <Flex justify="between" align="center" className="mb-2">
               <Text weight="semibold">Members ({band.members.length})</Text>
-              <Button variant="ghost" size="sm" onClick={() => router.push(`/bands/${slug}/members`)}>
-                View all
-              </Button>
+              <Button variant="ghost" size="sm" onClick={() => router.push(`/bands/${slug}/members`)}>View all</Button>
             </Flex>
-            <Stack spacing="xs">
+            <div className="space-y-1">
               {band.members.slice(0, 5).map((member: any) => (
-                <Flex key={member.id} justify="between" align="center" className="py-1">
+                <div key={member.id} className="flex justify-between items-center py-1">
                   <Text variant="small">{member.user.name}</Text>
-                  <Badge variant="info" className="text-xs">{member.role.replace('_', ' ')}</Badge>
-                </Flex>
+                  <Badge variant="info">{member.role.replace('_', ' ')}</Badge>
+                </div>
               ))}
               {band.members.length > 5 && (
-                <Text variant="small" color="muted" className="text-center py-1">
-                  +{band.members.length - 5} more members
-                </Text>
+                <Text variant="small" color="muted" className="text-center">+{band.members.length - 5} more</Text>
               )}
-            </Stack>
-          </Card>
+            </div>
+          </div>
 
-          {/* Parent Band Card - For Sub-bands */}
+          {/* Parent Band */}
           {band.parentBand && (
-            <Card>
-              <Stack spacing="sm">
-                <Text weight="semibold">Part of Big Band</Text>
-                <Flex
-                  justify="between"
-                  align="center"
-                  className="p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100"
-                  onClick={() => router.push(`/bands/${band.parentBand!.slug}`)}
-                >
-                  <Stack spacing="xs">
-                    <Text weight="semibold">{band.parentBand.name}</Text>
-                    <Text variant="small" color="muted">Click to view Big Band</Text>
-                  </Stack>
-                  <Badge variant="info">Big Band</Badge>
-                </Flex>
-              </Stack>
-            </Card>
+            <div
+              className="border border-blue-200 rounded-lg bg-blue-50 p-3 cursor-pointer hover:bg-blue-100"
+              onClick={() => router.push(`/bands/${band.parentBand!.slug}`)}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <Text variant="small" color="muted">Part of Big Band</Text>
+                  <Text weight="semibold">{band.parentBand.name}</Text>
+                </div>
+                <span className="text-gray-400">→</span>
+              </div>
+            </div>
           )}
 
-          {/* Bands Card - For Big Bands */}
+          {/* Sub-bands */}
           {band.isBigBand && (
-            <Card>
-              <Stack spacing="md">
-                <Flex justify="between" align="center">
-                  <Text weight="semibold">Bands {band.subBands && band.subBands.length > 0 ? `(${band.subBands.length})` : ''}</Text>
-                  {currentMember && ['FOUNDER', 'GOVERNOR'].includes(currentMember.role) && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => router.push(`/bands/create?parentBandId=${band.id}&parentBandName=${encodeURIComponent(band.name)}`)}
-                    >
-                      Create Band
-                    </Button>
-                  )}
-                </Flex>
-                {band.subBands && band.subBands.length > 0 ? (
-                  <Stack spacing="xs">
-                    {band.subBands.map((subBand: any) => (
-                      <Flex
-                        key={subBand.id}
-                        justify="between"
-                        align="center"
-                        className="py-2 px-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
-                        onClick={() => router.push(`/bands/${subBand.slug}`)}
-                      >
-                        <Stack spacing="xs">
-                          <Text weight="semibold">{subBand.name}</Text>
-                          <Text variant="small" color="muted">
-                            {subBand._count?.members || 0} member{subBand._count?.members !== 1 ? 's' : ''}
-                          </Text>
-                        </Stack>
-                        {getStatusBadge(subBand.status)}
-                      </Flex>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Text variant="small" color="muted">No bands created yet</Text>
+            <div className="border border-gray-200 rounded-lg bg-white p-4">
+              <Flex justify="between" align="center" className="mb-2">
+                <Text weight="semibold">Bands {band.subBands?.length > 0 ? `(${band.subBands.length})` : ''}</Text>
+                {currentMember && ['FOUNDER', 'GOVERNOR'].includes(currentMember.role) && (
+                  <Button variant="primary" size="sm" onClick={() => router.push(`/bands/create?parentBandId=${band.id}&parentBandName=${encodeURIComponent(band.name)}`)}>
+                    + Create
+                  </Button>
                 )}
-              </Stack>
-            </Card>
+              </Flex>
+              {band.subBands?.length > 0 ? (
+                <div className="border border-gray-100 rounded overflow-hidden">
+                  {band.subBands.map((subBand: any) => (
+                    <div
+                      key={subBand.id}
+                      className="flex items-center justify-between py-2 px-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50"
+                      onClick={() => router.push(`/bands/${subBand.slug}`)}
+                    >
+                      <div>
+                        <Text weight="semibold">{subBand.name}</Text>
+                        <Text variant="small" color="muted">{subBand._count?.members || 0} members</Text>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(subBand.status)}
+                        <span className="text-gray-400">→</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Text variant="small" color="muted">No bands yet</Text>
+              )}
+            </div>
           )}
 
-          {/* Edit Band Settings - For Founders/Governors */}
+          {/* Settings */}
           {currentMember && ['FOUNDER', 'GOVERNOR'].includes(currentMember.role) && (
-            <Card>
-              <Flex justify="between" align="center">
-                <Stack spacing="xs">
+            <div
+              className="border border-gray-200 rounded-lg bg-white p-3 cursor-pointer hover:bg-gray-50"
+              onClick={() => router.push(`/bands/${band.slug}/settings`)}
+            >
+              <div className="flex justify-between items-center">
+                <div>
                   <Text weight="semibold">Band Settings</Text>
-                  <Text variant="small" color="muted">Edit band details, governance, and more</Text>
-                </Stack>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => router.push(`/bands/${band.slug}/settings`)}
-                >
-                  Edit Settings
-                </Button>
-              </Flex>
-            </Card>
+                  <Text variant="small" color="muted">Edit details, governance</Text>
+                </div>
+                <span className="text-gray-400">→</span>
+              </div>
+            </div>
           )}
 
         </Stack>
