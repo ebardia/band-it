@@ -11,7 +11,6 @@ import {
   Button,
   useToast,
   Flex,
-  Card,
   Badge,
   Loading,
   Alert,
@@ -354,7 +353,7 @@ export default function BillingPage() {
         bandId={band.id}
         userId={userId || undefined}
       >
-        <Stack spacing="xl">
+        <Stack spacing="md">
           {/* Tab Navigation */}
           <Flex gap="sm" className="border-b">
             <button
@@ -392,340 +391,236 @@ export default function BillingPage() {
           {activeTab === 'overview' && (
             <>
               {/* Dues Plan Section */}
-          <Card>
-            <Stack spacing="lg">
-              <Flex justify="between" align="center">
-                <Stack spacing="sm">
-                  <Heading level={2}>Membership Dues</Heading>
-                  <Text color="muted">
-                    Band membership dues are paid directly to the band's Stripe account.
-                  </Text>
-                </Stack>
-                {canManageDues && duesPlan?.isActive && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowPlanModal(true)}
-                  >
-                    Edit Plan
-                  </Button>
-                )}
-              </Flex>
-
-              {planLoading ? (
-                <Loading message="Loading dues plan..." />
-              ) : duesPlan?.isActive ? (
-                <Stack spacing="md">
-                  <Card className="bg-blue-50 border-blue-200">
-                    <Flex justify="between" align="center">
-                      <Stack spacing="sm">
-                        <Text variant="small" color="muted">Current Dues</Text>
-                        <Flex gap="sm" align="baseline">
-                          <Text className="text-3xl font-bold text-blue-600">
-                            {formatCurrency(duesPlan.amountCents)}
-                          </Text>
-                          <Text color="muted">/ {duesPlan.interval}</Text>
-                        </Flex>
-                      </Stack>
-                    </Flex>
-                  </Card>
-                </Stack>
-              ) : (
-                <Stack spacing="md">
-                  <Alert variant="info">
-                    <Text>This band has not set up membership dues yet.</Text>
-                  </Alert>
-
-                  {canManageDues && (
-                    <Button
-                      variant="primary"
-                      onClick={() => setShowPlanModal(true)}
-                    >
-                      Set Up Dues Plan
+              <div className="border border-gray-200 rounded-lg bg-white p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <Heading level={2}>Membership Dues</Heading>
+                    <Text variant="small" color="muted">Paid directly to the band's Stripe account</Text>
+                  </div>
+                  {canManageDues && duesPlan?.isActive && (
+                    <Button variant="ghost" size="sm" onClick={() => setShowPlanModal(true)}>
+                      Edit
                     </Button>
                   )}
-                </Stack>
-              )}
-            </Stack>
-          </Card>
+                </div>
 
-          {/* My Billing Status */}
-          <Card>
-            <Stack spacing="lg">
-              <Heading level={2}>My Billing Status</Heading>
-
-              {myBillingLoading ? (
-                <Loading message="Loading your billing status..." />
-              ) : (
-                <Stack spacing="md">
-                  <Flex gap="lg" align="center">
-                    <Stack spacing="sm">
-                      <Text variant="small" color="muted">Status</Text>
-                      {getStatusBadge(myBilling?.status || 'UNPAID')}
-                    </Stack>
-
-                    {myBilling?.currentPeriodEnd && (
-                      <Stack spacing="sm">
-                        <Text variant="small" color="muted">Current Period Ends</Text>
-                        <Text weight="semibold">
-                          {new Date(myBilling.currentPeriodEnd).toLocaleDateString()}
-                        </Text>
-                      </Stack>
-                    )}
-
-                    {myBilling?.lastPaymentAt && (
-                      <Stack spacing="sm">
-                        <Text variant="small" color="muted">Last Payment</Text>
-                        <Text weight="semibold">
-                          {new Date(myBilling.lastPaymentAt).toLocaleDateString()}
-                        </Text>
-                      </Stack>
-                    )}
-                  </Flex>
-
-                  {duesPlan?.isActive && myBilling?.status !== 'ACTIVE' && (
-                    <Stack spacing="sm">
-                      {myBilling?.status === 'PAST_DUE' && (
-                        <Alert variant="warning">
-                          <Text>Your payment is past due. Please update your payment method.</Text>
-                        </Alert>
-                      )}
-
-                      <Button
-                        variant="primary"
-                        size="lg"
-                        onClick={handlePayDues}
-                        disabled={startingCheckout}
-                      >
-                        {startingCheckout ? 'Starting checkout...' : `Pay Dues (${formatCurrency(duesPlan.amountCents)}/${duesPlan.interval})`}
-                      </Button>
-                    </Stack>
-                  )}
-
-                  {myBilling?.status === 'ACTIVE' && (
-                    <Alert variant="success">
-                      <Text>Your membership dues are current. Thank you for your support!</Text>
-                    </Alert>
-                  )}
-                </Stack>
-              )}
-            </Stack>
-          </Card>
-
-          {/* All Members Billing (Admin View) */}
-          {canViewAllBilling && (
-            <Card>
-              <Stack spacing="lg">
-                <Heading level={2}>Member Billing Overview</Heading>
-
-                {membersBillingLoading ? (
-                  <Loading message="Loading members billing..." />
+                {planLoading ? (
+                  <Loading message="Loading dues plan..." />
+                ) : duesPlan?.isActive ? (
+                  <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                    <Text variant="small" color="muted">Current Dues</Text>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold text-blue-600">{formatCurrency(duesPlan.amountCents)}</span>
+                      <Text color="muted">/ {duesPlan.interval}</Text>
+                    </div>
+                  </div>
                 ) : (
-                  <Stack spacing="md">
-                    {/* Summary Cards */}
-                    {billingSummary && (
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <Card className="bg-gray-50 text-center">
-                          <Stack spacing="sm">
-                            <Text variant="small" color="muted">Total</Text>
-                            <Text className="text-2xl font-bold">{billingSummary.total}</Text>
-                          </Stack>
-                        </Card>
-                        <Card className="bg-green-50 text-center">
-                          <Stack spacing="sm">
-                            <Text variant="small" color="muted">Active</Text>
-                            <Text className="text-2xl font-bold text-green-600">{billingSummary.active}</Text>
-                          </Stack>
-                        </Card>
-                        <Card className="bg-gray-50 text-center">
-                          <Stack spacing="sm">
-                            <Text variant="small" color="muted">Unpaid</Text>
-                            <Text className="text-2xl font-bold text-gray-600">{billingSummary.unpaid}</Text>
-                          </Stack>
-                        </Card>
-                        <Card className="bg-yellow-50 text-center">
-                          <Stack spacing="sm">
-                            <Text variant="small" color="muted">Past Due</Text>
-                            <Text className="text-2xl font-bold text-yellow-600">{billingSummary.pastDue}</Text>
-                          </Stack>
-                        </Card>
-                        <Card className="bg-red-50 text-center">
-                          <Stack spacing="sm">
-                            <Text variant="small" color="muted">Canceled</Text>
-                            <Text className="text-2xl font-bold text-red-600">{billingSummary.canceled}</Text>
-                          </Stack>
-                        </Card>
+                  <div>
+                    <Text variant="small" color="muted">No dues plan set up yet.</Text>
+                    {canManageDues && (
+                      <Button variant="primary" size="sm" onClick={() => setShowPlanModal(true)} className="mt-2">
+                        Set Up Dues Plan
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* My Billing Status */}
+              <div className="border border-gray-200 rounded-lg bg-white p-4">
+                <Heading level={2}>My Billing Status</Heading>
+
+                {myBillingLoading ? (
+                  <Loading message="Loading your billing status..." />
+                ) : (
+                  <div className="mt-3">
+                    <div className="flex items-center gap-4 flex-wrap text-sm">
+                      <div>
+                        <span className="text-gray-500">Status: </span>
+                        {getStatusBadge(myBilling?.status || 'UNPAID')}
+                      </div>
+                      {myBilling?.currentPeriodEnd && (
+                        <div>
+                          <span className="text-gray-500">Ends: </span>
+                          <span className="font-medium">{new Date(myBilling.currentPeriodEnd).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                      {myBilling?.lastPaymentAt && (
+                        <div>
+                          <span className="text-gray-500">Last: </span>
+                          <span className="font-medium">{new Date(myBilling.lastPaymentAt).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {duesPlan?.isActive && myBilling?.status !== 'ACTIVE' && (
+                      <div className="mt-3">
+                        {myBilling?.status === 'PAST_DUE' && (
+                          <Alert variant="warning" className="mb-2">
+                            <Text variant="small">Your payment is past due.</Text>
+                          </Alert>
+                        )}
+                        <Button variant="primary" onClick={handlePayDues} disabled={startingCheckout}>
+                          {startingCheckout ? 'Starting...' : `Pay Dues (${formatCurrency(duesPlan.amountCents)}/${duesPlan.interval})`}
+                        </Button>
                       </div>
                     )}
 
-                    {/* Members List */}
-                    {membersBilling.length > 0 ? (
-                      <Stack spacing="sm">
-                        <Text variant="small" weight="semibold" color="muted">All Members</Text>
-                        <div className="border rounded-lg overflow-hidden">
+                    {myBilling?.status === 'ACTIVE' && (
+                      <div className="mt-2 text-sm text-green-600">Your dues are current.</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* All Members Billing (Admin View) */}
+              {canViewAllBilling && (
+                <div className="border border-gray-200 rounded-lg bg-white p-4">
+                  <Heading level={2}>Member Billing Overview</Heading>
+
+                  {membersBillingLoading ? (
+                    <Loading message="Loading members billing..." />
+                  ) : (
+                    <div className="mt-3">
+                      {/* Summary Stats */}
+                      {billingSummary && (
+                        <div className="flex gap-2 md:gap-4 flex-wrap mb-4">
+                          <div className="flex-1 min-w-[60px] bg-gray-50 border border-gray-200 rounded p-2 text-center">
+                            <div className="text-xs text-gray-500">Total</div>
+                            <div className="text-lg font-bold">{billingSummary.total}</div>
+                          </div>
+                          <div className="flex-1 min-w-[60px] bg-green-50 border border-green-200 rounded p-2 text-center">
+                            <div className="text-xs text-gray-500">Active</div>
+                            <div className="text-lg font-bold text-green-600">{billingSummary.active}</div>
+                          </div>
+                          <div className="flex-1 min-w-[60px] bg-gray-50 border border-gray-200 rounded p-2 text-center">
+                            <div className="text-xs text-gray-500">Unpaid</div>
+                            <div className="text-lg font-bold text-gray-600">{billingSummary.unpaid}</div>
+                          </div>
+                          <div className="flex-1 min-w-[60px] bg-yellow-50 border border-yellow-200 rounded p-2 text-center">
+                            <div className="text-xs text-gray-500">Past Due</div>
+                            <div className="text-lg font-bold text-yellow-600">{billingSummary.pastDue}</div>
+                          </div>
+                          <div className="flex-1 min-w-[60px] bg-red-50 border border-red-200 rounded p-2 text-center">
+                            <div className="text-xs text-gray-500">Canceled</div>
+                            <div className="text-lg font-bold text-red-600">{billingSummary.canceled}</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Members List */}
+                      {membersBilling.length > 0 ? (
+                        <div className="border rounded overflow-hidden">
                           <table className="w-full text-sm">
                             <thead className="bg-gray-50">
                               <tr>
-                                <th className="text-left p-3 font-medium">Member</th>
-                                <th className="text-left p-3 font-medium">Status</th>
-                                <th className="text-left p-3 font-medium">Period End</th>
+                                <th className="text-left p-2 font-medium">Member</th>
+                                <th className="text-left p-2 font-medium">Status</th>
+                                <th className="text-left p-2 font-medium">Ends</th>
                               </tr>
                             </thead>
                             <tbody>
                               {membersBilling.map((member) => (
                                 <tr key={member.userId} className="border-t">
-                                  <td className="p-3">{member.displayName}</td>
-                                  <td className="p-3">{getStatusBadge(member.status)}</td>
-                                  <td className="p-3 text-gray-500">
-                                    {member.currentPeriodEnd
-                                      ? new Date(member.currentPeriodEnd).toLocaleDateString()
-                                      : '—'}
+                                  <td className="p-2">{member.displayName}</td>
+                                  <td className="p-2">{getStatusBadge(member.status)}</td>
+                                  <td className="p-2 text-gray-500">
+                                    {member.currentPeriodEnd ? new Date(member.currentPeriodEnd).toLocaleDateString() : '—'}
                                   </td>
                                 </tr>
                               ))}
                             </tbody>
                           </table>
                         </div>
-                      </Stack>
-                    ) : (
-                      <Alert variant="info">
-                        <Text>No billing records yet. Members will appear here after they pay dues.</Text>
-                      </Alert>
-                    )}
-                  </Stack>
-                )}
-              </Stack>
-            </Card>
-          )}
+                      ) : (
+                        <Text variant="small" color="muted">No billing records yet.</Text>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Info Card */}
-              <Card className="bg-blue-50 border-blue-200">
-                <Stack spacing="sm">
-                  <Heading level={3}>About Band Dues</Heading>
-                  <Text variant="small">
-                    Membership dues are paid directly to the band's connected Stripe account.
-                    Band-It does not take any fees from dues payments. All funds go directly to your band.
-                  </Text>
-                  <Text variant="small" color="muted">
-                    Subscriptions are managed by Stripe. You can cancel anytime from your Stripe customer portal.
-                  </Text>
-                </Stack>
-              </Card>
+              <div className="border border-blue-200 rounded-lg bg-blue-50 p-3">
+                <Text variant="small">
+                  Dues go directly to the band's Stripe account. Band-It takes no fees. Cancel anytime via Stripe.
+                </Text>
+              </div>
             </>
           )}
 
           {/* Manual Payments Tab Content */}
           {activeTab === 'manual' && userId && (
             <>
-              <Card>
-                <Stack spacing="lg">
-                  <Flex justify="between" align="center">
-                    <Stack spacing="sm">
-                      <Heading level={2}>Manual Payments</Heading>
-                      <Text color="muted">
-                        Track payments made outside of Stripe (Zelle, Venmo, Cash, etc.)
-                      </Text>
-                    </Stack>
-                    <Button
-                      variant="primary"
-                      onClick={() => setShowRecordPaymentModal(true)}
-                    >
-                      Record Payment
-                    </Button>
-                  </Flex>
+              <div className="border border-gray-200 rounded-lg bg-white p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <Heading level={2}>Manual Payments</Heading>
+                    <Text variant="small" color="muted">Zelle, Venmo, Cash, etc.</Text>
+                  </div>
+                  <Button variant="primary" size="sm" onClick={() => setShowRecordPaymentModal(true)}>
+                    Record Payment
+                  </Button>
+                </div>
 
-                  <ManualPaymentsList
-                    bandId={band.id}
-                    userId={userId}
-                    canViewAll={canViewAllBilling || false}
-                    isGovernor={isGovernor || false}
-                    isTreasurer={isTreasurer || false}
-                    bandSlug={slug}
-                  />
-                </Stack>
-              </Card>
+                <ManualPaymentsList
+                  bandId={band.id}
+                  userId={userId}
+                  canViewAll={canViewAllBilling || false}
+                  isGovernor={isGovernor || false}
+                  isTreasurer={isTreasurer || false}
+                  bandSlug={slug}
+                />
+              </div>
 
-              {/* Manual Payments Info Card */}
-              <Card className="bg-gray-50">
-                <Stack spacing="sm">
-                  <Heading level={3}>How Manual Payments Work</Heading>
-                  <Text variant="small">
-                    Manual payments require two-party confirmation to prevent fraud:
-                  </Text>
-                  <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-                    <li>If a member records a payment, the treasurer must confirm it</li>
-                    <li>If the treasurer records a payment for a member, the member must confirm it</li>
-                    <li>Payments auto-confirm after 7 days if not disputed</li>
-                    <li>Disputed payments are reviewed by band governors</li>
-                  </ul>
-                </Stack>
-              </Card>
+              {/* Manual Payments Info */}
+              <div className="border border-gray-200 rounded-lg bg-gray-50 p-3">
+                <Text variant="small" color="muted">
+                  Manual payments require two-party confirmation. Auto-confirm after 7 days if not disputed.
+                </Text>
+              </div>
             </>
           )}
         </Stack>
 
         {/* Edit Dues Plan Modal */}
         <Modal isOpen={showPlanModal} onClose={() => setShowPlanModal(false)}>
-          <Stack spacing="lg">
+          <Stack spacing="md">
             <Heading level={2}>{duesPlan?.isActive ? 'Edit' : 'Create'} Dues Plan</Heading>
 
-            <Stack spacing="md">
-              <Input
-                label="Amount (USD)"
-                type="number"
-                min="0.50"
-                step="0.01"
-                value={planAmount}
-                onChange={(e) => setPlanAmount(e.target.value)}
-                placeholder="15.00"
-                helperText="Minimum $0.50"
-              />
+            <Input
+              label="Amount (USD)"
+              type="number"
+              min="0.50"
+              step="0.01"
+              value={planAmount}
+              onChange={(e) => setPlanAmount(e.target.value)}
+              placeholder="15.00"
+              helperText="Minimum $0.50"
+            />
 
-              <Stack spacing="sm">
-                <Text variant="small" weight="semibold">Billing Interval</Text>
-                <Flex gap="sm">
-                  <Button
-                    type="button"
-                    variant={planInterval === 'month' ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setPlanInterval('month')}
-                  >
-                    Monthly
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={planInterval === 'year' ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setPlanInterval('year')}
-                  >
-                    Yearly
-                  </Button>
-                </Flex>
-              </Stack>
+            <div>
+              <Text variant="small" weight="semibold" className="mb-2">Billing Interval</Text>
+              <Flex gap="sm">
+                <Button type="button" variant={planInterval === 'month' ? 'primary' : 'secondary'} size="sm" onClick={() => setPlanInterval('month')}>
+                  Monthly
+                </Button>
+                <Button type="button" variant={planInterval === 'year' ? 'primary' : 'secondary'} size="sm" onClick={() => setPlanInterval('year')}>
+                  Yearly
+                </Button>
+              </Flex>
+            </div>
 
-              {planAmount && parseFloat(planAmount) >= 0.5 && (
-                <Card className="bg-gray-50">
-                  <Text>
-                    Members will be charged <strong>{formatCurrency(Math.round(parseFloat(planAmount) * 100))}</strong> per <strong>{planInterval}</strong>.
-                  </Text>
-                </Card>
-              )}
-            </Stack>
+            {planAmount && parseFloat(planAmount) >= 0.5 && (
+              <div className="bg-gray-50 rounded p-2 text-sm">
+                Charge: <strong>{formatCurrency(Math.round(parseFloat(planAmount) * 100))}</strong> / <strong>{planInterval}</strong>
+              </div>
+            )}
 
             <Flex gap="md" justify="end">
-              <Button
-                variant="ghost"
-                onClick={() => setShowPlanModal(false)}
-                disabled={savingPlan}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSavePlan}
-                disabled={savingPlan || !planAmount || parseFloat(planAmount) < 0.5}
-              >
-                {savingPlan ? 'Saving...' : 'Save Plan'}
+              <Button variant="ghost" onClick={() => setShowPlanModal(false)} disabled={savingPlan}>Cancel</Button>
+              <Button variant="primary" onClick={handleSavePlan} disabled={savingPlan || !planAmount || parseFloat(planAmount) < 0.5}>
+                {savingPlan ? 'Saving...' : 'Save'}
               </Button>
             </Flex>
           </Stack>
