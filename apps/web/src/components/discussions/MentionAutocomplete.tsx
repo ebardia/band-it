@@ -215,7 +215,7 @@ function formatRole(role: string): string {
 // Hook to manage mention detection in a textarea
 export function useMentionDetection(
   textareaRef: React.RefObject<HTMLTextAreaElement>,
-  content: string
+  _content?: string // Deprecated: we now read directly from textarea.value
 ) {
   const [mentionState, setMentionState] = useState<{
     isActive: boolean
@@ -229,7 +229,9 @@ export function useMentionDetection(
     if (!textarea) return
 
     const cursorPos = textarea.selectionStart
-    const textBeforeCursor = content.substring(0, cursorPos)
+    // Use textarea.value directly to get the current value (not stale state)
+    const currentValue = textarea.value
+    const textBeforeCursor = currentValue.substring(0, cursorPos)
 
     // Find the last @ symbol before cursor
     const lastAtIndex = textBeforeCursor.lastIndexOf('@')
@@ -253,7 +255,6 @@ export function useMentionDetection(
     }
 
     // Calculate position for the autocomplete dropdown
-    // This is a simplified calculation - in production you might want a more accurate one
     const rect = textarea.getBoundingClientRect()
     const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20
     const lines = textBeforeCursor.split('\n')
@@ -268,16 +269,17 @@ export function useMentionDetection(
       },
       startIndex: lastAtIndex,
     })
-  }, [content, textareaRef])
+  }, [textareaRef])
 
   const insertMention = useCallback((name: string, type: 'user' | 'role') => {
     if (!mentionState || !textareaRef.current) return ''
 
-    const beforeMention = content.substring(0, mentionState.startIndex)
-    const afterMention = content.substring(textareaRef.current.selectionStart)
+    const currentValue = textareaRef.current.value
+    const beforeMention = currentValue.substring(0, mentionState.startIndex)
+    const afterMention = currentValue.substring(textareaRef.current.selectionStart)
 
     return `${beforeMention}@${name} ${afterMention}`
-  }, [mentionState, content, textareaRef])
+  }, [mentionState, textareaRef])
 
   const closeMention = useCallback(() => {
     setMentionState(null)
