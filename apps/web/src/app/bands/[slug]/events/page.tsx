@@ -10,7 +10,6 @@ import {
   Stack,
   Button,
   Flex,
-  Card,
   Badge,
   Loading,
   Alert,
@@ -181,36 +180,31 @@ export default function BandEventsPage() {
           )
         }
       >
-        <Stack spacing="xl">
+        <Stack spacing="md">
           {/* Upcoming Events Highlight */}
           {upcomingEvents.length > 0 && (
-            <Card className="bg-blue-50 border-blue-200">
-              <Stack spacing="md">
-                <Heading level={3}>Next Up</Heading>
-                <Stack spacing="sm">
-                  {upcomingEvents.map((event: any) => (
-                    <div
-                      key={event.id}
-                      className="p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50"
-                      onClick={() => router.push(`/bands/${slug}/events/${event.id}`)}
-                    >
-                      <Flex justify="between" align="center">
-                        <Stack spacing="xs">
-                          <Text weight="semibold">{event.title}</Text>
-                          <Text variant="small" color="muted">
-                            {formatEventTime(event.startTime, event.endTime)}
-                          </Text>
-                        </Stack>
-                        <Flex gap="sm">
-                          {getEventTypeBadge(event.eventType)}
-                          <Badge variant="info">{event._count.rsvps} RSVPs</Badge>
-                        </Flex>
-                      </Flex>
+            <div className="border border-blue-200 rounded-lg bg-blue-50 overflow-hidden">
+              <div className="px-3 py-2 border-b border-blue-200 bg-blue-100">
+                <Text weight="semibold">Next Up</Text>
+              </div>
+              {upcomingEvents.map((event: any) => (
+                <div
+                  key={event.id}
+                  className="flex items-center py-2 px-3 border-b border-blue-100 last:border-b-0 cursor-pointer hover:bg-blue-100 bg-white"
+                  onClick={() => router.push(`/bands/${slug}/events/${event.id}`)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Text weight="semibold">{event.title}</Text>
+                      {getEventTypeBadge(event.eventType)}
+                      <Badge variant="info">{event._count.rsvps} RSVPs</Badge>
                     </div>
-                  ))}
-                </Stack>
-              </Stack>
-            </Card>
+                    <Text variant="small" color="muted">{formatEventTime(event.startTime, event.endTime)}</Text>
+                  </div>
+                  <span className="text-gray-400 ml-2">→</span>
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Filters */}
@@ -234,15 +228,11 @@ export default function BandEventsPage() {
                 size="sm"
                 onClick={() => setShowPast(!showPast)}
               >
-                {showPast ? 'Showing All' : 'Show Past Events'}
+                {showPast ? 'Showing All' : 'Show Past'}
               </Button>
               {canCreateEvent && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => router.push(`/bands/${slug}/events/create`)}
-                >
-                  + Create Event
+                <Button variant="primary" size="sm" onClick={() => router.push(`/bands/${slug}/events/create`)}>
+                  + Create
                 </Button>
               )}
             </Flex>
@@ -250,86 +240,55 @@ export default function BandEventsPage() {
 
           {/* Events List */}
           {events.length > 0 ? (
-            <Stack spacing="md">
+            <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
               {events.map((event: any) => (
-                <Card
+                <div
                   key={event.id}
-                  hover
+                  className={`border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer ${event.isCancelled ? 'opacity-60' : ''}`}
                   onClick={() => router.push(`/bands/${slug}/events/${event.id}`)}
-                  className={event.isCancelled ? 'opacity-60' : ''}
                 >
-                  <Flex justify="between" align="start">
-                    <Stack spacing="sm">
-                      <Flex gap="sm" align="center">
-                        <Heading level={3}>{event.title}</Heading>
+                  <div className="flex items-center py-3 px-3 md:px-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Text weight="semibold">{event.title}</Text>
+                        {getEventTypeBadge(event.eventType)}
                         {event.isCancelled && <Badge variant="danger">Cancelled</Badge>}
                         {event.recurrenceRule && <Badge variant="neutral">Recurring</Badge>}
-                      </Flex>
-
-                      <Text variant="small" color="muted">
-                        {formatEventTime(event.startTime, event.endTime)}
-                      </Text>
-
-                      <Flex gap="sm" className="flex-wrap">
-                        {getEventTypeBadge(event.eventType)}
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-gray-500 mt-1 flex-wrap">
+                        <span>{formatEventTime(event.startTime, event.endTime)}</span>
                         {event.location && (
-                          <Badge variant="neutral">{event.location}</Badge>
+                          <>
+                            <span>•</span>
+                            <span>{event.location}</span>
+                          </>
                         )}
-                        {event.meetingUrl && (
-                          <Badge variant="info">Online Link</Badge>
+                        <span>•</span>
+                        <span>{event._count.rsvps} RSVPs</span>
+                        <span>•</span>
+                        <span>By {event.createdBy.name}</span>
+                        {isUpcoming(event.startTime) && !event.isCancelled && (
+                          <>
+                            <span>•</span>
+                            <span>{Math.ceil((new Date(event.startTime).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}d away</span>
+                          </>
                         )}
-                      </Flex>
-
-                      {event.description && (
-                        <Text variant="small" className="line-clamp-2">
-                          {event.description}
-                        </Text>
-                      )}
-
-                      <Flex gap="md">
-                        <Text variant="small" color="muted">
-                          {event._count.rsvps} RSVPs
-                        </Text>
-                        <Text variant="small" color="muted">
-                          By {event.createdBy.name}
-                        </Text>
-                      </Flex>
-                    </Stack>
-
-                    <Stack spacing="sm" align="end">
-                      <Button variant="secondary" size="sm">
-                        View →
-                      </Button>
-                      {isUpcoming(event.startTime) && !event.isCancelled && (
-                        <Text variant="small" color="muted">
-                          {Math.ceil((new Date(event.startTime).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days away
-                        </Text>
-                      )}
-                    </Stack>
-                  </Flex>
-                </Card>
+                      </div>
+                    </div>
+                    <span className="text-gray-400 ml-2">→</span>
+                  </div>
+                </div>
               ))}
-            </Stack>
+            </div>
           ) : (
-            <Alert variant="info">
-              <Stack spacing="sm">
-                <Text>No events found.</Text>
-                {canCreateEvent && (
-                  <>
-                    <Text variant="small" color="muted">
-                      Create your first event to get started.
-                    </Text>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => router.push(`/bands/${slug}/events/create`)}
-                    >
-                      Create Event
-                    </Button>
-                  </>
-                )}
-              </Stack>
-            </Alert>
+            <div className="border border-gray-200 rounded-lg bg-white p-6 text-center">
+              <Text color="muted">No events found.</Text>
+              {canCreateEvent && (
+                <Button variant="primary" size="sm" onClick={() => router.push(`/bands/${slug}/events/create`)} className="mt-2">
+                  Create Event
+                </Button>
+              )}
+            </div>
           )}
         </Stack>
       </BandLayout>
