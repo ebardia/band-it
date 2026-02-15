@@ -111,11 +111,18 @@ export const getTasksByBand = publicProcedure
   .query(async ({ input }) => {
     const { bandId, status, assigneeId, projectId } = input
 
+    // Handle special 'unassigned' filter
+    const assigneeFilter = assigneeId === 'unassigned'
+      ? { assigneeId: null }
+      : assigneeId
+        ? { assigneeId }
+        : {}
+
     const tasks = await prisma.task.findMany({
-      where: { 
+      where: {
         bandId,
         ...(status && { status }),
-        ...(assigneeId && { assigneeId }),
+        ...assigneeFilter,
         ...(projectId && { projectId }),
       },
       include: {
