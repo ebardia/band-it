@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import {
-  Heading,
   Text,
   Stack,
   Loading,
@@ -118,9 +117,7 @@ export default function BandSettingsPage() {
         bandId={band.id}
         userId={userId || undefined}
       >
-        <Stack spacing="lg">
-          <Heading level={2}>Band Settings</Heading>
-
+        <Stack spacing="md">
           {/* Band Details */}
           {userId && (
             <BandDetailsSettings

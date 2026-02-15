@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button, Text, Heading, Stack, Card, Input, Textarea, Box, FileUpload, useToast } from '@/components/ui'
+import { Button, Text, Stack, Input, Textarea, FileUpload, useToast } from '@/components/ui'
 import { trpc } from '@/lib/trpc'
 
 interface BandDetailsSettingsProps {
@@ -134,64 +134,28 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
 
   if (!canEdit) {
     return (
-      <Card>
-        <Stack spacing="lg">
-          <Heading level={3}>Band Details</Heading>
-          <Text variant="muted">Only founders and governors can edit band details.</Text>
-
-          <div className="grid gap-4">
-            <div>
-              <Text variant="small" weight="semibold" className="text-gray-500">Band Name</Text>
-              <Text>{initialData.name}</Text>
-            </div>
-            <div>
-              <Text variant="small" weight="semibold" className="text-gray-500">Description</Text>
-              <Text>{initialData.description}</Text>
-            </div>
-            <div>
-              <Text variant="small" weight="semibold" className="text-gray-500">Mission Statement</Text>
-              <Text>{initialData.mission}</Text>
-            </div>
-            <div>
-              <Text variant="small" weight="semibold" className="text-gray-500">Band Values</Text>
-              <Text>{initialData.values.join(', ') || 'Not set'}</Text>
-            </div>
-            <div>
-              <Text variant="small" weight="semibold" className="text-gray-500">Skills Looking For</Text>
-              <Text>{initialData.skillsLookingFor.join(', ') || 'Not set'}</Text>
-            </div>
-            <div>
-              <Text variant="small" weight="semibold" className="text-gray-500">What Members Will Learn</Text>
-              <Text>{initialData.whatMembersWillLearn.join(', ') || 'Not set'}</Text>
-            </div>
-            <div>
-              <Text variant="small" weight="semibold" className="text-gray-500">Membership Requirements</Text>
-              <Text>{initialData.membershipRequirements}</Text>
-            </div>
-            {initialData.zipcode && (
-              <div>
-                <Text variant="small" weight="semibold" className="text-gray-500">Zipcode</Text>
-                <Text>{initialData.zipcode}</Text>
-              </div>
-            )}
-            {initialData.imageUrl && (
-              <div>
-                <Text variant="small" weight="semibold" className="text-gray-500">Band Image</Text>
-                <img src={initialData.imageUrl} alt="Band" className="w-20 h-20 object-cover rounded-lg mt-1" />
-              </div>
-            )}
-          </div>
-        </Stack>
-      </Card>
+      <div className="border border-gray-200 rounded-lg bg-white p-3">
+        <div className="flex items-center justify-between mb-2">
+          <Text weight="semibold">Band Details</Text>
+          <Text variant="small" color="muted">View only</Text>
+        </div>
+        <div className="space-y-2 text-sm">
+          <div className="flex gap-2"><span className="text-gray-500 w-24 shrink-0">Name:</span><span>{initialData.name}</span></div>
+          <div className="flex gap-2"><span className="text-gray-500 w-24 shrink-0">Description:</span><span className="line-clamp-2">{initialData.description}</span></div>
+          <div className="flex gap-2"><span className="text-gray-500 w-24 shrink-0">Mission:</span><span className="line-clamp-2">{initialData.mission}</span></div>
+          {initialData.values.length > 0 && <div className="flex gap-2"><span className="text-gray-500 w-24 shrink-0">Values:</span><span>{initialData.values.join(', ')}</span></div>}
+          {initialData.skillsLookingFor.length > 0 && <div className="flex gap-2"><span className="text-gray-500 w-24 shrink-0">Skills:</span><span>{initialData.skillsLookingFor.join(', ')}</span></div>}
+          {initialData.zipcode && <div className="flex gap-2"><span className="text-gray-500 w-24 shrink-0">Zipcode:</span><span>{initialData.zipcode}</span></div>}
+        </div>
+      </div>
     )
   }
 
   return (
-    <Card>
+    <div className="border border-gray-200 rounded-lg bg-white p-3">
       <form onSubmit={handleSubmit}>
-        <Stack spacing="lg">
-          <Heading level={3}>Band Details</Heading>
-          <Text variant="muted">Update your band's information.</Text>
+        <Stack spacing="md">
+          <Text weight="semibold">Band Details</Text>
 
           <Input
             label="Band Name"
@@ -208,8 +172,7 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Tell people about your band..."
-            rows={4}
-            helperText="At least 10 characters"
+            rows={3}
           />
 
           <Textarea
@@ -218,8 +181,7 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
             value={formData.mission}
             onChange={(e) => setFormData({ ...formData, mission: e.target.value })}
             placeholder="Our mission is to..."
-            rows={3}
-            helperText="At least 10 characters"
+            rows={2}
           />
 
           <Textarea
@@ -228,8 +190,8 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
             value={formData.values}
             onChange={(e) => setFormData({ ...formData, values: e.target.value })}
             placeholder="Creativity, Collaboration, Community"
-            rows={2}
-            helperText="Separate with commas"
+            rows={1}
+            helperText="Comma-separated"
           />
 
           <Textarea
@@ -238,8 +200,8 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
             value={formData.skillsLookingFor}
             onChange={(e) => setFormData({ ...formData, skillsLookingFor: e.target.value })}
             placeholder="Guitar, Drums, Vocals, Marketing"
-            rows={2}
-            helperText="Separate with commas"
+            rows={1}
+            helperText="Comma-separated"
           />
 
           <Textarea
@@ -247,9 +209,9 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
             required
             value={formData.whatMembersWillLearn}
             onChange={(e) => setFormData({ ...formData, whatMembersWillLearn: e.target.value })}
-            placeholder="Performance skills, Music theory, Band management"
-            rows={2}
-            helperText="Separate with commas"
+            placeholder="Performance skills, Music theory"
+            rows={1}
+            helperText="Comma-separated"
           />
 
           <Textarea
@@ -257,52 +219,48 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
             required
             value={formData.membershipRequirements}
             onChange={(e) => setFormData({ ...formData, membershipRequirements: e.target.value })}
-            placeholder="We're looking for committed musicians who can practice weekly..."
-            rows={3}
-            helperText="At least 10 characters"
+            placeholder="We're looking for committed musicians..."
+            rows={2}
           />
 
           <Input
-            label="Postal Code (Optional)"
+            label="Postal Code"
             type="text"
             value={formData.zipcode}
             onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
-            placeholder="e.g. 12345, SW1A 1AA"
+            placeholder="e.g. 12345"
             maxLength={10}
-            helperText="Leave blank if your band covers a large area"
           />
 
-          <Box>
-            <Text variant="small" weight="semibold" className="mb-2">Band Image</Text>
+          <div>
+            <Text variant="small" weight="semibold" className="mb-1">Band Image</Text>
             {formData.imageUrl ? (
-              <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                <img src={formData.imageUrl} alt="Band" className="w-16 h-16 object-cover rounded-lg" />
-                <div className="flex-1">
-                  <Text variant="small">Current image</Text>
+              <div className="flex items-center gap-3 p-2 bg-gray-50 rounded">
+                <img src={formData.imageUrl} alt="Band" className="w-12 h-12 object-cover rounded" />
+                <div className="flex-1 text-sm">
                   {formData.imageUrl !== (initialData.imageUrl || '') && (
-                    <Text variant="small" className="text-amber-600 font-medium">Unsaved - click Save Changes below</Text>
+                    <span className="text-amber-600">Unsaved</span>
                   )}
                 </div>
-                <Button type="button" variant="danger" size="sm" onClick={removeImage}>
-                  Remove
-                </Button>
+                <Button type="button" variant="danger" size="sm" onClick={removeImage}>Remove</Button>
               </div>
             ) : (
               <FileUpload
                 onUpload={handleImageUpload}
                 isUploading={isUploadingImage}
                 label=""
-                description="Upload a logo or image for your band"
+                description="Upload band image"
                 accept="image/jpeg,image/png,image/gif,image/webp"
                 maxSizeMB={5}
               />
             )}
-          </Box>
+          </div>
 
-          <div className="border-t pt-4">
+          <div className="flex justify-end pt-2 border-t">
             <Button
               type="submit"
               variant="primary"
+              size="sm"
               disabled={updateDetailsMutation.isPending || !hasChanges}
             >
               {updateDetailsMutation.isPending ? 'Saving...' : 'Save Changes'}
@@ -310,6 +268,6 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
           </div>
         </Stack>
       </form>
-    </Card>
+    </div>
   )
 }

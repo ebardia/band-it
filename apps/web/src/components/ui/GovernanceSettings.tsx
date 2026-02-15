@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react'
 import { trpc } from '@/lib/trpc'
 import {
   Stack,
-  Heading,
   Text,
   Button,
-  Card,
   Alert,
   Loading,
   Select,
@@ -103,50 +101,31 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
   const { settings, canEdit } = data
 
   return (
-    <Card>
-      <Stack spacing="md">
-        <Flex justify="between" align="center">
-          <Heading level={3}>Governance Settings</Heading>
-          {canEdit && !isEditing && (
-            <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
-              Edit
-            </Button>
-          )}
-        </Flex>
-
-        {!canEdit && (
-          <Alert variant="info">
-            <Text variant="small">Only founders and governors can edit governance settings.</Text>
-          </Alert>
+    <div className="border border-gray-200 rounded-lg bg-white p-3">
+      <div className="flex justify-between items-center mb-2">
+        <Text weight="semibold">Governance Settings</Text>
+        {canEdit && !isEditing && (
+          <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>Edit</Button>
         )}
+      </div>
 
-        {isEditing ? (
-          <Stack spacing="md">
-            {/* Voting Method */}
+      {!canEdit && (
+        <Text variant="small" color="muted" className="mb-2">View only</Text>
+      )}
+
+      {isEditing ? (
+        <Stack spacing="sm">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Voting Method
-              </label>
-              <Select
-                value={votingMethod}
-                onChange={(e) => setVotingMethod(e.target.value)}
-              >
+              <label className="block text-xs font-medium text-gray-500 mb-1">Voting Method</label>
+              <Select value={votingMethod} onChange={(e) => setVotingMethod(e.target.value)}>
                 {VOTING_METHODS.map((method) => (
-                  <option key={method.value} value={method.value}>
-                    {method.label}
-                  </option>
+                  <option key={method.value} value={method.value}>{method.label}</option>
                 ))}
               </Select>
-              <Text variant="small" color="muted" className="mt-1">
-                How votes are counted to determine if a proposal passes.
-              </Text>
             </div>
-
-            {/* Voting Period */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Voting Period (days)
-              </label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Voting Period (days)</label>
               <Input
                 type="number"
                 min={1}
@@ -154,16 +133,9 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
                 value={votingPeriodDays}
                 onChange={(e) => setVotingPeriodDays(parseInt(e.target.value) || 1)}
               />
-              <Text variant="small" color="muted" className="mt-1">
-                How long members have to vote on proposals (1-30 days).
-              </Text>
             </div>
-
-            {/* Quorum Percentage */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Quorum Percentage
-              </label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Quorum %</label>
               <Input
                 type="number"
                 min={0}
@@ -171,72 +143,34 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
                 value={quorumPercentage}
                 onChange={(e) => setQuorumPercentage(parseInt(e.target.value) || 0)}
               />
-              <Text variant="small" color="muted" className="mt-1">
-                Minimum percentage of eligible voters that must participate for a vote to be valid.
-              </Text>
             </div>
-
-            {/* Require Proposal Review */}
-            <div>
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div className="flex items-center">
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
                 <input
                   type="checkbox"
                   checked={requireProposalReview}
                   onChange={(e) => setRequireProposalReview(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600"
                 />
-                <span className="text-sm font-medium text-gray-700">
-                  Require proposal review before voting
-                </span>
+                Require review
               </label>
-              <Text variant="small" color="muted" className="mt-1 ml-6">
-                When enabled, proposals must be approved by a moderator before they go to vote.
-              </Text>
             </div>
-
-            {/* Action Buttons */}
-            <Flex gap="sm" className="pt-2">
-              <Button
-                variant="ghost"
-                onClick={handleCancel}
-                disabled={updateMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSave}
-                disabled={updateMutation.isPending}
-              >
-                {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </Flex>
-          </Stack>
-        ) : (
-          <Stack spacing="sm">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Text variant="small" color="muted">Voting Method</Text>
-                <Text weight="semibold">
-                  {VOTING_METHODS.find(m => m.value === settings.votingMethod)?.label || settings.votingMethod}
-                </Text>
-              </div>
-              <div>
-                <Text variant="small" color="muted">Voting Period</Text>
-                <Text weight="semibold">{settings.votingPeriodDays} days</Text>
-              </div>
-              <div>
-                <Text variant="small" color="muted">Quorum</Text>
-                <Text weight="semibold">{settings.quorumPercentage}%</Text>
-              </div>
-              <div>
-                <Text variant="small" color="muted">Proposal Review</Text>
-                <Text weight="semibold">{settings.requireProposalReview ? 'Required' : 'Not required'}</Text>
-              </div>
-            </div>
-          </Stack>
-        )}
-      </Stack>
-    </Card>
+          </div>
+          <Flex gap="sm" justify="end" className="pt-2 border-t">
+            <Button variant="ghost" size="sm" onClick={handleCancel} disabled={updateMutation.isPending}>Cancel</Button>
+            <Button variant="primary" size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? 'Saving...' : 'Save'}
+            </Button>
+          </Flex>
+        </Stack>
+      ) : (
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <span><span className="text-gray-500">Method:</span> {VOTING_METHODS.find(m => m.value === settings.votingMethod)?.label.split(' ')[0]}</span>
+          <span><span className="text-gray-500">Period:</span> {settings.votingPeriodDays}d</span>
+          <span><span className="text-gray-500">Quorum:</span> {settings.quorumPercentage}%</span>
+          <span><span className="text-gray-500">Review:</span> {settings.requireProposalReview ? 'Yes' : 'No'}</span>
+        </div>
+      )}
+    </div>
   )
 }

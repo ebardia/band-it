@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button, Text, Heading, Stack, Card, Badge, Modal } from '@/components/ui'
+import { Button, Text, Stack, Badge, Modal, Flex } from '@/components/ui'
 import { trpc } from '@/lib/trpc'
 import { MIN_MEMBERS_TO_ACTIVATE, REQUIRE_PAYMENT_TO_ACTIVATE } from '@band-it/shared'
 
@@ -32,47 +32,34 @@ export function BillingSettings({ bandId, bandSlug, userId }: BillingSettingsPro
 
   if (isLoading) {
     return (
-      <Card>
-        <Stack spacing="md">
-          <Heading level={3}>Billing Settings</Heading>
-          <Text variant="muted">Loading...</Text>
-        </Stack>
-      </Card>
+      <div className="border border-gray-200 rounded-lg bg-white p-3">
+        <Text weight="semibold">Billing Settings</Text>
+        <Text variant="small" color="muted">Loading...</Text>
+      </div>
     )
   }
 
   if (!billingInfo) {
     return (
-      <Card>
-        <Stack spacing="md">
-          <Heading level={3}>Billing Settings</Heading>
-          <Text variant="muted">Unable to load billing information.</Text>
-        </Stack>
-      </Card>
+      <div className="border border-gray-200 rounded-lg bg-white p-3">
+        <Text weight="semibold">Billing Settings</Text>
+        <Text variant="small" color="muted">Unable to load billing information.</Text>
+      </div>
     )
   }
 
   // In test mode, show a simplified message
   if (!REQUIRE_PAYMENT_TO_ACTIVATE) {
     return (
-      <Card>
-        <Stack spacing="md">
-          <Heading level={3}>Billing Settings</Heading>
-          <div className="bg-green-50 p-3 rounded-lg">
-            <Text variant="small" className="text-green-700">
-              Billing is currently disabled (test mode).{MIN_MEMBERS_TO_ACTIVATE > 1 && ` Bands are automatically activated when they reach ${MIN_MEMBERS_TO_ACTIVATE} members.`}
-            </Text>
-          </div>
-          {MIN_MEMBERS_TO_ACTIVATE > 1 && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Text variant="small" className="text-gray-500">Members</Text>
-                <Text weight="semibold">{billingInfo.memberCount}</Text>
-              </div>
-            </div>
-          )}
-        </Stack>
-      </Card>
+      <div className="border border-gray-200 rounded-lg bg-white p-3">
+        <div className="flex items-center justify-between mb-2">
+          <Text weight="semibold">Billing Settings</Text>
+          <Badge variant="success">Test Mode</Badge>
+        </div>
+        <Text variant="small" color="muted">
+          Billing disabled.{MIN_MEMBERS_TO_ACTIVATE > 1 && ` Auto-activated at ${MIN_MEMBERS_TO_ACTIVATE} members.`}
+        </Text>
+      </div>
     )
   }
 
@@ -160,193 +147,95 @@ export function BillingSettings({ bandId, bandSlug, userId }: BillingSettingsPro
 
   return (
     <>
-      <Card>
-        <Stack spacing="lg">
-          <div className="flex items-center justify-between">
-            <Heading level={3}>Billing Settings</Heading>
-            {getStatusBadge()}
-          </div>
+      <div className="border border-gray-200 rounded-lg bg-white p-3">
+        <div className="flex items-center justify-between mb-2">
+          <Text weight="semibold">Billing Settings</Text>
+          {getStatusBadge()}
+        </div>
 
-          {/* Billing Status Details */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Text variant="small" className="text-gray-500">Plan</Text>
-              <Text weight="semibold">
-                ${currentPriceAmount}/month ({memberCount >= 21 ? '21+ members' : `${MIN_MEMBERS_TO_ACTIVATE}-20 members`})
-              </Text>
-            </div>
-            <div>
-              <Text variant="small" className="text-gray-500">Members</Text>
-              <Text weight="semibold">{memberCount}</Text>
-            </div>
-            <div>
-              <Text variant="small" className="text-gray-500">Billing Owner</Text>
-              <Text weight="semibold">
-                {billingOwner ? (
-                  <>
-                    {billingOwner.name}
-                    {isBillingOwner && <span className="text-blue-600 ml-2">(You)</span>}
-                  </>
-                ) : (
-                  <span className="text-orange-600">No owner assigned</span>
-                )}
-              </Text>
-            </div>
-            {billingCycleStart && (
-              <div>
-                <Text variant="small" className="text-gray-500">Billing Cycle Start</Text>
-                <Text weight="semibold">
-                  {new Date(billingCycleStart).toLocaleDateString()}
-                </Text>
-              </div>
+        {/* Billing Status Details */}
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-2">
+          <span><span className="text-gray-500">Plan:</span> ${currentPriceAmount}/mo</span>
+          <span><span className="text-gray-500">Members:</span> {memberCount}</span>
+          <span>
+            <span className="text-gray-500">Owner:</span>{' '}
+            {billingOwner ? (
+              <>{billingOwner.name}{isBillingOwner && <span className="text-blue-600"> (You)</span>}</>
+            ) : (
+              <span className="text-orange-600">None</span>
             )}
-          </div>
+          </span>
+          {billingCycleStart && <span><span className="text-gray-500">Cycle:</span> {new Date(billingCycleStart).toLocaleDateString()}</span>}
+        </div>
 
-          {/* Upgrade/Downgrade Notice */}
-          {willUpgrade && (
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <Text variant="small" className="text-blue-700">
-                Your subscription will be upgraded to $100/month when the 21st member joins.
-              </Text>
-            </div>
-          )}
-          {willDowngrade && (
-            <div className="bg-yellow-50 p-3 rounded-lg">
-              <Text variant="small" className="text-yellow-700">
-                Your subscription will be downgraded to $20/month at the end of the billing cycle.
-              </Text>
-            </div>
-          )}
+        {/* Notices */}
+        {willUpgrade && <Text variant="small" className="text-blue-600 mb-1">Upgrades to $100/mo at 21 members</Text>}
+        {willDowngrade && <Text variant="small" className="text-yellow-600 mb-1">Downgrades to $20/mo end of cycle</Text>}
+        {billingStatus === 'PAST_DUE' && gracePeriodDaysLeft !== null && (
+          <Text variant="small" className="text-red-600 font-medium mb-1">{gracePeriodDaysLeft} days to update payment</Text>
+        )}
 
-          {/* Grace Period Warning */}
-          {billingStatus === 'PAST_DUE' && gracePeriodDaysLeft !== null && (
-            <div className="bg-red-50 p-3 rounded-lg">
-              <Text variant="small" className="text-red-700 font-medium">
-                Payment failed! {gracePeriodDaysLeft} days remaining to update payment method before band is deactivated.
-              </Text>
-            </div>
+        {/* Actions */}
+        <Flex gap="sm" className="pt-2 border-t mt-2" wrap="wrap">
+          {!hasBillingOwner && memberCount >= MIN_MEMBERS_TO_ACTIVATE && (
+            <Button variant="primary" size="sm" onClick={handleClaim} disabled={claimOwnership.isPending}>
+              {claimOwnership.isPending ? 'Claiming...' : 'Become Billing Owner'}
+            </Button>
           )}
 
-          {/* Actions */}
-          <div className="border-t pt-4">
-            <Stack spacing="sm">
-              {/* No owner - show claim button */}
-              {!hasBillingOwner && memberCount >= MIN_MEMBERS_TO_ACTIVATE && (
-                <Button
-                  variant="primary"
-                  onClick={handleClaim}
-                  disabled={claimOwnership.isPending}
-                >
-                  {claimOwnership.isPending ? 'Claiming...' : 'Become Billing Owner'}
+          {isBillingOwner && (
+            <>
+              {billingStatus === 'PENDING' && (
+                <Button variant="primary" size="sm" onClick={handlePayment} disabled={createCheckout.isPending}>
+                  {createCheckout.isPending ? 'Loading...' : `Set Up Payment ($${currentPriceAmount}/mo)`}
                 </Button>
               )}
-
-              {/* Billing owner actions */}
-              {isBillingOwner && (
-                <>
-                  {billingStatus === 'PENDING' && (
-                    <Button
-                      variant="primary"
-                      onClick={handlePayment}
-                      disabled={createCheckout.isPending}
-                    >
-                      {createCheckout.isPending ? 'Loading...' : `Set Up Payment ($${currentPriceAmount}/month)`}
-                    </Button>
-                  )}
-
-                  {(billingStatus === 'ACTIVE' || billingStatus === 'PAST_DUE') && (
-                    <Button
-                      variant={billingStatus === 'PAST_DUE' ? 'danger' : 'secondary'}
-                      onClick={handleManagePayment}
-                      disabled={createPortal.isPending}
-                    >
-                      {createPortal.isPending ? 'Loading...' : 'Manage Payment Method'}
-                    </Button>
-                  )}
-
-                  {billingStatus === 'INACTIVE' && memberCount >= MIN_MEMBERS_TO_ACTIVATE && (
-                    <Button
-                      variant="primary"
-                      onClick={handlePayment}
-                      disabled={createCheckout.isPending}
-                    >
-                      {createCheckout.isPending ? 'Loading...' : 'Reactivate Subscription'}
-                    </Button>
-                  )}
-
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowTransferModal(true)}
-                  >
-                    Transfer Billing Ownership
-                  </Button>
-                </>
+              {(billingStatus === 'ACTIVE' || billingStatus === 'PAST_DUE') && (
+                <Button variant={billingStatus === 'PAST_DUE' ? 'danger' : 'secondary'} size="sm" onClick={handleManagePayment} disabled={createPortal.isPending}>
+                  {createPortal.isPending ? 'Loading...' : 'Manage Payment'}
+                </Button>
               )}
-
-              {/* Non-owner, but owner exists */}
-              {hasBillingOwner && !isBillingOwner && (
-                <Text variant="small" className="text-gray-500">
-                  Only the billing owner ({billingOwner.name}) can manage payment settings.
-                </Text>
+              {billingStatus === 'INACTIVE' && memberCount >= MIN_MEMBERS_TO_ACTIVATE && (
+                <Button variant="primary" size="sm" onClick={handlePayment} disabled={createCheckout.isPending}>
+                  {createCheckout.isPending ? 'Loading...' : 'Reactivate'}
+                </Button>
               )}
-            </Stack>
-          </div>
-        </Stack>
-      </Card>
+              <Button variant="ghost" size="sm" onClick={() => setShowTransferModal(true)}>Transfer</Button>
+            </>
+          )}
+
+          {hasBillingOwner && !isBillingOwner && (
+            <Text variant="small" color="muted">Only {billingOwner.name} can manage billing.</Text>
+          )}
+        </Flex>
+      </div>
 
       {/* Transfer Ownership Modal */}
-      <Modal
-        isOpen={showTransferModal}
-        onClose={() => {
-          setShowTransferModal(false)
-          setSelectedNewOwner(null)
-        }}
-      >
+      <Modal isOpen={showTransferModal} onClose={() => { setShowTransferModal(false); setSelectedNewOwner(null) }}>
         <Stack spacing="md">
-          <Heading level={3}>Transfer Billing Ownership</Heading>
-          <Text>
-            Select a member to transfer billing ownership to. They will be responsible for managing payments.
-          </Text>
-
-          <div className="max-h-60 overflow-y-auto">
+          <Text weight="semibold" className="text-lg">Transfer Billing Ownership</Text>
+          <div className="max-h-48 overflow-y-auto space-y-1">
             {candidates?.candidates
               ?.filter((c: { isBillingOwner: boolean }) => !c.isBillingOwner)
               .map((candidate: { userId: string; name: string; role: string }) => (
                 <div
                   key={candidate.userId}
-                  className={`p-3 border rounded-lg mb-2 cursor-pointer transition-colors ${
-                    selectedNewOwner === candidate.userId
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                  className={`p-2 border rounded cursor-pointer text-sm ${
+                    selectedNewOwner === candidate.userId ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                   onClick={() => setSelectedNewOwner(candidate.userId)}
                 >
-                  <Text weight="semibold">{candidate.name}</Text>
-                  <Text variant="small" className="text-gray-500">
-                    {candidate.role}
-                  </Text>
+                  <span className="font-medium">{candidate.name}</span>
+                  <span className="text-gray-500 ml-2">{candidate.role}</span>
                 </div>
               ))}
           </div>
-
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setShowTransferModal(false)
-                setSelectedNewOwner(null)
-              }}
-            >
-              Cancel
+          <Flex gap="sm" justify="end">
+            <Button variant="ghost" size="sm" onClick={() => { setShowTransferModal(false); setSelectedNewOwner(null) }}>Cancel</Button>
+            <Button variant="primary" size="sm" onClick={handleTransfer} disabled={!selectedNewOwner || transferOwnership.isPending}>
+              {transferOwnership.isPending ? 'Transferring...' : 'Transfer'}
             </Button>
-            <Button
-              variant="primary"
-              onClick={handleTransfer}
-              disabled={!selectedNewOwner || transferOwnership.isPending}
-            >
-              {transferOwnership.isPending ? 'Transferring...' : 'Transfer Ownership'}
-            </Button>
-          </div>
+          </Flex>
         </Stack>
       </Modal>
     </>

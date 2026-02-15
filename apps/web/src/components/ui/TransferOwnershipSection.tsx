@@ -4,12 +4,11 @@ import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
 import {
   Stack,
-  Heading,
   Text,
   Button,
   Alert,
-  Card,
   Input,
+  Flex,
   useToast,
 } from '@/components/ui'
 
@@ -66,14 +65,10 @@ export function TransferOwnershipSection({ bandId, bandSlug, bandName, userId, u
 
   if (eligibleMembers.length === 0) {
     return (
-      <Card className="border-blue-200 bg-blue-50">
-        <Stack spacing="md">
-          <Heading level={3} className="text-blue-800">Transfer Ownership</Heading>
-          <Alert variant="info">
-            <Text>There are no other active members to transfer ownership to.</Text>
-          </Alert>
-        </Stack>
-      </Card>
+      <div className="border border-blue-200 rounded-lg bg-blue-50 p-3">
+        <Text weight="semibold" className="text-blue-800">Transfer Ownership</Text>
+        <Text variant="small" color="muted">No other active members to transfer to.</Text>
+      </div>
     )
   }
 
@@ -96,96 +91,55 @@ export function TransferOwnershipSection({ bandId, bandSlug, bandName, userId, u
   }
 
   return (
-    <Card className="border-blue-200 bg-blue-50">
-      <Stack spacing="md">
-        <Heading level={3} className="text-blue-800">Transfer Ownership</Heading>
-
-        {!showConfirm ? (
-          <>
-            <Text color="muted">
-              As the founder, you can transfer ownership of this band to another active member.
-              After transfer, you will become a Governor and the new owner will become the Founder.
-            </Text>
-
-            <Text variant="small" color="muted">
-              This action:
-            </Text>
-            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-              <li>Cannot be undone without the new founder&apos;s consent</li>
-              <li>Gives full control of the band to the new founder</li>
-              <li>Changes your role from Founder to Governor</li>
-            </ul>
-
-            <Button
-              variant="secondary"
-              onClick={() => setShowConfirm(true)}
-            >
-              Transfer Ownership
-            </Button>
-          </>
-        ) : (
-          <>
-            <Alert variant="warning">
-              <Text weight="semibold">Transfer ownership of &quot;{bandName}&quot;</Text>
-              <Text variant="small">You will become a Governor after this transfer.</Text>
-            </Alert>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Select new Founder
-              </label>
-              <select
-                value={selectedMemberId}
-                onChange={(e) => setSelectedMemberId(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Choose a member...</option>
-                {eligibleMembers.map((member) => (
-                  <option key={member.userId} value={member.userId}>
-                    {String(member.user?.name || 'Unknown')} ({String(member.role || '').replace('_', ' ')})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {selectedMember?.user?.name && (
-              <Alert variant="info">
-                <Text variant="small">
-                  <strong>{String(selectedMember.user.name)}</strong> will become the new Founder of this band.
-                </Text>
-              </Alert>
-            )}
-
-            <Input
-              label='Type "TRANSFER" to confirm'
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
-              placeholder="TRANSFER"
-            />
-
-            <div className="flex gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setShowConfirm(false)
-                  setSelectedMemberId('')
-                  setConfirmText('')
-                }}
-                disabled={transferMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleTransfer}
-                disabled={transferMutation.isPending || confirmText !== 'TRANSFER' || !selectedMemberId}
-              >
-                {transferMutation.isPending ? 'Transferring...' : 'Transfer Ownership'}
-              </Button>
-            </div>
-          </>
+    <div className="border border-blue-200 rounded-lg bg-blue-50 p-3">
+      <div className="flex items-center justify-between mb-2">
+        <Text weight="semibold" className="text-blue-800">Transfer Ownership</Text>
+        {!showConfirm && (
+          <Button variant="secondary" size="sm" onClick={() => setShowConfirm(true)}>Transfer</Button>
         )}
-      </Stack>
-    </Card>
+      </div>
+
+      {!showConfirm ? (
+        <Text variant="small" color="muted">Transfer founder role to another member. You'll become Governor.</Text>
+      ) : (
+        <Stack spacing="sm">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">New Founder</label>
+            <select
+              value={selectedMemberId}
+              onChange={(e) => setSelectedMemberId(e.target.value)}
+              className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">Choose a member...</option>
+              {eligibleMembers.map((member) => (
+                <option key={member.userId} value={member.userId}>
+                  {String(member.user?.name || 'Unknown')} ({String(member.role || '').replace('_', ' ')})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedMember?.user?.name && (
+            <Text variant="small" className="text-blue-700">
+              <strong>{String(selectedMember.user.name)}</strong> will become Founder
+            </Text>
+          )}
+
+          <Input
+            label='Type "TRANSFER" to confirm'
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+            placeholder="TRANSFER"
+          />
+
+          <Flex gap="sm" justify="end">
+            <Button variant="ghost" size="sm" onClick={() => { setShowConfirm(false); setSelectedMemberId(''); setConfirmText('') }} disabled={transferMutation.isPending}>Cancel</Button>
+            <Button variant="primary" size="sm" onClick={handleTransfer} disabled={transferMutation.isPending || confirmText !== 'TRANSFER' || !selectedMemberId}>
+              {transferMutation.isPending ? 'Transferring...' : 'Transfer'}
+            </Button>
+          </Flex>
+        </Stack>
+      )}
+    </div>
   )
 }
