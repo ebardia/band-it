@@ -30,28 +30,37 @@ export function MentionAutocomplete({
 }: MentionAutocompleteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  const { data, isLoading, isFetching } = trpc.message.getMentionableUsers.useQuery(
-    { channelId, userId, search: search.trim() || undefined },
-    {
-      enabled: !!channelId && !!userId,
-      staleTime: 0, // Always refetch when search changes
-      refetchOnMount: true,
-    }
+  // Fetch all mentionable users once (no search param - filter client-side)
+  const { data, isLoading } = trpc.message.getMentionableUsers.useQuery(
+    { channelId, userId },
+    { enabled: !!channelId && !!userId }
   )
 
-  const users = data?.users || []
-  const roleMentions = data?.roleMentions || []
+  const allUsers = data?.users || []
+  const allRoleMentions = data?.roleMentions || []
+
+  // Client-side filtering for instant results
+  const searchLower = search.toLowerCase().trim()
+
+  const filteredRoleMentions = allRoleMentions.filter(role =>
+    !searchLower || role.toLowerCase().startsWith(searchLower)
+  )
+
+  const filteredUsers = allUsers.filter(user =>
+    !searchLower || user.name.toLowerCase().startsWith(searchLower)
+  )
 
   // Create combined list of options
   const options: Array<{ type: 'user' | 'role'; value: string; label: string; sublabel?: string }> = [
-    ...roleMentions.map(role => ({
+    ...filteredRoleMentions.map(role => ({
       type: 'role' as const,
       value: role,
       label: `@${role}`,
       sublabel: getRoleMentionDescription(role),
     })),
-    ...users.map(user => ({
+    ...filteredUsers.map(user => ({
       type: 'user' as const,
       value: user.name,
       label: user.name,
@@ -59,10 +68,21 @@ export function MentionAutocomplete({
     })),
   ]
 
-  // Reset selection when options change
+  // Reset selection when search changes
   useEffect(() => {
     setSelectedIndex(0)
   }, [search])
+
+  // Close on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [onClose])
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -101,9 +121,10 @@ export function MentionAutocomplete({
     }
   }, [selectedIndex])
 
-  if (isLoading || (isFetching && options.length === 0)) {
+  if (isLoading) {
     return (
       <div
+        ref={containerRef}
         className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
         style={{ top: position.top, left: position.left }}
       >
@@ -115,6 +136,7 @@ export function MentionAutocomplete({
   if (options.length === 0) {
     return (
       <div
+        ref={containerRef}
         className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
         style={{ top: position.top, left: position.left }}
       >
@@ -125,7 +147,10 @@ export function MentionAutocomplete({
 
   return (
     <div
-      ref={listRef}
+      ref={(el) => {
+        (listRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+        (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+      }}
       className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto w-72"
       style={{ top: position.top, left: position.left }}
     >
