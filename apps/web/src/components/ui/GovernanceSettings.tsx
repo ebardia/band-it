@@ -26,6 +26,15 @@ const VOTING_METHODS = [
   { value: 'UNANIMOUS', label: 'Unanimous (100%)' },
 ]
 
+const ROLE_OPTIONS = [
+  { value: 'FOUNDER', label: 'Founder' },
+  { value: 'GOVERNOR', label: 'Governor' },
+  { value: 'MODERATOR', label: 'Moderator' },
+  { value: 'CONDUCTOR', label: 'Conductor' },
+  { value: 'VOTING_MEMBER', label: 'Voting Member' },
+  { value: 'OBSERVER', label: 'Observer' },
+]
+
 export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) {
   const { showToast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
@@ -33,6 +42,7 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
   const [votingPeriodDays, setVotingPeriodDays] = useState(7)
   const [quorumPercentage, setQuorumPercentage] = useState(50)
   const [requireProposalReview, setRequireProposalReview] = useState(false)
+  const [whoCanManageDocuments, setWhoCanManageDocuments] = useState<string[]>(['FOUNDER', 'GOVERNOR', 'MODERATOR'])
 
   const utils = trpc.useUtils()
 
@@ -59,6 +69,7 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
       setVotingPeriodDays(data.settings.votingPeriodDays)
       setQuorumPercentage(data.settings.quorumPercentage)
       setRequireProposalReview(data.settings.requireProposalReview)
+      setWhoCanManageDocuments(data.settings.whoCanManageDocuments || ['FOUNDER', 'GOVERNOR', 'MODERATOR'])
     }
   }, [data?.settings])
 
@@ -70,6 +81,7 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
       votingPeriodDays,
       quorumPercentage,
       requireProposalReview,
+      whoCanManageDocuments: whoCanManageDocuments as any,
     })
   }
 
@@ -80,6 +92,7 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
       setVotingPeriodDays(data.settings.votingPeriodDays)
       setQuorumPercentage(data.settings.quorumPercentage)
       setRequireProposalReview(data.settings.requireProposalReview)
+      setWhoCanManageDocuments(data.settings.whoCanManageDocuments || ['FOUNDER', 'GOVERNOR', 'MODERATOR'])
     }
     setIsEditing(false)
   }
@@ -156,6 +169,28 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
               </label>
             </div>
           </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Who can manage documents</label>
+            <div className="flex flex-wrap gap-2">
+              {ROLE_OPTIONS.map((role) => (
+                <label key={role.value} className="flex items-center gap-1 cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    checked={whoCanManageDocuments.includes(role.value)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setWhoCanManageDocuments([...whoCanManageDocuments, role.value])
+                      } else {
+                        setWhoCanManageDocuments(whoCanManageDocuments.filter(r => r !== role.value))
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600"
+                  />
+                  {role.label}
+                </label>
+              ))}
+            </div>
+          </div>
           <Flex gap="sm" justify="end" className="pt-2 border-t">
             <Button variant="ghost" size="sm" onClick={handleCancel} disabled={updateMutation.isPending}>Cancel</Button>
             <Button variant="primary" size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
@@ -169,6 +204,7 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
           <span><span className="text-gray-500">Period:</span> {settings.votingPeriodDays}d</span>
           <span><span className="text-gray-500">Quorum:</span> {settings.quorumPercentage}%</span>
           <span><span className="text-gray-500">Review:</span> {settings.requireProposalReview ? 'Yes' : 'No'}</span>
+          <span><span className="text-gray-500">Docs:</span> {settings.whoCanManageDocuments?.map((r: string) => ROLE_OPTIONS.find(o => o.value === r)?.label.split(' ')[0]).join(', ') || 'Founder, Governor, Mod'}</span>
         </div>
       )}
     </div>

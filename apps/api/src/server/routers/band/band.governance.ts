@@ -43,6 +43,7 @@ export const bandGovernanceRouter = router({
           votingPeriodDays: true,
           quorumPercentage: true,
           requireProposalReview: true,
+          whoCanManageDocuments: true,
         },
       })
 
@@ -71,6 +72,7 @@ export const bandGovernanceRouter = router({
         votingPeriodDays: z.number().int().min(1).max(30).optional(),
         quorumPercentage: z.number().int().min(0).max(100).optional(),
         requireProposalReview: z.boolean().optional(),
+        whoCanManageDocuments: z.array(z.enum(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'])).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -107,6 +109,7 @@ export const bandGovernanceRouter = router({
           votingPeriodDays: true,
           quorumPercentage: true,
           requireProposalReview: true,
+          whoCanManageDocuments: true,
         },
       })
 
@@ -137,6 +140,10 @@ export const bandGovernanceRouter = router({
         updateData.requireProposalReview = input.requireProposalReview
         changes.requireProposalReview = { from: currentBand.requireProposalReview, to: input.requireProposalReview }
       }
+      if (input.whoCanManageDocuments !== undefined && JSON.stringify(input.whoCanManageDocuments) !== JSON.stringify(currentBand.whoCanManageDocuments)) {
+        updateData.whoCanManageDocuments = input.whoCanManageDocuments
+        changes.whoCanManageDocuments = { from: currentBand.whoCanManageDocuments, to: input.whoCanManageDocuments }
+      }
 
       if (Object.keys(updateData).length === 0) {
         throw new TRPCError({
@@ -154,6 +161,7 @@ export const bandGovernanceRouter = router({
           votingPeriodDays: true,
           quorumPercentage: true,
           requireProposalReview: true,
+          whoCanManageDocuments: true,
         },
       })
 

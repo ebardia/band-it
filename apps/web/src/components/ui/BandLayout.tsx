@@ -58,6 +58,7 @@ export function BandLayout({
   const mobileNavItems = [
     { label: 'Discussions', path: `/bands/${bandSlug}`, emoji: '💬' },
     { label: 'Posts', path: `/bands/${bandSlug}/posts`, emoji: '📝' },
+    { label: 'Documents', path: `/bands/${bandSlug}/documents`, emoji: '📄' },
     { label: 'Proposals', path: `/bands/${bandSlug}/proposals`, emoji: '📝' },
     { label: 'Projects', path: `/bands/${bandSlug}/projects`, emoji: '📁' },
     { label: 'Tasks', path: `/bands/${bandSlug}/tasks`, emoji: '✅' },

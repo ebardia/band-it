@@ -28,6 +28,7 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
   const mainNav = [
     { label: '💬 Discussions', path: `/bands/${bandSlug}`, guide: 'band-discussions' },
     { label: '📝 Posts', path: `/bands/${bandSlug}/posts`, guide: 'band-posts' },
+    { label: '📄 Documents', path: `/bands/${bandSlug}/documents`, guide: 'band-documents' },
     { label: '📝 Proposals', path: `/bands/${bandSlug}/proposals`, guide: 'band-proposals' },
     { label: '📁 Projects', path: `/bands/${bandSlug}/projects`, guide: 'band-projects' },
     { label: '✅ Tasks', path: `/bands/${bandSlug}/tasks`, guide: 'band-tasks' },

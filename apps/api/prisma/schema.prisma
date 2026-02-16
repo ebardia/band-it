@@ -150,6 +150,10 @@ model User {
 
   // AI Instructions
   aiInstructions              AIInstruction[]
+
+  // Documents
+  documentFoldersCreated      DocumentFolder[] @relation("DocumentFoldersCreated")
+  documentsUploaded           Document[]       @relation("DocumentsUploaded")
 }
 
 enum SubscriptionStatus {
@@ -546,6 +550,9 @@ model Band {
   // Role Management Configuration
   whoCanChangeRoles     MemberRole[] @default([FOUNDER])
 
+  // Document Management Configuration
+  whoCanManageDocuments MemberRole[] @default([FOUNDER, GOVERNOR, MODERATOR])
+
   // Proposal Review Configuration
   requireProposalReview Boolean @default(false)  // If true, proposals need moderator approval before voting
 
@@ -578,6 +585,8 @@ model Band {
   postCategories  PostCategory[]
   posts           Post[]
   aiInstructions  AIInstruction[]
+  documentFolders DocumentFolder[]
+  documents       Document[]
 
   @@index([createdById])
   @@index([status])
@@ -663,6 +672,13 @@ enum ChannelVisibility {
   PUBLIC      // All band members can access
   MODERATOR   // Moderators, Governors, Founders only
   GOVERNANCE  // Governors, Founders only
+}
+
+// Document folder visibility levels
+enum DocumentFolderVisibility {
+  PUBLIC      // All members can view
+  MODERATOR   // FOUNDER, GOVERNOR, MODERATOR only
+  GOVERNANCE  // FOUNDER, GOVERNOR only
 }
 
 enum MessageModerationStatus {
@@ -1825,6 +1841,7 @@ model File {
   feedback      Feedback? @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
   deliverable   TaskDeliverable? @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
   checklistDeliverable ChecklistItemDeliverable? @relation(fields: [checklistDeliverableId], references: [id], onDelete: Cascade)
+  document      Document?
 
   @@index([uploadedById])
   @@index([bandId])
@@ -2364,6 +2381,77 @@ model PostResponse {
   @@index([parentId])
   @@index([authorId])
   @@index([deletedAt])
+}
+
+// ============================================
+// DOCUMENTS - FILE STORAGE FOR BANDS
+// ============================================
+
+model DocumentFolder {
+  id              String   @id @default(cuid())
+  bandId          String
+  parentFolderId  String?  // For future nesting - null = root level
+
+  name            String   @db.VarChar(100)
+  slug            String   @db.VarChar(150)
+  description     String?  @db.VarChar(500)
+  visibility      DocumentFolderVisibility @default(PUBLIC)
+  sortOrder       Int      @default(0)
+  isArchived      Boolean  @default(false)
+
+  // Denormalized counts
+  documentCount   Int      @default(0)
+  lastDocumentAt  DateTime?
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  band            Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  parentFolder    DocumentFolder? @relation("FolderHierarchy", fields: [parentFolderId], references: [id])
+  subFolders      DocumentFolder[] @relation("FolderHierarchy")
+  createdBy       User     @relation("DocumentFoldersCreated", fields: [createdById], references: [id])
+  documents       Document[]
+
+  @@unique([bandId, slug])
+  @@index([bandId, isArchived])
+  @@index([bandId, parentFolderId])
+  @@index([bandId, sortOrder])
+}
+
+model Document {
+  id              String   @id @default(cuid())
+  bandId          String
+  folderId        String
+  uploadedById    String
+
+  // File info
+  title           String   @db.VarChar(200)
+  slug            String   @db.VarChar(250)
+  description     String?  @db.VarChar(1000)
+
+  // Storage (linked to existing File model)
+  fileId          String   @unique
+
+  // Metadata
+  isPinned        Boolean  @default(false)
+  downloadCount   Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  // Relations
+  band            Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  folder          DocumentFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  uploadedBy      User     @relation("DocumentsUploaded", fields: [uploadedById], references: [id])
+  file            File     @relation(fields: [fileId], references: [id])
+
+  @@unique([bandId, slug])
+  @@index([folderId, createdAt])
+  @@index([bandId, isPinned])
+  @@index([uploadedById])
 }
 
 // ============================================
