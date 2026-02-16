@@ -21,6 +21,7 @@ import {
   IntegrityBlockModal,
   IntegrityWarningModal,
 } from '@/components/ui'
+import { OnboardingHint } from '@/components/onboarding'
 import { AppNav } from '@/components/AppNav'
 import { TrainAIButton } from '@/components/ai'
 
@@ -362,6 +363,15 @@ export default function CreateProposalPage() {
         wide={true}
       >
         <Stack spacing="xl">
+          {/* Onboarding Hint */}
+          {userId && band.id && (
+            <OnboardingHint
+              bandId={band.id}
+              userId={userId}
+              relevantSteps={[6]}
+            />
+          )}
+
           {/* Voting Settings Info */}
           <Card>
             <Stack spacing="md">

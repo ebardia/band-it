@@ -11,6 +11,7 @@ import { requireGoodStanding } from '../../../lib/dues-enforcement'
 import { getEligibleReviewers } from '../../../lib/proposal-review'
 import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
 import { analyticsService } from '../../services/analytics.service'
+import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
 
 // Roles that can create proposals
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -336,6 +337,11 @@ export const proposalCreateRouter = router({
           userId: input.userId,
           metadata: { proposalId: proposal.id, bandId: input.bandId },
         })
+
+        // Check onboarding progress (proposal creation = milestone 6)
+        checkAndAdvanceOnboarding(input.bandId).catch(err =>
+          console.error('Error checking onboarding:', err)
+        )
       }
 
       return {

@@ -5,6 +5,7 @@ import { notificationService } from '../../../services/notification.service'
 import { proposalEffectsService } from '../../../services/proposal-effects.service'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
 import { executeDissolution, checkDissolutionVotePassed } from '../../../lib/band-dissolution'
+import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
 
 // Roles that can vote
 const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
@@ -271,6 +272,13 @@ export const proposalVoteRouter = router({
           closedAt: new Date(),
         },
       })
+
+      // Check onboarding progress (proposal passed = milestone 7)
+      if (approved) {
+        checkAndAdvanceOnboarding(proposal.bandId).catch(err =>
+          console.error('Error checking onboarding:', err)
+        )
+      }
 
       // If approved, execute based on proposal type and execution type
       let executionResult: { success: boolean; error?: string; stripeErrors?: string[] } | null = null

@@ -16,6 +16,7 @@ import {
   TransferOwnershipSection,
   GovernanceSettings
 } from '@/components/ui'
+import { OnboardingHint } from '@/components/onboarding'
 import { AppNav } from '@/components/AppNav'
 
 export default function BandSettingsPage() {
@@ -118,6 +119,15 @@ export default function BandSettingsPage() {
         userId={userId || undefined}
       >
         <Stack spacing="md">
+          {/* Onboarding Hint */}
+          {userId && band.id && (
+            <OnboardingHint
+              bandId={band.id}
+              userId={userId}
+              relevantSteps={[2, 5]}
+            />
+          )}
+
           {/* Band Details */}
           {userId && (
             <BandDetailsSettings

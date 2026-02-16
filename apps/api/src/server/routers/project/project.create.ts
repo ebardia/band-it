@@ -6,6 +6,7 @@ import { notificationService } from '../../../services/notification.service'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 import { requireGoodStanding, getBandIdFromProposal } from '../../../lib/dues-enforcement'
 import { MIN_MEMBERS_TO_ACTIVATE } from '@band-it/shared'
+import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
 
 // Roles that can create projects from approved proposals
 const CAN_CREATE_PROJECT = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -191,6 +192,11 @@ export const createProject = publicProcedure
 
     // Clear flags to prevent leaking to other operations
     clearAuditFlags()
+
+    // Check onboarding progress (project creation = milestone 8)
+    checkAndAdvanceOnboarding(proposal.bandId).catch(err =>
+      console.error('Error checking onboarding:', err)
+    )
 
     return { project }
   })

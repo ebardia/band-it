@@ -22,6 +22,7 @@ import {
   FileUpload,
   Loading
 } from '@/components/ui'
+import { TemplateSelector } from '@/components/onboarding'
 import Image from 'next/image'
 
 export default function CreateBandPage() {
@@ -39,6 +40,8 @@ function CreateBandContent() {
   const [userId, setUserId] = useState<string | null>(null)
   const parentBandId = searchParams.get('parentBandId')
   const parentBandName = searchParams.get('parentBandName')
+  const templateFromUrl = searchParams.get('template')
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(templateFromUrl)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -76,6 +79,25 @@ function CreateBandContent() {
   }, [router])
 
   const uploadFileMutation = trpc.file.upload.useMutation()
+
+  // Fetch template defaults when template is selected
+  const { data: templateDefaults } = trpc.onboarding.getTemplateDefaults.useQuery(
+    { templateId: selectedTemplate! },
+    { enabled: !!selectedTemplate }
+  )
+
+  // Apply template defaults to form
+  useEffect(() => {
+    if (templateDefaults) {
+      setFormData(prev => ({
+        ...prev,
+        mission: templateDefaults.suggestedMission || prev.mission,
+        values: templateDefaults.suggestedValues?.join(', ') || prev.values,
+        votingMethod: templateDefaults.suggestedVotingMethod || prev.votingMethod,
+        votingPeriodDays: templateDefaults.suggestedVotingPeriodDays || prev.votingPeriodDays,
+      }))
+    }
+  }, [templateDefaults])
 
   const handleImageUpload = async (fileData: { fileName: string; mimeType: string; base64Data: string }) => {
     if (!userId) return
@@ -143,6 +165,7 @@ function CreateBandContent() {
       whoCanApprove: whoCanApprove as any,
       whoCanCreateProposals: whoCanCreateProposals as any,
       parentBandId: parentBandId || undefined,
+      templateId: selectedTemplate || undefined,
     })
   }
 
@@ -221,6 +244,20 @@ function CreateBandContent() {
                   </Text>
                 </Stack>
               </Alert>
+            )}
+
+            {/* Template Selection */}
+            {!parentBandId && (
+              <Box>
+                <Text weight="semibold" className="mb-2">What kind of group are you organizing?</Text>
+                <Text variant="small" color="muted" className="mb-4">
+                  Choose a template to get tailored guidance and suggested settings.
+                </Text>
+                <TemplateSelector
+                  selectedTemplate={selectedTemplate}
+                  onSelect={setSelectedTemplate}
+                />
+              </Box>
             )}
 
             <form onSubmit={handleSubmit}>

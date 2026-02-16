@@ -28,6 +28,7 @@ import { feedbackRouter } from './feedback'
 import { contactRouter } from './contact'
 import { analyticsRouter } from './analytics'
 import { documentsRouter } from './documents'
+import { onboardingRouter } from './onboarding'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -60,6 +61,7 @@ export const appRouter = router({
   contact: contactRouter,
   analytics: analyticsRouter,
   documents: documentsRouter,
+  onboarding: onboardingRouter,
 })
 
 // Export type definition of API

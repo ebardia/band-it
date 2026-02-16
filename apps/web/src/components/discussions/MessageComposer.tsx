@@ -44,6 +44,8 @@ export function MessageComposer({
       if (threadId) {
         utils.message.getThread.invalidate({ messageId: threadId })
       }
+      // Invalidate onboarding to check for milestone completion
+      utils.onboarding.getBandOnboarding.invalidate()
       onMessageSent?.()
     },
     onError: (error) => {

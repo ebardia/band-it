@@ -60,8 +60,9 @@ function RegisterContent() {
         if (!hasInvites) {
           showToast('Account created successfully!', 'success')
         }
-        // Redirect to /discover if there are pending invites, otherwise /profile
-        router.replace(hasInvites ? '/discover' : '/profile')
+        // Redirect to /welcome for new users (they have no bands yet)
+        // Welcome page will show pending invitations if any
+        router.replace('/welcome')
       } else {
         if (!hasInvites) {
           showToast('Account created! Please check your email.', 'success')

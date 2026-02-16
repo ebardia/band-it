@@ -16,6 +16,7 @@ import {
   BandLayout
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import { OnboardingHint } from '@/components/onboarding'
 
 // Status icons
 const STATUS_ICONS = {
@@ -470,6 +471,15 @@ export default function BandProjectsPage() {
         userId={userId || undefined}
       >
         <Stack spacing="lg">
+          {/* Onboarding Hint */}
+          {userId && band.id && (
+            <OnboardingHint
+              bandId={band.id}
+              userId={userId}
+              relevantSteps={[8, 9]}
+            />
+          )}
+
           {/* Active Section - only show if not empty */}
           {counts.active > 0 && (
             <SectionHeader

@@ -27,6 +27,7 @@ import {
   PinnedMessagesHeader,
   SearchModal,
 } from '@/components/discussions'
+import { OnboardingHint } from '@/components/onboarding'
 import { Button } from '@/components/ui'
 
 export default function BandDiscussionsPage() {
@@ -443,6 +444,17 @@ export default function BandDiscussionsPage() {
                   <div className="flex-1 flex flex-col border-l-0 md:border-l border-gray-200 min-w-0 md:overflow-hidden">
                     {selectedChannelId && selectedChannel?.hasAccess ? (
                       <>
+                        {/* Onboarding Hint for sending first message */}
+                        {userId && band.id && (
+                          <div className="p-2">
+                            <OnboardingHint
+                              bandId={band.id}
+                              userId={userId}
+                              relevantSteps={[4]}
+                            />
+                          </div>
+                        )}
+
                         {/* Pinned Messages Header */}
                         <PinnedMessagesHeader
                           bandId={band.id}

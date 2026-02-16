@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { MemberRole, DocumentFolderVisibility } from '@prisma/client'
 import { canAccessDocumentFolder, canManageDocuments } from './documents.folder'
+import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
 
 function generateSlug(title: string): string {
   return title
@@ -335,6 +336,11 @@ export const uploadDocument = publicProcedure
 
       return doc
     })
+
+    // Check onboarding progress (document upload = milestone 10)
+    checkAndAdvanceOnboarding(bandId).catch(err =>
+      console.error('Error checking onboarding:', err)
+    )
 
     return { document }
   })

@@ -20,6 +20,7 @@ import {
   ListItem,
   BandLayout
 } from '@/components/ui'
+import { OnboardingHint } from '@/components/onboarding'
 import { AppNav } from '@/components/AppNav'
 
 export default function InviteMembersPage() {
@@ -178,6 +179,15 @@ export default function InviteMembersPage() {
         userId={userId || undefined}
       >
         <Stack spacing="xl">
+          {/* Onboarding Hint */}
+          {userId && bandData.band.id && (
+            <OnboardingHint
+              bandId={bandData.band.id}
+              userId={userId}
+              relevantSteps={[3]}
+            />
+          )}
+
           {/* Invite by Email */}
           <Stack spacing="lg">
             <Heading level={2}>Invite by Email</Heading>

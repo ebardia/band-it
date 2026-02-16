@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
+import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
 
 // Roles that can update governance settings
 const CAN_UPDATE_GOVERNANCE = ['FOUNDER', 'GOVERNOR']
@@ -152,6 +153,9 @@ export const bandGovernanceRouter = router({
         })
       }
 
+      // Mark governance settings as updated for onboarding milestone
+      updateData.governanceSettingsUpdated = true
+
       const band = await prisma.band.update({
         where: { id: input.bandId },
         data: updateData,
@@ -178,6 +182,9 @@ export const bandGovernanceRouter = router({
           changes,
         },
       })
+
+      // Check onboarding progress (governance settings = milestone 5)
+      await checkAndAdvanceOnboarding(input.bandId)
 
       return { settings: band }
     }),

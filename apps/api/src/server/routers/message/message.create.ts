@@ -6,6 +6,7 @@ import { canAccessChannel } from '../channel'
 import { processMentions } from './message.mention'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
 import { notificationService } from '../../../services/notification.service'
+import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
 
 /**
  * Create a new message in a channel
@@ -169,6 +170,11 @@ export const createMessage = publicProcedure
         }).catch(err => console.error('Error creating reply notification:', err))
       }
     }
+
+    // Check onboarding progress (first message = milestone 4)
+    checkAndAdvanceOnboarding(channel.band.id).catch(err =>
+      console.error('Error checking onboarding:', err)
+    )
 
     return {
       message: {

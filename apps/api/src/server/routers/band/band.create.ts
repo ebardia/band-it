@@ -5,6 +5,7 @@ import { prisma } from '../../../lib/prisma'
 import { createDefaultChannel } from '../channel'
 import { checkAndSetBandActivation } from './band.dissolve'
 import { analyticsService } from '../../services/analytics.service'
+import { createOnboarding } from '../../../lib/onboarding/milestones'
 
 export const bandCreateRouter = router({
   /**
@@ -37,6 +38,8 @@ export const bandCreateRouter = router({
         ),
         // Big Band - parent band ID for creating sub-bands
         parentBandId: z.string().optional(),
+        // Onboarding template ID
+        templateId: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -144,6 +147,11 @@ export const bandCreateRouter = router({
       // Create the default General channel
       await createDefaultChannel(band.id, input.userId)
 
+      // Initialize onboarding if template was selected
+      if (input.templateId) {
+        await createOnboarding(band.id, input.templateId)
+      }
+
       // Track band creation event
       await analyticsService.trackEvent('band_created', {
         userId: input.userId,
@@ -152,6 +160,7 @@ export const bandCreateRouter = router({
           bandName: band.name,
           isSubBand: !!input.parentBandId,
           parentBandId: input.parentBandId || null,
+          templateId: input.templateId || null,
         },
       })
 

@@ -39,8 +39,10 @@ function LoginForm() {
     }
   }, [router, returnTo])
 
+  const trpcUtils = trpc.useUtils()
+
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
 
@@ -51,6 +53,21 @@ function LoginForm() {
       }
 
       showToast(`Welcome back, ${data.user.name}!`, 'success')
+
+      // Check if user needs welcome flow (no bands and hasn't completed welcome)
+      try {
+        const welcomeState = await trpcUtils.onboarding.getUserWelcomeState.fetch({
+          userId: data.user.id,
+        })
+
+        if (!welcomeState.hasCompletedWelcome && !welcomeState.hasBands) {
+          router.replace('/welcome')
+          return
+        }
+      } catch (error) {
+        // If welcome check fails, continue to normal flow
+        console.error('Welcome state check failed:', error)
+      }
 
       // Redirect to returnTo URL if provided (validate it's a safe internal path)
       // Use replace so login page isn't in browser history

@@ -154,6 +154,9 @@ model User {
   // Documents
   documentFoldersCreated      DocumentFolder[] @relation("DocumentFoldersCreated")
   documentsUploaded           Document[]       @relation("DocumentsUploaded")
+
+  // Onboarding
+  hasCompletedWelcome         Boolean          @default(false)
 }
 
 enum SubscriptionStatus {
@@ -453,6 +456,10 @@ enum NotificationType {
   // Replies & Comments
   MESSAGE_REPLY_RECEIVED     // Someone replied to your discussion message
   COMMENT_REPLY_RECEIVED     // Someone replied to your comment
+
+  // Onboarding
+  ONBOARDING_MILESTONE_COMPLETED  // A milestone in the band's onboarding was completed
+  ONBOARDING_COMPLETED            // Band completed all onboarding milestones
 }
 
 enum NotificationPriority {
@@ -556,6 +563,9 @@ model Band {
   // Proposal Review Configuration
   requireProposalReview Boolean @default(false)  // If true, proposals need moderator approval before voting
 
+  // Onboarding tracking
+  governanceSettingsUpdated Boolean @default(false)  // Set to true when governance settings are modified
+
   // Metadata
   createdById String
   createdAt   DateTime @default(now())
@@ -587,6 +597,8 @@ model Band {
   aiInstructions  AIInstruction[]
   documentFolders DocumentFolder[]
   documents       Document[]
+  onboarding      BandOnboarding?
+  onboardingEvents OnboardingEvent[]
 
   @@index([createdById])
   @@index([status])
@@ -2452,6 +2464,50 @@ model Document {
   @@index([folderId, createdAt])
   @@index([bandId, isPinned])
   @@index([uploadedById])
+}
+
+// ============================================
+// ONBOARDING
+// ============================================
+
+enum OnboardingStatus {
+  ACTIVE
+  COMPLETED
+  DISMISSED
+}
+
+model BandOnboarding {
+  id              String   @id @default(cuid())
+  bandId          String   @unique
+  band            Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  templateId      String   // 'cause', 'community', 'creative', 'other'
+
+  currentStep     Int      @default(1)
+  completedSteps  Int[]    @default([])
+
+  status          OnboardingStatus @default(ACTIVE)
+  dismissedAt     DateTime?
+  completedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}
+
+model OnboardingEvent {
+  id              String   @id @default(cuid())
+  bandId          String
+  band            Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  eventType       String   // 'milestone_completed', 'milestone_skipped', 'dismissed'
+  milestoneStep   Int?
+
+  createdAt       DateTime @default(now())
+
+  @@index([bandId])
+  @@index([eventType, createdAt])
 }
 
 // ============================================

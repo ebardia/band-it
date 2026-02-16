@@ -18,6 +18,7 @@ import {
   BandLayout
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import { OnboardingHint } from '@/components/onboarding'
 
 // Roles that can create proposals
 const CAN_CREATE_PROPOSAL = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -698,6 +699,15 @@ export default function ProposalsPage() {
         }
       >
         <Stack spacing="lg">
+          {/* Onboarding Hint */}
+          {userId && band.id && (
+            <OnboardingHint
+              bandId={band.id}
+              userId={userId}
+              relevantSteps={[7]}
+            />
+          )}
+
           {/* Pending Review Alert (for reviewers) */}
           {canReview && pendingReviewProposals.length > 0 && (
             <Alert variant="warning">

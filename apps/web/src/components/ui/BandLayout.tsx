@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Text, Flex, Stack } from '.'
 import { BandSidebar } from './BandSidebar'
 import { DuesBanner } from './DuesBanner'
+import { OnboardingBanner } from '@/components/onboarding'
 
 export interface BandLayoutProps {
   children: ReactNode
@@ -218,6 +219,11 @@ export function BandLayout({
             </div>
           </Flex>
         </div>
+
+        {/* Onboarding Banner */}
+        {bandId && userId && (
+          <OnboardingBanner bandId={bandId} bandSlug={bandSlug} userId={userId} />
+        )}
 
         {/* Main Content Area */}
         <div className="pb-8">

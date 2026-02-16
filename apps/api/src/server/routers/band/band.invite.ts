@@ -7,6 +7,7 @@ import { emailService } from '../../services/email.service'
 import { memberBillingTriggers } from '../../services/member-billing-triggers'
 import { checkAndSetBandActivation } from './band.dissolve'
 import { requireGoodStanding, hasActiveDissolutionVote } from '../../../lib/dues-enforcement'
+import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
 
 // Roles that can invite members
 const CAN_INVITE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -316,6 +317,11 @@ export const bandInviteRouter = router({
 
       // Trigger billing checks (minimum member reached, 21st member, etc.)
       await memberBillingTriggers.onMemberActivated(membership.bandId)
+
+      // Check onboarding progress (member joined = milestone 3)
+      checkAndAdvanceOnboarding(membership.bandId).catch(err =>
+        console.error('Error checking onboarding:', err)
+      )
 
       return {
         success: true,

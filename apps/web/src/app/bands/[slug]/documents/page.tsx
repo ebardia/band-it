@@ -20,6 +20,7 @@ import {
   useToast
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import { OnboardingHint } from '@/components/onboarding'
 
 export default function DocumentsPage() {
   const router = useRouter()
@@ -239,6 +240,15 @@ export default function DocumentsPage() {
         }
       >
         <Stack spacing="md">
+          {/* Onboarding Hint */}
+          {userId && band.id && (
+            <OnboardingHint
+              bandId={band.id}
+              userId={userId}
+              relevantSteps={[10]}
+            />
+          )}
+
           {folders.length === 0 ? (
             <div className="border border-gray-200 rounded-lg bg-white p-8 text-center">
               <Text color="muted" className="mb-4">No folders yet. {canManageDocuments ? 'Create your first folder to organize your band\'s documents.' : ''}</Text>

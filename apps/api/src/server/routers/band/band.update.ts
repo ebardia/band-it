@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
+import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
 
 export const bandUpdateRouter = router({
   /**
@@ -89,6 +90,9 @@ export const bandUpdateRouter = router({
         where: { id: input.bandId },
         data: updateData,
       })
+
+      // Check onboarding progress (mission update = milestone 2)
+      await checkAndAdvanceOnboarding(input.bandId)
 
       return { band: updatedBand }
     }),

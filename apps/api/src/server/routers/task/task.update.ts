@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
 import { setAuditFlags, clearAuditFlags } from '../../../lib/auditContext'
 import { requireGoodStanding, getBandIdFromTask } from '../../../lib/dues-enforcement'
+import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
 
 // Roles that can update any task
 const CAN_UPDATE_ANY_TASK = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -232,7 +233,7 @@ export const updateTask = publicProcedure
         where: { id: task.projectId },
         select: { leadId: true, createdById: true }
       })
-      
+
       const notifyUserId = project?.leadId || project?.createdById
       if (notifyUserId && notifyUserId !== userId) {
         await notificationService.create({
@@ -245,6 +246,11 @@ export const updateTask = publicProcedure
           actionUrl: `/bands/${updatedTask.band.slug}/projects/${task.projectId}?task=${task.id}`,
         })
       }
+
+      // Check onboarding progress (task completion = milestone 9)
+      checkAndAdvanceOnboarding(task.bandId).catch(err =>
+        console.error('Error checking onboarding:', err)
+      )
     }
 
     // Clear flags to prevent leaking to other operations
