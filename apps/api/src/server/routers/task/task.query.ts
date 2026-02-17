@@ -154,8 +154,20 @@ export const getMyTasks = publicProcedure
   .query(async ({ input }) => {
     const { userId, status } = input
 
+    // Get bands where user is still an active member
+    const activeMemberships = await prisma.member.findMany({
+      where: {
+        userId,
+        status: 'ACTIVE',
+      },
+      select: { bandId: true },
+    })
+
+    const activeBandIds = activeMemberships.map(m => m.bandId)
+
     const tasks = await prisma.task.findMany({
       where: {
+        bandId: { in: activeBandIds },
         assigneeId: userId,
         ...(status && { status }),
       },
@@ -178,7 +190,7 @@ export const getMyTasks = publicProcedure
   })
 
 /**
- * Get tasks in projects where user is creator or lead
+ * Get tasks in projects where user is creator or lead (only from active bands)
  */
 export const getMyProjectTasks = publicProcedure
   .input(z.object({
@@ -188,8 +200,20 @@ export const getMyProjectTasks = publicProcedure
   .query(async ({ input }) => {
     const { userId, status } = input
 
+    // Get bands where user is still an active member
+    const activeMemberships = await prisma.member.findMany({
+      where: {
+        userId,
+        status: 'ACTIVE',
+      },
+      select: { bandId: true },
+    })
+
+    const activeBandIds = activeMemberships.map(m => m.bandId)
+
     const tasks = await prisma.task.findMany({
       where: {
+        bandId: { in: activeBandIds },
         project: {
           OR: [
             { leadId: userId },

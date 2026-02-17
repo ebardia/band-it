@@ -130,9 +130,21 @@ export const getMyProjects = publicProcedure
   .query(async ({ input }) => {
     const { userId } = input
 
-    // Get projects where user is lead or creator
+    // Get bands where user is still an active member
+    const activeMemberships = await prisma.member.findMany({
+      where: {
+        userId,
+        status: 'ACTIVE',
+      },
+      select: { bandId: true },
+    })
+
+    const activeBandIds = activeMemberships.map(m => m.bandId)
+
+    // Get projects where user is lead or creator, but only from active bands
     const projects = await prisma.project.findMany({
       where: {
+        bandId: { in: activeBandIds },
         OR: [
           { leadId: userId },
           { createdById: userId },
