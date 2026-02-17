@@ -328,6 +328,31 @@ export const commentRouter = router({
         throw new TRPCError({ code: 'FORBIDDEN', message: 'You can only edit your own comments' })
       }
 
+      // Resolve bandId and check active membership
+      let bandId = comment.bandId
+      if (!bandId && comment.proposalId) {
+        const proposal = await prisma.proposal.findUnique({ where: { id: comment.proposalId }, select: { bandId: true } })
+        bandId = proposal?.bandId || null
+      }
+      if (!bandId && comment.projectId) {
+        const project = await prisma.project.findUnique({ where: { id: comment.projectId }, select: { bandId: true } })
+        bandId = project?.bandId || null
+      }
+      if (!bandId && comment.taskId) {
+        const task = await prisma.task.findUnique({ where: { id: comment.taskId }, select: { bandId: true } })
+        bandId = task?.bandId || null
+      }
+
+      if (bandId) {
+        const membership = await prisma.member.findUnique({
+          where: { userId_bandId: { userId, bandId } },
+          select: { status: true },
+        })
+        if (!membership || membership.status !== 'ACTIVE') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'You must be an active band member to edit comments' })
+        }
+      }
+
       const updatedComment = await prisma.comment.update({
         where: { id: commentId },
         data: {
@@ -377,6 +402,31 @@ export const commentRouter = router({
         throw new TRPCError({ code: 'FORBIDDEN', message: 'You can only delete your own comments' })
       }
 
+      // Resolve bandId and check active membership
+      let bandId = comment.bandId
+      if (!bandId && comment.proposalId) {
+        const proposal = await prisma.proposal.findUnique({ where: { id: comment.proposalId }, select: { bandId: true } })
+        bandId = proposal?.bandId || null
+      }
+      if (!bandId && comment.projectId) {
+        const project = await prisma.project.findUnique({ where: { id: comment.projectId }, select: { bandId: true } })
+        bandId = project?.bandId || null
+      }
+      if (!bandId && comment.taskId) {
+        const task = await prisma.task.findUnique({ where: { id: comment.taskId }, select: { bandId: true } })
+        bandId = task?.bandId || null
+      }
+
+      if (bandId) {
+        const membership = await prisma.member.findUnique({
+          where: { userId_bandId: { userId, bandId } },
+          select: { status: true },
+        })
+        if (!membership || membership.status !== 'ACTIVE') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'You must be an active band member to delete comments' })
+        }
+      }
+
       await prisma.comment.update({
         where: { id: commentId },
         data: { deletedAt: new Date() }
@@ -398,6 +448,31 @@ export const commentRouter = router({
       const comment = await prisma.comment.findUnique({ where: { id: commentId } })
       if (!comment || comment.deletedAt) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Comment not found' })
+      }
+
+      // Resolve bandId and check active membership
+      let bandId = comment.bandId
+      if (!bandId && comment.proposalId) {
+        const proposal = await prisma.proposal.findUnique({ where: { id: comment.proposalId }, select: { bandId: true } })
+        bandId = proposal?.bandId || null
+      }
+      if (!bandId && comment.projectId) {
+        const project = await prisma.project.findUnique({ where: { id: comment.projectId }, select: { bandId: true } })
+        bandId = project?.bandId || null
+      }
+      if (!bandId && comment.taskId) {
+        const task = await prisma.task.findUnique({ where: { id: comment.taskId }, select: { bandId: true } })
+        bandId = task?.bandId || null
+      }
+
+      if (bandId) {
+        const membership = await prisma.member.findUnique({
+          where: { userId_bandId: { userId, bandId } },
+          select: { status: true },
+        })
+        if (!membership || membership.status !== 'ACTIVE') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'You must be an active band member to react to comments' })
+        }
       }
 
       // Check if user already has this exact reaction (toggle off)
