@@ -62,6 +62,7 @@ export function MentionAutocomplete({
   })
 
   console.log('[MentionAutocomplete] filteredUsers count:', filteredUsers.length)
+  console.log('[MentionAutocomplete] filteredRoleMentions count:', filteredRoleMentions.length)
 
   // Create combined list of options
   const options: Array<{ type: 'user' | 'role'; value: string; label: string; sublabel?: string }> = [
@@ -78,6 +79,9 @@ export function MentionAutocomplete({
       sublabel: formatRole(user.role),
     })),
   ]
+
+  console.log('[MentionAutocomplete] options count:', options.length)
+  console.log('[MentionAutocomplete] position:', position)
 
   // Reset selection when search changes
   useEffect(() => {
