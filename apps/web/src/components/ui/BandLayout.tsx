@@ -63,7 +63,7 @@ export function BandLayout({
     { label: 'Proposals', path: `/bands/${bandSlug}/proposals`, emoji: '📝' },
     { label: 'Projects', path: `/bands/${bandSlug}/projects`, emoji: '📁' },
     { label: 'Tasks', path: `/bands/${bandSlug}/tasks`, emoji: '✅' },
-    { label: 'Events', path: `/bands/${bandSlug}/events`, emoji: '📅' },
+    { label: 'Calendar', path: `/bands/${bandSlug}/calendar`, emoji: '📅' },
     { label: 'Finance', path: `/bands/${bandSlug}/finance`, emoji: '💰' },
     { label: 'Members', path: `/bands/${bandSlug}/members`, emoji: '👥' },
     { label: 'About', path: `/bands/${bandSlug}/about`, emoji: 'ℹ️' },
