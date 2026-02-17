@@ -74,15 +74,27 @@ export function handleRichPaste(clipboardData: DataTransfer): string | null {
   const html = getHtmlFromClipboard(clipboardData)
   const plainText = clipboardData.getData('text/plain')
 
+  // Debug logging - check browser console
+  console.log('[Paste Debug] Clipboard types:', clipboardData.types)
+  console.log('[Paste Debug] Has HTML:', !!html)
+  console.log('[Paste Debug] Plain text length:', plainText?.length || 0)
+  if (html) {
+    console.log('[Paste Debug] HTML preview:', html.substring(0, 300))
+  }
+
   if (html) {
     // Convert HTML to markdown
     const markdown = htmlToMarkdown(html)
+    console.log('[Paste Debug] Converted markdown preview:', markdown?.substring(0, 300))
 
     // Only use the markdown if it's different from plain text
     // This avoids unnecessary conversion when pasting plain text
     // that browsers wrap in minimal HTML
     if (markdown && markdown !== plainText && markdown.trim() !== plainText.trim()) {
+      console.log('[Paste Debug] Using converted markdown!')
       return markdown
+    } else {
+      console.log('[Paste Debug] Markdown same as plain text, skipping conversion')
     }
   }
 
