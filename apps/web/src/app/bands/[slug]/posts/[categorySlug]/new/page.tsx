@@ -15,8 +15,8 @@ import {
   Alert,
   BandLayout,
   Input,
-  Textarea,
-  useToast
+  useToast,
+  MarkdownEditor
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -217,28 +217,19 @@ export default function NewPostPage() {
                   </Text>
                 </Stack>
 
-                <Stack spacing="xs">
-                  <Text weight="semibold">Content</Text>
-                  <Textarea
-                    placeholder="Write your post content here. Markdown is supported for formatting (min 20 characters)..."
+                <div>
+                  <MarkdownEditor
+                    label="Content"
                     value={content}
-                    onChange={(e) => setContent(e.target.value)}
+                    onChange={setContent}
+                    placeholder="Write your post content here. Markdown is supported for formatting (min 20 characters)..."
                     rows={12}
+                    minLength={20}
                   />
-                  <Text variant="small" color="muted">
+                  <Text variant="small" color="muted" className="mt-1">
                     {content.length} characters (minimum 20 required)
                   </Text>
-                </Stack>
-
-                <Alert variant="info">
-                  <Stack spacing="xs">
-                    <Text weight="semibold">Markdown Tips</Text>
-                    <Text variant="small">
-                      **bold** for <strong>bold</strong>, *italic* for <em>italic</em>,
-                      `code` for <code>inline code</code>, and blank lines for paragraphs.
-                    </Text>
-                  </Stack>
-                </Alert>
+                </div>
               </Stack>
 
               <Flex justify="end" gap="sm">

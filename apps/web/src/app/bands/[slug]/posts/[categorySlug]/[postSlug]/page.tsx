@@ -18,7 +18,9 @@ import {
   Textarea,
   Input,
   Modal,
-  useToast
+  useToast,
+  MarkdownRenderer,
+  MarkdownEditor
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 
@@ -112,9 +114,7 @@ function ResponseThread({
               )}
             </Flex>
           </Flex>
-          <div dir="auto" style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', textAlign: 'start', unicodeBidi: 'plaintext' }}>
-            {response.content}
-          </div>
+          <MarkdownRenderer content={response.content} />
         </Stack>
       </Card>
 
@@ -150,14 +150,17 @@ export default function PostDetailPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [replyTo, setReplyTo] = useState<string | null>(null) // parentId or null for post-level
   const [replyContent, setReplyContent] = useState('')
+  const [showReplyPreview, setShowReplyPreview] = useState(false)
   const [editModal, setEditModal] = useState<{ responseId: string; content: string } | null>(null)
   const [editContent, setEditContent] = useState('')
+  const [showEditPreview, setShowEditPreview] = useState(false)
   const [deleteModal, setDeleteModal] = useState<string | null>(null)
 
   // Post edit/delete state
   const [editPostModal, setEditPostModal] = useState(false)
   const [editPostTitle, setEditPostTitle] = useState('')
   const [editPostContent, setEditPostContent] = useState('')
+  const [showEditPostPreview, setShowEditPostPreview] = useState(false)
   const [deletePostModal, setDeletePostModal] = useState(false)
 
   useEffect(() => {
@@ -467,19 +470,8 @@ export default function PostDetailPage() {
                   </Flex>
                 )}
               </Flex>
-              <div
-                dir="auto"
-                style={{
-                  whiteSpace: 'pre-wrap',
-                  fontFamily: 'inherit',
-                  padding: '16px',
-                  backgroundColor: 'var(--color-surface-hover, #f5f5f5)',
-                  borderRadius: '8px',
-                  textAlign: 'start',
-                  unicodeBidi: 'plaintext',
-                }}
-              >
-                {post.content}
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <MarkdownRenderer content={post.content} />
               </div>
             </Stack>
           </Card>
@@ -494,9 +486,29 @@ export default function PostDetailPage() {
             {canRespond && (
               <Card>
                 <Stack spacing="sm">
-                  <Text weight="semibold">
-                    {replyTo ? 'Reply to comment' : 'Add a response'}
-                  </Text>
+                  <Flex justify="between" align="center">
+                    <Text weight="semibold">
+                      {replyTo ? 'Reply to comment' : 'Add a response'}
+                    </Text>
+                    <Flex gap="sm">
+                      <Button
+                        type="button"
+                        variant={!showReplyPreview ? 'primary' : 'ghost'}
+                        size="xs"
+                        onClick={() => setShowReplyPreview(false)}
+                      >
+                        Write
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={showReplyPreview ? 'primary' : 'ghost'}
+                        size="xs"
+                        onClick={() => setShowReplyPreview(true)}
+                      >
+                        Preview
+                      </Button>
+                    </Flex>
+                  </Flex>
                   {replyTo && (
                     <Button
                       variant="ghost"
@@ -506,12 +518,24 @@ export default function PostDetailPage() {
                       Cancel reply
                     </Button>
                   )}
-                  <Textarea
-                    placeholder="Write your response (Markdown supported)..."
-                    value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
-                    rows={4}
-                  />
+                  {!showReplyPreview ? (
+                    <Textarea
+                      placeholder="Write your response (Markdown supported)..."
+                      value={replyContent}
+                      onChange={(e) => setReplyContent(e.target.value)}
+                      rows={4}
+                      dir="auto"
+                      style={{ unicodeBidi: 'plaintext' }}
+                    />
+                  ) : (
+                    <div className="border border-gray-300 rounded-lg p-4 min-h-[100px] bg-white">
+                      {replyContent.trim() ? (
+                        <MarkdownRenderer content={replyContent} />
+                      ) : (
+                        <Text color="muted" className="italic">Nothing to preview yet...</Text>
+                      )}
+                    </div>
+                  )}
                   <Flex justify="end">
                     <Button
                       variant="primary"
@@ -559,17 +583,47 @@ export default function PostDetailPage() {
         {/* Edit modal */}
         <Modal
           isOpen={!!editModal}
-          onClose={() => setEditModal(null)}
+          onClose={() => { setEditModal(null); setShowEditPreview(false); }}
           title="Edit Response"
         >
           <Stack spacing="md">
-            <Textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              rows={6}
-            />
             <Flex justify="end" gap="sm">
-              <Button variant="ghost" onClick={() => setEditModal(null)}>
+              <Button
+                type="button"
+                variant={!showEditPreview ? 'primary' : 'ghost'}
+                size="xs"
+                onClick={() => setShowEditPreview(false)}
+              >
+                Write
+              </Button>
+              <Button
+                type="button"
+                variant={showEditPreview ? 'primary' : 'ghost'}
+                size="xs"
+                onClick={() => setShowEditPreview(true)}
+              >
+                Preview
+              </Button>
+            </Flex>
+            {!showEditPreview ? (
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={6}
+                dir="auto"
+                style={{ unicodeBidi: 'plaintext' }}
+              />
+            ) : (
+              <div className="border border-gray-300 rounded-lg p-4 min-h-[150px] bg-white">
+                {editContent.trim() ? (
+                  <MarkdownRenderer content={editContent} />
+                ) : (
+                  <Text color="muted" className="italic">Nothing to preview yet...</Text>
+                )}
+              </div>
+            )}
+            <Flex justify="end" gap="sm">
+              <Button variant="ghost" onClick={() => { setEditModal(null); setShowEditPreview(false); }}>
                 Cancel
               </Button>
               <Button
@@ -609,7 +663,7 @@ export default function PostDetailPage() {
         {/* Edit Post modal */}
         <Modal
           isOpen={editPostModal}
-          onClose={() => setEditPostModal(false)}
+          onClose={() => { setEditPostModal(false); setShowEditPostPreview(false); }}
           title="Edit Post"
           size="4xl"
         >
@@ -621,19 +675,49 @@ export default function PostDetailPage() {
               maxLength={200}
             />
             <div>
-              <Text variant="small" weight="semibold" className="mb-1">Content</Text>
-              <textarea
-                dir="auto"
-                value={editPostContent}
-                onChange={(e) => setEditPostContent(e.target.value)}
-                rows={25}
-                placeholder="Post content (Markdown supported)..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[400px]"
-                style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}
-              />
+              <Flex justify="between" align="center" className="mb-2">
+                <Text variant="small" weight="semibold">Content</Text>
+                <Flex gap="sm">
+                  <Button
+                    type="button"
+                    variant={!showEditPostPreview ? 'primary' : 'ghost'}
+                    size="xs"
+                    onClick={() => setShowEditPostPreview(false)}
+                  >
+                    Write
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={showEditPostPreview ? 'primary' : 'ghost'}
+                    size="xs"
+                    onClick={() => setShowEditPostPreview(true)}
+                  >
+                    Preview
+                  </Button>
+                </Flex>
+              </Flex>
+              {!showEditPostPreview ? (
+                <textarea
+                  dir="auto"
+                  value={editPostContent}
+                  onChange={(e) => setEditPostContent(e.target.value)}
+                  rows={25}
+                  placeholder="Post content (Markdown supported)..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[400px]"
+                  style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}
+                />
+              ) : (
+                <div className="border border-gray-300 rounded-lg p-4 min-h-[400px] bg-white overflow-y-auto">
+                  {editPostContent.trim() ? (
+                    <MarkdownRenderer content={editPostContent} />
+                  ) : (
+                    <Text color="muted" className="italic">Nothing to preview yet...</Text>
+                  )}
+                </div>
+              )}
             </div>
             <Flex justify="end" gap="sm">
-              <Button variant="ghost" onClick={() => setEditPostModal(false)}>
+              <Button variant="ghost" onClick={() => { setEditPostModal(false); setShowEditPostPreview(false); }}>
                 Cancel
               </Button>
               <Button
