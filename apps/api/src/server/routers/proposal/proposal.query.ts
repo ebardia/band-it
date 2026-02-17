@@ -189,7 +189,7 @@ export const proposalQueryRouter = router({
     }),
 
   /**
-   * Get all proposals created by user across all bands
+   * Get all proposals created by user across all bands they're still active in
    */
   getMyProposals: publicProcedure
     .input(
@@ -198,9 +198,21 @@ export const proposalQueryRouter = router({
       })
     )
     .query(async ({ input }) => {
+      // Get bands where user is still an active member
+      const activeMemberships = await prisma.member.findMany({
+        where: {
+          userId: input.userId,
+          status: 'ACTIVE',
+        },
+        select: { bandId: true },
+      })
+
+      const activeBandIds = activeMemberships.map(m => m.bandId)
+
       const proposals = await prisma.proposal.findMany({
         where: {
           createdById: input.userId,
+          bandId: { in: activeBandIds },
         },
         include: {
           band: {
