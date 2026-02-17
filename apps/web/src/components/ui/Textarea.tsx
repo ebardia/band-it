@@ -42,8 +42,6 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     // Handle paste with rich text conversion
     const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-      console.log('[Textarea] handlePaste called!')
-
       // Call original onPaste if provided
       onPaste?.(e)
 

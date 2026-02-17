@@ -71,34 +71,19 @@ export function getHtmlFromClipboard(clipboardData: DataTransfer): string | null
  * Returns the markdown text to insert, or null if no conversion needed
  */
 export function handleRichPaste(clipboardData: DataTransfer): string | null {
-  // Debug: Log raw clipboard data access
-  console.log('[Paste Debug] clipboardData object:', clipboardData)
-  console.log('[Paste Debug] clipboardData.types:', clipboardData.types)
+  const html = clipboardData.getData('text/html')
+  const plainText = clipboardData.getData('text/plain')
 
-  // Try to get data directly first
-  const rawHtml = clipboardData.getData('text/html')
-  const rawPlain = clipboardData.getData('text/plain')
-
-  console.log('[Paste Debug] Raw HTML length:', rawHtml?.length || 0)
-  console.log('[Paste Debug] Raw HTML content:', rawHtml?.substring(0, 500) || '(empty)')
-  console.log('[Paste Debug] Raw plain length:', rawPlain?.length || 0)
-  console.log('[Paste Debug] Raw plain content:', rawPlain?.substring(0, 200) || '(empty)')
-
-  // If we got HTML content, convert it
-  if (rawHtml && rawHtml.length > 0) {
-    console.log('[Paste Debug] Converting HTML to markdown...')
-    const markdown = htmlToMarkdown(rawHtml)
-    console.log('[Paste Debug] Converted markdown:', markdown?.substring(0, 300))
+  // If we got HTML content, convert it to markdown
+  if (html && html.length > 0) {
+    const markdown = htmlToMarkdown(html)
 
     // Only use the markdown if it's different from plain text
-    if (markdown && markdown !== rawPlain && markdown.trim() !== rawPlain.trim()) {
-      console.log('[Paste Debug] Using converted markdown!')
+    // This avoids unnecessary conversion when pasting plain text
+    // that browsers wrap in minimal HTML
+    if (markdown && markdown !== plainText && markdown.trim() !== plainText.trim()) {
       return markdown
-    } else {
-      console.log('[Paste Debug] Markdown same as plain text, skipping conversion')
     }
-  } else {
-    console.log('[Paste Debug] No HTML content found, using default paste behavior')
   }
 
   return null
