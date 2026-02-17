@@ -1,6 +1,6 @@
 import { theme, cn } from '@band-it/shared'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'warning' | 'success'
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'warning' | 'success' | 'link'
 type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -28,6 +28,7 @@ const FALLBACK_STYLES = {
     ghost: 'bg-transparent text-gray-600 hover:bg-gray-100',
     warning: 'bg-yellow-500 text-white hover:bg-yellow-600',
     success: 'bg-green-600 text-white hover:bg-green-700',
+    link: 'bg-transparent text-blue-600 hover:text-blue-800 hover:underline p-0',
   },
 }
 
@@ -39,7 +40,7 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const themeStyles = theme?.components?.button?.[variant]
+  const themeStyles = (theme?.components?.button as Record<string, any>)?.[variant]
 
   // Use theme styles if available, otherwise use fallbacks
   const styles = themeStyles ? {

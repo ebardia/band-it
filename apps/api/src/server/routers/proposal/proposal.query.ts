@@ -70,6 +70,7 @@ export const proposalQueryRouter = router({
               id: true,
               name: true,
               slug: true,
+              imageUrl: true,
               votingMethod: true,
               votingPeriodDays: true,
               quorumPercentage: true,

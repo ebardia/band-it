@@ -22,7 +22,7 @@ export const proposalUpdateRouter = router({
         // All editable fields (all optional - only update what's provided)
         title: z.string().min(5).optional(),
         description: z.string().min(20).optional(),
-        type: z.enum(['GENERAL', 'BUDGET', 'PROJECT', 'POLICY', 'MEMBERSHIP', 'DISSOLUTION']).optional(),
+        type: z.enum(['GENERAL', 'BUDGET', 'PROJECT', 'POLICY', 'MEMBERSHIP', 'DISSOLUTION', 'ADD_FOUNDER']).optional(),
         priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
         executionType: z.enum(['GOVERNANCE', 'PROJECT', 'ACTION', 'RESOLUTION']).optional(),
         executionSubtype: z.string().optional().nullable(),

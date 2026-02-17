@@ -21,7 +21,7 @@ export function Heading({ children, level = 1, className }: HeadingProps) {
 
 export interface TextProps {
   children: React.ReactNode
-  variant?: 'body' | 'small' | 'muted'
+  variant?: 'body' | 'small' | 'tiny' | 'muted'
   weight?: 'normal' | 'semibold' | 'bold'
   color?: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'danger'
   className?: string
@@ -35,6 +35,7 @@ export function Text({ children, variant = 'body', weight = 'normal', color = 'd
   const variants = {
     body: 'text-base',
     small: 'text-sm',
+    tiny: 'text-xs',
     muted: 'text-gray-600',
   }
 

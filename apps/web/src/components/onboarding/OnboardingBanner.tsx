@@ -57,7 +57,7 @@ export function OnboardingBanner({ bandId, bandSlug, userId }: OnboardingBannerP
           message: milestone.celebration,
           completedStep: latestStep,
           nextStep: latestStep < 10 ? latestStep + 1 : undefined,
-          isFullyComplete: onboarding.status === 'COMPLETED' || latestStep === 10,
+          isFullyComplete: latestStep === 10,
         })
       }
 
