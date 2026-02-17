@@ -72,14 +72,17 @@ export function getHtmlFromClipboard(clipboardData: DataTransfer): string | null
  */
 export function handleRichPaste(clipboardData: DataTransfer): string | null {
   const html = getHtmlFromClipboard(clipboardData)
+  const plainText = clipboardData.getData('text/plain')
 
   if (html) {
-    // Check if it's actually rich content (not just plain text wrapped in HTML)
-    // Simple HTML like <meta><body>plain text</body> shouldn't be converted
-    const hasRichContent = /<(strong|em|b|i|h[1-6]|ul|ol|li|table|a|code|pre|blockquote)[^>]*>/i.test(html)
+    // Convert HTML to markdown
+    const markdown = htmlToMarkdown(html)
 
-    if (hasRichContent) {
-      return htmlToMarkdown(html)
+    // Only use the markdown if it's different from plain text
+    // This avoids unnecessary conversion when pasting plain text
+    // that browsers wrap in minimal HTML
+    if (markdown && markdown !== plainText && markdown.trim() !== plainText.trim()) {
+      return markdown
     }
   }
 
