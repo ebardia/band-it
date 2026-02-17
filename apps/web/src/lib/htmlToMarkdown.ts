@@ -74,6 +74,9 @@ export function handleRichPaste(clipboardData: DataTransfer): string | null {
   const html = getHtmlFromClipboard(clipboardData)
   const plainText = clipboardData.getData('text/plain')
 
+  // Temporary alert for debugging - remove after testing
+  alert(`Paste detected!\nHas HTML: ${!!html}\nClipboard types: ${clipboardData.types.join(', ')}`)
+
   // Debug logging - check browser console
   console.log('[Paste Debug] Clipboard types:', clipboardData.types)
   console.log('[Paste Debug] Has HTML:', !!html)
