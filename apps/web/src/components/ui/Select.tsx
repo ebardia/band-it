@@ -6,6 +6,14 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   helperText?: string
 }
 
+// Fallback styles in case theme isn't loaded properly
+const FALLBACK = {
+  base: 'w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400',
+  focus: 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+  disabled: 'disabled:bg-gray-100 disabled:cursor-not-allowed',
+  error: 'border-red-500 focus:ring-red-500',
+}
+
 export function Select({
   label,
   error,
@@ -16,6 +24,13 @@ export function Select({
   ...props
 }: SelectProps) {
   const selectId = id || label?.toLowerCase().replace(/\s+/g, '-')
+
+  const styles = {
+    base: theme?.components?.input?.base ?? FALLBACK.base,
+    focus: theme?.components?.input?.focus ?? FALLBACK.focus,
+    disabled: theme?.components?.input?.disabled ?? FALLBACK.disabled,
+    error: theme?.components?.input?.error ?? FALLBACK.error,
+  }
 
   return (
     <div>
@@ -32,10 +47,10 @@ export function Select({
       <select
         id={selectId}
         className={cn(
-          theme.components.input.base,
-          theme.components.input.focus,
-          theme.components.input.disabled,
-          error && theme.components.input.error,
+          styles.base,
+          styles.focus,
+          styles.disabled,
+          error && styles.error,
           'cursor-pointer',
           className
         )}

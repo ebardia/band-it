@@ -7,6 +7,14 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
   helperText?: string
 }
 
+// Fallback styles in case theme isn't loaded properly
+const FALLBACK = {
+  base: 'w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400',
+  focus: 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+  disabled: 'disabled:bg-gray-100 disabled:cursor-not-allowed',
+  error: 'border-red-500 focus:ring-red-500',
+}
+
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   function Textarea({
     label,
@@ -17,6 +25,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     ...props
   }, ref) {
     const textareaId = id || label?.toLowerCase().replace(/\s+/g, '-')
+
+    const styles = {
+      base: theme?.components?.input?.base ?? FALLBACK.base,
+      focus: theme?.components?.input?.focus ?? FALLBACK.focus,
+      disabled: theme?.components?.input?.disabled ?? FALLBACK.disabled,
+      error: theme?.components?.input?.error ?? FALLBACK.error,
+    }
 
     return (
       <div>
@@ -34,10 +49,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={textareaId}
           className={cn(
-            theme.components.input.base,
-            theme.components.input.focus,
-            theme.components.input.disabled,
-            error && theme.components.input.error,
+            styles.base,
+            styles.focus,
+            styles.disabled,
+            error && styles.error,
             className
           )}
           {...props}
