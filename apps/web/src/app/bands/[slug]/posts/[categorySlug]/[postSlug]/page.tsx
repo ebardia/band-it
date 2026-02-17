@@ -697,13 +697,13 @@ export default function PostDetailPage() {
                 </Flex>
               </Flex>
               {!showEditPostPreview ? (
-                <textarea
+                <Textarea
                   dir="auto"
                   value={editPostContent}
                   onChange={(e) => setEditPostContent(e.target.value)}
                   rows={25}
                   placeholder="Post content (Markdown supported)..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[400px]"
+                  className="resize-y min-h-[400px]"
                   style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}
                 />
               ) : (
