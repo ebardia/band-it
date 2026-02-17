@@ -127,13 +127,13 @@ export function MessageComposer({
             `}
           />
 
-          {/* Mention autocomplete */}
+          {/* Mention autocomplete - positioned above textarea */}
           {mentionState?.isActive && userId && (
             <MentionAutocomplete
               channelId={channelId}
               userId={userId}
               search={mentionState.search}
-              position={{ top: -200, left: 0 }}
+              position={{ top: 0, left: 0 }}
               onSelect={handleMentionSelect}
               onClose={closeMention}
             />

@@ -140,8 +140,7 @@ export function MentionAutocomplete({
     return (
       <div
         ref={containerRef}
-        className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
-        style={{ top: position.top, left: position.left }}
+        className="absolute bottom-full left-0 mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
       >
         <Text variant="small" color="muted">Loading...</Text>
       </div>
@@ -152,8 +151,7 @@ export function MentionAutocomplete({
     return (
       <div
         ref={containerRef}
-        className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
-        style={{ top: position.top, left: position.left }}
+        className="absolute bottom-full left-0 mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
       >
         <Text variant="small" color="muted">No matches found</Text>
       </div>
@@ -166,8 +164,7 @@ export function MentionAutocomplete({
         (listRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
         (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
       }}
-      className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto w-72"
-      style={{ top: position.top, left: position.left }}
+      className="absolute bottom-full left-0 mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto w-72"
     >
       {options.map((option, index) => (
         <button
