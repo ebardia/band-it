@@ -41,16 +41,27 @@ export function MentionAutocomplete({
   const allUsers = data?.users || []
   const allRoleMentions = data?.roleMentions || []
 
+  // Debug logging
+  console.log('[MentionAutocomplete] search prop:', JSON.stringify(search))
+
   // Client-side filtering for instant results
   const searchLower = search.toLowerCase().trim()
+  console.log('[MentionAutocomplete] searchLower:', JSON.stringify(searchLower))
+  console.log('[MentionAutocomplete] allUsers count:', allUsers.length)
 
   const filteredRoleMentions = allRoleMentions.filter(role =>
     !searchLower || role.toLowerCase().startsWith(searchLower)
   )
 
-  const filteredUsers = allUsers.filter(user =>
-    !searchLower || user.name.toLowerCase().startsWith(searchLower)
-  )
+  const filteredUsers = allUsers.filter(user => {
+    const matches = !searchLower || user.name.toLowerCase().startsWith(searchLower)
+    if (searchLower) {
+      console.log(`[MentionAutocomplete] User "${user.name}" matches "${searchLower}":`, matches)
+    }
+    return matches
+  })
+
+  console.log('[MentionAutocomplete] filteredUsers count:', filteredUsers.length)
 
   // Create combined list of options
   const options: Array<{ type: 'user' | 'role'; value: string; label: string; sublabel?: string }> = [
@@ -259,6 +270,8 @@ export function useMentionDetection(
     const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20
     const lines = textBeforeCursor.split('\n')
     const currentLineNumber = lines.length - 1
+
+    console.log('[useMentionDetection] Setting search to:', JSON.stringify(textAfterAt))
 
     setMentionState({
       isActive: true,
