@@ -172,7 +172,7 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Tell people about your band..."
-            rows={3}
+            rows={6}
           />
 
           <Textarea
@@ -181,7 +181,7 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
             value={formData.mission}
             onChange={(e) => setFormData({ ...formData, mission: e.target.value })}
             placeholder="Our mission is to..."
-            rows={2}
+            rows={4}
           />
 
           <Textarea
@@ -190,7 +190,7 @@ export function BandDetailsSettings({ bandId, bandSlug, userId, userRole, initia
             value={formData.values}
             onChange={(e) => setFormData({ ...formData, values: e.target.value })}
             placeholder="Creativity, Collaboration, Community"
-            rows={1}
+            rows={3}
             helperText="Comma-separated"
           />
 
