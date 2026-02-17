@@ -89,15 +89,16 @@ export function MarkdownEditor({
           {/* Markdown tips */}
           {showTips && (
             <div className="mt-3 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
-              <Text variant="small" weight="semibold" className="mb-1">Markdown Tips:</Text>
+              <Text variant="small" weight="semibold" className="mb-1">Formatting Tips:</Text>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
                 <span><code className="bg-gray-200 px-1 rounded">**bold**</code> for bold</span>
                 <span><code className="bg-gray-200 px-1 rounded">*italic*</code> for italic</span>
                 <span><code className="bg-gray-200 px-1 rounded"># Heading</code> for headings</span>
                 <span><code className="bg-gray-200 px-1 rounded">- item</code> for lists</span>
-                <span><code className="bg-gray-200 px-1 rounded">`code`</code> for inline code</span>
-                <span><code className="bg-gray-200 px-1 rounded">[text](url)</code> for links</span>
               </div>
+              <Text variant="tiny" color="muted" className="mt-2">
+                Tip: Paste from ChatGPT, Word, or Google Docs - formatting is preserved automatically!
+              </Text>
             </div>
           )}
         </div>

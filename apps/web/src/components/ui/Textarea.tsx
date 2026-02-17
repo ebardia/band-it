@@ -1,10 +1,13 @@
-import { forwardRef } from 'react'
+import { forwardRef, useCallback } from 'react'
 import { theme, cn } from '@band-it/shared'
+import { handleRichPaste } from '@/lib/htmlToMarkdown'
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
   error?: string
   helperText?: string
+  /** Disable automatic HTML to Markdown conversion on paste */
+  disableRichPaste?: boolean
 }
 
 // Fallback styles in case theme isn't loaded properly
@@ -22,6 +25,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     helperText,
     className,
     id,
+    disableRichPaste = false,
+    onPaste,
+    onChange,
+    value,
     ...props
   }, ref) {
     const textareaId = id || label?.toLowerCase().replace(/\s+/g, '-')
@@ -32,6 +39,43 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       disabled: theme?.components?.input?.disabled ?? FALLBACK.disabled,
       error: theme?.components?.input?.error ?? FALLBACK.error,
     }
+
+    // Handle paste with rich text conversion
+    const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      // Call original onPaste if provided
+      onPaste?.(e)
+
+      // If already prevented or rich paste disabled, skip
+      if (e.defaultPrevented || disableRichPaste) return
+
+      const clipboardData = e.clipboardData
+      const markdown = handleRichPaste(clipboardData)
+
+      if (markdown && onChange) {
+        e.preventDefault()
+
+        const textarea = e.currentTarget
+        const start = textarea.selectionStart
+        const end = textarea.selectionEnd
+        const currentValue = typeof value === 'string' ? value : textarea.value
+        const newValue = currentValue.substring(0, start) + markdown + currentValue.substring(end)
+
+        // Create a synthetic event to pass to onChange
+        const syntheticEvent = {
+          ...e,
+          target: { ...textarea, value: newValue },
+          currentTarget: { ...textarea, value: newValue },
+        } as React.ChangeEvent<HTMLTextAreaElement>
+
+        onChange(syntheticEvent)
+
+        // Set cursor position after pasted content
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = start + markdown.length
+          textarea.focus()
+        }, 0)
+      }
+    }, [onPaste, disableRichPaste, onChange, value])
 
     return (
       <div>
@@ -48,6 +92,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           id={textareaId}
+          value={value}
+          onChange={onChange}
+          onPaste={handlePaste}
           className={cn(
             styles.base,
             styles.focus,
