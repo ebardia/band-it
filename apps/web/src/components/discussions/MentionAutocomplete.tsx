@@ -29,8 +29,23 @@ export function MentionAutocomplete({
   onClose,
 }: MentionAutocompleteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
   const listRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Calculate fixed position based on parent textarea
+  useEffect(() => {
+    // Find the textarea that triggered this autocomplete
+    const textarea = document.querySelector('textarea:focus') as HTMLTextAreaElement
+    if (textarea) {
+      const rect = textarea.getBoundingClientRect()
+      // Position dropdown above the textarea
+      setDropdownPosition({
+        top: rect.top - 10, // 10px gap
+        left: rect.left,
+      })
+    }
+  }, [search])
 
   // Fetch all mentionable users once (no search param - filter client-side)
   const { data, isLoading } = trpc.message.getMentionableUsers.useQuery(
@@ -136,11 +151,20 @@ export function MentionAutocomplete({
     }
   }, [selectedIndex])
 
+  // Fixed positioning to break out of any overflow:hidden containers
+  const dropdownStyle = {
+    position: 'fixed' as const,
+    top: `${Math.max(10, dropdownPosition.top - 250)}px`, // Position above, with min 10px from top
+    left: `${dropdownPosition.left}px`,
+    zIndex: 9999,
+  }
+
   if (isLoading) {
     return (
       <div
         ref={containerRef}
-        className="absolute bottom-full left-0 mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
+        className="bg-white border border-gray-200 rounded-lg shadow-xl w-72 p-3"
+        style={dropdownStyle}
       >
         <Text variant="small" color="muted">Loading...</Text>
       </div>
@@ -151,7 +175,8 @@ export function MentionAutocomplete({
     return (
       <div
         ref={containerRef}
-        className="absolute bottom-full left-0 mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-72"
+        className="bg-white border border-gray-200 rounded-lg shadow-xl w-72 p-3"
+        style={dropdownStyle}
       >
         <Text variant="small" color="muted">No matches found</Text>
       </div>
@@ -164,7 +189,8 @@ export function MentionAutocomplete({
         (listRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
         (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
       }}
-      className="absolute bottom-full left-0 mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto w-72"
+      className="bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-72"
+      style={dropdownStyle}
     >
       {options.map((option, index) => (
         <button
