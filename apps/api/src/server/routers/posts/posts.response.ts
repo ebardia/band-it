@@ -274,6 +274,21 @@ export const updateResponse = publicProcedure
       })
     }
 
+    // Verify user is still an active member
+    const membership = await prisma.member.findUnique({
+      where: {
+        userId_bandId: { userId, bandId: response.post.bandId },
+      },
+      select: { status: true },
+    })
+
+    if (!membership || membership.status !== 'ACTIVE') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You must be an active band member to edit responses',
+      })
+    }
+
     const updated = await prisma.postResponse.update({
       where: { id: responseId },
       data: {
