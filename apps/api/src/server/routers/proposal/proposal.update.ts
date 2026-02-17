@@ -74,6 +74,15 @@ export const proposalUpdateRouter = router({
         })
       }
 
+      // Check that user is still an active member of the band
+      const isActiveMember = proposal.band.members.some(m => m.userId === userId)
+      if (!isActiveMember) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You must be an active member of this band to edit proposals',
+        })
+      }
+
       // Only author can edit
       if (proposal.createdById !== userId) {
         throw new TRPCError({

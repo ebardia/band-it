@@ -79,8 +79,8 @@ export const proposalReviewRouter = router({
         },
       })
 
-      if (!authorMembership) {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Not a band member' })
+      if (!authorMembership || authorMembership.status !== 'ACTIVE') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You must be an active member of this band' })
       }
 
       // If band doesn't require review, go straight to OPEN
@@ -459,6 +459,20 @@ export const proposalReviewRouter = router({
         })
       }
 
+      // Verify user is still an active member
+      const membership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: { userId: input.userId, bandId: proposal.bandId },
+        },
+      })
+
+      if (!membership || membership.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You must be an active member of this band to withdraw proposals',
+        })
+      }
+
       // Verify status
       if (proposal.status !== 'PENDING_REVIEW') {
         throw new TRPCError({
@@ -568,8 +582,8 @@ export const proposalReviewRouter = router({
         },
       })
 
-      if (!authorMembership) {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Not a band member' })
+      if (!authorMembership || authorMembership.status !== 'ACTIVE') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You must be an active member of this band' })
       }
 
       // Determine new status based on band settings

@@ -158,10 +158,14 @@ export const proposalVoteRouter = router({
         },
       })
 
-      const isFounder = membership?.role === 'FOUNDER'
+      if (!membership || membership.status !== 'ACTIVE') {
+        throw new Error('You must be an active member of this band to close proposals')
+      }
+
+      const isFounder = membership.role === 'FOUNDER'
       const canClose = proposal.createdById === input.userId ||
                        isFounder ||
-                       membership?.role === 'GOVERNOR'
+                       membership.role === 'GOVERNOR'
 
       if (!canClose) {
         throw new Error('You do not have permission to close this proposal')
