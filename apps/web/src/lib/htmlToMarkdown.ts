@@ -71,34 +71,34 @@ export function getHtmlFromClipboard(clipboardData: DataTransfer): string | null
  * Returns the markdown text to insert, or null if no conversion needed
  */
 export function handleRichPaste(clipboardData: DataTransfer): string | null {
-  const html = getHtmlFromClipboard(clipboardData)
-  const plainText = clipboardData.getData('text/plain')
+  // Debug: Log raw clipboard data access
+  console.log('[Paste Debug] clipboardData object:', clipboardData)
+  console.log('[Paste Debug] clipboardData.types:', clipboardData.types)
 
-  // Temporary alert for debugging - remove after testing
-  alert(`Paste detected!\nHas HTML: ${!!html}\nClipboard types: ${clipboardData.types.join(', ')}`)
+  // Try to get data directly first
+  const rawHtml = clipboardData.getData('text/html')
+  const rawPlain = clipboardData.getData('text/plain')
 
-  // Debug logging - check browser console
-  console.log('[Paste Debug] Clipboard types:', clipboardData.types)
-  console.log('[Paste Debug] Has HTML:', !!html)
-  console.log('[Paste Debug] Plain text length:', plainText?.length || 0)
-  if (html) {
-    console.log('[Paste Debug] HTML preview:', html.substring(0, 300))
-  }
+  console.log('[Paste Debug] Raw HTML length:', rawHtml?.length || 0)
+  console.log('[Paste Debug] Raw HTML content:', rawHtml?.substring(0, 500) || '(empty)')
+  console.log('[Paste Debug] Raw plain length:', rawPlain?.length || 0)
+  console.log('[Paste Debug] Raw plain content:', rawPlain?.substring(0, 200) || '(empty)')
 
-  if (html) {
-    // Convert HTML to markdown
-    const markdown = htmlToMarkdown(html)
-    console.log('[Paste Debug] Converted markdown preview:', markdown?.substring(0, 300))
+  // If we got HTML content, convert it
+  if (rawHtml && rawHtml.length > 0) {
+    console.log('[Paste Debug] Converting HTML to markdown...')
+    const markdown = htmlToMarkdown(rawHtml)
+    console.log('[Paste Debug] Converted markdown:', markdown?.substring(0, 300))
 
     // Only use the markdown if it's different from plain text
-    // This avoids unnecessary conversion when pasting plain text
-    // that browsers wrap in minimal HTML
-    if (markdown && markdown !== plainText && markdown.trim() !== plainText.trim()) {
+    if (markdown && markdown !== rawPlain && markdown.trim() !== rawPlain.trim()) {
       console.log('[Paste Debug] Using converted markdown!')
       return markdown
     } else {
       console.log('[Paste Debug] Markdown same as plain text, skipping conversion')
     }
+  } else {
+    console.log('[Paste Debug] No HTML content found, using default paste behavior')
   }
 
   return null
