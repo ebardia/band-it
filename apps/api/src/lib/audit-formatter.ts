@@ -307,24 +307,58 @@ export function formatAuditDescription(entry: AuditEntry): FormattedAudit {
       return { description: `${actor} created event "${name}"`, category }
     }
     if (action === 'updated') {
+      // Check if this is a cancellation
+      if (changes?.cancelledAt && changes.cancelledAt.to) {
+        return { description: `${actor} cancelled event "${name}"`, category }
+      }
+      if (changes?.isCancelled && changes.isCancelled.to === true) {
+        return { description: `${actor} cancelled event "${name}"`, category }
+      }
+      // Check for specific field changes to provide more context
+      if (changes?.startTime || changes?.endTime) {
+        return { description: `${actor} rescheduled event "${name}"`, category }
+      }
+      if (changes?.location) {
+        return { description: `${actor} changed location for event "${name}"`, category }
+      }
+      if (changes?.title) {
+        return { description: `${actor} renamed event "${name}"`, category }
+      }
       return { description: `${actor} updated event "${name}"`, category }
     }
     if (action === 'deleted') {
-      return { description: `${actor} cancelled event "${name}"`, category }
+      return { description: `${actor} deleted event "${name}"`, category }
     }
   }
 
   // Event RSVP
   if (entityType === 'EventRSVP') {
     if (action === 'created' || action === 'updated') {
-      // entityName might contain the RSVP status
-      const rsvpMatch = entityName?.match(/(GOING|NOT_GOING|MAYBE)/)
+      // entityName format from middleware: "Going - event title" or "Not Going - event title"
+      const rsvpMatch = entityName?.match(/^(Going|Not Going|Maybe)\s*-\s*(.+)$/)
       if (rsvpMatch) {
-        const status = rsvpMatch[1]
-        const statusText = status === 'GOING' ? 'Going' : status === 'NOT_GOING' ? 'Not going' : 'Maybe'
-        return { description: `${actor} RSVPed "${statusText}" to an event`, category }
+        const [, status, eventTitle] = rsvpMatch
+        return { description: `${actor} RSVP'd "${status}" to "${shortName(eventTitle, 30)}"`, category }
+      }
+      // Try matching raw status values as fallback
+      const rawMatch = entityName?.match(/(GOING|NOT_GOING|MAYBE)/)
+      if (rawMatch) {
+        const status = rawMatch[1]
+        const statusText = status === 'GOING' ? 'Going' : status === 'NOT_GOING' ? 'Not Going' : 'Maybe'
+        return { description: `${actor} RSVP'd "${statusText}" to an event`, category }
+      }
+      // Check changes for status
+      if (changes?.status) {
+        const statusText = changes.status.to === 'GOING' ? 'Going'
+          : changes.status.to === 'NOT_GOING' ? 'Not Going'
+          : changes.status.to === 'MAYBE' ? 'Maybe'
+          : changes.status.to
+        return { description: `${actor} RSVP'd "${statusText}"`, category }
       }
       return { description: `${actor} updated their RSVP`, category }
+    }
+    if (action === 'deleted') {
+      return { description: `${actor} cancelled their RSVP`, category }
     }
   }
 
