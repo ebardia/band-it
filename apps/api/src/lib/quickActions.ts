@@ -139,6 +139,7 @@ export async function getQuickActionsForUser(
           gt: now,
           lte: addDays(now, 7),
         },
+        cancelledAt: null, // Exclude cancelled events
         band: {
           members: {
             some: {
