@@ -308,7 +308,7 @@ export async function getQuickActionsForUser(
       title: event.title,
       bandName: event.band.name,
       bandId: event.band.id,
-      url: `/bands/${event.band.slug}/events/${event.id}`,
+      url: `/bands/${event.band.slug}/calendar/${event.id}`,
       urgency: hoursUntil < 24 ? 'high' : hoursUntil < 48 ? 'medium' : 'low',
       meta: {
         startTime: event.startTime,

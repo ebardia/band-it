@@ -64,7 +64,7 @@ export const eventReminderService = {
               message: `"${event.title}" is starting in ${timeUntil}`,
               relatedId: event.id,
               relatedType: 'event',
-              actionUrl: `/bands/${event.band.slug}/events/${event.id}`,
+              actionUrl: `/bands/${event.band.slug}/calendar/${event.id}`,
             })
           )
 

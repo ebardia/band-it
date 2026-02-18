@@ -160,7 +160,7 @@ export const createEvent = publicProcedure
         message: `"${title}" has been scheduled for ${start.toLocaleDateString()}`,
         relatedId: event.id,
         relatedType: 'event',
-        actionUrl: `/bands/${band.slug}/events/${event.id}`,
+        actionUrl: `/bands/${band.slug}/calendar/${event.id}`,
       }))
 
     await Promise.all(notificationPromises)

@@ -151,7 +151,7 @@ export const updateEvent = publicProcedure
           message: `"${updatedEvent.title}" has been updated`,
           relatedId: event.id,
           relatedType: 'event',
-          actionUrl: `/bands/${event.band.slug}/events/${event.id}`,
+          actionUrl: `/bands/${event.band.slug}/calendar/${event.id}`,
         }))
 
       await Promise.all(notificationPromises)
@@ -238,7 +238,7 @@ export const cancelEvent = publicProcedure
         message: `"${event.title}" has been cancelled${cancellationNote ? `: ${cancellationNote}` : ''}`,
         relatedId: event.id,
         relatedType: 'event',
-        actionUrl: `/bands/${event.band.slug}/events/${event.id}`,
+        actionUrl: `/bands/${event.band.slug}/calendar/${event.id}`,
         priority: 'HIGH',
       }))
 

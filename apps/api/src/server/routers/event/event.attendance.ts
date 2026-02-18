@@ -131,7 +131,7 @@ export const markAttendance = publicProcedure
           message: `Your attendance for "${event.title}" was marked by ${attendance.markedBy.name}`,
           relatedId: event.id,
           relatedType: 'event',
-          actionUrl: `/bands/${event.band.slug}/events/${event.id}`,
+          actionUrl: `/bands/${event.band.slug}/calendar/${event.id}`,
         })
       }
     }

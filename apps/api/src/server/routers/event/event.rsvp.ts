@@ -97,7 +97,7 @@ export const setRSVP = publicProcedure
           message: `${rsvp.user.name} is going to "${event.title}"`,
           relatedId: event.id,
           relatedType: 'event',
-          actionUrl: `/bands/${event.band.slug}/events/${event.id}`,
+          actionUrl: `/bands/${event.band.slug}/calendar/${event.id}`,
         })
       }
     }

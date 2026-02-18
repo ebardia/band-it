@@ -214,7 +214,7 @@ export default function AuditLogPage() {
         router.push(`/bands/${slug}/tasks`)
         break
       case 'Event':
-        router.push(`/bands/${slug}/events/${entityId}`)
+        router.push(`/bands/${slug}/calendar/${entityId}`)
         break
     }
   }
