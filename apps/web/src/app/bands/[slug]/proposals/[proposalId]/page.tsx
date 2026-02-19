@@ -728,7 +728,7 @@ export default function ProposalDetailPage() {
                 value={editProblemStatement}
                 onChange={(e) => setEditProblemStatement(e.target.value)}
                 placeholder="What problem does this solve?"
-                rows={2}
+                rows={4}
               />
             </Stack>
 
@@ -738,7 +738,7 @@ export default function ProposalDetailPage() {
                 value={editExpectedOutcome}
                 onChange={(e) => setEditExpectedOutcome(e.target.value)}
                 placeholder="What should happen if this is approved?"
-                rows={2}
+                rows={4}
               />
             </Stack>
 
@@ -748,7 +748,7 @@ export default function ProposalDetailPage() {
                 value={editRisksAndConcerns}
                 onChange={(e) => setEditRisksAndConcerns(e.target.value)}
                 placeholder="Any potential risks or concerns?"
-                rows={2}
+                rows={4}
               />
             </Stack>
 

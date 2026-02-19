@@ -756,7 +756,7 @@ export default function CreateProposalPage() {
                         value={problemStatement}
                         onChange={(e) => setProblemStatement(e.target.value)}
                         placeholder="What problem or opportunity does this address?"
-                        rows={3}
+                        rows={6}
                       />
 
                       <Textarea
@@ -764,7 +764,7 @@ export default function CreateProposalPage() {
                         value={expectedOutcome}
                         onChange={(e) => setExpectedOutcome(e.target.value)}
                         placeholder="What will be achieved if approved?"
-                        rows={3}
+                        rows={6}
                       />
 
                       <Textarea
@@ -772,7 +772,7 @@ export default function CreateProposalPage() {
                         value={risksAndConcerns}
                         onChange={(e) => setRisksAndConcerns(e.target.value)}
                         placeholder="What are potential downsides or risks?"
-                        rows={3}
+                        rows={6}
                       />
                     </Stack>
                   </Card>
