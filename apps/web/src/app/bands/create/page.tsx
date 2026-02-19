@@ -247,18 +247,16 @@ function CreateBandContent() {
             )}
 
             {/* Template Selection */}
-            {!parentBandId && (
-              <Box>
-                <Text weight="semibold" className="mb-2">What kind of group are you organizing?</Text>
-                <Text variant="small" color="muted" className="mb-4">
-                  Choose a template to get tailored guidance and suggested settings.
-                </Text>
-                <TemplateSelector
-                  selectedTemplate={selectedTemplate}
-                  onSelect={setSelectedTemplate}
-                />
-              </Box>
-            )}
+            <Box>
+              <Text weight="semibold" className="mb-2">What kind of group are you organizing?</Text>
+              <Text variant="small" color="muted" className="mb-4">
+                Choose a template to get tailored guidance and suggested settings.
+              </Text>
+              <TemplateSelector
+                selectedTemplate={selectedTemplate}
+                onSelect={setSelectedTemplate}
+              />
+            </Box>
 
             <form onSubmit={handleSubmit}>
               <Stack spacing="lg">
