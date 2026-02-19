@@ -14,7 +14,8 @@ import {
   BillingSettings,
   DissolveBandSection,
   TransferOwnershipSection,
-  GovernanceSettings
+  GovernanceSettings,
+  OnboardingSettings
 } from '@/components/ui'
 import { OnboardingHint } from '@/components/onboarding'
 import { AppNav } from '@/components/AppNav'
@@ -125,6 +126,15 @@ export default function BandSettingsPage() {
               bandId={band.id}
               userId={userId}
               relevantSteps={[2, 5]}
+            />
+          )}
+
+          {/* Onboarding Settings - for founders to initialize/restart onboarding */}
+          {userId && (
+            <OnboardingSettings
+              bandId={band.id}
+              userId={userId}
+              userRole={currentMember?.role}
             />
           )}
 
