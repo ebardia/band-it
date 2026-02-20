@@ -286,26 +286,18 @@ export const helpRouter = router({
           }
         }
 
-        // 2. Try AI cache
-        console.log('[Help] Step 2: Checking AI cache...')
-        let cacheMatch = null
-        try {
-          cacheMatch = await checkAiCache(question)
-        } catch (cacheErr) {
-          console.error('[Help] Cache check error:', cacheErr)
-          // Continue without cache
-        }
-
-        if (cacheMatch) {
-          const interactionId = await logInteraction(userId, question, 'CACHE', cacheMatch.answer, currentPage, null, cacheMatch.id)
-          return {
-            source: 'CACHE' as const,
-            answer: cacheMatch.answer,
-            interactionId,
-            category: null,
-            remaining: null,
-          }
-        }
+        // 2. Try AI cache (SKIP for now - cache may have bad entries)
+        console.log('[Help] Step 2: Skipping cache check...')
+        // Cache disabled temporarily to clear bad cached error responses
+        // let cacheMatch = null
+        // try {
+        //   cacheMatch = await checkAiCache(question)
+        // } catch (cacheErr) {
+        //   console.error('[Help] Cache check error:', cacheErr)
+        // }
+        // if (cacheMatch) {
+        //   ...
+        // }
 
         // 3. Check rate limit
         console.log('[Help] Step 3: Checking rate limit...')
