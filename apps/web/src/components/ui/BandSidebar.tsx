@@ -28,14 +28,13 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
   const mainNav = [
     { label: '💬 Discussions', path: `/bands/${bandSlug}`, guide: 'band-discussions' },
     { label: '📝 Posts', path: `/bands/${bandSlug}/posts`, guide: 'band-posts' },
-    { label: '📄 Documents', path: `/bands/${bandSlug}/documents`, guide: 'band-documents' },
     { label: '📝 Proposals', path: `/bands/${bandSlug}/proposals`, guide: 'band-proposals' },
     { label: '📁 Projects', path: `/bands/${bandSlug}/projects`, guide: 'band-projects' },
     { label: '✅ Tasks', path: `/bands/${bandSlug}/tasks`, guide: 'band-tasks' },
     { label: '📅 Calendar', path: `/bands/${bandSlug}/calendar`, guide: 'band-calendar' },
     { label: '💰 Finance', path: `/bands/${bandSlug}/finance`, guide: 'band-finance' },
-    { label: '💳 Billing', path: `/bands/${bandSlug}/billing`, guide: 'band-billing' },
     { label: '📜 Audit Log', path: `/bands/${bandSlug}/audit`, guide: 'band-audit' },
+    { label: '📄 Documents', path: `/bands/${bandSlug}/documents`, guide: 'band-documents' },
     { label: 'ℹ️ About', path: `/bands/${bandSlug}/about`, guide: 'band-about' },
   ]
 
