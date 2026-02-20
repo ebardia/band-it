@@ -69,7 +69,7 @@ export const authService = {
       },
     })
 
-    // Add user to the practice band (band-it-practice) as CONDUCTOR
+    // Add user to the default band (BAND IT Doings) as CONDUCTOR
     await this.addToPracticeBand(user.id)
 
     // Generate tokens
@@ -310,11 +310,11 @@ export const authService = {
   },
 
   /**
-   * Add new user to the practice band (band-it-practice) as CONDUCTOR
+   * Add new user to the default band (BAND IT Doings) as CONDUCTOR
    * This runs silently - if the band doesn't exist, it just skips
    */
   async addToPracticeBand(userId: string) {
-    const PRACTICE_BAND_SLUG = 'band-it-practice'
+    const PRACTICE_BAND_SLUG = 'band-it-doings'
 
     try {
       // Find the practice band
