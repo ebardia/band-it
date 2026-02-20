@@ -68,6 +68,9 @@ export const proposalCreateRouter = router({
 
         // Draft mode - save without submitting
         saveAsDraft: z.boolean().optional(),
+
+        // Early close - allow closing when all eligible members have voted
+        allowEarlyClose: z.boolean().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -227,6 +230,8 @@ export const proposalCreateRouter = router({
           votingStartedAt,
           submittedAt,
           submissionCount: input.saveAsDraft ? 0 : 1,
+          // Early close option
+          allowEarlyClose: input.allowEarlyClose || false,
         },
         include: {
           createdBy: {

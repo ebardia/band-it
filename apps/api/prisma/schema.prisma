@@ -1136,6 +1136,7 @@ model Proposal {
   status        ProposalStatus @default(OPEN)
   votingEndsAt  DateTime?
   votingStartedAt DateTime?
+  allowEarlyClose Boolean @default(false)  // If true, can close when all eligible members have voted
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

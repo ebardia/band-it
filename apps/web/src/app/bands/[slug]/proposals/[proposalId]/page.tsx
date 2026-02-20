@@ -386,6 +386,8 @@ export default function ProposalDetailPage() {
   const hasVoted = proposal.votes.some((v: any) => v.user.id === userId)
   const isOpen = proposal.status === 'OPEN'
   const votingEnded = proposal.votingEndsAt ? new Date() > new Date(proposal.votingEndsAt) : false
+  const allVoted = voteSummary.total >= voteSummary.eligibleVoters
+  const canEarlyClose = proposal.allowEarlyClose && allVoted && !votingEnded
 
   const handleVote = (vote: string) => {
     if (!userId) return
@@ -488,11 +490,18 @@ export default function ProposalDetailPage() {
                     {voteSummary.total}/{voteSummary.eligibleVoters} voted
                   </span>
                 </div>
-                {proposal.votingEndsAt && (
-                  <span className="text-xs text-gray-500">
-                    {proposal.status === 'OPEN' ? 'Ends:' : 'Ended:'} {new Date(proposal.votingEndsAt).toLocaleDateString()}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {proposal.votingEndsAt && (
+                    <span className="text-xs text-gray-500">
+                      {proposal.status === 'OPEN' ? 'Ends:' : 'Ended:'} {new Date(proposal.votingEndsAt).toLocaleDateString()}
+                    </span>
+                  )}
+                  {proposal.allowEarlyClose && proposal.status === 'OPEN' && (
+                    <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                      Early close enabled
+                    </span>
+                  )}
+                </div>
               </div>
               {/* Voting method */}
               <div className="text-xs text-gray-500">
@@ -572,6 +581,12 @@ export default function ProposalDetailPage() {
             </Alert>
           )}
 
+          {isOpen && canEarlyClose && (
+            <Alert variant="success">
+              <Text>All {voteSummary.eligibleVoters} eligible members have voted. This proposal can be closed early.</Text>
+            </Alert>
+          )}
+
           {isOpen && !canVote && isMember && proposal.type !== 'ADD_FOUNDER' && (
             <Alert variant="info">
               <Text>Your role does not have voting permissions.</Text>
@@ -585,7 +600,7 @@ export default function ProposalDetailPage() {
           )}
 
           {/* Compact Close Proposal */}
-          {isOpen && canClose && (
+          {isOpen && canClose && (votingEnded || canEarlyClose) && (
             <div className="border border-gray-200 rounded-lg bg-white p-3 space-y-2">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-3">
@@ -613,6 +628,12 @@ export default function ProposalDetailPage() {
                       </span>
                     )
                   })()}
+                  {canEarlyClose && (
+                    <>
+                      <span className="text-gray-300">|</span>
+                      <span className="text-sm text-green-600 font-medium">Early close available</span>
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={handleClose}

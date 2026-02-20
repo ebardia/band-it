@@ -171,20 +171,6 @@ export const proposalVoteRouter = router({
         throw new Error('You do not have permission to close this proposal')
       }
 
-      // Check if voting deadline has passed
-      const now = new Date()
-      const deadlinePassed = proposal.votingEndsAt ? now > proposal.votingEndsAt : false
-
-      if (!deadlinePassed) {
-        if (input.forceClose && isFounder) {
-          // Founders can force close early
-        } else if (input.forceClose) {
-          throw new Error('Only founders can force close a proposal before the deadline')
-        } else {
-          throw new Error('Voting period has not ended yet. The deadline is ' + (proposal.votingEndsAt?.toLocaleDateString() || 'unknown'))
-        }
-      }
-
       // Get count of eligible voters (members with voting roles)
       const eligibleVoters = await prisma.member.count({
         where: {
@@ -193,6 +179,28 @@ export const proposalVoteRouter = router({
           role: { in: CAN_VOTE as any },
         },
       })
+
+      // Check if all eligible voters have voted (for early close)
+      const allVoted = proposal.votes.length >= eligibleVoters
+
+      // Check if voting deadline has passed
+      const now = new Date()
+      const deadlinePassed = proposal.votingEndsAt ? now > proposal.votingEndsAt : false
+
+      if (!deadlinePassed) {
+        // Check if early close is allowed and all have voted
+        if (proposal.allowEarlyClose && allVoted) {
+          // Allow early close - all eligible members have voted
+        } else if (input.forceClose && isFounder) {
+          // Founders can force close early
+        } else if (input.forceClose) {
+          throw new Error('Only founders can force close a proposal before the deadline')
+        } else if (proposal.allowEarlyClose) {
+          throw new Error(`Voting period has not ended yet. Early close is enabled but only ${proposal.votes.length} of ${eligibleVoters} eligible members have voted. The deadline is ${proposal.votingEndsAt?.toLocaleDateString() || 'unknown'}`)
+        } else {
+          throw new Error('Voting period has not ended yet. The deadline is ' + (proposal.votingEndsAt?.toLocaleDateString() || 'unknown'))
+        }
+      }
 
       // Calculate results
       const yesVotes = proposal.votes.filter(v => v.vote === 'YES').length

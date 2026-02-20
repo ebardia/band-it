@@ -86,6 +86,7 @@ export default function CreateProposalPage() {
   const [externalLinks, setExternalLinks] = useState('')
   const [aiContext, setAiContext] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [allowEarlyClose, setAllowEarlyClose] = useState(false)
 
   // Execution type & effects (for governance proposals)
   const [executionType, setExecutionType] = useState<string>('PROJECT')
@@ -208,6 +209,7 @@ export default function CreateProposalPage() {
       proposedEndDate: proposedEndDate || undefined,
       milestones: milestones || undefined,
       externalLinks: linksArray.length > 0 ? linksArray : undefined,
+      allowEarlyClose,
     }
 
     // Store data for potential later use
@@ -384,6 +386,17 @@ export default function CreateProposalPage() {
                   <strong>Period:</strong> {band.votingPeriodDays || 7} days
                 </Text>
               </Flex>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allowEarlyClose}
+                  onChange={(e) => setAllowEarlyClose(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Text variant="small">
+                  Allow early close when all members have voted
+                </Text>
+              </label>
             </Stack>
           </Card>
 
@@ -915,6 +928,7 @@ export default function CreateProposalPage() {
                       milestones: milestones || undefined,
                       externalLinks: linksArray.length > 0 ? linksArray : undefined,
                       saveAsDraft: true,
+                      allowEarlyClose,
                     })
                   }}
                 >
