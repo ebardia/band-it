@@ -266,7 +266,15 @@ export const helpRouter = router({
 
       try {
         // 1. Try FAQ first
-        const faqMatch = await searchFaq(question)
+        console.log('[Help] Step 1: Searching FAQ...')
+        let faqMatch = null
+        try {
+          faqMatch = await searchFaq(question)
+        } catch (faqErr) {
+          console.error('[Help] FAQ search error:', faqErr)
+          // Continue without FAQ
+        }
+
         if (faqMatch) {
           const interactionId = await logInteraction(userId, question, 'FAQ', faqMatch.answer, currentPage, faqMatch.id)
           return {
@@ -279,7 +287,15 @@ export const helpRouter = router({
         }
 
         // 2. Try AI cache
-        const cacheMatch = await checkAiCache(question)
+        console.log('[Help] Step 2: Checking AI cache...')
+        let cacheMatch = null
+        try {
+          cacheMatch = await checkAiCache(question)
+        } catch (cacheErr) {
+          console.error('[Help] Cache check error:', cacheErr)
+          // Continue without cache
+        }
+
         if (cacheMatch) {
           const interactionId = await logInteraction(userId, question, 'CACHE', cacheMatch.answer, currentPage, null, cacheMatch.id)
           return {
@@ -292,7 +308,15 @@ export const helpRouter = router({
         }
 
         // 3. Check rate limit
-        const rateLimit = await checkRateLimit(userId)
+        console.log('[Help] Step 3: Checking rate limit...')
+        let rateLimit = { allowed: true, remaining: 20 }
+        try {
+          rateLimit = await checkRateLimit(userId)
+        } catch (rateLimitErr) {
+          console.error('[Help] Rate limit check error:', rateLimitErr)
+          // Continue with default (allow)
+        }
+
         if (!rateLimit.allowed) {
           const limitAnswer = 'You have reached your daily help limit (20 questions). Browse the FAQ below or try again tomorrow. Your limit resets at midnight.'
           const interactionId = await logInteraction(userId, question, 'RATE_LIMITED', limitAnswer, currentPage)
@@ -306,24 +330,27 @@ export const helpRouter = router({
         }
 
         // 4. Call AI
+        console.log('[Help] Step 4: Calling AI...')
         const aiAnswer = await getAiHelpResponse(question, currentPage, userId)
+        console.log('[Help] Step 4 complete: Got AI response')
 
         // 5. Cache the response (non-blocking)
         cacheAiResponse(question, aiAnswer).catch(err =>
-          console.error('Error caching AI response:', err)
+          console.error('[Help] Error caching AI response:', err)
         )
 
         // 6. Increment rate limit (non-blocking)
         incrementRateLimit(userId).catch(err =>
-          console.error('Error incrementing rate limit:', err)
+          console.error('[Help] Error incrementing rate limit:', err)
         )
 
         // 7. Log interaction
+        console.log('[Help] Step 7: Logging interaction...')
         let interactionId = 'unknown'
         try {
           interactionId = await logInteraction(userId, question, 'AI', aiAnswer, currentPage)
         } catch (logErr) {
-          console.error('Error logging help interaction:', logErr)
+          console.error('[Help] Error logging help interaction:', logErr)
         }
 
         return {
@@ -334,7 +361,7 @@ export const helpRouter = router({
           remaining: rateLimit.remaining - 1,
         }
       } catch (error) {
-        console.error('Help ask error:', error)
+        console.error('[Help] Unhandled error in help.ask:', error)
         // Return a graceful error instead of 500
         return {
           source: 'ERROR' as const,
