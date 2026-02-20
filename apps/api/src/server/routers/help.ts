@@ -264,64 +264,85 @@ export const helpRouter = router({
     .mutation(async ({ input }) => {
       const { userId, question, currentPage } = input
 
-      // 1. Try FAQ first
-      const faqMatch = await searchFaq(question)
-      if (faqMatch) {
-        const interactionId = await logInteraction(userId, question, 'FAQ', faqMatch.answer, currentPage, faqMatch.id)
-        return {
-          source: 'FAQ' as const,
-          answer: faqMatch.answer,
-          interactionId,
-          category: faqMatch.category,
-          remaining: null,
+      try {
+        // 1. Try FAQ first
+        const faqMatch = await searchFaq(question)
+        if (faqMatch) {
+          const interactionId = await logInteraction(userId, question, 'FAQ', faqMatch.answer, currentPage, faqMatch.id)
+          return {
+            source: 'FAQ' as const,
+            answer: faqMatch.answer,
+            interactionId,
+            category: faqMatch.category,
+            remaining: null,
+          }
         }
-      }
 
-      // 2. Try AI cache
-      const cacheMatch = await checkAiCache(question)
-      if (cacheMatch) {
-        const interactionId = await logInteraction(userId, question, 'CACHE', cacheMatch.answer, currentPage, null, cacheMatch.id)
+        // 2. Try AI cache
+        const cacheMatch = await checkAiCache(question)
+        if (cacheMatch) {
+          const interactionId = await logInteraction(userId, question, 'CACHE', cacheMatch.answer, currentPage, null, cacheMatch.id)
+          return {
+            source: 'CACHE' as const,
+            answer: cacheMatch.answer,
+            interactionId,
+            category: null,
+            remaining: null,
+          }
+        }
+
+        // 3. Check rate limit
+        const rateLimit = await checkRateLimit(userId)
+        if (!rateLimit.allowed) {
+          const limitAnswer = 'You have reached your daily help limit (20 questions). Browse the FAQ below or try again tomorrow. Your limit resets at midnight.'
+          const interactionId = await logInteraction(userId, question, 'RATE_LIMITED', limitAnswer, currentPage)
+          return {
+            source: 'RATE_LIMITED' as const,
+            answer: limitAnswer,
+            interactionId,
+            category: null,
+            remaining: 0,
+          }
+        }
+
+        // 4. Call AI
+        const aiAnswer = await getAiHelpResponse(question, currentPage, userId)
+
+        // 5. Cache the response (non-blocking)
+        cacheAiResponse(question, aiAnswer).catch(err =>
+          console.error('Error caching AI response:', err)
+        )
+
+        // 6. Increment rate limit (non-blocking)
+        incrementRateLimit(userId).catch(err =>
+          console.error('Error incrementing rate limit:', err)
+        )
+
+        // 7. Log interaction
+        let interactionId = 'unknown'
+        try {
+          interactionId = await logInteraction(userId, question, 'AI', aiAnswer, currentPage)
+        } catch (logErr) {
+          console.error('Error logging help interaction:', logErr)
+        }
+
         return {
-          source: 'CACHE' as const,
-          answer: cacheMatch.answer,
+          source: 'AI' as const,
+          answer: aiAnswer,
           interactionId,
+          category: null,
+          remaining: rateLimit.remaining - 1,
+        }
+      } catch (error) {
+        console.error('Help ask error:', error)
+        // Return a graceful error instead of 500
+        return {
+          source: 'ERROR' as const,
+          answer: 'Sorry, I encountered an error processing your question. Please try again or browse the FAQ below.',
+          interactionId: 'error',
           category: null,
           remaining: null,
         }
-      }
-
-      // 3. Check rate limit
-      const rateLimit = await checkRateLimit(userId)
-      if (!rateLimit.allowed) {
-        const limitAnswer = 'You have reached your daily help limit (20 questions). Browse the FAQ below or try again tomorrow. Your limit resets at midnight.'
-        const interactionId = await logInteraction(userId, question, 'RATE_LIMITED', limitAnswer, currentPage)
-        return {
-          source: 'RATE_LIMITED' as const,
-          answer: limitAnswer,
-          interactionId,
-          category: null,
-          remaining: 0,
-        }
-      }
-
-      // 4. Call AI
-      const aiAnswer = await getAiHelpResponse(question, currentPage, userId)
-
-      // 5. Cache the response
-      await cacheAiResponse(question, aiAnswer)
-
-      // 6. Increment rate limit
-      await incrementRateLimit(userId)
-
-      // 7. Log interaction
-      const interactionId = await logInteraction(userId, question, 'AI', aiAnswer, currentPage)
-
-      return {
-        source: 'AI' as const,
-        answer: aiAnswer,
-        interactionId,
-        category: null,
-        remaining: rateLimit.remaining - 1,
       }
     }),
 
