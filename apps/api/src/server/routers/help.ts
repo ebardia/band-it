@@ -208,7 +208,7 @@ async function getAiHelpResponse(question: string, currentPage?: string, userId?
       entityType: 'help',
       userId,
     }, {
-      model: process.env.ANTHROPIC_HELP_MODEL || process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
+      model: process.env.ANTHROPIC_HELP_MODEL || process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5',
       maxTokens: 500,
       system: systemPrompt,
     })

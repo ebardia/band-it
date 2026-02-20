@@ -87,7 +87,8 @@ const anthropic = new Anthropic({
 })
 
 // Default model to use (configurable via env var for easy updates)
-const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'
+// Use version without date suffix for "latest" within that version
+const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5'
 
 /**
  * Centralized AI client wrapper that tracks all API calls
