@@ -301,6 +301,7 @@ export const proposalVoteRouter = router({
               stripeErrors: dissolutionResult.stripeErrors,
             }
           } catch (error) {
+            console.error('Dissolution execution error:', error)
             executionResult = {
               success: false,
               error: error instanceof Error ? error.message : 'Failed to execute dissolution',
@@ -309,8 +310,8 @@ export const proposalVoteRouter = router({
         } else if (proposal.type === 'ADD_FOUNDER') {
           // Execute the role change directly
           try {
-            const effects = proposal.effects as any[]
-            const effect = effects?.[0]
+            const effects = Array.isArray(proposal.effects) ? proposal.effects : []
+            const effect = effects[0] as any
             const targetMemberId = effect?.payload?.targetMemberId
             const targetUserId = effect?.payload?.targetUserId
 
@@ -338,6 +339,7 @@ export const proposalVoteRouter = router({
               }
             }
           } catch (error) {
+            console.error('ADD_FOUNDER execution error:', error)
             executionResult = {
               success: false,
               error: error instanceof Error ? error.message : 'Failed to promote member to founder',
@@ -349,15 +351,23 @@ export const proposalVoteRouter = router({
             case 'ACTION':
               // Execute declarative effects
               if (proposal.effects) {
-                executionResult = await proposalEffectsService.executeAndLogEffects(
-                  {
-                    id: proposal.id,
-                    bandId: proposal.bandId,
-                    executionSubtype: proposal.executionSubtype,
-                    effects: proposal.effects,
-                  },
-                  input.userId
-                )
+                try {
+                  executionResult = await proposalEffectsService.executeAndLogEffects(
+                    {
+                      id: proposal.id,
+                      bandId: proposal.bandId,
+                      executionSubtype: proposal.executionSubtype,
+                      effects: proposal.effects,
+                    },
+                    input.userId
+                  )
+                } catch (error) {
+                  console.error('Effects execution error:', error)
+                  executionResult = {
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Failed to execute proposal effects',
+                  }
+                }
               }
               break
 
@@ -374,32 +384,37 @@ export const proposalVoteRouter = router({
         }
       }
 
-      // Notify all band members
-      const allMembers = await prisma.member.findMany({
-        where: {
-          bandId: proposal.bandId,
-          status: 'ACTIVE',
-        },
-        select: { userId: true },
-      })
-
+      // Notify all band members (non-blocking - don't fail the close if notifications fail)
       const resultMessage = approved
         ? 'approved'
         : rejectionReason
           ? `rejected (${rejectionReason})`
           : 'rejected'
 
-      for (const member of allMembers) {
-        await notificationService.create({
-          userId: member.userId,
-          type: approved ? 'PROPOSAL_APPROVED' : 'PROPOSAL_REJECTED',
-          title: approved ? 'Proposal Approved' : 'Proposal Rejected',
-          message: `"${proposal.title}" was ${resultMessage}`,
-          actionUrl: `/bands/${proposal.band.slug}/proposals/${proposal.id}`,
-          priority: 'MEDIUM',
-          relatedId: proposal.id,
-          relatedType: 'PROPOSAL',
+      try {
+        const allMembers = await prisma.member.findMany({
+          where: {
+            bandId: proposal.bandId,
+            status: 'ACTIVE',
+          },
+          select: { userId: true },
         })
+
+        for (const member of allMembers) {
+          await notificationService.create({
+            userId: member.userId,
+            type: approved ? 'PROPOSAL_APPROVED' : 'PROPOSAL_REJECTED',
+            title: approved ? 'Proposal Approved' : 'Proposal Rejected',
+            message: `"${proposal.title}" was ${resultMessage}`,
+            actionUrl: `/bands/${proposal.band.slug}/proposals/${proposal.id}`,
+            priority: 'MEDIUM',
+            relatedId: proposal.id,
+            relatedType: 'PROPOSAL',
+          })
+        }
+      } catch (notifyError) {
+        console.error('Error sending proposal close notifications:', notifyError)
+        // Don't fail the close operation if notifications fail
       }
 
       return {
