@@ -208,7 +208,7 @@ async function getAiHelpResponse(question: string, currentPage?: string, userId?
       entityType: 'help',
       userId,
     }, {
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-3-5-haiku-latest',
       maxTokens: 500,
       system: systemPrompt,
     })
