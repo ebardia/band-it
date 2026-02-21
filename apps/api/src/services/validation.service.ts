@@ -327,49 +327,53 @@ If aligned, concerns should be an empty array. If not aligned, explain specifica
   }
 }
 
-// Parent Band Scope Check for Proposals in Sub-bands - BLOCK if out of scope
-async function checkParentBandScope(
+// Sub-band Scope Check for Proposals - BLOCK if proposal is outside sub-band's scope
+async function checkSubBandScope(
   entityType: EntityType,
   data: Record<string, any>,
-  parentBand: { title: string; description: string; values?: string[] },
+  subBand: { name: string; mission: string | null; values?: string[] },
+  parentBand: { name: string; mission: string | null },
   context: CheckContext
 ): Promise<AlignmentCheckResult> {
   const contentName = getContentName(entityType, data)
   const description = data.description || ''
 
-  const valuesText = parentBand.values?.length
-    ? parentBand.values.map((v, i) => `${i + 1}. ${v}`).join('\n')
+  const valuesText = subBand.values?.length
+    ? subBand.values.map((v, i) => `${i + 1}. ${v}`).join('\n')
     : 'No specific values defined'
 
-  const prompt = `You are reviewing whether a proposal in a sub-band fits within the parent organization's scope.
+  const prompt = `You are reviewing whether a proposal belongs in this specific sub-band/committee.
 
 PARENT ORGANIZATION:
-Name: ${parentBand.title}
-Mission/Purpose: ${parentBand.description || 'No specific mission defined'}
+Name: ${parentBand.name}
+Mission/Purpose: ${parentBand.mission || 'No specific mission defined'}
+
+SUB-BAND/COMMITTEE (where proposal is being created):
+Name: ${subBand.name}
+Mission/Purpose: ${subBand.mission || 'No specific mission defined'}
 Values:
 ${valuesText}
 
-PROPOSAL BEING CREATED IN SUB-BAND:
+PROPOSAL BEING CREATED:
 Title: ${contentName}
 Description: ${description}
 
-This proposal is being created in a sub-band (a team/committee within the larger organization).
-The sub-band's work should support or align with the parent organization's mission.
+IMPORTANT: This proposal is being created in the SUB-BAND "${subBand.name}", which is a committee/team within "${parentBand.name}".
 
-Is this proposal within the scope of what the parent organization does?
+The key question is: Does this proposal belong in THIS sub-band's scope?
 
-A proposal is ALIGNED if it:
-- Directly supports the parent organization's mission or goals
-- Is work that makes sense for a team within this organization
-- Relates to the parent's stated values or purpose
+A proposal is ALIGNED with the sub-band if it:
+- Is work that THIS sub-band/committee should be doing based on its mission
+- Directly relates to the sub-band's specific purpose or focus area
+- Is something the members of this committee would work on
 
 A proposal is NOT ALIGNED if it:
-- Is completely unrelated to the parent organization's purpose
-- Would benefit a different organization entirely
-- Contradicts the parent organization's mission or values
+- Is work for the PARENT organization "${parentBand.name}" as a whole, not specifically for "${subBand.name}"
+- Should be proposed in a different sub-band or at the parent organization level
+- Describes work outside this committee's specific focus area
+- Would be better suited as a proposal in the parent organization directly
 
-Be reasonable - sub-bands can work on supporting activities, administrative tasks, or specialized projects.
-Only flag proposals that clearly don't belong under this parent organization.
+For example, if "${subBand.name}" is a "Human Rights Committee" and the proposal is about general PR/marketing for "${parentBand.name}", that proposal should NOT be in the Human Rights Committee - it should be in a Marketing committee or proposed at the parent level.
 
 Respond with JSON only:
 {
@@ -377,7 +381,7 @@ Respond with JSON only:
   "concerns": string[]
 }
 
-If aligned, concerns should be an empty array. If not aligned, explain why this doesn't fit the parent organization's scope.`
+If aligned, concerns should be an empty array. If not aligned, explain specifically why this proposal doesn't fit "${subBand.name}"'s scope.`
 
   try {
     const response = await callAI(prompt, {
@@ -390,19 +394,19 @@ If aligned, concerns should be an empty array. If not aligned, explain why this 
       maxTokens: 500,
     })
 
-    console.log('[Validation] Parent band scope check for:', contentName || description?.substring(0, 50))
+    console.log('[Validation] Sub-band scope check for:', contentName || description?.substring(0, 50))
     console.log('[Validation] AI response:', response.content)
 
     const result = parseAIJson<AlignmentCheckResult>(response.content)
     if (!result) {
-      console.log('[Validation] Failed to parse parent band scope response')
+      console.log('[Validation] Failed to parse sub-band scope response')
       return { isAligned: true, concerns: [] }
     }
 
     console.log('[Validation] Parsed result - isAligned:', result.isAligned, 'concerns:', result.concerns)
     return result
   } catch (error) {
-    console.error('Parent band scope check error:', error)
+    console.error('Sub-band scope check error:', error)
     return { isAligned: true, concerns: [] }
   }
 }
@@ -421,6 +425,7 @@ export async function validateContent(params: ValidateContentParams): Promise<Va
   const band = await prisma.band.findUnique({
     where: { id: params.bandId },
     select: {
+      name: true,
       values: true,
       mission: true,
       parentBandId: true,
@@ -445,22 +450,28 @@ export async function validateContent(params: ValidateContentParams): Promise<Va
     parent = await fetchParent(params.entityType, params.parentId)
   }
 
-  // 3. For Proposals in sub-bands, use parent band as scope reference
-  let parentBandForScope: any = null
+  // 3. For Proposals in sub-bands, check if proposal fits the sub-band's scope
+  let subBandScopeCheck: { subBand: any; parentBand: any } | null = null
   if (params.entityType === 'Proposal' && band.parentBand) {
-    parentBandForScope = {
-      title: band.parentBand.name,
-      description: band.parentBand.mission || '',
-      values: band.parentBand.values,
+    subBandScopeCheck = {
+      subBand: {
+        name: band.name,
+        mission: band.mission,
+        values: band.values,
+      },
+      parentBand: {
+        name: band.parentBand.name,
+        mission: band.parentBand.mission,
+      },
     }
   }
 
   // 4. Run all checks in parallel for performance
-  const [legalityResult, valuesResult, scopeResult, parentBandScopeResult] = await Promise.all([
+  const [legalityResult, valuesResult, scopeResult, subBandScopeResult] = await Promise.all([
     checkLegality(params.entityType, params.data, context),
     checkValuesAlignment(params.entityType, params.data, band, context),
     parent ? checkScopeAlignment(params.entityType, params.data, parent, context) : Promise.resolve(null),
-    parentBandForScope ? checkParentBandScope(params.entityType, params.data, parentBandForScope, context) : Promise.resolve(null),
+    subBandScopeCheck ? checkSubBandScope(params.entityType, params.data, subBandScopeCheck.subBand, subBandScopeCheck.parentBand, context) : Promise.resolve(null),
   ])
 
   // 4. Process legality result - BLOCK
@@ -496,14 +507,14 @@ export async function validateContent(params: ValidateContentParams): Promise<Va
     })
   }
 
-  // 7. Process parent band scope result - BLOCK if out of scope
-  if (parentBandScopeResult && !parentBandScopeResult.isAligned) {
+  // 7. Process sub-band scope result - BLOCK if proposal doesn't fit sub-band's scope
+  if (subBandScopeResult && !subBandScopeResult.isAligned) {
     issues.push({
       type: 'scope',
       severity: 'block',
-      message: parentBandScopeResult.concerns.length > 0
-        ? parentBandScopeResult.concerns.join(' ')
-        : 'This proposal does not appear to fit within the parent organization\'s scope.',
+      message: subBandScopeResult.concerns.length > 0
+        ? subBandScopeResult.concerns.join(' ')
+        : 'This proposal does not appear to fit within this sub-band\'s scope. Consider creating it in the parent organization or a different sub-band.',
     })
   }
 
