@@ -4,6 +4,7 @@ import { notificationService } from '../services/notification.service'
 import { prisma } from '../lib/prisma'
 import { emailService } from '../server/services/email.service'
 import { MIN_MEMBERS_TO_ACTIVATE, REQUIRE_PAYMENT_TO_ACTIVATE } from '@band-it/shared'
+import { withCronRetry } from '../lib/retry'
 
 /**
  * Initialize all billing-related cron jobs
@@ -12,31 +13,31 @@ export function initBillingCron() {
   // Check grace periods daily at 2 AM
   cron.schedule('0 2 * * *', async () => {
     console.log('[CRON] Running grace period check...')
-    await checkGracePeriods()
+    await withCronRetry('BILLING-GRACE-PERIOD', checkGracePeriods)
   })
 
   // Check for bands needing billing owner (no owner, subscription active) daily at 3 AM
   cron.schedule('0 3 * * *', async () => {
     console.log('[CRON] Running billing owner check...')
-    await checkBillingOwnerNeeded()
+    await withCronRetry('BILLING-OWNER-CHECK', checkBillingOwnerNeeded)
   })
 
   // Check for bands with low member count (subscription active but below minimum members) daily at 4 AM
   cron.schedule('0 4 * * *', async () => {
     console.log('[CRON] Running low member count check...')
-    await checkLowMemberCount()
+    await withCronRetry('BILLING-LOW-MEMBER', checkLowMemberCount)
   })
 
   // Auto-confirm manual payments after 7 days - daily at 5 AM
   cron.schedule('0 5 * * *', async () => {
     console.log('[CRON] Running manual payment auto-confirm...')
-    await processAutoConfirms()
+    await withCronRetry('BILLING-AUTO-CONFIRM', processAutoConfirms)
   })
 
   // Send 2-day warning for manual payments - daily at 6 AM
   cron.schedule('0 6 * * *', async () => {
     console.log('[CRON] Running manual payment warning check...')
-    await sendAutoConfirmWarnings()
+    await withCronRetry('BILLING-WARNING', sendAutoConfirmWarnings)
   })
 
   console.log('Billing cron jobs initialized')

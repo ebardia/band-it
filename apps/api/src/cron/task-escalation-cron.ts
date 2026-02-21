@@ -2,6 +2,7 @@ import cron from 'node-cron'
 import { subDays } from 'date-fns'
 import { prisma } from '../lib/prisma'
 import { notificationService } from '../services/notification.service'
+import { withCronRetry } from '../lib/retry'
 
 // Escalation thresholds (in days)
 const REMINDER_THRESHOLD_DAYS = 3
@@ -16,8 +17,8 @@ export function initTaskEscalationCron() {
   // Check for tasks and checklist items needing escalation daily at 9 AM UTC
   cron.schedule('0 9 * * *', async () => {
     console.log('[CRON] Running task and checklist escalation job...')
-    await runTaskEscalationJob()
-    await runChecklistEscalationJob()
+    await withCronRetry('TASK-ESCALATION', runTaskEscalationJob)
+    await withCronRetry('CHECKLIST-ESCALATION', runChecklistEscalationJob)
   })
 
   console.log('Task escalation cron job initialized (9 AM UTC)')

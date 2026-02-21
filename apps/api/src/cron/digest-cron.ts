@@ -4,6 +4,7 @@ import { subDays } from 'date-fns'
 import { prisma } from '../lib/prisma'
 import { getQuickActionsForUser } from '../lib/quickActions'
 import { sendDigestEmail } from '../server/services/digest-email.service'
+import { withCronRetry } from '../lib/retry'
 
 // Concurrency limit for sending emails (Resend allows 2 req/sec on free tier)
 const limit = pLimit(1)
@@ -19,7 +20,7 @@ export function initDigestCron() {
   // Send digest emails daily at 8 AM UTC
   cron.schedule('0 8 * * *', async () => {
     console.log('[CRON] Running digest email job...')
-    await sendDigestEmails()
+    await withCronRetry('DIGEST', sendDigestEmails)
   })
 
   console.log('Digest cron job initialized (8 AM UTC)')
