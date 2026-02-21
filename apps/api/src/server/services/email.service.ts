@@ -974,6 +974,100 @@ export const emailService = {
   },
 
   /**
+   * Send event created notification email to band members
+   */
+  async sendEventCreatedEmail(options: {
+    email: string
+    memberName: string
+    eventTitle: string
+    eventType: string
+    startTime: Date
+    endTime: Date
+    location?: string | null
+    meetingUrl?: string | null
+    description?: string | null
+    bandName: string
+    bandSlug: string
+    eventId: string
+    creatorName: string
+  }) {
+    const {
+      email, memberName, eventTitle, eventType, startTime, endTime,
+      location, meetingUrl, description, bandName, bandSlug, eventId, creatorName
+    } = options
+
+    const eventUrl = `${FRONTEND_URL}/bands/${bandSlug}/calendar/${eventId}`
+    const formattedDate = startTime.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+    const formattedTime = `${startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+
+    const eventTypeLabel = {
+      'ONLINE_MEETING': 'Online Meeting',
+      'IN_PERSON_MEETING': 'In-Person Meeting',
+      'SOCIAL': 'Social Event',
+      'HYBRID': 'Hybrid Event',
+    }[eventType] || eventType
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #3B82F6;">New Event: ${eventTitle}</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${memberName}, a new event has been scheduled in ${bandName}.
+        </p>
+        <div style="background-color: #EFF6FF; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3B82F6;">
+          <p style="font-size: 14px; color: #1E40AF; margin: 0;">
+            <strong>Event:</strong> ${eventTitle}<br>
+            <strong>Type:</strong> ${eventTypeLabel}<br>
+            <strong>Date:</strong> ${formattedDate}<br>
+            <strong>Time:</strong> ${formattedTime}
+            ${location ? `<br><strong>Location:</strong> ${location}` : ''}
+            ${meetingUrl ? `<br><strong>Meeting Link:</strong> <a href="${meetingUrl}" style="color: #3B82F6;">${meetingUrl}</a>` : ''}
+            <br><strong>Created by:</strong> ${creatorName}
+          </p>
+        </div>
+        ${description ? `
+          <div style="background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="font-size: 14px; color: #374151; margin: 0;">
+              ${description}
+            </p>
+          </div>
+        ` : ''}
+        <div style="margin: 30px 0;">
+          <a href="${eventUrl}"
+             style="background-color: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            View Event & RSVP
+          </a>
+        </div>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          You're receiving this because you are a member of ${bandName} on Band IT.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 EVENT CREATED EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Event: ${eventTitle}`)
+      console.log(`Date: ${formattedDate}`)
+      console.log(`Time: ${formattedTime}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: `New event in ${bandName}: ${eventTitle}`,
+      html,
+    })
+  },
+
+  /**
    * Send auto-confirm warning email
    */
   async sendManualPaymentAutoConfirmWarningEmail(options: {

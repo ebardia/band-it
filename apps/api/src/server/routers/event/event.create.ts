@@ -4,6 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
+import { emailService } from '../../services/email.service'
 
 // Roles that can create events
 const CAN_CREATE_EVENTS = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']
@@ -150,7 +151,7 @@ export const createEvent = publicProcedure
       }
     })
 
-    // Notify band members about new event
+    // Notify band members about new event (in-app notifications)
     const notificationPromises = band.members
       .filter(m => m.userId !== userId) // Don't notify creator
       .map(m => notificationService.create({
@@ -164,6 +165,30 @@ export const createEvent = publicProcedure
       }))
 
     await Promise.all(notificationPromises)
+
+    // Send email notifications to all band members (non-blocking)
+    const emailPromises = band.members
+      .filter(m => m.userId !== userId) // Don't email creator
+      .map(m => emailService.sendEventCreatedEmail({
+        email: m.user.email,
+        memberName: m.user.name,
+        eventTitle: title,
+        eventType,
+        startTime: start,
+        endTime: end,
+        location,
+        meetingUrl: meetingUrl || null,
+        description,
+        bandName: band.name,
+        bandSlug: band.slug,
+        eventId: event.id,
+        creatorName: event.createdBy.name,
+      }).catch(err => console.error(`Failed to send event email to ${m.user.email}:`, err)))
+
+    // Fire and forget - don't wait for emails
+    Promise.all(emailPromises).catch(err =>
+      console.error('Error sending event emails:', err)
+    )
 
     return { event }
   })
