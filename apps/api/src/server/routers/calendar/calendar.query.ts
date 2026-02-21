@@ -41,6 +41,8 @@ export interface CalendarItem {
     isOverdue?: boolean
     isRecurring?: boolean
     recurrenceDescription?: string
+    hasNotes?: boolean
+    hasRecordings?: boolean
   }
 }
 
@@ -56,6 +58,8 @@ function expandRecurringEvent(
     endTime: Date
     recurrenceRule: string | null
     recurrenceEndDate: Date | null
+    meetingNotes: string | null
+    recordingLinks: any
     bandId: string
     band: { name: string; slug: string }
     eventType: string
@@ -63,6 +67,8 @@ function expandRecurringEvent(
   rangeStart: Date,
   rangeEnd: Date
 ): CalendarItem[] {
+  const hasNotes = !!event.meetingNotes
+  const hasRecordings = Array.isArray(event.recordingLinks) && event.recordingLinks.length > 0
   const items: CalendarItem[] = []
   const eventDuration = event.endTime.getTime() - event.startTime.getTime()
 
@@ -96,6 +102,8 @@ function expandRecurringEvent(
         color: CALENDAR_COLORS.EVENT,
         metadata: {
           eventType: event.eventType,
+          hasNotes,
+          hasRecordings,
         },
       })
     }
@@ -141,6 +149,8 @@ function expandRecurringEvent(
           eventType: event.eventType,
           isRecurring: true,
           recurrenceDescription: rule.toText(),
+          hasNotes,
+          hasRecordings,
         },
       })
     }
@@ -163,6 +173,8 @@ function expandRecurringEvent(
         color: CALENDAR_COLORS.EVENT,
         metadata: {
           eventType: event.eventType,
+          hasNotes,
+          hasRecordings,
         },
       })
     }
@@ -257,6 +269,8 @@ export const getCalendarItems = publicProcedure
               eventType: true,
               recurrenceRule: true,
               recurrenceEndDate: true,
+              meetingNotes: true,
+              recordingLinks: true,
               bandId: true,
               band: {
                 select: { name: true, slug: true },

@@ -41,6 +41,8 @@ export interface CalendarItem {
     isOverdue?: boolean
     isRecurring?: boolean
     recurrenceDescription?: string
+    hasNotes?: boolean
+    hasRecordings?: boolean
   }
 }
 
@@ -371,6 +373,31 @@ export function CalendarView({
                   <span className="text-gray-500">Recurring:</span>
                   <span className="text-gray-900">
                     {selectedEvent.metadata.recurrenceDescription || 'Yes'}
+                  </span>
+                </div>
+              )}
+
+              {(selectedEvent.metadata.hasNotes || selectedEvent.metadata.hasRecordings) && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-gray-500">Attachments:</span>
+                  <span className="flex items-center gap-2 text-gray-900">
+                    {selectedEvent.metadata.hasNotes && (
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Notes
+                      </span>
+                    )}
+                    {selectedEvent.metadata.hasRecordings && (
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Recording
+                      </span>
+                    )}
                   </span>
                 </div>
               )}

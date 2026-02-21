@@ -1643,8 +1643,10 @@ model Event {
   cancelledAt     DateTime?
   cancellationNote String?
 
-  // Notes from event (added after meeting)
+  // Notes from event (added before/after meeting)
   meetingNotes    String?  @db.Text
+  // Recording links with optional labels: [{ url: string, label?: string }]
+  recordingLinks  Json?
 
   // Reminders (hours before event)
   reminderHours   Int[]    @default([24, 1])

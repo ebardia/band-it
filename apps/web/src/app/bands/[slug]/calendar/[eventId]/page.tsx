@@ -16,9 +16,16 @@ import {
   Alert,
   BandLayout,
   Textarea,
+  Input,
   useToast
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
+import ReactMarkdown from 'react-markdown'
+
+interface RecordingLink {
+  url: string
+  label?: string
+}
 
 export default function EventDetailPage() {
   const router = useRouter()
@@ -29,6 +36,13 @@ export default function EventDetailPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [rsvpNote, setRsvpNote] = useState('')
   const [showRsvpForm, setShowRsvpForm] = useState(false)
+
+  // Notes and recording links editing
+  const [isEditingNotes, setIsEditingNotes] = useState(false)
+  const [editedNotes, setEditedNotes] = useState('')
+  const [editedLinks, setEditedLinks] = useState<RecordingLink[]>([])
+  const [newLinkUrl, setNewLinkUrl] = useState('')
+  const [newLinkLabel, setNewLinkLabel] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -81,6 +95,17 @@ export default function EventDetailPage() {
     onSuccess: () => {
       showToast('Event cancelled', 'success')
       refetchEvent()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const updateNotesMutation = trpc.event.updateNotes.useMutation({
+    onSuccess: () => {
+      showToast('Notes saved!', 'success')
+      refetchEvent()
+      setIsEditingNotes(false)
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -185,6 +210,54 @@ export default function EventDetailPage() {
 
   const isUpcoming = new Date(event.startTime) > new Date()
   const isPast = new Date(event.endTime) < new Date()
+
+  // Start editing notes
+  const handleStartEditingNotes = () => {
+    setEditedNotes(event.meetingNotes || '')
+    setEditedLinks((event.recordingLinks as unknown as RecordingLink[]) || [])
+    setIsEditingNotes(true)
+  }
+
+  // Save notes and links
+  const handleSaveNotes = () => {
+    if (!userId) return
+    updateNotesMutation.mutate({
+      eventId,
+      userId,
+      meetingNotes: editedNotes || null,
+      recordingLinks: editedLinks.length > 0 ? editedLinks : null,
+    })
+  }
+
+  // Cancel editing
+  const handleCancelEditingNotes = () => {
+    setIsEditingNotes(false)
+    setEditedNotes('')
+    setEditedLinks([])
+    setNewLinkUrl('')
+    setNewLinkLabel('')
+  }
+
+  // Add a new recording link
+  const handleAddLink = () => {
+    if (!newLinkUrl.trim()) return
+    try {
+      new URL(newLinkUrl.trim())
+      setEditedLinks([...editedLinks, { url: newLinkUrl.trim(), label: newLinkLabel.trim() || undefined }])
+      setNewLinkUrl('')
+      setNewLinkLabel('')
+    } catch {
+      showToast('Please enter a valid URL', 'error')
+    }
+  }
+
+  // Remove a recording link
+  const handleRemoveLink = (index: number) => {
+    setEditedLinks(editedLinks.filter((_, i) => i !== index))
+  }
+
+  const recordingLinks = (event.recordingLinks as unknown as RecordingLink[]) || []
+  const hasNotesOrRecordings = event.meetingNotes || recordingLinks.length > 0
 
   return (
     <>
@@ -495,12 +568,160 @@ export default function EventDetailPage() {
             </Stack>
           </Card>
 
-          {/* Meeting Notes (after event) */}
-          {isPast && event.meetingNotes && (
+          {/* Meeting Notes & Recordings */}
+          {isMember && (
             <Card>
-              <Stack spacing="md">
-                <Heading level={3}>Meeting Notes</Heading>
-                <Text className="whitespace-pre-wrap">{event.meetingNotes}</Text>
+              <Stack spacing="lg">
+                <Flex justify="between" align="center">
+                  <Heading level={3}>
+                    {isUpcoming ? 'Agenda & Materials' : 'Notes & Recordings'}
+                  </Heading>
+                  {!isEditingNotes && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleStartEditingNotes}
+                    >
+                      {hasNotesOrRecordings ? 'Edit' : 'Add Notes'}
+                    </Button>
+                  )}
+                </Flex>
+
+                {isEditingNotes ? (
+                  <Stack spacing="lg">
+                    {/* Notes Editor */}
+                    <div>
+                      <Text variant="small" color="muted" className="mb-2">
+                        Notes (Markdown supported)
+                      </Text>
+                      <Textarea
+                        value={editedNotes}
+                        onChange={(e) => setEditedNotes(e.target.value)}
+                        placeholder={isUpcoming ? 'Add agenda or pre-meeting notes...' : 'Add meeting notes, decisions, action items...'}
+                        rows={8}
+                      />
+                    </div>
+
+                    {/* Recording Links Editor */}
+                    <div>
+                      <Text variant="small" color="muted" className="mb-2">
+                        Recording Links
+                      </Text>
+
+                      {/* Existing links */}
+                      {editedLinks.length > 0 && (
+                        <Stack spacing="sm" className="mb-4">
+                          {editedLinks.map((link, index) => (
+                            <Flex key={index} gap="sm" align="center" className="p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              <div className="flex-1 min-w-0">
+                                <Text className="truncate">{link.label || link.url}</Text>
+                                {link.label && (
+                                  <Text variant="small" color="muted" className="truncate">{link.url}</Text>
+                                )}
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveLink(index)}
+                              >
+                                Remove
+                              </Button>
+                            </Flex>
+                          ))}
+                        </Stack>
+                      )}
+
+                      {/* Add new link */}
+                      <Stack spacing="sm">
+                        <Flex gap="sm" className="flex-wrap">
+                          <div className="flex-1 min-w-[200px]">
+                            <Input
+                              value={newLinkUrl}
+                              onChange={(e) => setNewLinkUrl(e.target.value)}
+                              placeholder="https://..."
+                              type="url"
+                            />
+                          </div>
+                          <div className="w-32">
+                            <Input
+                              value={newLinkLabel}
+                              onChange={(e) => setNewLinkLabel(e.target.value)}
+                              placeholder="Label (optional)"
+                            />
+                          </div>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={handleAddLink}
+                            disabled={!newLinkUrl.trim()}
+                          >
+                            Add Link
+                          </Button>
+                        </Flex>
+                      </Stack>
+                    </div>
+
+                    {/* Save/Cancel buttons */}
+                    <Flex gap="sm">
+                      <Button
+                        variant="primary"
+                        onClick={handleSaveNotes}
+                        disabled={updateNotesMutation.isPending}
+                      >
+                        {updateNotesMutation.isPending ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleCancelEditingNotes}
+                        disabled={updateNotesMutation.isPending}
+                      >
+                        Cancel
+                      </Button>
+                    </Flex>
+                  </Stack>
+                ) : (
+                  <Stack spacing="md">
+                    {/* Display Recording Links */}
+                    {recordingLinks.length > 0 && (
+                      <div>
+                        <Text variant="small" color="muted" className="mb-2">Recordings</Text>
+                        <Stack spacing="sm">
+                          {recordingLinks.map((link, index) => (
+                            <a
+                              key={index}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-blue-600 hover:underline"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {link.label || 'Recording'}
+                            </a>
+                          ))}
+                        </Stack>
+                      </div>
+                    )}
+
+                    {/* Display Notes */}
+                    {event.meetingNotes ? (
+                      <div>
+                        <Text variant="small" color="muted" className="mb-2">Notes</Text>
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <ReactMarkdown>{event.meetingNotes}</ReactMarkdown>
+                        </div>
+                      </div>
+                    ) : !recordingLinks.length && (
+                      <Text color="muted" variant="small">
+                        {isUpcoming
+                          ? 'No agenda or materials added yet. Click "Add Notes" to share pre-meeting information.'
+                          : 'No notes or recordings added yet. Click "Add Notes" to document this meeting.'}
+                      </Text>
+                    )}
+                  </Stack>
+                )}
               </Stack>
             </Card>
           )}
