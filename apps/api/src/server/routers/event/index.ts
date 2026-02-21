@@ -7,6 +7,20 @@ import { setRSVP, removeRSVP, getRSVPs } from './event.rsvp'
 import { markAttendance, getAttendance, bulkMarkAttendance, getMemberAttendanceHistory } from './event.attendance'
 import { processEventReminders, getPendingReminders } from './event.cron'
 
+// Split into sub-routers to avoid TypeScript "Type instantiation is excessively deep" error
+const rsvpRouter = router({
+  set: setRSVP,
+  remove: removeRSVP,
+  getAll: getRSVPs,
+})
+
+const attendanceRouter = router({
+  mark: markAttendance,
+  get: getAttendance,
+  bulkMark: bulkMarkAttendance,
+  getMemberHistory: getMemberAttendanceHistory,
+})
+
 export const eventRouter = router({
   // Create
   create: createEvent,
@@ -24,16 +38,11 @@ export const eventRouter = router({
   createException: createEventException,
   updateNotes: updateEventNotes,
 
-  // RSVP
-  setRSVP: setRSVP,
-  removeRSVP: removeRSVP,
-  getRSVPs: getRSVPs,
+  // RSVP (nested router)
+  rsvp: rsvpRouter,
 
-  // Attendance
-  markAttendance: markAttendance,
-  getAttendance: getAttendance,
-  bulkMarkAttendance: bulkMarkAttendance,
-  getMemberAttendanceHistory: getMemberAttendanceHistory,
+  // Attendance (nested router)
+  attendance: attendanceRouter,
 
   // Cron (for automated reminders)
   processReminders: processEventReminders,
