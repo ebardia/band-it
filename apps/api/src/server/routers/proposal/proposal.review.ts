@@ -53,11 +53,11 @@ export const proposalReviewRouter = router({
         })
       }
 
-      // Verify status
-      if (proposal.status !== 'DRAFT') {
+      // Verify status - allow DRAFT, REJECTED, or WITHDRAWN
+      if (!['DRAFT', 'REJECTED', 'WITHDRAWN'].includes(proposal.status)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Only drafts can be submitted for review',
+          message: 'Only drafts, rejected, or withdrawn proposals can be submitted for review',
         })
       }
 
@@ -100,6 +100,10 @@ export const proposalReviewRouter = router({
             votingStartedAt: new Date(),
             votingEndsAt,
             submissionCount: { increment: 1 },
+            // Clear previous review data (for resubmissions)
+            reviewedById: null,
+            reviewedAt: null,
+            rejectionReason: null,
           },
         })
 
