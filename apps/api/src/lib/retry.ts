@@ -2,19 +2,23 @@
  * Retry utility for handling transient failures (e.g., database connection issues)
  */
 
+import { prisma } from './prisma'
+
 export interface RetryOptions {
   maxRetries?: number
   initialDelayMs?: number
   maxDelayMs?: number
   backoffMultiplier?: number
+  resetConnection?: boolean
   onRetry?: (error: Error, attempt: number, delayMs: number) => void
 }
 
 const DEFAULT_OPTIONS: Required<Omit<RetryOptions, 'onRetry'>> = {
-  maxRetries: 3,
-  initialDelayMs: 1000,
-  maxDelayMs: 30000,
+  maxRetries: 5,
+  initialDelayMs: 5000,
+  maxDelayMs: 60000,
   backoffMultiplier: 2,
+  resetConnection: true,
 }
 
 /**
@@ -62,6 +66,7 @@ export async function withRetry<T>(
     initialDelayMs,
     maxDelayMs,
     backoffMultiplier,
+    resetConnection,
   } = { ...DEFAULT_OPTIONS, ...options }
   const { onRetry } = options
 
@@ -86,6 +91,16 @@ export async function withRetry<T>(
         onRetry(error, attempt, delayMs)
       }
 
+      // Reset Prisma connection to get a fresh connection from the pool
+      if (resetConnection) {
+        try {
+          console.log(`[RETRY] Resetting database connection...`)
+          await prisma.$disconnect()
+        } catch (disconnectError) {
+          console.log(`[RETRY] Disconnect error (ignored):`, disconnectError)
+        }
+      }
+
       // Wait before retrying
       await sleep(delayMs)
 
@@ -101,6 +116,9 @@ export async function withRetry<T>(
 /**
  * Wrap a cron job function with retry logic
  * Logs errors but doesn't throw, so cron continues running
+ *
+ * Default retry window: ~2.5 minutes (5s + 10s + 20s + 40s + 60s)
+ * This handles Neon database cold starts and brief outages
  */
 export async function withCronRetry<T>(
   jobName: string,
@@ -109,16 +127,18 @@ export async function withCronRetry<T>(
 ): Promise<T | null> {
   try {
     return await withRetry(fn, {
-      maxRetries: 3,
-      initialDelayMs: 2000, // Start with 2 second delay for cron jobs
-      maxDelayMs: 30000,
+      maxRetries: 5,
+      initialDelayMs: 5000, // Start with 5 second delay
+      maxDelayMs: 60000,    // Cap at 1 minute between retries
+      backoffMultiplier: 2,
+      resetConnection: true,
       onRetry: (error, attempt, delayMs) => {
-        console.log(`[${jobName}] Retry ${attempt}: ${error.message}. Waiting ${delayMs}ms...`)
+        console.log(`[${jobName}] Retry ${attempt}/${5}: ${error.message}. Waiting ${delayMs / 1000}s...`)
       },
       ...options,
     })
   } catch (error: any) {
-    console.error(`[${jobName}] Fatal error after retries:`, error)
+    console.error(`[${jobName}] Fatal error after 5 retries:`, error)
     return null
   }
 }
