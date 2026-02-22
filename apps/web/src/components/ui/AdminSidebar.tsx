@@ -28,6 +28,7 @@ export function AdminSidebar() {
 
   const systemNav = [
     { label: '📜 Audit Log', path: '/admin/audit' },
+    { label: '🕐 Cron Jobs', path: '/admin/cron-jobs' },
     { label: '⚙️ Settings', path: '/admin/settings' },
   ]
 

@@ -6,6 +6,9 @@ import { notificationService } from '../../services/notification.service'
 import { emailService } from '../services/email.service'
 import { clearModerationCache } from '../../services/content-moderation.service'
 import { createDefaultChannel } from './channel'
+import { runDigestJob } from '../../cron/digest-cron'
+import { runTaskEscalationJob, runChecklistEscalationJob } from '../../cron/task-escalation-cron'
+import { runGracePeriodCheck, runBillingOwnerCheck, runLowMemberCountCheck, runAutoConfirms, runAutoConfirmWarnings } from '../../cron/billing-cron'
 
 // Helper to check if user is admin
 async function requireAdmin(userId: string) {
@@ -1610,5 +1613,105 @@ export const adminRouter = router({
       })
 
       return { band }
+    }),
+
+  // ============================================
+  // CRON JOB TRIGGERS (Admin Tools)
+  // ============================================
+
+  /**
+   * Trigger digest email job manually
+   */
+  triggerDigestJob: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.userId)
+      console.log(`[ADMIN] Digest job triggered by user ${input.userId}`)
+      const result = await runDigestJob()
+      return { success: true, result }
+    }),
+
+  /**
+   * Trigger task escalation job manually
+   */
+  triggerTaskEscalation: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.userId)
+      console.log(`[ADMIN] Task escalation job triggered by user ${input.userId}`)
+      const result = await runTaskEscalationJob()
+      return { success: true, result }
+    }),
+
+  /**
+   * Trigger checklist escalation job manually
+   */
+  triggerChecklistEscalation: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.userId)
+      console.log(`[ADMIN] Checklist escalation job triggered by user ${input.userId}`)
+      const result = await runChecklistEscalationJob()
+      return { success: true, result }
+    }),
+
+  /**
+   * Trigger billing grace period check manually
+   */
+  triggerGracePeriodCheck: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.userId)
+      console.log(`[ADMIN] Grace period check triggered by user ${input.userId}`)
+      await runGracePeriodCheck()
+      return { success: true }
+    }),
+
+  /**
+   * Trigger billing owner check manually
+   */
+  triggerBillingOwnerCheck: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.userId)
+      console.log(`[ADMIN] Billing owner check triggered by user ${input.userId}`)
+      await runBillingOwnerCheck()
+      return { success: true }
+    }),
+
+  /**
+   * Trigger low member count check manually
+   */
+  triggerLowMemberCheck: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.userId)
+      console.log(`[ADMIN] Low member count check triggered by user ${input.userId}`)
+      await runLowMemberCountCheck()
+      return { success: true }
+    }),
+
+  /**
+   * Trigger manual payment auto-confirm job
+   */
+  triggerAutoConfirms: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.userId)
+      console.log(`[ADMIN] Auto-confirm job triggered by user ${input.userId}`)
+      await runAutoConfirms()
+      return { success: true }
+    }),
+
+  /**
+   * Trigger auto-confirm warning emails
+   */
+  triggerAutoConfirmWarnings: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.userId)
+      console.log(`[ADMIN] Auto-confirm warnings triggered by user ${input.userId}`)
+      await runAutoConfirmWarnings()
+      return { success: true }
     }),
 })
