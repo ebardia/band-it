@@ -112,10 +112,11 @@ export function ProposalHeaderCompact({
           )}
           {canResubmit && (
             <button
-              onClick={onEdit}
+              onClick={onSubmit}
+              disabled={isSubmitting}
               className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
-              Edit & Resubmit
+              {isSubmitting ? '...' : 'Resubmit'}
             </button>
           )}
           {canReview && (
@@ -135,7 +136,7 @@ export function ProposalHeaderCompact({
               </button>
             </>
           )}
-          {canEdit && !canResubmit && (
+          {canEdit && (
             <button
               onClick={onEdit}
               className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
