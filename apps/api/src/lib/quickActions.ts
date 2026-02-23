@@ -201,7 +201,7 @@ export async function getQuickActionsForUser(
       take: limit,
     }),
 
-    // 6. Claimable checklist items - unassigned items user can claim
+    // 6. Claimable checklist items - unassigned items user can claim (excluding dismissed)
     userBandIds.length > 0 ? prisma.checklistItem.findMany({
       where: {
         task: {
@@ -217,6 +217,10 @@ export async function getQuickActionsForUser(
           { verificationStatus: null },
           { verificationStatus: { not: 'APPROVED' } },
         ],
+        // Exclude items dismissed by this user
+        dismissals: {
+          none: { userId },
+        },
       },
       include: {
         task: {

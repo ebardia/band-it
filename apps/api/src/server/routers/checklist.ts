@@ -13,6 +13,8 @@ import {
   retryChecklistItem,
   updateChecklistContext,
   getClaimableChecklistItems,
+  dismissChecklistItem,
+  getChecklistDismissals,
 } from './checklist.claim'
 import {
   updateChecklistDeliverable,
@@ -34,6 +36,8 @@ export const checklistRouter = router({
   retry: retryChecklistItem,
   updateContext: updateChecklistContext,
   getClaimable: getClaimableChecklistItems,
+  dismiss: dismissChecklistItem,
+  getDismissals: getChecklistDismissals,
 
   // Deliverable procedures
   updateDeliverable: updateChecklistDeliverable,

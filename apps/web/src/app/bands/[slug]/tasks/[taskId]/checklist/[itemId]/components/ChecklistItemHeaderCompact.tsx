@@ -14,9 +14,11 @@ interface ChecklistItemHeaderCompactProps {
   onToggle: () => void
   onDelete: () => void
   onClaim: () => void
+  onDismiss: () => void
   isToggling: boolean
   isDeleting: boolean
   isClaiming: boolean
+  isDismissing: boolean
   needsDeliverable: boolean
 }
 
@@ -31,9 +33,11 @@ export function ChecklistItemHeaderCompact({
   onToggle,
   onDelete,
   onClaim,
+  onDismiss,
   isToggling,
   isDeleting,
   isClaiming,
+  isDismissing,
   needsDeliverable,
 }: ChecklistItemHeaderCompactProps) {
   const router = useRouter()
@@ -80,15 +84,24 @@ export function ChecklistItemHeaderCompact({
           )}
         </div>
         <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
-          {/* Claim button for unassigned items */}
+          {/* Claim and Dismiss buttons for unassigned items */}
           {isMember && !item.assigneeId && !isCompleted && (
-            <button
-              onClick={onClaim}
-              disabled={isClaiming}
-              className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              {isClaiming ? '...' : 'Claim'}
-            </button>
+            <>
+              <button
+                onClick={onClaim}
+                disabled={isClaiming}
+                className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                {isClaiming ? '...' : 'Claim'}
+              </button>
+              <button
+                onClick={onDismiss}
+                disabled={isDismissing}
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              >
+                {isDismissing ? '...' : 'Dismiss'}
+              </button>
+            </>
           )}
           {/* Toggle completion */}
           {canModify && (

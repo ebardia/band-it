@@ -303,6 +303,11 @@ export const unclaimChecklistItem = publicProcedure
       }
     })
 
+    // Reset all dismissals - give everyone another chance to claim
+    await prisma.checklistItemDismissal.deleteMany({
+      where: { checklistItemId: itemId }
+    })
+
     // Log to audit
     await prisma.auditLog.create({
       data: {
@@ -758,4 +763,235 @@ export const updateChecklistContext = publicProcedure
     })
 
     return { item: updatedItem }
+  })
+
+/**
+ * Dismiss a checklist item from quick actions (user doesn't want to claim it)
+ */
+export const dismissChecklistItem = publicProcedure
+  .input(z.object({
+    itemId: z.string(),
+    userId: z.string(),
+    reason: z.string().min(1).max(500),
+  }))
+  .mutation(async ({ input }) => {
+    const { itemId, userId, reason } = input
+
+    // Get checklist item with task and band info
+    const item = await prisma.checklistItem.findUnique({
+      where: { id: itemId },
+      include: {
+        task: {
+          include: {
+            project: { select: { id: true, name: true, leadId: true } },
+            band: {
+              select: { id: true, name: true, slug: true, dissolvedAt: true },
+            },
+            createdBy: { select: { id: true, name: true } },
+          },
+        },
+        dismissals: true,
+      },
+    })
+
+    if (!item) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
+    }
+
+    if (item.task.band.dissolvedAt) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'Band has been dissolved' })
+    }
+
+    // Check item is not already assigned
+    if (item.assigneeId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Cannot dismiss an item that is already claimed',
+      })
+    }
+
+    const bandId = item.task.band.id
+
+    // Check membership
+    const membership = await prisma.member.findFirst({
+      where: {
+        userId,
+        bandId,
+        status: 'ACTIVE',
+      },
+    })
+
+    if (!membership) {
+      throw new TRPCError({ code: 'FORBIDDEN', message: 'Not a member of this band' })
+    }
+
+    // Check role requirement - user must be eligible to claim to dismiss
+    if (!canClaimWithRole(membership.role, item.minClaimRole)) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not eligible to claim or dismiss this item',
+      })
+    }
+
+    // Check if already dismissed by this user
+    const existingDismissal = item.dismissals.find(d => d.userId === userId)
+    if (existingDismissal) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: 'You have already dismissed this item',
+      })
+    }
+
+    // Create dismissal
+    const dismissal = await prisma.checklistItemDismissal.create({
+      data: {
+        checklistItemId: itemId,
+        userId,
+        reason,
+      },
+    })
+
+    // Get all eligible members to check if everyone has dismissed
+    const allMembers = await prisma.member.findMany({
+      where: {
+        bandId,
+        status: 'ACTIVE',
+      },
+    })
+
+    // Filter to eligible members (those who can claim based on minClaimRole)
+    const eligibleMembers = allMembers.filter(m =>
+      canClaimWithRole(m.role, item.minClaimRole)
+    )
+
+    // Get all dismissals including the new one
+    const allDismissals = await prisma.checklistItemDismissal.findMany({
+      where: { checklistItemId: itemId },
+    })
+
+    const dismissedUserIds = new Set(allDismissals.map(d => d.userId))
+    const remainingEligible = eligibleMembers.filter(m => !dismissedUserIds.has(m.userId))
+
+    // If all eligible members have dismissed, notify project lead and task creator
+    if (remainingEligible.length === 0 && eligibleMembers.length > 0) {
+      const notifyUserIds = new Set<string>()
+
+      // Add project lead if exists
+      if (item.task.project.leadId) {
+        notifyUserIds.add(item.task.project.leadId)
+      }
+
+      // Add task creator
+      notifyUserIds.add(item.task.createdBy.id)
+
+      // Send notifications
+      for (const notifyUserId of notifyUserIds) {
+        await notificationService.create({
+          userId: notifyUserId,
+          type: 'CHECKLIST_ALL_DISMISSED',
+          title: 'Checklist Item Needs Assignment',
+          message: `All eligible members have dismissed "${item.description}" - manual assignment needed`,
+          relatedId: item.id,
+          relatedType: 'checklist_item',
+          actionUrl: `/bands/${item.task.band.slug}/tasks/${item.taskId}?checklist=${item.id}`,
+          priority: 'HIGH',
+          bandId,
+        })
+      }
+    }
+
+    // Log to audit
+    await prisma.auditLog.create({
+      data: {
+        bandId,
+        actorId: userId,
+        action: 'CHECKLIST_ITEM_DISMISSED',
+        entityType: 'CHECKLIST_ITEM',
+        entityId: itemId,
+        entityName: item.description,
+        changes: {
+          taskId: item.taskId,
+          taskName: item.task.name,
+          reason,
+          remainingEligible: remainingEligible.length,
+        },
+      },
+    })
+
+    return { dismissal, remainingEligible: remainingEligible.length }
+  })
+
+/**
+ * Get dismissal stats for a checklist item (project leads can see this)
+ */
+export const getChecklistDismissals = publicProcedure
+  .input(z.object({
+    itemId: z.string(),
+    userId: z.string(),
+  }))
+  .query(async ({ input }) => {
+    const { itemId, userId } = input
+
+    const item = await prisma.checklistItem.findUnique({
+      where: { id: itemId },
+      include: {
+        task: {
+          include: {
+            project: { select: { id: true, leadId: true } },
+            band: { select: { id: true } },
+          },
+        },
+        dismissals: {
+          include: {
+            user: { select: { id: true, name: true } },
+          },
+          orderBy: { dismissedAt: 'desc' },
+        },
+      },
+    })
+
+    if (!item) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Checklist item not found' })
+    }
+
+    // Check membership and role
+    const membership = await prisma.member.findFirst({
+      where: {
+        userId,
+        bandId: item.task.band.id,
+        status: 'ACTIVE',
+      },
+    })
+
+    if (!membership) {
+      throw new TRPCError({ code: 'FORBIDDEN', message: 'Not a member of this band' })
+    }
+
+    // Only project lead, task creator, or Conductor+ can see dismissal stats
+    const canViewStats =
+      item.task.project.leadId === userId ||
+      ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(membership.role)
+
+    if (!canViewStats) {
+      return { dismissals: [], canView: false }
+    }
+
+    // Get eligible member count
+    const allMembers = await prisma.member.findMany({
+      where: {
+        bandId: item.task.band.id,
+        status: 'ACTIVE',
+      },
+    })
+
+    const eligibleCount = allMembers.filter(m =>
+      canClaimWithRole(m.role, item.minClaimRole)
+    ).length
+
+    return {
+      dismissals: item.dismissals,
+      eligibleCount,
+      dismissedCount: item.dismissals.length,
+      canView: true,
+    }
   })

@@ -152,7 +152,7 @@ function ActionCard({ action, onClick }: ActionCardProps) {
       case 'TASK':
         return 'Claim Task'
       case 'CHECKLIST':
-        return 'Claim Item'
+        return 'Claim/Dismiss'
       default:
         return action.type
     }

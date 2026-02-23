@@ -52,6 +52,10 @@ export default function ChecklistItemDetailPage() {
   const [editDueDate, setEditDueDate] = useState('')
   const [editRequiresDeliverable, setEditRequiresDeliverable] = useState(false)
 
+  // Dismiss modal state
+  const [showDismissModal, setShowDismissModal] = useState(false)
+  const [dismissReason, setDismissReason] = useState('')
+
   // Integrity Guard state
   const [validationIssues, setValidationIssues] = useState<any[]>([])
   const [showBlockModal, setShowBlockModal] = useState(false)
@@ -89,6 +93,12 @@ export default function ChecklistItemDetailPage() {
   const { data: deliverableData, refetch: refetchDeliverable } = trpc.checklist.getDeliverable.useQuery(
     { checklistItemId: itemId },
     { enabled: !!itemId }
+  )
+
+  // Fetch dismissal stats (for project leads/conductors)
+  const { data: dismissalData } = trpc.checklist.getDismissals.useQuery(
+    { itemId, userId: userId! },
+    { enabled: !!itemId && !!userId }
   )
 
   const updateMutation = trpc.checklist.update.useMutation({
@@ -187,9 +197,31 @@ export default function ChecklistItemDetailPage() {
     }
   })
 
+  const dismissMutation = trpc.checklist.dismiss.useMutation({
+    onSuccess: (data) => {
+      showToast('Item dismissed from your quick actions', 'success')
+      setShowDismissModal(false)
+      setDismissReason('')
+      // Navigate back to task page since item is now dismissed
+      router.push(`/bands/${slug}/tasks/${taskId}`)
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
   const handleClaim = () => {
     if (!userId) return
     claimMutation.mutate({ itemId, userId })
+  }
+
+  const handleDismiss = () => {
+    setShowDismissModal(true)
+  }
+
+  const handleConfirmDismiss = () => {
+    if (!userId || !dismissReason.trim()) return
+    dismissMutation.mutate({ itemId, userId, reason: dismissReason.trim() })
   }
 
   // Populate deliverable form with existing data
@@ -561,12 +593,41 @@ export default function ChecklistItemDetailPage() {
               onToggle={handleToggle}
               onDelete={handleDelete}
               onClaim={handleClaim}
+              onDismiss={handleDismiss}
               isToggling={toggleMutation.isPending}
               isDeleting={deleteItemMutation.isPending}
               isClaiming={claimMutation.isPending}
+              isDismissing={dismissMutation.isPending}
               needsDeliverable={item.requiresDeliverable && !item.isCompleted && summary.trim().length < 30}
             />
           </Card>
+
+          {/* Dismissal Stats - shown to project leads and conductors */}
+          {dismissalData?.canView && dismissalData.dismissedCount > 0 && !item.assigneeId && (
+            <div className="border border-orange-200 rounded-lg bg-orange-50 p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-orange-800">
+                  Dismissals ({dismissalData.dismissedCount}/{dismissalData.eligibleCount} eligible)
+                </span>
+                {dismissalData.dismissedCount === dismissalData.eligibleCount && (
+                  <Badge variant="warning">All dismissed</Badge>
+                )}
+              </div>
+              <div className="space-y-1">
+                {dismissalData.dismissals.map((d: any) => (
+                  <div key={d.id} className="text-xs text-orange-700 flex items-center gap-2">
+                    <span className="font-medium">{d.user.name}:</span>
+                    <span className="text-orange-600">{d.reason}</span>
+                  </div>
+                ))}
+              </div>
+              {dismissalData.dismissedCount === dismissalData.eligibleCount && (
+                <Text variant="small" className="mt-2 text-orange-700">
+                  Consider manually assigning this item to someone.
+                </Text>
+              )}
+            </div>
+          )}
 
           {/* Compact Deliverable Section */}
           {(isAssignee || canUpdate) && (item.requiresDeliverable || deliverableData?.deliverable) && (
@@ -813,6 +874,66 @@ export default function ChecklistItemDetailPage() {
           userId={userId || undefined}
           userRole={currentMember?.role}
         />
+
+        {/* Dismiss Modal */}
+        <Modal
+          isOpen={showDismissModal}
+          onClose={() => {
+            setShowDismissModal(false)
+            setDismissReason('')
+          }}
+          size="md"
+        >
+          <Stack spacing="md">
+            <Heading level={3}>Dismiss Item</Heading>
+            <Text color="muted">
+              This will hide the item from your quick actions. You can still see it here if you navigate directly.
+              Other members will still see it in their quick actions.
+            </Text>
+
+            <Stack spacing="sm">
+              <Text variant="small" weight="semibold">Why are you dismissing this item? *</Text>
+              <select
+                value={dismissReason}
+                onChange={(e) => setDismissReason(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select a reason...</option>
+                <option value="Not my expertise">Not my expertise</option>
+                <option value="Too busy right now">Too busy right now</option>
+                <option value="Not relevant to my role">Not relevant to my role</option>
+                <option value="Someone else is better suited">Someone else is better suited</option>
+                <option value="Other">Other</option>
+              </select>
+              {dismissReason === 'Other' && (
+                <Input
+                  placeholder="Please specify..."
+                  value=""
+                  onChange={(e) => setDismissReason(e.target.value || 'Other')}
+                />
+              )}
+            </Stack>
+
+            <Flex gap="sm" justify="end">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowDismissModal(false)
+                  setDismissReason('')
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleConfirmDismiss}
+                disabled={dismissMutation.isPending || !dismissReason.trim()}
+              >
+                {dismissMutation.isPending ? 'Dismissing...' : 'Dismiss'}
+              </Button>
+            </Flex>
+          </Stack>
+        </Modal>
       </BandLayout>
     </>
   )

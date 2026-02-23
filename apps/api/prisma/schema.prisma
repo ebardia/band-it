@@ -97,6 +97,7 @@ model User {
   checklistItemsCompleted ChecklistItem[] @relation("ChecklistItemsCompleted")
   checklistItemsAssigned  ChecklistItem[] @relation("ChecklistItemsAssigned")
   checklistItemsVerified  ChecklistItem[] @relation("ChecklistItemsVerified")
+  checklistItemsDismissed ChecklistItemDismissal[] @relation("ChecklistItemDismissals")
   pendingInvitesCreated   PendingInvite[] @relation("PendingInvitesCreated")
   bandsAsBillingOwner     Band[] @relation("BandBillingOwner")
   bandsDissolvedBy        Band[] @relation("BandDissolver")
@@ -416,6 +417,7 @@ enum NotificationType {
   CHECKLIST_REJECTED             // Checklist item rejected
   CHECKLIST_REMINDER             // Reminder for items waiting verification
   CHECKLIST_ESCALATED            // Checklist item escalated to leadership
+  CHECKLIST_ALL_DISMISSED        // All eligible members dismissed this item
 
   // Billing
   BILLING_PAYMENT_REQUIRED
@@ -1790,11 +1792,32 @@ model ChecklistItem {
   verifiedBy  User?    @relation("ChecklistItemsVerified", fields: [verifiedById], references: [id])
   files       File[]
   deliverable ChecklistItemDeliverable?
+  dismissals  ChecklistItemDismissal[]
 
   @@index([taskId])
   @@index([completedById])
   @@index([assigneeId])
   @@index([verifiedById])
+}
+
+// ============================================
+// CHECKLIST ITEM DISMISSALS
+// ============================================
+
+model ChecklistItemDismissal {
+  id                String   @id @default(cuid())
+  checklistItemId   String
+  userId            String
+  reason            String   // Required reason for dismissal
+  dismissedAt       DateTime @default(now())
+
+  // Relations
+  checklistItem     ChecklistItem @relation(fields: [checklistItemId], references: [id], onDelete: Cascade)
+  user              User          @relation("ChecklistItemDismissals", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([checklistItemId, userId])
+  @@index([checklistItemId])
+  @@index([userId])
 }
 
 // ============================================
