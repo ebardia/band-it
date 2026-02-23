@@ -5,7 +5,9 @@
 
 ## Overview
 
-Track expenses and reimbursements tied to tasks and checklist items. When a member pays for something out of pocket (hosting, supplies, etc.), they can record the expense amount, upload a receipt, and track reimbursement status.
+Track expenses and reimbursements tied to checklist items. When a member pays for something out of pocket (hosting, supplies, etc.), they can record the expense amount, upload a receipt, and track reimbursement status.
+
+**Scope:** Expenses attach to ChecklistItems only. If a task needs an expense tracked, create a checklist item for it (e.g., "Purchase hosting plan").
 
 ### Key Principle
 BandIT does NOT hold or move money. It tracks:
@@ -51,8 +53,6 @@ Actual money moves externally (Venmo, Zelle, etc.).
 
 ## Data Model Changes
 
-### ChecklistItem (extend existing)
-
 ```prisma
 model ChecklistItem {
   // ... existing fields ...
@@ -79,27 +79,6 @@ enum ReimbursementStatus {
 }
 ```
 
-### Task (extend existing)
-
-```prisma
-model Task {
-  // ... existing fields ...
-
-  // Expense tracking (for task-level expenses, not checklist)
-  expenseAmount             Int?
-  expenseCurrency           String    @default("usd")
-  expenseNote               String?
-
-  // Reimbursement tracking
-  reimbursementStatus       ReimbursementStatus?
-  reimbursedAt              DateTime?
-  reimbursedById            String?
-  reimbursedBy              User?     @relation("TasksReimbursed", ...)
-  reimbursementConfirmedAt  DateTime?
-  reimbursementNote         String?
-}
-```
-
 ### User (add relations)
 
 ```prisma
@@ -107,15 +86,12 @@ model User {
   // ... existing fields ...
 
   checklistItemsReimbursed  ChecklistItem[] @relation("ChecklistItemsReimbursed")
-  tasksReimbursed           Task[]          @relation("TasksReimbursed")
 }
 ```
 
 ---
 
 ## API Endpoints
-
-### Checklist Item Expense
 
 ```typescript
 // Record expense when completing item
@@ -165,16 +141,6 @@ checklist.getMyPendingReimbursements
     userId: string
   }
   // Returns my items awaiting reimbursement or confirmation
-```
-
-### Task Expense (same pattern)
-
-```typescript
-task.reimburse
-task.confirmReimbursement
-task.disputeReimbursement
-task.getPendingReimbursements
-task.getMyPendingReimbursements
 ```
 
 ---
@@ -285,12 +251,6 @@ CHECKLIST_REIMBURSED         // Treasurer marked as reimbursed
 CHECKLIST_REIMBURSEMENT_CONFIRMED
 CHECKLIST_REIMBURSEMENT_DISPUTED
 CHECKLIST_REIMBURSEMENT_AUTO_CONFIRMED
-
-TASK_EXPENSE_ADDED
-TASK_REIMBURSED
-TASK_REIMBURSEMENT_CONFIRMED
-TASK_REIMBURSEMENT_DISPUTED
-TASK_REIMBURSEMENT_AUTO_CONFIRMED
 ```
 
 ---
@@ -346,7 +306,7 @@ expense.getBandSummary
 
 ## Implementation Order
 
-1. **Schema changes** - Add fields to ChecklistItem and Task
+1. **Schema changes** - Add expense/reimbursement fields to ChecklistItem
 2. **Backend: Submit with expense** - Extend checklist.submit
 3. **Backend: Reimbursement mutations** - reimburse, confirm, dispute
 4. **Backend: Queries** - getPendingReimbursements
