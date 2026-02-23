@@ -49,22 +49,35 @@ IMPORTANT: Your proposal MUST align with this band's mission and purpose. Do not
       }
     }
 
-    const prompt = `You are helping a member of a collaborative band/team write a proposal.
+    const prompt = `You are helping a member of a collaborative band/team write a formal proposal.
 ${bandContext}
 The proposal is titled: "${input.title}"
 Type: ${typeDescriptions[input.type]}
-${input.context ? `Additional context: ${input.context}` : ''}
+${input.context ? `
 
-Generate a well-structured proposal draft with the following sections. Be specific, professional, and actionable. Use placeholder brackets [like this] only where the user needs to fill in specific details you don't know.
+=== USER-PROVIDED CONTEXT/SPEC ===
+${input.context}
+=== END CONTEXT ===
 
-Respond in JSON format with these exact fields:
+IMPORTANT: The above context is reference material. You MUST use it to write a COMPLETE, well-structured proposal. Do NOT leave sections empty or abbreviated just because context was provided. Transform the context into polished proposal language.` : ''}
+
+Generate a COMPLETE, well-structured proposal draft with ALL of the following sections filled in. Be specific, professional, and actionable.
+
+CRITICAL RULES:
+1. EVERY field must have substantial content (at least 2-3 sentences minimum)
+2. Do NOT leave any field empty or with just a few words
+3. Do NOT assume the user will fill things in later - write complete content NOW
+4. If context was provided, INCORPORATE it into your writing - don't abbreviate
+5. Use placeholder brackets [like this] ONLY for specific unknown values like exact prices or dates
+
+Respond in JSON format with these exact fields (ALL must be filled):
 {
-  "description": "A comprehensive 2-3 paragraph description of the proposal",
-  "problemStatement": "What problem or opportunity this addresses (1-2 paragraphs)",
-  "expectedOutcome": "What success looks like, with measurable outcomes where possible",
-  "risksAndConcerns": "Potential downsides and how to mitigate them",
-  "budgetBreakdown": "If applicable, a line-item budget breakdown. Leave empty string if not a budget proposal.",
-  "milestones": "Key milestones and timeline if applicable"
+  "description": "A comprehensive 2-3 paragraph description explaining what this proposal is about and why it matters",
+  "problemStatement": "1-2 paragraphs explaining what problem or opportunity this addresses and why it's important now",
+  "expectedOutcome": "Clear description of what success looks like, with measurable outcomes where possible",
+  "risksAndConcerns": "Potential downsides, risks, and how to mitigate them (at least 2-3 points)",
+  "budgetBreakdown": "Line-item budget breakdown if this is a budget proposal, otherwise explain that no budget is required",
+  "milestones": "Key milestones and timeline - if no specific timeline needed, explain the general phases or steps"
 }
 
 Only respond with the JSON object, no other text.`
@@ -76,7 +89,7 @@ Only respond with the JSON object, no other text.`
         bandId: input.bandId,
         userId: input.userId,
       }, {
-        maxTokens: 1500,
+        maxTokens: 2500,
       })
 
       // Parse JSON response
