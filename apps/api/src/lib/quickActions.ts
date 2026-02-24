@@ -16,10 +16,13 @@ const ROLE_HIERARCHY: Record<MemberRole, number> = {
 }
 
 // Quick action types - desktop users redirected to full pages
-export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION' | 'CHECKLIST' | 'REVIEW_APPLICATION'
+export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION' | 'CHECKLIST' | 'REVIEW_APPLICATION' | 'REIMBURSE' | 'CONFIRM_REIMBURSEMENT'
 
 // Roles that can review applications
 const CAN_REVIEW_APPLICATIONS = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
+
+// Roles that can reimburse expenses
+const CAN_REIMBURSE = ['FOUNDER', 'GOVERNOR', 'TREASURER']
 export type Urgency = 'high' | 'medium' | 'low'
 
 export interface QuickAction {
@@ -88,8 +91,13 @@ export async function getQuickActionsForUser(
     .filter(m => CAN_REVIEW_APPLICATIONS.includes(m.role))
     .map(m => m.bandId)
 
+  // Get bands where user can reimburse expenses
+  const reimburserBandIds = memberships
+    .filter(m => CAN_REIMBURSE.includes(m.role))
+    .map(m => m.bandId)
+
   // Run queries in parallel for better performance
-  const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions, claimableChecklistItems, pendingApplications] = await Promise.all([
+  const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions, claimableChecklistItems, pendingApplications, pendingReimbursements, awaitingReimbursementConfirmation] = await Promise.all([
     // 1. Pending votes - proposals open for voting where user hasn't voted
     prisma.proposal.findMany({
       where: {
@@ -252,6 +260,48 @@ export async function getQuickActionsForUser(
       orderBy: { createdAt: 'asc' }, // Oldest first
       take: limit,
     }) : Promise.resolve([]),
+
+    // 8. Pending reimbursements - expenses awaiting reimbursement (for treasurers)
+    reimburserBandIds.length > 0 ? prisma.checklistItem.findMany({
+      where: {
+        task: { bandId: { in: reimburserBandIds } },
+        reimbursementStatus: 'PENDING',
+        expenseAmount: { gt: 0 },
+      },
+      include: {
+        assignee: { select: { id: true, name: true } },
+        task: {
+          select: {
+            id: true,
+            name: true,
+            band: { select: { id: true, name: true, slug: true } },
+          },
+        },
+      },
+      orderBy: { verifiedAt: 'asc' }, // Oldest first
+      take: limit,
+    }) : Promise.resolve([]),
+
+    // 9. Awaiting reimbursement confirmation - reimbursements user needs to confirm
+    prisma.checklistItem.findMany({
+      where: {
+        assigneeId: userId,
+        reimbursementStatus: 'REIMBURSED',
+        expenseAmount: { gt: 0 },
+      },
+      include: {
+        reimbursedBy: { select: { id: true, name: true } },
+        task: {
+          select: {
+            id: true,
+            name: true,
+            band: { select: { id: true, name: true, slug: true } },
+          },
+        },
+      },
+      orderBy: { reimbursedAt: 'asc' }, // Oldest first
+      take: limit,
+    }),
   ])
 
   // Process pending votes
@@ -432,6 +482,71 @@ export async function getQuickActionsForUser(
           ? `${Math.floor(hoursWaiting / 24)} day${Math.floor(hoursWaiting / 24) === 1 ? '' : 's'}`
           : `${Math.floor(hoursWaiting)} hour${Math.floor(hoursWaiting) === 1 ? '' : 's'}`,
         bandSlug: application.band.slug,
+      },
+    })
+  }
+
+  // Process pending reimbursements (for treasurers)
+  for (const item of pendingReimbursements) {
+    // Format amount
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: (item.expenseCurrency || 'usd').toUpperCase(),
+    }).format((item.expenseAmount || 0) / 100)
+
+    // Calculate how long the reimbursement has been pending
+    const hoursWaiting = item.verifiedAt
+      ? (now.getTime() - item.verifiedAt.getTime()) / (1000 * 60 * 60)
+      : 0
+    let urgency: Urgency = 'low'
+    if (hoursWaiting > 72) urgency = 'high' // Waiting more than 3 days
+    else if (hoursWaiting > 24) urgency = 'medium' // Waiting more than 1 day
+
+    actions.push({
+      type: 'REIMBURSE',
+      id: item.id,
+      title: `${formattedAmount} owed to ${item.assignee?.name || 'member'}`,
+      bandName: item.task.band.name,
+      bandId: item.task.band.id,
+      url: `/bands/${item.task.band.slug}/tasks/${item.taskId}/checklist/${item.id}`,
+      urgency,
+      meta: {
+        amount: item.expenseAmount,
+        currency: item.expenseCurrency,
+        assigneeName: item.assignee?.name,
+        taskName: item.task.name,
+        taskId: item.taskId,
+        description: item.description,
+        bandSlug: item.task.band.slug,
+      },
+    })
+  }
+
+  // Process awaiting reimbursement confirmation (for members)
+  for (const item of awaitingReimbursementConfirmation) {
+    // Format amount
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: (item.expenseCurrency || 'usd').toUpperCase(),
+    }).format((item.expenseAmount || 0) / 100)
+
+    actions.push({
+      type: 'CONFIRM_REIMBURSEMENT',
+      id: item.id,
+      title: `Confirm ${formattedAmount} received`,
+      bandName: item.task.band.name,
+      bandId: item.task.band.id,
+      url: `/bands/${item.task.band.slug}/tasks/${item.taskId}/checklist/${item.id}`,
+      urgency: 'medium',
+      meta: {
+        amount: item.expenseAmount,
+        currency: item.expenseCurrency,
+        reimbursedByName: item.reimbursedBy?.name,
+        taskName: item.task.name,
+        taskId: item.taskId,
+        description: item.description,
+        reimbursedAt: item.reimbursedAt,
+        bandSlug: item.task.band.slug,
       },
     })
   }

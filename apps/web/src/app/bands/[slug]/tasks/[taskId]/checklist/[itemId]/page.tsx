@@ -69,6 +69,10 @@ export default function ChecklistItemDetailPage() {
   const [newLinkUrl, setNewLinkUrl] = useState('')
   const [newLinkTitle, setNewLinkTitle] = useState('')
 
+  // Expense state
+  const [expenseAmount, setExpenseAmount] = useState('')
+  const [expenseNote, setExpenseNote] = useState('')
+
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
@@ -204,6 +208,37 @@ export default function ChecklistItemDetailPage() {
       setDismissReason('')
       // Navigate back to task page since item is now dismissed
       router.push(`/bands/${slug}/tasks/${taskId}`)
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  // Reimbursement mutations
+  const reimburseMutation = trpc.checklist.reimburse.useMutation({
+    onSuccess: () => {
+      showToast('Marked as reimbursed!', 'success')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const confirmReimbursementMutation = trpc.checklist.confirmReimbursement.useMutation({
+    onSuccess: () => {
+      showToast('Reimbursement confirmed!', 'success')
+      refetch()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const disputeReimbursementMutation = trpc.checklist.disputeReimbursement.useMutation({
+    onSuccess: () => {
+      showToast('Dispute submitted', 'success')
+      refetch()
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -450,8 +485,14 @@ export default function ChecklistItemDetailPage() {
         })
       }
 
-      // Now submit for verification
-      submitMutation.mutate({ itemId, userId })
+      // Now submit for verification (with expense data if provided)
+      const expenseAmountCents = expenseAmount ? Math.round(parseFloat(expenseAmount) * 100) : undefined
+      submitMutation.mutate({
+        itemId,
+        userId,
+        expenseAmount: expenseAmountCents,
+        expenseNote: expenseNote.trim() || undefined,
+      })
     } catch (error) {
       // Error already handled by mutation onError
     }
@@ -703,6 +744,37 @@ export default function ChecklistItemDetailPage() {
                 className="w-full text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
 
+              {/* Expense Input Section */}
+              {!item.expenseAmount && item.verificationStatus !== 'APPROVED' && (
+                <div className="border-t border-gray-100 pt-3 mt-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium text-gray-700">Expense (if any)</span>
+                    <span className="text-xs text-gray-400">Optional - for reimbursement tracking</span>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-500">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={expenseAmount}
+                        onChange={(e) => setExpenseAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-24 text-sm px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      value={expenseNote}
+                      onChange={(e) => setExpenseNote(e.target.value)}
+                      placeholder="What was the expense for?"
+                      className="flex-1 min-w-[150px] text-sm px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={handleSaveDeliverable}
@@ -732,6 +804,99 @@ export default function ChecklistItemDetailPage() {
                   </button>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Expense/Reimbursement Status Section */}
+          {item.expenseAmount !== null && item.expenseAmount > 0 && (
+            <div className={`border rounded-lg p-3 space-y-2 ${
+              item.reimbursementStatus === 'CONFIRMED' ? 'border-green-200 bg-green-50' :
+              item.reimbursementStatus === 'DISPUTED' ? 'border-red-200 bg-red-50' :
+              item.reimbursementStatus === 'REIMBURSED' ? 'border-blue-200 bg-blue-50' :
+              'border-yellow-200 bg-yellow-50'
+            }`}>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Expense</span>
+                <span className={`text-xs px-2 py-0.5 rounded ${
+                  item.reimbursementStatus === 'CONFIRMED' ? 'bg-green-200 text-green-800' :
+                  item.reimbursementStatus === 'DISPUTED' ? 'bg-red-200 text-red-800' :
+                  item.reimbursementStatus === 'REIMBURSED' ? 'bg-blue-200 text-blue-800' :
+                  'bg-yellow-200 text-yellow-800'
+                }`}>
+                  {item.reimbursementStatus === 'CONFIRMED' ? '✓ Confirmed' :
+                   item.reimbursementStatus === 'DISPUTED' ? '⚠ Disputed' :
+                   item.reimbursementStatus === 'REIMBURSED' ? '💸 Reimbursed' :
+                   '⏳ Awaiting Reimbursement'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-4 text-sm">
+                <span className="font-semibold text-lg">${(item.expenseAmount / 100).toFixed(2)}</span>
+                {item.expenseNote && <span className="text-gray-600">{item.expenseNote}</span>}
+              </div>
+
+              {item.reimbursedBy && (
+                <div className="text-xs text-gray-500">
+                  Reimbursed by {item.reimbursedBy.name}
+                  {item.reimbursedAt && ` on ${new Date(item.reimbursedAt).toLocaleDateString()}`}
+                  {item.reimbursementNote && `: "${item.reimbursementNote}"`}
+                </div>
+              )}
+
+              {/* Treasurer Actions: Mark as Reimbursed */}
+              {item.reimbursementStatus === 'PENDING' && currentMember && ['FOUNDER', 'GOVERNOR', 'TREASURER'].includes(currentMember.role) && (
+                <div className="flex gap-2 pt-2 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      const note = prompt('Add a note (e.g., "Paid via Venmo"):')
+                      if (note !== null && userId) {
+                        reimburseMutation.mutate({ itemId, userId, note: note || undefined })
+                      }
+                    }}
+                    disabled={reimburseMutation.isPending}
+                    className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {reimburseMutation.isPending ? '...' : 'Mark as Reimbursed'}
+                  </button>
+                </div>
+              )}
+
+              {/* Member Actions: Confirm or Dispute */}
+              {item.reimbursementStatus === 'REIMBURSED' && isAssignee && (
+                <div className="flex gap-2 pt-2 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      if (userId) {
+                        confirmReimbursementMutation.mutate({ itemId, userId })
+                      }
+                    }}
+                    disabled={confirmReimbursementMutation.isPending}
+                    className="text-xs px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {confirmReimbursementMutation.isPending ? '...' : 'Confirm Receipt'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const reason = prompt('Why are you disputing this reimbursement? (min 10 characters)')
+                      if (reason && reason.length >= 10 && userId) {
+                        disputeReimbursementMutation.mutate({ itemId, userId, reason })
+                      } else if (reason && reason.length < 10) {
+                        showToast('Reason must be at least 10 characters', 'error')
+                      }
+                    }}
+                    disabled={disputeReimbursementMutation.isPending}
+                    className="text-xs px-3 py-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+                  >
+                    {disputeReimbursementMutation.isPending ? '...' : 'Dispute'}
+                  </button>
+                </div>
+              )}
+
+              {item.reimbursementStatus === 'CONFIRMED' && item.reimbursementConfirmedAt && (
+                <div className="text-xs text-green-600">
+                  Confirmed on {new Date(item.reimbursementConfirmedAt).toLocaleDateString()}
+                </div>
+              )}
             </div>
           )}
 

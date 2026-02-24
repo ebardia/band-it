@@ -11,6 +11,7 @@ import { handleStripeConnectWebhook } from './webhooks/stripe-connect'
 import { initBillingCron } from './cron/billing-cron'
 import { initDigestCron } from './cron/digest-cron'
 import { initTaskEscalationCron } from './cron/task-escalation-cron'
+import { initChecklistCron } from './cron/checklist-cron'
 import { initializeEffectHandlers } from './services/effects'
 import stripeConnectRoutes from './routes/stripe-connect'
 import bandDuesRoutes from './routes/band-dues'
@@ -118,4 +119,8 @@ app.listen(PORT, () => {
   // Initialize task escalation cron job
   initTaskEscalationCron()
   console.log(`✅ Task escalation cron job scheduled`)
+
+  // Initialize checklist cron job (reimbursement auto-confirm)
+  initChecklistCron()
+  console.log(`💸 Checklist cron jobs scheduled`)
 })

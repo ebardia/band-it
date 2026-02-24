@@ -17,6 +17,13 @@ import {
   getChecklistDismissals,
 } from './checklist.claim'
 import {
+  reimburseChecklistItem,
+  confirmReimbursement,
+  disputeReimbursement,
+  getPendingReimbursements,
+  getMyPendingReimbursements,
+} from './checklist.reimbursement'
+import {
   updateChecklistDeliverable,
   getChecklistDeliverable,
   attachFileToChecklistDeliverable,
@@ -38,6 +45,13 @@ export const checklistRouter = router({
   getClaimable: getClaimableChecklistItems,
   dismiss: dismissChecklistItem,
   getDismissals: getChecklistDismissals,
+
+  // Reimbursement procedures
+  reimburse: reimburseChecklistItem,
+  confirmReimbursement: confirmReimbursement,
+  disputeReimbursement: disputeReimbursement,
+  getPendingReimbursements: getPendingReimbursements,
+  getMyPendingReimbursements: getMyPendingReimbursements,
 
   // Deliverable procedures
   updateDeliverable: updateChecklistDeliverable,
@@ -63,6 +77,9 @@ export const checklistRouter = router({
             select: { id: true, name: true }
           },
           verifiedBy: {
+            select: { id: true, name: true }
+          },
+          reimbursedBy: {
             select: { id: true, name: true }
           },
           files: {

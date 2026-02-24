@@ -336,9 +336,12 @@ export const submitChecklistForVerification = publicProcedure
     itemId: z.string(),
     userId: z.string(),
     completionNote: z.string().optional(),
+    // Expense tracking
+    expenseAmount: z.number().min(0).optional(),  // Amount in cents (0 = got it for free)
+    expenseNote: z.string().max(500).optional(),
   }))
   .mutation(async ({ input }) => {
-    const { itemId, userId, completionNote } = input
+    const { itemId, userId, completionNote, expenseAmount, expenseNote } = input
 
     const item = await prisma.checklistItem.findUnique({
       where: { id: itemId },
@@ -407,6 +410,8 @@ export const submitChecklistForVerification = publicProcedure
     // Check if verification is required
     if (!item.requiresVerification) {
       // No verification needed - just mark as complete
+      // If expense provided and > 0, set reimbursement status to PENDING
+      const hasExpense = expenseAmount !== undefined && expenseAmount > 0
       const updatedItem = await prisma.checklistItem.update({
         where: { id: itemId },
         data: {
@@ -416,6 +421,11 @@ export const submitChecklistForVerification = publicProcedure
           completionNote,
           verificationStatus: 'APPROVED', // Auto-approve
           verifiedAt: new Date(),
+          // Expense fields
+          ...(expenseAmount !== undefined && { expenseAmount }),
+          ...(expenseNote && { expenseNote }),
+          // Set reimbursement status to PENDING if expense > 0
+          ...(hasExpense && { reimbursementStatus: 'PENDING' }),
         },
         include: {
           task: { select: { id: true, name: true } },
@@ -434,15 +444,36 @@ export const submitChecklistForVerification = publicProcedure
           entityName: item.description,
           changes: {
             taskId: item.taskId,
-            requiresVerification: false
+            requiresVerification: false,
+            ...(hasExpense && { expenseAmount, expenseNote }),
           }
         }
       })
+
+      // If there's an expense, log it separately
+      if (hasExpense) {
+        await prisma.auditLog.create({
+          data: {
+            bandId: item.task.band.id,
+            actorId: userId,
+            action: 'CHECKLIST_EXPENSE_ADDED',
+            entityType: 'CHECKLIST_ITEM',
+            entityId: itemId,
+            entityName: item.description,
+            changes: {
+              taskId: item.taskId,
+              expenseAmount,
+              expenseNote,
+            }
+          }
+        })
+      }
 
       return { item: updatedItem, requiresVerification: false }
     }
 
     // Verification required - submit for review
+    // Store expense data but don't set reimbursement status until verified
     const updatedItem = await prisma.checklistItem.update({
       where: { id: itemId },
       data: {
@@ -453,6 +484,9 @@ export const submitChecklistForVerification = publicProcedure
         verificationStatus: 'PENDING',
         reminderSentAt: null,
         escalatedAt: null,
+        // Expense fields (reimbursement status set on verification)
+        ...(expenseAmount !== undefined && { expenseAmount }),
+        ...(expenseNote && { expenseNote }),
       },
       include: {
         task: { select: { id: true, name: true } },
@@ -548,6 +582,9 @@ export const verifyChecklistItem = publicProcedure
       })
     }
 
+    // Check if there's an expense that needs reimbursement
+    const hasExpense = item.expenseAmount !== null && item.expenseAmount > 0
+
     // Update item
     const updatedItem = await prisma.checklistItem.update({
       where: { id: itemId },
@@ -563,6 +600,10 @@ export const verifyChecklistItem = publicProcedure
         // Clear escalation tracking
         reminderSentAt: null,
         escalatedAt: null,
+        // Set reimbursement status to PENDING if approved and has expense
+        ...(approved && hasExpense && { reimbursementStatus: 'PENDING' }),
+        // If rejected, clear any reimbursement status
+        ...(!approved && { reimbursementStatus: null }),
       },
       include: {
         task: { select: { id: true, name: true } },

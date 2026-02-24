@@ -132,6 +132,12 @@ function ActionCard({ action, onClick }: ActionCardProps) {
         return '✋'
       case 'CHECKLIST':
         return '☑️'
+      case 'REVIEW_APPLICATION':
+        return '👋'
+      case 'REIMBURSE':
+        return '💸'
+      case 'CONFIRM_REIMBURSEMENT':
+        return '✅'
       default:
         return '📌'
     }
@@ -153,6 +159,12 @@ function ActionCard({ action, onClick }: ActionCardProps) {
         return 'Claim Task'
       case 'CHECKLIST':
         return 'Claim/Dismiss'
+      case 'REVIEW_APPLICATION':
+        return 'Application'
+      case 'REIMBURSE':
+        return 'Reimburse'
+      case 'CONFIRM_REIMBURSEMENT':
+        return 'Confirm Receipt'
       default:
         return action.type
     }
@@ -202,6 +214,12 @@ function ActionCard({ action, onClick }: ActionCardProps) {
                 ? action.title
                 : action.type === 'CHECKLIST'
                 ? action.title
+                : action.type === 'REVIEW_APPLICATION'
+                ? action.title
+                : action.type === 'REIMBURSE'
+                ? action.title
+                : action.type === 'CONFIRM_REIMBURSEMENT'
+                ? action.title
                 : `"${action.title}"`}
             </p>
             <p className="text-sm text-gray-500 truncate">
@@ -209,6 +227,10 @@ function ActionCard({ action, onClick }: ActionCardProps) {
                 ? `${action.meta.projectName} • ${action.bandName}`
                 : action.type === 'CHECKLIST' && action.meta.taskName
                 ? `${action.meta.taskName} • ${action.bandName}`
+                : action.type === 'REIMBURSE' && action.meta.taskName
+                ? `${action.meta.taskName} • ${action.bandName}`
+                : action.type === 'CONFIRM_REIMBURSEMENT' && action.meta.reimbursedByName
+                ? `From ${action.meta.reimbursedByName} • ${action.bandName}`
                 : action.bandName}
             </p>
           </div>

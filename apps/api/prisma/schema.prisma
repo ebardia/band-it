@@ -94,10 +94,11 @@ model User {
   commentsAuthored        Comment[] @relation("CommentsAuthored")
   reactionsGiven          Reaction[] @relation("ReactionsGiven")
   mentionsReceived        Mention[] @relation("MentionsReceived")
-  checklistItemsCompleted ChecklistItem[] @relation("ChecklistItemsCompleted")
-  checklistItemsAssigned  ChecklistItem[] @relation("ChecklistItemsAssigned")
-  checklistItemsVerified  ChecklistItem[] @relation("ChecklistItemsVerified")
-  checklistItemsDismissed ChecklistItemDismissal[] @relation("ChecklistItemDismissals")
+  checklistItemsCompleted  ChecklistItem[] @relation("ChecklistItemsCompleted")
+  checklistItemsAssigned   ChecklistItem[] @relation("ChecklistItemsAssigned")
+  checklistItemsVerified   ChecklistItem[] @relation("ChecklistItemsVerified")
+  checklistItemsReimbursed ChecklistItem[] @relation("ChecklistItemsReimbursed")
+  checklistItemsDismissed  ChecklistItemDismissal[] @relation("ChecklistItemDismissals")
   pendingInvitesCreated   PendingInvite[] @relation("PendingInvitesCreated")
   bandsAsBillingOwner     Band[] @relation("BandBillingOwner")
   bandsDissolvedBy        Band[] @relation("BandDissolver")
@@ -418,6 +419,14 @@ enum NotificationType {
   CHECKLIST_REMINDER             // Reminder for items waiting verification
   CHECKLIST_ESCALATED            // Checklist item escalated to leadership
   CHECKLIST_ALL_DISMISSED        // All eligible members dismissed this item
+
+  // Expense Reimbursements
+  REIMBURSEMENT_NEEDED           // Expense approved, treasurer needs to pay
+  REIMBURSEMENT_SENT             // Treasurer marked as reimbursed
+  REIMBURSEMENT_CONFIRMED        // Member confirmed receipt
+  REIMBURSEMENT_DISPUTED         // Member disputes reimbursement
+  REIMBURSEMENT_AUTO_CONFIRM_WARNING  // Warning before auto-confirm
+  REIMBURSEMENT_AUTO_CONFIRMED   // Auto-confirmed after 7 days
 
   // Billing
   BILLING_PAYMENT_REQUIRED
@@ -1436,6 +1445,13 @@ enum VerificationStatus {
   REJECTED
 }
 
+enum ReimbursementStatus {
+  PENDING      // Expense approved, awaiting reimbursement
+  REIMBURSED   // Treasurer marked as paid, awaiting confirmation
+  CONFIRMED    // Member confirmed receipt (or auto-confirmed)
+  DISPUTED     // Member disputes the reimbursement
+}
+
 enum AssignmentMethod {
   ASSIGNED  // Conductor/Moderator assigned directly
   CLAIMED   // Member self-claimed from available tasks
@@ -1769,6 +1785,18 @@ model ChecklistItem {
   // Deliverable
   requiresDeliverable  Boolean           @default(false)  // Most checklist items are small
 
+  // Expense tracking
+  expenseAmount             Int?                    // Amount in cents (null = no expense)
+  expenseCurrency           String                  @default("usd")
+  expenseNote               String?                 @db.Text
+
+  // Reimbursement tracking
+  reimbursementStatus       ReimbursementStatus?    // null if no expense
+  reimbursedAt              DateTime?
+  reimbursedById            String?
+  reimbursementConfirmedAt  DateTime?
+  reimbursementNote         String?                 @db.Text
+
   // Context tags
   contextPhone       Boolean @default(false)
   contextComputer    Boolean @default(false)
@@ -1790,6 +1818,7 @@ model ChecklistItem {
   completedBy User?    @relation("ChecklistItemsCompleted", fields: [completedById], references: [id])
   assignee    User?    @relation("ChecklistItemsAssigned", fields: [assigneeId], references: [id])
   verifiedBy  User?    @relation("ChecklistItemsVerified", fields: [verifiedById], references: [id])
+  reimbursedBy User?   @relation("ChecklistItemsReimbursed", fields: [reimbursedById], references: [id])
   files       File[]
   deliverable ChecklistItemDeliverable?
   dismissals  ChecklistItemDismissal[]
@@ -1798,6 +1827,7 @@ model ChecklistItem {
   @@index([completedById])
   @@index([assigneeId])
   @@index([verifiedById])
+  @@index([reimbursedById])
 }
 
 // ============================================
