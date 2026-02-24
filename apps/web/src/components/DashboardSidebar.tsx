@@ -34,6 +34,13 @@ export function DashboardSidebar({
       guide: 'dashboard-my-bands'
     },
     {
+      label: 'Browse Bands',
+      path: '/bands',
+      count: 0,
+      available: true,
+      guide: 'dashboard-browse-bands'
+    },
+    {
       label: 'My Proposals',
       path: '/my-proposals',
       count: proposalCount,
@@ -87,7 +94,7 @@ export function DashboardSidebar({
   return (
     <aside className="w-64 bg-white rounded-lg shadow p-4">
       <Stack spacing="md">
-        <Heading level={3}>My Dashboard</Heading>
+        <Heading level={3}>Dashboard</Heading>
         <Stack spacing="sm">
           {navItems.map((item: any) => (
             <div key={item.path} className="relative">

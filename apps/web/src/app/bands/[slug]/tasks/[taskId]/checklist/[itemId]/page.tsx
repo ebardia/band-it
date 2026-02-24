@@ -644,7 +644,7 @@ export default function ChecklistItemDetailPage() {
           </Card>
 
           {/* Dismissal Stats - shown to project leads and conductors */}
-          {dismissalData?.canView && dismissalData.dismissedCount > 0 && !item.assigneeId && (
+          {dismissalData?.canView && 'dismissedCount' in dismissalData && dismissalData.dismissedCount > 0 && !item.assigneeId && (
             <div className="border border-orange-200 rounded-lg bg-orange-50 p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-orange-800">

@@ -51,14 +51,6 @@ export function AppNav() {
     router.push('/')
   }
 
-  const navLinks = [
-    { label: 'Overview', path: '/user-dashboard', guide: 'nav-overview' },
-    { label: 'My Bands', path: '/bands/my-bands', guide: 'nav-my-bands' },
-    { label: 'Browse Bands', path: '/bands', guide: 'nav-browse-bands' },
-  ]
-
-  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
-
   // Close mobile menu when navigating
   const handleNavClick = (path: string) => {
     setShowMobileMenu(false)
@@ -80,20 +72,6 @@ export function AppNav() {
             priority
           />
         </button>
-
-        {/* Center Navigation - Hidden on mobile */}
-        <div className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <button
-              key={link.path}
-              onClick={() => handleNavClick(link.path)}
-              className={isActive(link.path) ? theme.components.nav.activeLink : theme.components.nav.link}
-              data-guide={link.guide}
-            >
-              {link.label}
-            </button>
-          ))}
-        </div>
 
         {/* Right Side: Hamburger (mobile) + Bell + Account Dropdown */}
         <div className="flex items-center gap-2 md:gap-4">

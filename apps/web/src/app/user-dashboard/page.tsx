@@ -5,29 +5,22 @@ import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import {
-  Heading,
   Text,
   Stack,
   Button,
-  useToast,
   PageWrapper,
   DashboardContainer,
   Flex,
   Card,
-  Badge,
   Loading,
-  Alert,
   QuickActionsWidget,
-  BandCardCompact
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { DashboardSidebar } from '@/components/DashboardSidebar'
 
 export default function OverviewDashboard() {
   const router = useRouter()
-  const { showToast } = useToast()
   const [userId, setUserId] = useState<string | null>(null)
-  const utils = trpc.useUtils()
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -57,24 +50,8 @@ export default function OverviewDashboard() {
   }, [welcomeState, router])
 
   // Fetch all data
-  const { data: myBandsData, refetch: refetchMyBands } = trpc.band.getMyBands.useQuery(
+  const { data: myBandsData } = trpc.band.getMyBands.useQuery(
     { userId: userId! },
-    { enabled: !!userId }
-  )
-
-  const { data: invitationsData, refetch: refetchInvitations } = trpc.band.getMyInvitations.useQuery(
-    { userId: userId! },
-    { enabled: !!userId }
-  )
-
-  const { data: applicationsData, refetch: refetchApplications } = trpc.band.getMyApplicationsToReview.useQuery(
-    { userId: userId! },
-    { enabled: !!userId }
-  )
-
-  // Fetch recommended bands
-  const { data: recommendationsData } = trpc.band.getRecommendedBands.useQuery(
-    { userId: userId!, limit: 6 },
     { enabled: !!userId }
   )
 
@@ -113,46 +90,6 @@ export default function OverviewDashboard() {
     }
   }, [myBandsData, router])
 
-  // Mutations
-  const acceptInviteMutation = trpc.band.acceptInvitation.useMutation({
-    onSuccess: () => {
-      showToast('Invitation accepted!', 'success')
-      refetchInvitations()
-      refetchMyBands()
-      utils.notification.getUnreadCount.invalidate({ userId: userId! })
-    },
-  })
-
-  const declineInviteMutation = trpc.band.declineInvitation.useMutation({
-    onSuccess: () => {
-      showToast('Invitation declined', 'success')
-      refetchInvitations()
-      utils.notification.getUnreadCount.invalidate({ userId: userId! })
-    },
-  })
-
-  const approveApplicationMutation = trpc.band.approveApplication.useMutation({
-    onSuccess: () => {
-      showToast('Application approved!', 'success')
-      refetchApplications()
-      refetchMyBands()
-      utils.notification.getUnreadCount.invalidate({ userId: userId! })
-    },
-    onError: (error) => {
-      showToast(error.message, 'error')
-    },
-  })
-
-  const rejectApplicationMutation = trpc.band.rejectApplication.useMutation({
-    onSuccess: () => {
-      showToast('Application rejected', 'success')
-      refetchApplications()
-    },
-    onError: (error) => {
-      showToast(error.message, 'error')
-    },
-  })
-
   if (!userId) {
     return (
       <PageWrapper variant="dashboard">
@@ -164,15 +101,12 @@ export default function OverviewDashboard() {
     )
   }
 
-  // Calculate stats
+  // Calculate stats for sidebar
   const bandCount = myBandsData?.bands.length || 0
-  const inviteCount = invitationsData?.invitations.length || 0
-  const applicationCount = applicationsData?.applications.length || 0
   const proposalCount = myProposalsData?.proposals.length || 0
   const projectCount = myProjectsData?.projects.length || 0
   const assignedTaskCount = myTasksData?.tasks.length || 0
   const projectTaskCount = myProjectTasksData?.tasks.length || 0
-  const pendingBands = myBandsData?.bands.filter((b: any) => b.status === 'PENDING') || []
 
   return (
     <PageWrapper variant="dashboard">
@@ -247,77 +181,60 @@ export default function OverviewDashboard() {
 
             {/* Center Content */}
             <div className="flex-1">
-              {/* Quick Actions Widget - at the top for immediate visibility */}
-              <QuickActionsWidget userId={userId} />
-
-              <Stack spacing="xl">
-              {/* Recommended Bands for You */}
-              <Stack spacing="lg">
-                <Heading level={2}>✨ Recommended Bands for You</Heading>
-
-                {/* Message if no profile or no strong matches */}
-                {recommendationsData?.message && (
-                  <Alert variant="info">
-                    <Flex justify="between" align="center">
-                      <Text variant="small">{recommendationsData.message}</Text>
-                      {!recommendationsData.hasProfile && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => router.push('/profile')}
-                        >
-                          Update Profile
-                        </Button>
-                      )}
-                    </Flex>
-                  </Alert>
-                )}
-
-                {/* Recommended Bands */}
-                {recommendationsData?.recommendations && recommendationsData.recommendations.length > 0 ? (
+              {/* My Bands - Quick Access Cards */}
+              {myBandsData?.bands && myBandsData.bands.filter((b: any) => b.status === 'ACTIVE').length > 0 ? (
+                <div className="mb-6">
                   <Stack spacing="sm">
-                    {recommendationsData.recommendations.map((rec: any) => (
-                      <BandCardCompact
-                        key={rec.band.id}
-                        band={rec.band}
-                        matchScore={rec.matchScore}
-                        matchReasons={rec.matchReasons}
-                      />
-                    ))}
+                    {myBandsData.bands
+                      .filter((b: any) => b.status === 'ACTIVE')
+                      .map((band: any) => (
+                        <button
+                          key={band.id}
+                          onClick={() => router.push(`/bands/${band.slug}`)}
+                          className="w-full bg-white rounded-lg shadow p-4 flex items-center gap-4 hover:bg-gray-50 hover:shadow-md transition-all border border-gray-100"
+                        >
+                          {band.imageUrl ? (
+                            <img src={band.imageUrl} alt={band.name} className="w-12 h-12 rounded-lg object-cover" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                              <span className="text-xl text-white">🎸</span>
+                            </div>
+                          )}
+                          <div className="flex-1 text-left">
+                            <p className="font-semibold text-gray-900">{band.name}</p>
+                            <p className="text-sm text-gray-500">Go to band page</p>
+                          </div>
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      ))}
                   </Stack>
-                ) : (
-                  <Card className="bg-gray-50 border-dashed border-2 border-gray-200">
-                    <Stack spacing="sm" className="text-center py-4">
-                      <Text color="muted">No band recommendations available.</Text>
-                      <Text variant="small" color="muted">
-                        You may already be a member of all available bands, or there are no active bands yet.
-                      </Text>
-                    </Stack>
-                  </Card>
-                )}
-
-                {/* Prompt to update profile for better matches */}
-                {recommendationsData?.hasProfile === false && (
-                  <Card className="bg-blue-50 border border-blue-200">
+                </div>
+              ) : (
+                /* No Bands - Prompt to discover */
+                <div className="mb-6">
+                  <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
                     <Flex justify="between" align="center">
                       <Stack spacing="xs">
-                        <Text weight="semibold">Get Better Recommendations</Text>
+                        <Text weight="semibold">Welcome to Band-It!</Text>
                         <Text variant="small" color="muted">
-                          Complete your profile to help us find bands that match your interests and skills.
+                          Find a band to join and start collaborating with other musicians.
                         </Text>
                       </Stack>
                       <Button
                         variant="primary"
-                        size="sm"
-                        onClick={() => router.push('/profile')}
+                        onClick={() => router.push('/bands')}
                       >
-                        Update Profile
+                        Browse Bands
                       </Button>
                     </Flex>
                   </Card>
-                )}
-              </Stack>
-            </Stack>
+                </div>
+              )}
+
+              {/* Quick Actions Widget */}
+              <QuickActionsWidget userId={userId} />
           </div>
 
           </Flex>

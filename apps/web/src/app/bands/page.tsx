@@ -15,7 +15,9 @@ import {
   Card,
   Badge,
   Loading,
-  Input
+  Input,
+  Alert,
+  BandCardCompact
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { DashboardSidebar } from '@/components/DashboardSidebar'
@@ -63,6 +65,12 @@ export default function BrowseBandsPage() {
 
   const { data: myTasksData } = trpc.task.getMyTasks.useQuery(
     { userId: userId! },
+    { enabled: !!userId }
+  )
+
+  // Fetch recommended bands
+  const { data: recommendationsData } = trpc.band.getRecommendedBands.useQuery(
+    { userId: userId!, limit: 6 },
     { enabled: !!userId }
   )
 
@@ -129,6 +137,57 @@ export default function BrowseBandsPage() {
                   Create Band
                 </Button>
               </Flex>
+
+              {/* Recommended Bands Section */}
+              {recommendationsData?.recommendations && recommendationsData.recommendations.length > 0 && (
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+                  <Stack spacing="md">
+                    <Flex justify="between" align="center">
+                      <Heading level={2}>Recommended for You</Heading>
+                      {!recommendationsData.hasProfile && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => router.push('/user-dashboard/profile')}
+                        >
+                          Update Profile for Better Matches
+                        </Button>
+                      )}
+                    </Flex>
+                    {recommendationsData.message && (
+                      <Text variant="small" color="muted">{recommendationsData.message}</Text>
+                    )}
+                    <Stack spacing="sm">
+                      {recommendationsData.recommendations.slice(0, 3).map((rec: any) => (
+                        <BandCardCompact
+                          key={rec.band.id}
+                          band={rec.band}
+                          matchScore={rec.matchScore}
+                          matchReasons={rec.matchReasons}
+                        />
+                      ))}
+                    </Stack>
+                  </Stack>
+                </div>
+              )}
+
+              {/* Prompt to complete profile if no recommendations */}
+              {recommendationsData && !recommendationsData.hasProfile && recommendationsData.recommendations?.length === 0 && (
+                <Alert variant="info">
+                  <Flex justify="between" align="center">
+                    <Text variant="small">Complete your profile to get personalized band recommendations!</Text>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => router.push('/user-dashboard/profile')}
+                    >
+                      Update Profile
+                    </Button>
+                  </Flex>
+                </Alert>
+              )}
+
+              <Heading level={2}>All Bands</Heading>
 
               <Input
                 label="Search Bands"
