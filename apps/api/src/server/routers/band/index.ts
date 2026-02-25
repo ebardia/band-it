@@ -9,6 +9,7 @@ import { bandDissolveRouter } from './band.dissolve'
 import { bandGovernanceRouter } from './band.governance'
 import { bandUpdateRouter } from './band.update'
 import { bandAIInstructionRouter } from './band.aiInstruction'
+import { bandWebsiteRouter } from './band.website'
 import { getMembers, getMemberProfile, changeRole, proposeRemoval, transferOwnership, nominateAsFounder } from './band.members'
 
 export const bandRouter = router({
@@ -79,4 +80,11 @@ export const bandRouter = router({
   createAIInstruction: bandAIInstructionRouter.create,
   toggleAIInstruction: bandAIInstructionRouter.toggle,
   deleteAIInstruction: bandAIInstructionRouter.delete,
+
+  // Website Integration
+  getWebsiteSettings: bandWebsiteRouter.getWebsiteSettings,
+  updateWebsiteSettings: bandWebsiteRouter.updateWebsiteSettings,
+  generateApiKey: bandWebsiteRouter.generateApiKey,
+  generateWebhookSecret: bandWebsiteRouter.generateWebhookSecret,
+  sendStatusUpdate: bandWebsiteRouter.sendStatusUpdate,
 })

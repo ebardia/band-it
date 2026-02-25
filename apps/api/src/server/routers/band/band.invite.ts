@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
+import { webhookService } from '../../../services/webhook.service'
 import { emailService } from '../../services/email.service'
 import { memberBillingTriggers } from '../../services/member-billing-triggers'
 import { checkAndSetBandActivation } from './band.dissolve'
@@ -323,6 +324,13 @@ export const bandInviteRouter = router({
         console.error('Error checking onboarding:', err)
       )
 
+      // Send webhook to external website (non-blocking)
+      webhookService.memberJoined(membership.bandId, {
+        name: membership.user.name,
+        role: 'VOTING_MEMBER',
+        joinedAt: new Date(),
+      }).catch(err => console.error('Webhook error:', err))
+
       return {
         success: true,
         message: 'Invitation accepted',
@@ -463,6 +471,12 @@ export const bandInviteRouter = router({
 
       // Trigger billing checks (member count changes, billing owner left, etc.)
       await memberBillingTriggers.onMemberRemoved(input.bandId, input.userId)
+
+      // Send webhook to external website (non-blocking)
+      webhookService.memberLeft(input.bandId, {
+        name: membership.user.name,
+        leftAt: new Date(),
+      }).catch(err => console.error('Webhook error:', err))
 
       return {
         success: true,

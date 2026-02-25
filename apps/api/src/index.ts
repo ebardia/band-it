@@ -12,9 +12,11 @@ import { initBillingCron } from './cron/billing-cron'
 import { initDigestCron } from './cron/digest-cron'
 import { initTaskEscalationCron } from './cron/task-escalation-cron'
 import { initChecklistCron } from './cron/checklist-cron'
+import { initStatusUpdateCron } from './cron/status-update-cron'
 import { initializeEffectHandlers } from './services/effects'
 import stripeConnectRoutes from './routes/stripe-connect'
 import bandDuesRoutes from './routes/band-dues'
+import publicWebsiteRoutes from './routes/public-website'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 
@@ -44,6 +46,9 @@ app.use('/api', stripeConnectRoutes)
 
 // Band Dues routes (dues plans, checkout, billing)
 app.use('/api', bandDuesRoutes)
+
+// Public Website Integration routes (applications, contact forms from external sites)
+app.use('/api/public', publicWebsiteRoutes)
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -123,4 +128,8 @@ app.listen(PORT, () => {
   // Initialize checklist cron job (reimbursement auto-confirm)
   initChecklistCron()
   console.log(`💸 Checklist cron jobs scheduled`)
+
+  // Initialize status update cron job (weekly webhook updates)
+  initStatusUpdateCron()
+  console.log(`📊 Status update cron job scheduled`)
 })

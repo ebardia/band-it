@@ -15,7 +15,8 @@ import {
   DissolveBandSection,
   TransferOwnershipSection,
   GovernanceSettings,
-  OnboardingSettings
+  OnboardingSettings,
+  WebsiteIntegrationSettings
 } from '@/components/ui'
 import { OnboardingHint } from '@/components/onboarding'
 import { AppNav } from '@/components/AppNav'
@@ -164,6 +165,15 @@ export default function BandSettingsPage() {
             <GovernanceSettings
               bandId={band.id}
               userId={userId}
+            />
+          )}
+
+          {/* Website Integration Settings */}
+          {userId && currentMember && (
+            <WebsiteIntegrationSettings
+              bandId={band.id}
+              userId={userId}
+              userRole={currentMember.role}
             />
           )}
 

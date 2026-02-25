@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { notificationService } from '../../../services/notification.service'
+import { webhookService } from '../../../services/webhook.service'
 import { memberBillingTriggers } from '../../services/member-billing-triggers'
 import { checkAndSetBandActivation } from './band.dissolve'
 import { hasActiveDissolutionVote } from '../../../lib/dues-enforcement'
@@ -256,6 +257,13 @@ export const bandApplicationRouter = router({
 
       // Trigger billing checks (minimum member reached, 21st member, etc.)
       await memberBillingTriggers.onMemberActivated(membership.bandId)
+
+      // Send webhook to external website (non-blocking)
+      webhookService.memberJoined(membership.bandId, {
+        name: membership.user.name,
+        role: input.role || 'VOTING_MEMBER',
+        joinedAt: new Date(),
+      }).catch(err => console.error('Webhook error:', err))
 
       return {
         success: true,

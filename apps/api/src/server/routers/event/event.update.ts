@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
+import { webhookService } from '../../../services/webhook.service'
 
 // Roles that can edit/delete any event
 const CAN_MANAGE_EVENTS = ['FOUNDER', 'GOVERNOR']
@@ -155,6 +156,16 @@ export const updateEvent = publicProcedure
         }))
 
       await Promise.all(notificationPromises)
+
+      // Send webhook to external website (non-blocking)
+      webhookService.eventUpdated(event.bandId, {
+        id: updatedEvent.id,
+        title: updatedEvent.title,
+        description: updatedEvent.description,
+        startTime: updatedEvent.startTime,
+        endTime: updatedEvent.endTime,
+        location: updatedEvent.location,
+      }).catch(err => console.error('Webhook error:', err))
     }
 
     return { event: updatedEvent }
@@ -243,6 +254,12 @@ export const cancelEvent = publicProcedure
       }))
 
     await Promise.all(notificationPromises)
+
+    // Send webhook to external website (non-blocking)
+    webhookService.eventCancelled(event.bandId, {
+      id: event.id,
+      title: event.title,
+    }).catch(err => console.error('Webhook error:', err))
 
     return { event: cancelledEvent }
   })

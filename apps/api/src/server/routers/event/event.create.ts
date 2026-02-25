@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
+import { webhookService } from '../../../services/webhook.service'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
 import { emailService } from '../../services/email.service'
 
@@ -189,6 +190,16 @@ export const createEvent = publicProcedure
     Promise.all(emailPromises).catch(err =>
       console.error('Error sending event emails:', err)
     )
+
+    // Send webhook to external website (non-blocking)
+    webhookService.eventCreated(bandId, {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      startTime: start,
+      endTime: end,
+      location,
+    }).catch(err => console.error('Webhook error:', err))
 
     return { event }
   })

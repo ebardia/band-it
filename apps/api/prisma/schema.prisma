@@ -471,6 +471,10 @@ enum NotificationType {
   // Onboarding
   ONBOARDING_MILESTONE_COMPLETED  // A milestone in the band's onboarding was completed
   ONBOARDING_COMPLETED            // Band completed all onboarding milestones
+
+  // Public Website Integration
+  MEMBER_APPLIED                  // Someone applied via public website
+  CONTACT_FORM_SUBMITTED          // Contact form submission from public website
 }
 
 enum NotificationPriority {
@@ -576,6 +580,12 @@ model Band {
 
   // Onboarding tracking
   governanceSettingsUpdated Boolean @default(false)  // Set to true when governance settings are modified
+
+  // Public Website Integration
+  publicWebsiteUrl  String?   // URL of band's public website (e.g., iranpco.com)
+  publicApiKey      String?   // API key for authenticating requests from public website
+  webhookUrl        String?   // URL to send outbound events to (status updates, events)
+  webhookSecret     String?   // Secret for signing webhook payloads
 
   // Metadata
   createdById String
