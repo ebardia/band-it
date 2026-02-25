@@ -55,6 +55,16 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
   return (
     <aside className="hidden md:flex w-64 bg-white rounded-lg shadow p-4 flex-col flex-shrink-0">
       <Stack spacing="lg" className="flex-1">
+        {/* User Dashboard Link */}
+        <NavButton
+          href="/user-dashboard"
+          active={false}
+          data-guide="back-to-dashboard"
+          className="border-b border-gray-200 pb-3 mb-1"
+        >
+          ← User Dashboard
+        </NavButton>
+
         {/* Main Navigation */}
         <Stack spacing="sm">
           {mainNav.map((item) => (
