@@ -161,10 +161,7 @@ export const webhookService = {
   }) {
     return this.emit(bandId, 'status.update', {
       title: update.title,
-      // If content is already an object (StatusUpdateData), use it directly
-      ...(typeof update.content === 'string'
-        ? { content: update.content }
-        : update.content),
+      content: update.content,
       author: update.author,
       createdAt: update.createdAt.toISOString(),
     })
