@@ -15,7 +15,6 @@ import {
   useToast,
   Alert,
   PageWrapper,
-  TopNav,
   DashboardContainer,
   Flex,
   Box,
@@ -23,7 +22,7 @@ import {
   Loading
 } from '@/components/ui'
 import { TemplateSelector } from '@/components/onboarding'
-import Image from 'next/image'
+import { AppNav } from '@/components/AppNav'
 
 export default function CreateBandPage() {
   return (
@@ -196,20 +195,7 @@ function CreateBandContent() {
 
   return (
     <PageWrapper variant="dashboard">
-      <TopNav>
-        <Flex justify="between">
-          <Image 
-            src="/logo.png" 
-            alt="Band IT Logo" 
-            width={200} 
-            height={200}
-            priority
-          />
-          <Button variant="ghost" size="sm" onClick={() => router.push('/user-dashboard')}>
-            Back to Dashboard
-          </Button>
-        </Flex>
-      </TopNav>
+      <AppNav />
 
       <DashboardContainer>
         <div className="max-w-3xl mx-auto">

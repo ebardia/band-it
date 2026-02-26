@@ -623,7 +623,7 @@ export default function QuickTaskPage() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
               <p className="text-xs text-blue-700">
-                To attach files, please use the desktop version of Band It.
+                To attach files, please use the desktop version of BAND IT.
               </p>
             </div>
           </div>

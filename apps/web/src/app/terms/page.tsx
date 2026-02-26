@@ -36,7 +36,7 @@ export default function TermsPage() {
             </div>
 
             <Text>
-              Welcome to BAND IT ("Band It", "the Platform", "we", "us").
+              Welcome to BAND IT ("BAND IT", "the Platform", "we", "us").
             </Text>
             <Text>
               BAND IT provides infrastructure for people to organize, coordinate, and execute work together transparently. By accessing or using BAND IT, you agree to these Terms of Service ("Terms"). If you do not agree, do not use the Platform.

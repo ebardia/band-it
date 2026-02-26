@@ -68,7 +68,7 @@ export default function PaymentPage() {
         <Card>
           <Stack spacing="lg">
             <Center>
-              <Heading level={1}>Subscribe to Band IT</Heading>
+              <Heading level={1}>Subscribe to BAND IT</Heading>
               <Text variant="muted">Complete your registration with a monthly membership</Text>
             </Center>
 
@@ -86,7 +86,7 @@ export default function PaymentPage() {
                 <Heading level={2}>$5</Heading>
                 <Text variant="small" weight="semibold">/month</Text>
                 <Spacer size="sm" />
-                <Text variant="muted">Band IT Membership</Text>
+                <Text variant="muted">BAND IT Membership</Text>
                 <Spacer size="md" />
                 
                 <List>

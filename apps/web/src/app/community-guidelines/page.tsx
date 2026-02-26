@@ -39,8 +39,8 @@ export default function CommunityGuidelinesPage() {
             <Card>
               <Stack spacing="lg">
                 <Text className="text-lg">
-                  Band It is a family-friendly platform where people of all ages collaborate to achieve shared goals.
-                  By joining and participating in Band It, you agree to follow these community guidelines.
+                  BAND IT is a family-friendly platform where people of all ages collaborate to achieve shared goals.
+                  By joining and participating in BAND IT, you agree to follow these community guidelines.
                 </Text>
 
                 <div>
@@ -49,7 +49,7 @@ export default function CommunityGuidelinesPage() {
                     <div>
                       <Text weight="semibold">No Illegal Activity or Speech</Text>
                       <Text color="muted" variant="small">
-                        Do not use Band It to plan, promote, or engage in any illegal activities.
+                        Do not use BAND IT to plan, promote, or engage in any illegal activities.
                         This includes but is not limited to fraud, theft, or violations of applicable laws.
                       </Text>
                     </div>
@@ -89,7 +89,7 @@ export default function CommunityGuidelinesPage() {
                     <div>
                       <Text weight="semibold">Keep Content Appropriate</Text>
                       <Text color="muted" variant="small">
-                        All content shared on Band It should be appropriate for a general audience.
+                        All content shared on BAND IT should be appropriate for a general audience.
                         Avoid explicit, graphic, or adult-only material.
                       </Text>
                     </div>
@@ -100,7 +100,7 @@ export default function CommunityGuidelinesPage() {
                   <Heading level={4} className="text-yellow-800 mb-2">Enforcement</Heading>
                   <Text variant="small" className="text-yellow-800">
                     Violating these community guidelines may result in warnings, temporary suspension,
-                    or permanent removal from Band It. We reserve the right to remove content and
+                    or permanent removal from BAND IT. We reserve the right to remove content and
                     suspend accounts at our discretion to maintain a safe and welcoming environment.
                   </Text>
                 </div>

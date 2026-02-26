@@ -100,7 +100,7 @@ function RegisterContent() {
           <Stack spacing="lg">
             <Center>
               <Heading level={1}>Create Account</Heading>
-              <Text variant="muted">Join Band IT to start managing your band</Text>
+              <Text variant="muted">Join BAND IT to start managing your band</Text>
             </Center>
 
             {inviteToken && (
@@ -173,7 +173,7 @@ function RegisterContent() {
                 <div className="border rounded-lg p-4 bg-gray-50">
                   <Heading level={4} className="mb-3">Community Guidelines</Heading>
                   <Text variant="small" color="muted" className="mb-3">
-                    Band It is a family-friendly platform where people of all ages collaborate. By joining, you agree to:
+                    BAND IT is a family-friendly platform where people of all ages collaborate. By joining, you agree to:
                   </Text>
                   <ul className="text-sm text-gray-700 space-y-1 mb-3 ml-4">
                     <li>• No illegal activity or speech</li>
@@ -185,7 +185,7 @@ function RegisterContent() {
                   </ul>
                   <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-3">
                     <Text variant="small" className="text-yellow-800 font-medium">
-                      Violating these principles may result in account suspension or removal from Band It.
+                      Violating these principles may result in account suspension or removal from BAND IT.
                     </Text>
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer">

@@ -190,7 +190,7 @@ export function WebsiteIntegrationSettings({ bandId, userId, userRole }: Website
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <Text variant="small" className="text-blue-800">
             <strong>How it works:</strong> Your external website can send applications and contact forms
-            to Band IT using the API key. Band IT will send event notifications to your website's
+            to BAND IT using the API key. BAND IT will send event notifications to your website's
             webhook URL.
           </Text>
         </div>
@@ -217,7 +217,7 @@ export function WebsiteIntegrationSettings({ bandId, userId, userRole }: Website
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Webhook URL (receives events from Band IT)
+              Webhook URL (receives events from BAND IT)
             </label>
             {isEditing ? (
               <Input

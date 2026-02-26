@@ -192,7 +192,7 @@ function FeedbackPageContent() {
           <Flex justify="between" align="center" wrap>
             <Stack spacing="sm">
               <Heading level={1}>Feedback & Suggestions</Heading>
-              <Text color="muted">Help us improve Band It by sharing your ideas and reporting issues</Text>
+              <Text color="muted">Help us improve BAND IT by sharing your ideas and reporting issues</Text>
             </Stack>
             <Flex gap="sm" align="center">
               <FeedbackButton />

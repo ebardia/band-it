@@ -131,13 +131,13 @@ export default function WelcomePage() {
               <div className="flex justify-center mb-4">
                 <Image
                   src="/logo.png"
-                  alt="Band IT Logo"
+                  alt="BAND IT Logo"
                   width={150}
                   height={150}
                   priority
                 />
               </div>
-              <Heading level={1}>Welcome to Band IT</Heading>
+              <Heading level={1}>Welcome to BAND IT</Heading>
               <Text variant="muted" className="mt-2">
                 Let's get you started with collective decision-making
               </Text>

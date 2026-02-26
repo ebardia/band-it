@@ -18,18 +18,18 @@ const useCases = [
   {
     id: 'nonprofit',
     label: 'Non Profit Organizations',
-    title: 'Band It: Infrastructure for Nonprofit Organizations',
+    title: 'BAND IT: Infrastructure for Nonprofit Organizations',
     content: `Nonprofits exist to serve missions larger than any individual—whether addressing social, environmental, cultural, or humanitarian needs. Their success depends on trust: trust from donors, from volunteers, from beneficiaries, and from the public.
 
 Yet many nonprofits struggle not because they lack commitment or expertise, but because their internal systems cannot keep pace with their mission.
 
-Band It is designed to help nonprofits organize their work transparently, govern responsibly, and convert good intentions into sustained, verifiable impact.
+BAND IT is designed to help nonprofits organize their work transparently, govern responsibly, and convert good intentions into sustained, verifiable impact.
 
 **Clear structure without centralized control**
 
 Nonprofits operate through boards, staff, volunteers, committees, and partners—each with different responsibilities and authority. When roles are unclear or decisions are opaque, accountability suffers.
 
-Band It provides a shared organizational container—a Band—where nonprofits can clearly define:
+BAND IT provides a shared organizational container—a Band—where nonprofits can clearly define:
 • Their mission and guiding principles
 • Governance structures and decision rights
 • Roles for board members, staff, and volunteers
@@ -41,7 +41,7 @@ This structure supports compliance and oversight without concentrating power in 
 
 Nonprofits often excel at vision, but struggle with execution due to limited capacity and fragmented tools.
 
-In Band It:
+In BAND IT:
 • Ideas become proposals with clear goals, scope, and expected outcomes
 • Approved proposals become projects
 • Projects are broken into tasks with defined ownership and timelines
@@ -50,7 +50,7 @@ This creates a visible line from strategy to action, helping organizations stay 
 
 **Transparency as a foundation for trust**
 
-Trust is not assumed in Band It—it is built through transparency.
+Trust is not assumed in BAND IT—it is built through transparency.
 
 Key activities are recorded and visible:
 • Decisions and approvals
@@ -74,13 +74,13 @@ Nonprofits manage complex financial flows:
 • Restricted and unrestricted funds
 • Program expenses and reimbursements
 
-Band It tracks these flows in a way that aligns with nonprofit accountability needs, providing clear records that support reporting, audits, and donor confidence—without turning the organization into a financial bureaucracy.
+BAND IT tracks these flows in a way that aligns with nonprofit accountability needs, providing clear records that support reporting, audits, and donor confidence—without turning the organization into a financial bureaucracy.
 
 **Values that guide decisions**
 
 Nonprofits are values-driven by nature, but values can erode under pressure.
 
-Band It allows organizations to define values—such as equity, environmental responsibility, or community accountability—and apply them consistently:
+BAND IT allows organizations to define values—such as equity, environmental responsibility, or community accountability—and apply them consistently:
 • Evaluating proposals and partnerships
 • Reviewing funding sources
 • Guiding program design
@@ -92,7 +92,7 @@ Values become operational, not just aspirational.
 
 Volunteers are the lifeblood of many nonprofits, yet volunteer management is often informal and uneven.
 
-Band It helps make volunteer work visible and meaningful by:
+BAND IT helps make volunteer work visible and meaningful by:
 • Clarifying expectations
 • Tracking contributions
 • Coordinating tasks and schedules
@@ -104,19 +104,19 @@ This supports retention and fairness without imposing rigid management structure
 
 Nonprofits evolve. Leadership changes. Programs expand or contract. External scrutiny increases.
 
-Band It helps organizations maintain continuity by preserving institutional memory, documenting decisions, and making organizational processes legible to new leaders, partners, and funders.
+BAND IT helps organizations maintain continuity by preserving institutional memory, documenting decisions, and making organizational processes legible to new leaders, partners, and funders.
 
-For nonprofits seeking to operate with integrity, clarity, and resilience—while earning and maintaining public trust—Band It provides infrastructure that supports accountability without undermining mission or autonomy.`
+For nonprofits seeking to operate with integrity, clarity, and resilience—while earning and maintaining public trust—BAND IT provides infrastructure that supports accountability without undermining mission or autonomy.`
   },
   {
     id: 'schools',
     label: 'School Clubs and Student Organizations',
-    title: 'Band It: Infrastructure for School Clubs and Student Organizations',
+    title: 'BAND IT: Infrastructure for School Clubs and Student Organizations',
     content: `School clubs—such as orchestras, bands, debate teams, robotics clubs, and arts organizations—are built around shared effort, limited time, and constant change. Every year, students graduate, parents rotate in and out, officers change, and hard-earned knowledge risks being lost.
 
 Most school clubs struggle not because of lack of enthusiasm, but because structure resets every year.
 
-Band It is designed to help school clubs operate smoothly across transitions, preserve institutional memory, and turn good intentions into reliable action.
+BAND IT is designed to help school clubs operate smoothly across transitions, preserve institutional memory, and turn good intentions into reliable action.
 
 **Continuity in a high-turnover environment**
 
@@ -126,11 +126,11 @@ By definition, school clubs experience constant turnover:
 • Leadership roles change frequently
 • New members often don't know how things actually work
 
-Band It provides a shared container—a Band—that holds the club's mission, rules, and history in one place. This allows each new group of students and parents to step into an existing structure instead of starting from scratch.
+BAND IT provides a shared container—a Band—that holds the club's mission, rules, and history in one place. This allows each new group of students and parents to step into an existing structure instead of starting from scratch.
 
 **Clear roles, shared responsibility**
 
-Within Band It, clubs define:
+Within BAND IT, clubs define:
 • Student leadership roles
 • Advisor and faculty oversight
 • Parent and volunteer involvement
@@ -146,7 +146,7 @@ School clubs are full of ideas:
 • Fundraisers and events
 • Equipment purchases and maintenance
 
-Band It helps turn these ideas into action.
+BAND IT helps turn these ideas into action.
 
 Discussions lead to proposals, which outline plans clearly and transparently. Approved proposals become projects, and projects are broken into tasks—assignable, trackable actions with owners and timelines.
 
@@ -164,7 +164,7 @@ School clubs often manage shared funds:
 • Fundraising proceeds
 • School or district allocations
 
-Band It tracks income and expenses clearly, so students, parents, and advisors can see:
+BAND IT tracks income and expenses clearly, so students, parents, and advisors can see:
 • Where money comes from
 • What it is spent on
 • How decisions were made
@@ -179,11 +179,11 @@ Every club has expectations:
 • Fair access to opportunities
 • Appropriate communication
 
-Band It allows clubs to define these values explicitly and apply them consistently. Proposals, activities, and decisions can be checked against agreed-upon standards, reducing conflict and misunderstandings.
+BAND IT allows clubs to define these values explicitly and apply them consistently. Proposals, activities, and decisions can be checked against agreed-upon standards, reducing conflict and misunderstandings.
 
 **Events, equipment, and logistics in one place**
 
-Band It supports:
+BAND IT supports:
 • Scheduling rehearsals, concerts, and trips
 • Tracking attendance
 • Managing equipment inventories
@@ -194,47 +194,47 @@ This reduces reliance on personal email chains, spreadsheets, and institutional 
 
 **Support for advisors and parents, without overload**
 
-Band It does not replace faculty advisors or parent volunteers—it supports them.
+BAND IT does not replace faculty advisors or parent volunteers—it supports them.
 
 By making plans, decisions, and responsibilities visible, the system reduces burnout and prevents a small number of adults from carrying the entire organizational load.
 
 **A system that grows with the club**
 
-As clubs evolve—growing, shrinking, changing focus—Band It adapts. New students can onboard quickly, outgoing leaders can hand off responsibilities cleanly, and the club retains a clear sense of identity year after year.
+As clubs evolve—growing, shrinking, changing focus—BAND IT adapts. New students can onboard quickly, outgoing leaders can hand off responsibilities cleanly, and the club retains a clear sense of identity year after year.
 
-For school clubs seeking stability, fairness, and continuity in an environment defined by change, Band It provides infrastructure that helps students focus on what matters: learning, collaboration, and shared achievement.`
+For school clubs seeking stability, fairness, and continuity in an environment defined by change, BAND IT provides infrastructure that helps students focus on what matters: learning, collaboration, and shared achievement.`
   },
   { id: 'other', label: '...', title: '...', content: 'Use Your Imagination; What\'s your fancy' },
   {
     id: 'political',
     label: 'Collective Political Action',
-    title: 'Band It: Infrastructure for Collective Political Action',
+    title: 'BAND IT: Infrastructure for Collective Political Action',
     content: `Political change has never been the work of individuals alone. It emerges when people come together around a shared purpose, organize their efforts, and act in coordinated, sustained ways. Yet many political groups struggle not because of lack of passion, but because of lack of structure. Meetings dissolve into talk. Decisions feel opaque. Trust erodes. Good ideas fail to turn into action.
 
-Band It exists to solve this problem.
+BAND IT exists to solve this problem.
 
-Band It is a system designed to help people organize collectively around a cause—clearly, transparently, and effectively—without centralizing power or diluting values.
+BAND IT is a system designed to help people organize collectively around a cause—clearly, transparently, and effectively—without centralizing power or diluting values.
 
 **From shared purpose to shared action**
 
-A political group using Band It begins by forming a Band: a collective space where members articulate their mission, vision, and agenda. This is not just a slogan or manifesto—it is a living foundation that guides every decision the group makes.
+A political group using BAND IT begins by forming a Band: a collective space where members articulate their mission, vision, and agenda. This is not just a slogan or manifesto—it is a living foundation that guides every decision the group makes.
 
 Within a Band, members can:
 • Hold structured discussions about goals and strategy
 • Debate priorities without silencing dissent
 • Clarify what the group stands for—and what it refuses to become
 
-Discussion alone, however, is not enough. Band It is built to move groups from conversation to action.
+Discussion alone, however, is not enough. BAND IT is built to move groups from conversation to action.
 
 **Turning ideas into proposals, projects, and tasks**
 
-In Band It, ideas are formalized as proposals. A proposal lays out what the group wants to do, why it matters, how it will be executed, and what success looks like. Proposals are visible to members, reviewed openly, and approved through transparent decision processes chosen by the group itself.
+In BAND IT, ideas are formalized as proposals. A proposal lays out what the group wants to do, why it matters, how it will be executed, and what success looks like. Proposals are visible to members, reviewed openly, and approved through transparent decision processes chosen by the group itself.
 
 Once approved, proposals become projects, and projects are broken into tasks—clear, assignable, verifiable actions. This creates accountability without hierarchy: people know what they are committing to, and others can see progress without relying on trust alone.
 
 **Trust through transparency, not personalities**
 
-Political movements often fracture because trust is assumed rather than earned. Band It takes a different approach: everything important is tracked.
+Political movements often fracture because trust is assumed rather than earned. BAND IT takes a different approach: everything important is tracked.
 • Who proposed what
 • How decisions were made
 • Who committed to which tasks
@@ -253,11 +253,11 @@ For example, a group may adopt values such as:
 • Nonviolent action
 • Accountability to the community
 
-Band It uses these values as checkpoints throughout the system. Proposals, actions, financial decisions, and partnerships can be flagged or reviewed if they conflict with stated values. This helps groups remain aligned with their principles even under pressure.
+BAND IT uses these values as checkpoints throughout the system. Proposals, actions, financial decisions, and partnerships can be flagged or reviewed if they conflict with stated values. This helps groups remain aligned with their principles even under pressure.
 
 **Growing, funding, and sustaining the movement**
 
-Band It supports the real-world needs of political organizing:
+BAND IT supports the real-world needs of political organizing:
 • Recruiting and onboarding new members
 • Collecting member dues or donations
 • Running fundraising campaigns
@@ -268,14 +268,14 @@ Financial activity is tracked transparently, reducing suspicion and increasing d
 
 **A tool for movements, not control**
 
-Band It does not dictate ideology, strategy, or outcomes. It provides infrastructure—rails that help groups govern themselves without chaos, coercion, or opacity.
+BAND IT does not dictate ideology, strategy, or outcomes. It provides infrastructure—rails that help groups govern themselves without chaos, coercion, or opacity.
 
-For political organizers seeking to build movements that are principled, resilient, and capable of sustained action, Band It offers a way to turn shared belief into coordinated impact, while preserving trust, transparency, and collective ownership.`
+For political organizers seeking to build movements that are principled, resilient, and capable of sustained action, BAND IT offers a way to turn shared belief into coordinated impact, while preserving trust, transparency, and collective ownership.`
   },
   {
     id: 'communities',
     label: 'Intentional Communities',
-    title: 'Band It: Infrastructure for Intentional Communities',
+    title: 'BAND IT: Infrastructure for Intentional Communities',
     content: `Intentional communities form when people choose to live, work, or organize together around shared values rather than convenience or hierarchy. These communities often arise from a desire for deeper connection, shared responsibility, sustainability, mutual aid, spiritual alignment, or alternative economic and social models.
 
 They are built on trust.
@@ -299,11 +299,11 @@ Over time, however, common challenges emerge:
 
 These issues rarely stem from bad intent. They arise from lack of structure, not lack of care.
 
-Band It is designed to support intentional communities by providing structure without undermining autonomy, values, or human relationships.
+BAND IT is designed to support intentional communities by providing structure without undermining autonomy, values, or human relationships.
 
 **A shared container for governance and care**
 
-In Band It, an intentional community forms a Band—a shared container where the community defines:
+In BAND IT, an intentional community forms a Band—a shared container where the community defines:
 • Its mission and purpose
 • Its values and boundaries
 • How decisions are made
@@ -314,7 +314,7 @@ This creates clarity without imposing hierarchy. The system does not decide for 
 
 **From discussion to action, without burnout**
 
-Intentional communities often hold many discussions but struggle to translate them into sustained action. Band It helps bridge this gap.
+Intentional communities often hold many discussions but struggle to translate them into sustained action. BAND IT helps bridge this gap.
 
 Community ideas become proposals, which are reviewed and refined collectively. Approved proposals become projects, and projects are broken into tasks—clearly defined, assignable, and trackable actions.
 
@@ -330,7 +330,7 @@ Recurring tasks—like maintenance, facilitation, cooking, childcare, or land st
 
 Intentional communities often articulate strong values, but struggle to apply them consistently.
 
-Band It allows communities to define values such as:
+BAND IT allows communities to define values such as:
 • Nonviolent communication
 • Shared responsibility
 • Ecological stewardship
@@ -346,7 +346,7 @@ This helps communities stay aligned over time, even as membership changes.
 
 **Trust built through transparency, not surveillance**
 
-Band It emphasizes transparency without policing.
+BAND IT emphasizes transparency without policing.
 
 Key actions—decisions, task commitments, financial flows—are recorded so the community can:
 • Build trust based on shared facts
@@ -364,13 +364,13 @@ Many intentional communities manage shared resources:
 • Shared expenses
 • Collective assets
 
-Band It helps track these flows clearly, so money supports the community rather than becoming a source of tension. No one person controls resources without accountability to the group.
+BAND IT helps track these flows clearly, so money supports the community rather than becoming a source of tension. No one person controls resources without accountability to the group.
 
 **Supporting growth, change, and transition**
 
 Communities are living systems. People join, leave, form subgroups, or reorganize responsibilities.
 
-Band It supports:
+BAND IT supports:
 • Onboarding new members with clarity
 • Creating committees or working groups
 • Spinning up or dissolving projects
@@ -380,13 +380,13 @@ The system helps the community remember who it is, even as it evolves.
 
 **Technology in service of human relationships**
 
-Band It does not automate care, values, or judgment.
+BAND IT does not automate care, values, or judgment.
 
 It does not replace meetings, trust, or difficult conversations.
 
 It provides structure so those human processes can happen with less confusion, less burnout, and more fairness.
 
-For intentional communities seeking to live their values over the long term—not just at the beginning—Band It offers a way to combine autonomy with accountability, and vision with sustainable action.`
+For intentional communities seeking to live their values over the long term—not just at the beginning—BAND IT offers a way to combine autonomy with accountability, and vision with sustainable action.`
   },
 ]
 
@@ -433,12 +433,12 @@ export default function AboutPage() {
             <Stack spacing="md" className="items-center">
               <Image
                 src="/logo.png"
-                alt="Band IT Logo"
+                alt="BAND IT Logo"
                 width={200}
                 height={200}
                 priority
               />
-              <Heading level={1}>About Band It</Heading>
+              <Heading level={1}>About BAND IT</Heading>
             </Stack>
           </div>
 
@@ -471,13 +471,13 @@ export default function AboutPage() {
             </Stack>
           </div>
 
-          {/* What Band It Does section */}
+          {/* What BAND IT Does section */}
           <div className="max-w-3xl mx-auto">
             <Stack spacing="md">
               <Text>
-                Band It helps community groups organize, decide, and act — transparently. Whether
+                BAND IT helps community groups organize, decide, and act — transparently. Whether
                 you're running a political action committee, a neighborhood association, or a
-                volunteer organization, Band It gives your group the tools to have discussions,
+                volunteer organization, BAND IT gives your group the tools to have discussions,
                 make proposals, vote democratically, and turn decisions into real projects with
                 tracked tasks and budgets.
               </Text>
@@ -572,9 +572,9 @@ export default function AboutPage() {
           {/* CTA section */}
           <Card className="bg-blue-50 text-center">
             <Stack spacing="md" className="items-center py-8">
-              <Heading level={2}>Ready to Join Band It?</Heading>
+              <Heading level={2}>Ready to Join BAND IT?</Heading>
               <Text color="muted">
-                Join Band It today and start collaborating with your team.
+                Join BAND IT today and start collaborating with your team.
               </Text>
               <Flex gap="md" justify="center">
                 <Button

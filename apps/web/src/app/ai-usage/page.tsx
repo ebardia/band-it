@@ -160,7 +160,7 @@ export default function AIUsagePage() {
             <div className="text-center">
               <Heading level={1}>AI Usage Tracker</Heading>
               <Text variant="muted" className="mt-2">
-                Transparency in AI resource consumption across the Band It platform
+                Transparency in AI resource consumption across the BAND IT platform
               </Text>
             </div>
 
@@ -169,7 +169,7 @@ export default function AIUsagePage() {
               <Stack spacing="md">
                 <Heading level={3}>Why We Track This</Heading>
                 <Text>
-                  Band It uses AI to help with various features like proposal validation, task suggestions,
+                  BAND IT uses AI to help with various features like proposal validation, task suggestions,
                   and content assistance. We believe in transparency about the environmental and financial
                   impact of these AI operations.
                 </Text>
@@ -213,7 +213,7 @@ export default function AIUsagePage() {
                 <UsageCard
                   title="Platform Total"
                   data={platformTotals}
-                  description="Cumulative AI usage across all bands and users on Band It"
+                  description="Cumulative AI usage across all bands and users on BAND IT"
                 />
 
                 {userId && (

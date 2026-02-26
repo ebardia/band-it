@@ -92,7 +92,7 @@ function LoginForm() {
       <Stack spacing="lg">
         <Center>
           <Heading level={1}>Welcome Back</Heading>
-          <Text variant="muted">Sign in to your Band IT account</Text>
+          <Text variant="muted">Sign in to your BAND IT account</Text>
         </Center>
 
         <form onSubmit={handleSubmit}>

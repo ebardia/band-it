@@ -316,7 +316,7 @@ export default function InviteMembersPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Start typing..."
-              helperText="Search for existing Band IT users"
+              helperText="Search for existing BAND IT users"
             />
 
             {loadingSearch && debouncedQuery.length >= 2 && (
@@ -347,7 +347,7 @@ export default function InviteMembersPage() {
 
             {debouncedQuery.length >= 2 && searchData?.users && searchData.users.length === 0 && (
               <Alert variant="info">
-                <Text>No users found. They can register at Band IT first, then you can invite them!</Text>
+                <Text>No users found. They can register at BAND IT first, then you can invite them!</Text>
               </Alert>
             )}
           </Stack>

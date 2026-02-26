@@ -34,7 +34,7 @@ function PaymentSuccessContent() {
       setVerifying(false)
       if (data.success && !hasVerified.current) {
         hasVerified.current = true
-        showToast('Payment successful! Welcome to Band IT!', 'success')
+        showToast('Payment successful! Welcome to BAND IT!', 'success')
         setTimeout(() => {
           router.push('/')
         }, 3000)
@@ -68,7 +68,7 @@ function PaymentSuccessContent() {
                   <CheckIcon />
                 </IconCircle>
 
-                <Heading level={1}>Welcome to Band IT! 🎉</Heading>
+                <Heading level={1}>Welcome to BAND IT! 🎉</Heading>
 
                 <Text variant="muted">Your registration is complete!</Text>
 

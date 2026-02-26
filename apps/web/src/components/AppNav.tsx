@@ -65,7 +65,7 @@ export function AppNav() {
         <button onClick={() => handleNavClick('/user-dashboard')} className="flex-shrink-0">
           <Image
             src="/logo.png"
-            alt="Band IT Logo"
+            alt="BAND IT Logo"
             width={120}
             height={120}
             className="w-24 h-auto md:w-[150px]"

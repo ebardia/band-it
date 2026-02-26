@@ -98,7 +98,7 @@ export function QuickLayout({
 
       {/* Minimal footer */}
       <footer className="px-4 py-3 text-center">
-        <p className="text-xs text-gray-400">Band-It Governance Platform</p>
+        <p className="text-xs text-gray-400">BAND IT Governance Platform</p>
       </footer>
     </div>
   )

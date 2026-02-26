@@ -36,7 +36,7 @@ export default function PrivacyPage() {
             </div>
 
             <Text>
-              BAND IT ("Band It", "the Platform", "we", "us") is built around transparency, accountability, and restraint. This Privacy Policy explains what information we collect, how we use it, and the limits we place on ourselves.
+              BAND IT ("BAND IT", "the Platform", "we", "us") is built around transparency, accountability, and restraint. This Privacy Policy explains what information we collect, how we use it, and the limits we place on ourselves.
             </Text>
             <Text>
               If you use BAND IT, you agree to this Privacy Policy.

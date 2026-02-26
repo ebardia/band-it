@@ -89,7 +89,7 @@ export default function SubscriptionPage() {
     <UserDashboardLayout>
       <Stack spacing="lg">
         <Heading level={1}>Subscription</Heading>
-        <Text variant="muted">Manage your Band IT membership</Text>
+        <Text variant="muted">Manage your BAND IT membership</Text>
 
         <Alert variant={status === 'ACTIVE' ? 'success' : 'warning'}>
           <Stack spacing="sm">
@@ -115,7 +115,7 @@ export default function SubscriptionPage() {
         <Alert variant="info">
           <Stack spacing="sm">
             <Text variant="small" weight="semibold">Plan Details</Text>
-            <Text variant="small">Plan: Band IT Membership</Text>
+            <Text variant="small">Plan: BAND IT Membership</Text>
             <Text variant="small">Price: $5.00 / month</Text>
             {subscriptionData?.startedAt && (
               <Text variant="small">
@@ -156,7 +156,7 @@ export default function SubscriptionPage() {
         <Stack spacing="lg">
           <Heading level={2}>Cancel Subscription?</Heading>
           <Text variant="muted">
-            Are you sure you want to cancel your Band IT membership? You'll lose access to all features at the end of your billing period.
+            Are you sure you want to cancel your BAND IT membership? You'll lose access to all features at the end of your billing period.
           </Text>
           <Alert variant="warning">
             <Text variant="small">

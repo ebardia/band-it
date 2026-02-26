@@ -41,7 +41,7 @@ function UnsubscribeContent() {
         <div className="mb-6">
           <Image
             src="/logo.png"
-            alt="Band It Logo"
+            alt="BAND IT Logo"
             width={120}
             height={120}
             className="mx-auto"
