@@ -113,6 +113,13 @@ export default function ProfilePage() {
           </Stack>
         </Alert>
 
+        {/* Why we ask these questions */}
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-5">
+          <Text weight="bold" className="text-amber-900">
+            No one builds something meaningful alone. Groups thrive when people bring different gifts to the table. By understanding what you're good at, what moves you, and where you want to grow—our internal algorithms attempt to help you find where you belong, and over time, become more effective there.
+          </Text>
+        </div>
+
         <form onSubmit={handleSubmit}>
           <Stack spacing="lg">
             <Input
