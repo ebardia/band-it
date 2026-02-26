@@ -246,13 +246,6 @@ function CreateBandContent() {
 
             <form onSubmit={handleSubmit}>
               <Stack spacing="lg">
-                {/* Why we ask these questions */}
-                <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-5">
-                  <Text weight="bold" className="text-amber-900">
-                    Your mission and values aren't just words on a page—they become the foundation of everything your band does. Our algorithms use them to connect you with people whose strengths and passions align with your goals. As you create proposals, projects, and tasks, the same principles help ensure your work stays true to what you set out to do. Define them well, and they'll guide you long after today.
-                  </Text>
-                </div>
-
                 <Input
                   label="Band Name"
                   type="text"
@@ -262,6 +255,13 @@ function CreateBandContent() {
                   placeholder="The Rockin' Rebels"
                   data-guide="band-name"
                 />
+
+                {/* Why we ask these questions */}
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-5">
+                  <Text weight="bold" className="text-amber-900">
+                    The Band Description, mission and values aren't just words on a page—they become the foundation of everything your band does. Our algorithms use them to connect you with people whose strengths and passions align with your goals. As you create proposals, projects, and tasks, the same principles help ensure your work stays true to what you set out to do. Define them well, and they'll guide you long after today.
+                  </Text>
+                </div>
 
                 <Textarea
                   label="Description"
