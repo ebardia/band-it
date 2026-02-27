@@ -41,7 +41,7 @@ export function ChecklistItemHeaderCompact({
   needsDeliverable,
 }: ChecklistItemHeaderCompactProps) {
   const router = useRouter()
-  const [showMore, setShowMore] = useState(false)
+  const [showMore, setShowMore] = useState(true)
 
   const canModify = canUpdate || isAssignee
   const isCompleted = item.isCompleted
@@ -50,54 +50,54 @@ export function ChecklistItemHeaderCompact({
   const formatDate = (date: string) => new Date(date).toLocaleDateString()
 
   return (
-    <div className="space-y-4 py-4">
+    <div className="space-y-2">
       {/* Line 1: Status + Assignee + Due + Actions */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 flex-wrap min-w-0">
-          <span className="text-2xl">{isCompleted ? '☑️' : '☐'}</span>
-          <span className={`text-base font-medium ${isCompleted ? 'text-green-600' : 'text-yellow-600'}`}>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap min-w-0">
+          <span className="text-lg">{isCompleted ? '☑️' : '☐'}</span>
+          <span className={`text-sm font-medium ${isCompleted ? 'text-green-600' : 'text-yellow-600'}`}>
             {isCompleted ? 'Completed' : 'Pending'}
           </span>
           {item.assignee ? (
-            <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">
+            <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
               {item.assignee.name}
             </span>
           ) : (
-            <span className="text-sm bg-orange-100 text-orange-700 px-2 py-1 rounded">
+            <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
               Unassigned
             </span>
           )}
           {item.dueDate && (
-            <span className={`text-sm px-2 py-1 rounded ${
+            <span className={`text-xs px-1.5 py-0.5 rounded ${
               isOverdue ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
             }`}>
               Due: {formatDate(item.dueDate)}
             </span>
           )}
           {item.requiresDeliverable && !isCompleted && (
-            <span className="text-sm bg-purple-100 text-purple-700 px-2 py-1 rounded">
+            <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">
               Needs Deliverable
             </span>
           )}
           {item.files && item.files.length > 0 && (
-            <span className="text-sm text-gray-500">📎 {item.files.length}</span>
+            <span className="text-xs text-gray-500">📎 {item.files.length}</span>
           )}
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+        <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
           {/* Claim and Dismiss buttons for unassigned items */}
           {isMember && !item.assigneeId && !isCompleted && (
             <>
               <button
                 onClick={onClaim}
                 disabled={isClaiming}
-                className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 {isClaiming ? '...' : 'Claim'}
               </button>
               <button
                 onClick={onDismiss}
                 disabled={isDismissing}
-                className="text-sm px-3 py-1.5 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
               >
                 {isDismissing ? '...' : 'Dismiss'}
               </button>
@@ -108,7 +108,7 @@ export function ChecklistItemHeaderCompact({
             <button
               onClick={onToggle}
               disabled={isToggling || needsDeliverable}
-              className={`text-sm px-3 py-1.5 rounded ${
+              className={`text-xs px-2 py-1 rounded ${
                 isCompleted
                   ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   : 'bg-green-50 text-green-600 hover:bg-green-100'
@@ -121,7 +121,7 @@ export function ChecklistItemHeaderCompact({
           {canModify && (
             <button
               onClick={onEdit}
-              className="text-sm px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded"
+              className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
             >
               Edit
             </button>
@@ -130,7 +130,7 @@ export function ChecklistItemHeaderCompact({
             <button
               onClick={onDelete}
               disabled={isDeleting}
-              className="text-sm px-3 py-1.5 text-red-600 hover:bg-red-50 rounded"
+              className="text-xs px-2 py-1 text-red-600 hover:bg-red-50 rounded"
             >
               {isDeleting ? '...' : 'Delete'}
             </button>
@@ -139,7 +139,7 @@ export function ChecklistItemHeaderCompact({
       </div>
 
       {/* Line 2: Metadata */}
-      <div className="flex items-center gap-4 text-base text-gray-600 flex-wrap pt-2">
+      <div className="flex items-center gap-3 text-sm text-gray-600 flex-wrap">
         <button
           onClick={() => router.push(`/bands/${bandSlug}/tasks/${task.id}`)}
           className="hover:text-blue-600 hover:underline"
@@ -167,7 +167,7 @@ export function ChecklistItemHeaderCompact({
 
       {/* Verification status badge if applicable */}
       {item.verificationStatus && (
-        <div className={`text-sm px-3 py-1.5 rounded inline-flex items-center gap-2 ${
+        <div className={`text-xs px-2 py-1 rounded inline-flex items-center gap-2 ${
           item.verificationStatus === 'APPROVED' ? 'bg-green-100 text-green-700' :
           item.verificationStatus === 'REJECTED' ? 'bg-red-100 text-red-700' :
           'bg-yellow-100 text-yellow-700'
@@ -182,7 +182,7 @@ export function ChecklistItemHeaderCompact({
 
       {/* Rejection feedback inline */}
       {item.verificationStatus === 'REJECTED' && item.rejectionReason && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 text-base">
+        <div className="bg-red-50 border border-red-200 rounded p-2 text-sm">
           <span className="font-medium text-red-700">Feedback:</span>{' '}
           <span className="text-red-600">{item.rejectionReason}</span>
         </div>
@@ -190,7 +190,7 @@ export function ChecklistItemHeaderCompact({
 
       {/* Expanded details */}
       {showMore && (
-        <div className="pt-4 border-t border-gray-100 space-y-4 text-base">
+        <div className="pt-2 border-t border-gray-100 space-y-3 text-sm">
           {/* Description */}
           <div>
             <span className="font-medium text-gray-700">Description:</span>
@@ -209,7 +209,7 @@ export function ChecklistItemHeaderCompact({
 
       {/* Deliverable hint */}
       {needsDeliverable && (
-        <div className="text-sm text-orange-600 bg-orange-50 px-3 py-2 rounded">
+        <div className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
           Fill in the deliverable section below (min 30 chars) before completing
         </div>
       )}
