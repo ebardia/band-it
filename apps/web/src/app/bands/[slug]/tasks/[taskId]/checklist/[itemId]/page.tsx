@@ -689,7 +689,7 @@ export default function ChecklistItemDetailPage() {
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 placeholder="Describe the work completed..."
-                rows={3}
+                rows={6}
                 className="w-full text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
 

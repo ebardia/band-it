@@ -441,7 +441,7 @@ export default function QuickChecklistPage() {
                     ? 'border-red-300'
                     : 'border-gray-300'
                 }`}
-                rows={3}
+                rows={6}
               />
               {item.requiresDeliverable && summaryLength > 0 && summaryLength < 30 && (
                 <p className="text-xs text-red-500 mt-1">
@@ -724,7 +724,7 @@ export default function QuickChecklistPage() {
                     ? 'border-red-300'
                     : 'border-gray-300'
                 }`}
-                rows={3}
+                rows={6}
               />
               {item.requiresDeliverable && summary.trim().length > 0 && summary.trim().length < 30 && (
                 <p className="text-xs text-red-500 mt-1">
