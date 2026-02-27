@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { Text, Flex, Stack } from '.'
 import { BandSidebar } from './BandSidebar'
 import { DuesBanner } from './DuesBanner'
@@ -80,13 +81,15 @@ export function BandLayout({
           {/* Band Image, Name and Page Selector */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {bandImageUrl && (
-                <img src={bandImageUrl} alt={bandName} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
-              )}
-              <div className="min-w-0">
-                <h1 className="text-2xl font-bold text-gray-900 truncate">{bandName}</h1>
-                <Text color="muted" className="text-sm truncate">{pageTitle}</Text>
-              </div>
+              <Link href={`/bands/${bandSlug}`} className="flex items-center gap-3 min-w-0">
+                {bandImageUrl && (
+                  <img src={bandImageUrl} alt={bandName} className="w-12 h-12 object-cover rounded-lg flex-shrink-0 hover:opacity-80 transition-opacity" />
+                )}
+                <div className="min-w-0">
+                  <h1 className="text-2xl font-bold text-gray-900 truncate hover:text-blue-600 transition-colors">{bandName}</h1>
+                  <Text color="muted" className="text-sm truncate">{pageTitle}</Text>
+                </div>
+              </Link>
             </div>
             {actionContent && <div className="ml-2 flex-shrink-0">{actionContent}</div>}
           </div>
@@ -196,22 +199,26 @@ export function BandLayout({
           <Flex gap="md" align="start">
             {/* Left: Band Image (in sidebar area) */}
             <div className="w-64 flex-shrink-0 flex justify-center">
-              {bandImageUrl ? (
-                <img
-                  src={bandImageUrl}
-                  alt={bandName}
-                  className="w-32 h-32 object-cover rounded-xl shadow-md"
-                />
-              ) : (
-                <div className="w-32 h-32 bg-gray-200 rounded-xl flex items-center justify-center">
-                  <span className="text-4xl text-gray-400">🎸</span>
-                </div>
-              )}
+              <Link href={`/bands/${bandSlug}`} className="block">
+                {bandImageUrl ? (
+                  <img
+                    src={bandImageUrl}
+                    alt={bandName}
+                    className="w-32 h-32 object-cover rounded-xl shadow-md hover:opacity-80 transition-opacity cursor-pointer"
+                  />
+                ) : (
+                  <div className="w-32 h-32 bg-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
+                    <span className="text-4xl text-gray-400">🎸</span>
+                  </div>
+                )}
+              </Link>
             </div>
 
             {/* Right: Band Name and Page Title */}
             <div className="flex-1">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">{bandName}</h1>
+              <Link href={`/bands/${bandSlug}`} className="inline-block">
+                <h1 className="text-4xl font-bold text-gray-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer">{bandName}</h1>
+              </Link>
               <Flex justify="between" align="center">
                 <h2 className="text-2xl font-semibold text-gray-700">{pageTitle}</h2>
                 {actionContent && <div>{actionContent}</div>}

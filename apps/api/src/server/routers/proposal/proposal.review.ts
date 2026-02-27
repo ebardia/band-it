@@ -88,9 +88,14 @@ export const proposalReviewRouter = router({
         const votingEndsAt = new Date()
         const band = await prisma.band.findUnique({
           where: { id: proposal.bandId },
-          select: { votingPeriodDays: true },
+          select: { votingPeriodDays: true, votingPeriodHours: true },
         })
-        votingEndsAt.setDate(votingEndsAt.getDate() + (band?.votingPeriodDays || 7))
+        // Use hours if available, otherwise fall back to days
+        if (band?.votingPeriodHours) {
+          votingEndsAt.setTime(votingEndsAt.getTime() + band.votingPeriodHours * 60 * 60 * 1000)
+        } else {
+          votingEndsAt.setDate(votingEndsAt.getDate() + (band?.votingPeriodDays || 7))
+        }
 
         const updated = await prisma.proposal.update({
           where: { id: input.proposalId },
@@ -171,6 +176,7 @@ export const proposalReviewRouter = router({
               name: true,
               slug: true,
               votingPeriodDays: true,
+              votingPeriodHours: true,
             },
           },
           createdBy: {
@@ -239,7 +245,14 @@ export const proposalReviewRouter = router({
 
       // Calculate voting period end
       const votingEndsAt = new Date()
-      votingEndsAt.setDate(votingEndsAt.getDate() + proposal.band.votingPeriodDays)
+      // Use proposal's custom voting period if set, otherwise use band's settings
+      if (proposal.customVotingPeriodHours) {
+        votingEndsAt.setTime(votingEndsAt.getTime() + proposal.customVotingPeriodHours * 60 * 60 * 1000)
+      } else if (proposal.band.votingPeriodHours) {
+        votingEndsAt.setTime(votingEndsAt.getTime() + proposal.band.votingPeriodHours * 60 * 60 * 1000)
+      } else {
+        votingEndsAt.setDate(votingEndsAt.getDate() + proposal.band.votingPeriodDays)
+      }
 
       // Record in history
       await prisma.proposalReviewHistory.create({
@@ -524,6 +537,7 @@ export const proposalReviewRouter = router({
               slug: true,
               requireProposalReview: true,
               votingPeriodDays: true,
+              votingPeriodHours: true,
             },
           },
           createdBy: {
@@ -599,7 +613,14 @@ export const proposalReviewRouter = router({
         newStatus = 'OPEN'
         votingStartedAt = new Date()
         votingEndsAt = new Date()
-        votingEndsAt.setDate(votingEndsAt.getDate() + proposal.band.votingPeriodDays)
+        // Use proposal's custom voting period if set, otherwise use band's settings
+        if (proposal.customVotingPeriodHours) {
+          votingEndsAt.setTime(votingEndsAt.getTime() + proposal.customVotingPeriodHours * 60 * 60 * 1000)
+        } else if (proposal.band.votingPeriodHours) {
+          votingEndsAt.setTime(votingEndsAt.getTime() + proposal.band.votingPeriodHours * 60 * 60 * 1000)
+        } else {
+          votingEndsAt.setDate(votingEndsAt.getDate() + proposal.band.votingPeriodDays)
+        }
       }
 
       // Update proposal

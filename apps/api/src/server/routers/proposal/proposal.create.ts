@@ -71,6 +71,9 @@ export const proposalCreateRouter = router({
 
         // Early close - allow closing when all eligible members have voted
         allowEarlyClose: z.boolean().optional(),
+
+        // Custom voting period (overrides band default)
+        customVotingPeriodHours: z.number().int().min(1).max(720).nullable().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -195,7 +198,18 @@ export const proposalCreateRouter = router({
         status = 'OPEN'
         votingStartedAt = new Date()
         votingEndsAt = new Date()
-        votingEndsAt.setDate(votingEndsAt.getDate() + membership.band.votingPeriodDays)
+
+        // Calculate voting end time based on custom period or band defaults
+        if (input.customVotingPeriodHours) {
+          // Use custom voting period in hours
+          votingEndsAt.setTime(votingEndsAt.getTime() + input.customVotingPeriodHours * 60 * 60 * 1000)
+        } else if (membership.band.votingPeriodHours) {
+          // Use band's hours setting
+          votingEndsAt.setTime(votingEndsAt.getTime() + membership.band.votingPeriodHours * 60 * 60 * 1000)
+        } else {
+          // Fall back to band's days setting
+          votingEndsAt.setDate(votingEndsAt.getDate() + membership.band.votingPeriodDays)
+        }
         submittedAt = new Date()
       }
 
@@ -232,6 +246,8 @@ export const proposalCreateRouter = router({
           submissionCount: input.saveAsDraft ? 0 : 1,
           // Early close option
           allowEarlyClose: input.allowEarlyClose || false,
+          // Custom voting period
+          customVotingPeriodHours: input.customVotingPeriodHours,
         },
         include: {
           createdBy: {

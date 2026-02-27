@@ -39,7 +39,8 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
   const { showToast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [votingMethod, setVotingMethod] = useState('')
-  const [votingPeriodDays, setVotingPeriodDays] = useState(7)
+  const [votingPeriodUnit, setVotingPeriodUnit] = useState<'hours' | 'days'>('days')
+  const [votingPeriodValue, setVotingPeriodValue] = useState(7)
   const [quorumPercentage, setQuorumPercentage] = useState(50)
   const [requireProposalReview, setRequireProposalReview] = useState(false)
   const [whoCanManageDocuments, setWhoCanManageDocuments] = useState<string[]>(['FOUNDER', 'GOVERNOR', 'MODERATOR'])
@@ -66,7 +67,14 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
   useEffect(() => {
     if (data?.settings) {
       setVotingMethod(data.settings.votingMethod)
-      setVotingPeriodDays(data.settings.votingPeriodDays)
+      // Use hours if votingPeriodHours is set, otherwise use days
+      if (data.settings.votingPeriodHours) {
+        setVotingPeriodUnit('hours')
+        setVotingPeriodValue(data.settings.votingPeriodHours)
+      } else {
+        setVotingPeriodUnit('days')
+        setVotingPeriodValue(data.settings.votingPeriodDays)
+      }
       setQuorumPercentage(data.settings.quorumPercentage)
       setRequireProposalReview(data.settings.requireProposalReview)
       setWhoCanManageDocuments(data.settings.whoCanManageDocuments || ['FOUNDER', 'GOVERNOR', 'MODERATOR'])
@@ -74,11 +82,16 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
   }, [data?.settings])
 
   const handleSave = () => {
+    // Calculate voting period settings based on unit selection
+    const votingPeriodDays = votingPeriodUnit === 'days' ? votingPeriodValue : 7
+    const votingPeriodHours = votingPeriodUnit === 'hours' ? votingPeriodValue : null
+
     updateMutation.mutate({
       bandId,
       userId,
       votingMethod: votingMethod as any,
       votingPeriodDays,
+      votingPeriodHours,
       quorumPercentage,
       requireProposalReview,
       whoCanManageDocuments: whoCanManageDocuments as any,
@@ -89,7 +102,13 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
     // Reset to original values
     if (data?.settings) {
       setVotingMethod(data.settings.votingMethod)
-      setVotingPeriodDays(data.settings.votingPeriodDays)
+      if (data.settings.votingPeriodHours) {
+        setVotingPeriodUnit('hours')
+        setVotingPeriodValue(data.settings.votingPeriodHours)
+      } else {
+        setVotingPeriodUnit('days')
+        setVotingPeriodValue(data.settings.votingPeriodDays)
+      }
       setQuorumPercentage(data.settings.quorumPercentage)
       setRequireProposalReview(data.settings.requireProposalReview)
       setWhoCanManageDocuments(data.settings.whoCanManageDocuments || ['FOUNDER', 'GOVERNOR', 'MODERATOR'])
@@ -138,14 +157,31 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
               </Select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Voting Period (days)</label>
-              <Input
-                type="number"
-                min={1}
-                max={30}
-                value={votingPeriodDays}
-                onChange={(e) => setVotingPeriodDays(parseInt(e.target.value) || 1)}
-              />
+              <label className="block text-xs font-medium text-gray-500 mb-1">Voting Period</label>
+              <Flex gap="xs">
+                <Input
+                  type="number"
+                  min={1}
+                  max={votingPeriodUnit === 'hours' ? 720 : 30}
+                  value={votingPeriodValue}
+                  onChange={(e) => setVotingPeriodValue(parseInt(e.target.value) || 1)}
+                />
+                <select
+                  value={votingPeriodUnit}
+                  onChange={(e) => {
+                    const newUnit = e.target.value as 'hours' | 'days'
+                    setVotingPeriodUnit(newUnit)
+                    // Adjust value if needed
+                    if (newUnit === 'days' && votingPeriodValue > 30) {
+                      setVotingPeriodValue(7)
+                    }
+                  }}
+                  className="px-2 py-1 text-sm border border-gray-300 rounded-md"
+                >
+                  <option value="hours">hours</option>
+                  <option value="days">days</option>
+                </select>
+              </Flex>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Quorum %</label>
@@ -201,7 +237,7 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
       ) : (
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
           <span><span className="text-gray-500">Method:</span> {VOTING_METHODS.find(m => m.value === settings.votingMethod)?.label.split(' ')[0]}</span>
-          <span><span className="text-gray-500">Period:</span> {settings.votingPeriodDays}d</span>
+          <span><span className="text-gray-500">Period:</span> {settings.votingPeriodHours ? `${settings.votingPeriodHours}h` : `${settings.votingPeriodDays}d`}</span>
           <span><span className="text-gray-500">Quorum:</span> {settings.quorumPercentage}%</span>
           <span><span className="text-gray-500">Review:</span> {settings.requireProposalReview ? 'Yes' : 'No'}</span>
           <span><span className="text-gray-500">Docs:</span> {settings.whoCanManageDocuments?.map((r: string) => ROLE_OPTIONS.find(o => o.value === r)?.label.split(' ')[0]).join(', ') || 'Founder, Governor, Mod'}</span>

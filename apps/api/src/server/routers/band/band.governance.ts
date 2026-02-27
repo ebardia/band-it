@@ -42,6 +42,7 @@ export const bandGovernanceRouter = router({
           id: true,
           votingMethod: true,
           votingPeriodDays: true,
+          votingPeriodHours: true,
           quorumPercentage: true,
           requireProposalReview: true,
           whoCanManageDocuments: true,
@@ -71,6 +72,7 @@ export const bandGovernanceRouter = router({
         userId: z.string(),
         votingMethod: z.enum(['SIMPLE_MAJORITY', 'SUPERMAJORITY_66', 'SUPERMAJORITY_75', 'UNANIMOUS']).optional(),
         votingPeriodDays: z.number().int().min(1).max(30).optional(),
+        votingPeriodHours: z.number().int().min(1).max(720).nullable().optional(),  // 1 hour to 30 days in hours
         quorumPercentage: z.number().int().min(0).max(100).optional(),
         requireProposalReview: z.boolean().optional(),
         whoCanManageDocuments: z.array(z.enum(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'])).optional(),
@@ -108,6 +110,7 @@ export const bandGovernanceRouter = router({
           name: true,
           votingMethod: true,
           votingPeriodDays: true,
+          votingPeriodHours: true,
           quorumPercentage: true,
           requireProposalReview: true,
           whoCanManageDocuments: true,
@@ -132,6 +135,10 @@ export const bandGovernanceRouter = router({
       if (input.votingPeriodDays !== undefined && input.votingPeriodDays !== currentBand.votingPeriodDays) {
         updateData.votingPeriodDays = input.votingPeriodDays
         changes.votingPeriodDays = { from: currentBand.votingPeriodDays, to: input.votingPeriodDays }
+      }
+      if (input.votingPeriodHours !== undefined && input.votingPeriodHours !== currentBand.votingPeriodHours) {
+        updateData.votingPeriodHours = input.votingPeriodHours
+        changes.votingPeriodHours = { from: currentBand.votingPeriodHours, to: input.votingPeriodHours }
       }
       if (input.quorumPercentage !== undefined && input.quorumPercentage !== currentBand.quorumPercentage) {
         updateData.quorumPercentage = input.quorumPercentage
@@ -163,6 +170,7 @@ export const bandGovernanceRouter = router({
           id: true,
           votingMethod: true,
           votingPeriodDays: true,
+          votingPeriodHours: true,
           quorumPercentage: true,
           requireProposalReview: true,
           whoCanManageDocuments: true,

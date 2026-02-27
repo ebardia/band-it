@@ -57,6 +57,8 @@ function CreateBandContent() {
     votingPeriodDays: 7,
     quorumPercentage: 50,
   })
+  const [votingPeriodUnit, setVotingPeriodUnit] = useState<'hours' | 'days'>('days')
+  const [votingPeriodValue, setVotingPeriodValue] = useState(7)
   const [whoCanApprove, setWhoCanApprove] = useState<string[]>(['FOUNDER'])
   const [whoCanCreateProposals, setWhoCanCreateProposals] = useState<string[]>(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'])
   const [isUploadingImage, setIsUploadingImage] = useState(false)
@@ -93,8 +95,11 @@ function CreateBandContent() {
         mission: templateDefaults.suggestedMission || prev.mission,
         values: templateDefaults.suggestedValues?.join(', ') || prev.values,
         votingMethod: templateDefaults.suggestedVotingMethod || prev.votingMethod,
-        votingPeriodDays: templateDefaults.suggestedVotingPeriodDays || prev.votingPeriodDays,
       }))
+      if (templateDefaults.suggestedVotingPeriodDays) {
+        setVotingPeriodValue(templateDefaults.suggestedVotingPeriodDays)
+        setVotingPeriodUnit('days')
+      }
     }
   }, [templateDefaults])
 
@@ -158,9 +163,15 @@ function CreateBandContent() {
       return
     }
 
+    // Calculate voting period settings
+    const votingPeriodDays = votingPeriodUnit === 'days' ? votingPeriodValue : 7
+    const votingPeriodHours = votingPeriodUnit === 'hours' ? votingPeriodValue : null
+
     createBandMutation.mutate({
       userId,
       ...formData,
+      votingPeriodDays,
+      votingPeriodHours,
       whoCanApprove: whoCanApprove as any,
       whoCanCreateProposals: whoCanCreateProposals as any,
       parentBandId: parentBandId || undefined,
@@ -372,17 +383,43 @@ function CreateBandContent() {
                       </Stack>
                     </Box>
 
-                    <Flex gap="md">
+                    <Flex gap="md" align="end">
                       <Box className="flex-1">
                         <Input
-                          label="Voting Period (Days)"
+                          label="Voting Period"
                           type="number"
                           min={1}
-                          max={30}
-                          value={formData.votingPeriodDays}
-                          onChange={(e) => setFormData({ ...formData, votingPeriodDays: parseInt(e.target.value) || 7 })}
-                          helperText="How long members have to vote (1-30 days)"
+                          max={votingPeriodUnit === 'hours' ? 720 : 30}
+                          value={votingPeriodValue}
+                          onChange={(e) => setVotingPeriodValue(parseInt(e.target.value) || (votingPeriodUnit === 'hours' ? 24 : 7))}
+                          helperText={votingPeriodUnit === 'hours' ? 'How long members have to vote (1-720 hours)' : 'How long members have to vote (1-30 days)'}
                         />
+                      </Box>
+                      <Box className="pb-6">
+                        <Flex gap="sm">
+                          <Button
+                            type="button"
+                            variant={votingPeriodUnit === 'hours' ? 'primary' : 'secondary'}
+                            size="sm"
+                            onClick={() => {
+                              setVotingPeriodUnit('hours')
+                              if (votingPeriodValue > 720) setVotingPeriodValue(168) // Default to 7 days in hours
+                            }}
+                          >
+                            Hours
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={votingPeriodUnit === 'days' ? 'primary' : 'secondary'}
+                            size="sm"
+                            onClick={() => {
+                              setVotingPeriodUnit('days')
+                              if (votingPeriodValue > 30) setVotingPeriodValue(7)
+                            }}
+                          >
+                            Days
+                          </Button>
+                        </Flex>
                       </Box>
                       <Box className="flex-1">
                         <Input

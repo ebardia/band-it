@@ -87,6 +87,9 @@ export default function CreateProposalPage() {
   const [aiContext, setAiContext] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [allowEarlyClose, setAllowEarlyClose] = useState(false)
+  const [useCustomVotingPeriod, setUseCustomVotingPeriod] = useState(false)
+  const [customVotingPeriodValue, setCustomVotingPeriodValue] = useState('')
+  const [customVotingPeriodUnit, setCustomVotingPeriodUnit] = useState<'hours' | 'days'>('days')
 
   // Execution type & effects (for governance proposals)
   const [executionType, setExecutionType] = useState<string>('PROJECT')
@@ -189,6 +192,15 @@ export default function CreateProposalPage() {
       .map(l => l.trim())
       .filter(l => l.length > 0)
 
+    // Calculate custom voting period in hours if set
+    let customVotingPeriodHours: number | undefined = undefined
+    if (useCustomVotingPeriod && customVotingPeriodValue) {
+      const value = parseInt(customVotingPeriodValue, 10)
+      if (!isNaN(value) && value > 0) {
+        customVotingPeriodHours = customVotingPeriodUnit === 'hours' ? value : value * 24
+      }
+    }
+
     const proposalData = {
       bandId: bandData.band.id,
       userId,
@@ -210,6 +222,7 @@ export default function CreateProposalPage() {
       milestones: milestones || undefined,
       externalLinks: linksArray.length > 0 ? linksArray : undefined,
       allowEarlyClose,
+      customVotingPeriodHours,
     }
 
     // Store data for potential later use
@@ -383,9 +396,64 @@ export default function CreateProposalPage() {
                   <strong>Method:</strong> {band.votingMethod?.replace(/_/g, ' ') || 'Simple Majority'}
                 </Text>
                 <Text variant="small">
-                  <strong>Period:</strong> {band.votingPeriodDays || 7} days
+                  <strong>Default Period:</strong> {band.votingPeriodHours
+                    ? `${band.votingPeriodHours} hours`
+                    : `${band.votingPeriodDays || 7} days`}
                 </Text>
               </Flex>
+
+              {/* Custom Voting Period */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useCustomVotingPeriod}
+                  onChange={(e) => {
+                    setUseCustomVotingPeriod(e.target.checked)
+                    if (!e.target.checked) {
+                      setCustomVotingPeriodValue('')
+                    }
+                  }}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Text variant="small">
+                  Use custom voting period for this proposal
+                </Text>
+              </label>
+
+              {useCustomVotingPeriod && (
+                <Flex gap="sm" align="end">
+                  <div className="flex-1 max-w-32">
+                    <Input
+                      label="Duration"
+                      type="number"
+                      min={1}
+                      max={customVotingPeriodUnit === 'hours' ? 720 : 30}
+                      value={customVotingPeriodValue}
+                      onChange={(e) => setCustomVotingPeriodValue(e.target.value)}
+                      placeholder={customVotingPeriodUnit === 'hours' ? '24' : '7'}
+                    />
+                  </div>
+                  <div className="flex gap-1 pb-1">
+                    <Button
+                      type="button"
+                      variant={customVotingPeriodUnit === 'hours' ? 'primary' : 'secondary'}
+                      size="sm"
+                      onClick={() => setCustomVotingPeriodUnit('hours')}
+                    >
+                      Hours
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={customVotingPeriodUnit === 'days' ? 'primary' : 'secondary'}
+                      size="sm"
+                      onClick={() => setCustomVotingPeriodUnit('days')}
+                    >
+                      Days
+                    </Button>
+                  </div>
+                </Flex>
+              )}
+
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -880,7 +948,13 @@ export default function CreateProposalPage() {
                 <Alert variant="warning">
                   <Text>
                     <strong>Note:</strong> This band does not require proposal review.
-                    When you submit, voting will open immediately for {band.votingPeriodDays || 7} days.
+                    When you submit, voting will open immediately for {
+                      useCustomVotingPeriod && customVotingPeriodValue
+                        ? `${customVotingPeriodValue} ${customVotingPeriodUnit}`
+                        : band.votingPeriodHours
+                          ? `${band.votingPeriodHours} hours`
+                          : `${band.votingPeriodDays || 7} days`
+                    }.
                   </Text>
                 </Alert>
               )}
@@ -907,6 +981,14 @@ export default function CreateProposalPage() {
                   onClick={() => {
                     if (!userId || !bandData?.band) return
                     const linksArray = externalLinks.split('\n').map(l => l.trim()).filter(l => l.length > 0)
+                    // Calculate custom voting period in hours if set
+                    let draftCustomVotingPeriodHours: number | undefined = undefined
+                    if (useCustomVotingPeriod && customVotingPeriodValue) {
+                      const value = parseInt(customVotingPeriodValue, 10)
+                      if (!isNaN(value) && value > 0) {
+                        draftCustomVotingPeriodHours = customVotingPeriodUnit === 'hours' ? value : value * 24
+                      }
+                    }
                     createMutation.mutate({
                       bandId: bandData.band.id,
                       userId,
@@ -929,6 +1011,7 @@ export default function CreateProposalPage() {
                       externalLinks: linksArray.length > 0 ? linksArray : undefined,
                       saveAsDraft: true,
                       allowEarlyClose,
+                      customVotingPeriodHours: draftCustomVotingPeriodHours,
                     })
                   }}
                 >

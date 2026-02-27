@@ -26,6 +26,7 @@ export const bandCreateRouter = router({
         // Governance settings
         votingMethod: z.enum(['SIMPLE_MAJORITY', 'SUPERMAJORITY_66', 'SUPERMAJORITY_75', 'UNANIMOUS']).default('SIMPLE_MAJORITY'),
         votingPeriodDays: z.number().min(1).max(30).default(7),
+        votingPeriodHours: z.number().min(1).max(720).nullable().optional(),  // 1 hour to 30 days in hours
         quorumPercentage: z.number().min(1).max(100).default(50),
         whoCanCreateProposals: z.array(z.enum(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'])).default(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR']),
         zipcode: z.preprocess(
@@ -121,6 +122,7 @@ export const bandCreateRouter = router({
           // Governance settings
           votingMethod: input.votingMethod,
           votingPeriodDays: input.votingPeriodDays,
+          votingPeriodHours: input.votingPeriodHours,
           quorumPercentage: input.quorumPercentage,
           whoCanCreateProposals: input.whoCanCreateProposals,
           zipcode: input.zipcode,

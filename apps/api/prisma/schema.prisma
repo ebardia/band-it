@@ -566,6 +566,7 @@ model Band {
   // Voting Configuration
   votingMethod          VotingMethod @default(SIMPLE_MAJORITY)
   votingPeriodDays      Int @default(7)
+  votingPeriodHours     Int?  // If set, overrides votingPeriodDays (more granular control)
   quorumPercentage      Int @default(50) // Minimum % of eligible voters that must participate
   whoCanCreateProposals MemberRole[] @default([FOUNDER, GOVERNOR, MODERATOR, CONDUCTOR])
 
@@ -1158,6 +1159,9 @@ model Proposal {
   votingEndsAt  DateTime?
   votingStartedAt DateTime?
   allowEarlyClose Boolean @default(false)  // If true, can close when all eligible members have voted
+
+  // Custom voting period (overrides band default if set)
+  customVotingPeriodHours Int?  // Voting period in hours; null = use band default
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
