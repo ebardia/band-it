@@ -132,10 +132,10 @@ export default function BandProjectsPage() {
 
   // Reorder handlers
   const handleReorderProject = async (projectId: string, direction: 'up' | 'down') => {
-    if (!userId) return
+    if (!userId || !bandData?.band?.id) return
     try {
       await reorderProjectMutation.mutateAsync({ projectId, direction, userId })
-      utils.project.getProjectsList.invalidate()
+      utils.project.getProjectsList.invalidate({ bandId: bandData.band.id })
     } catch (error) {
       console.error('Failed to reorder project:', error)
     }
