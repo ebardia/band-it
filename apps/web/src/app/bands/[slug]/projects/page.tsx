@@ -13,7 +13,8 @@ import {
   Badge,
   Loading,
   Alert,
-  BandLayout
+  BandLayout,
+  useToast
 } from '@/components/ui'
 import { AppNav } from '@/components/AppNav'
 import { OnboardingHint } from '@/components/onboarding'
@@ -92,6 +93,7 @@ function saveExpansionState(slug: string, projects: Set<string>, tasks: Set<stri
 export default function BandProjectsPage() {
   const router = useRouter()
   const params = useParams()
+  const { showToast } = useToast()
   const slug = params.slug as string
   const [userId, setUserId] = useState<string | null>(null)
   const [expansionRestored, setExpansionRestored] = useState(false)
@@ -132,17 +134,24 @@ export default function BandProjectsPage() {
 
   // Reorder handlers
   const handleReorderProject = async (projectId: string, direction: 'up' | 'down') => {
-    if (!userId || !bandData?.band?.id) return
+    if (!userId || !bandData?.band?.id) {
+      showToast('Unable to reorder - please refresh the page', 'error')
+      return
+    }
     try {
       await reorderProjectMutation.mutateAsync({ projectId, direction, userId })
-      utils.project.getProjectsList.invalidate({ bandId: bandData.band.id })
-    } catch (error) {
+      await utils.project.getProjectsList.invalidate({ bandId: bandData.band.id })
+    } catch (error: any) {
       console.error('Failed to reorder project:', error)
+      showToast(error?.message || 'Failed to reorder project', 'error')
     }
   }
 
   const handleReorderTask = async (taskId: string, projectId: string, direction: 'up' | 'down') => {
-    if (!userId) return
+    if (!userId) {
+      showToast('Unable to reorder - please refresh the page', 'error')
+      return
+    }
     try {
       await reorderTaskMutation.mutateAsync({ taskId, direction, userId })
       // Invalidate the tasks cache for this project
@@ -155,13 +164,17 @@ export default function BandProjectsPage() {
       if (result.tasks) {
         setTasksCache(prev => ({ ...prev, [projectId]: result.tasks }))
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to reorder task:', error)
+      showToast(error?.message || 'Failed to reorder task', 'error')
     }
   }
 
   const handleReorderChecklist = async (itemId: string, taskId: string, direction: 'up' | 'down') => {
-    if (!userId) return
+    if (!userId) {
+      showToast('Unable to reorder - please refresh the page', 'error')
+      return
+    }
     try {
       await reorderChecklistMutation.mutateAsync({ itemId, direction, userId })
       // Invalidate the checklist cache for this task
@@ -174,8 +187,9 @@ export default function BandProjectsPage() {
       if (result.checklistItems) {
         setChecklistCache(prev => ({ ...prev, [taskId]: result.checklistItems }))
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to reorder checklist item:', error)
+      showToast(error?.message || 'Failed to reorder checklist item', 'error')
     }
   }
 
