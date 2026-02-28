@@ -760,8 +760,8 @@ export default function TaskDetailPage() {
                               </Text>
                             )}
                           </div>
-                          {/* Additional info badges */}
-                          <Flex gap="sm" className="flex-wrap mt-1">
+                          {/* Additional info badges + reorder/delete buttons */}
+                          <Flex gap="sm" className="flex-wrap mt-1 items-center">
                             {item.assignee && (
                               <Badge variant="info">{item.assignee.name}</Badge>
                             )}
@@ -775,40 +775,39 @@ export default function TaskDetailPage() {
                             {item.files && item.files.length > 0 && (
                               <Badge variant="neutral">📎 {item.files.length}</Badge>
                             )}
+                            {/* Reorder and delete buttons */}
+                            <div className="flex items-center gap-1 ml-auto opacity-0 group-hover/item:opacity-100 transition-opacity">
+                              {canReorderItem && (
+                                <>
+                                  <button
+                                    onClick={() => handleReorderChecklist(item.id, 'up')}
+                                    disabled={isFirst || reorderChecklistMutation.isPending}
+                                    className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isFirst ? 'invisible' : ''}`}
+                                    title="Move up"
+                                  >
+                                    ▲
+                                  </button>
+                                  <button
+                                    onClick={() => handleReorderChecklist(item.id, 'down')}
+                                    disabled={isLast || reorderChecklistMutation.isPending}
+                                    className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isLast ? 'invisible' : ''}`}
+                                    title="Move down"
+                                  >
+                                    ▼
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                onClick={() => handleDeleteItem(item.id)}
+                                disabled={deleteItemMutation.isPending}
+                                className="p-1 text-xs text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded"
+                                title="Delete item"
+                              >
+                                ✕
+                              </button>
+                            </div>
                           </Flex>
                         </div>
-
-                        {/* Reorder buttons */}
-                        {canReorderItem && (
-                          <div className="flex items-center gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0">
-                            <button
-                              onClick={() => handleReorderChecklist(item.id, 'up')}
-                              disabled={isFirst || reorderChecklistMutation.isPending}
-                              className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isFirst ? 'invisible' : ''}`}
-                              title="Move up"
-                            >
-                              ▲
-                            </button>
-                            <button
-                              onClick={() => handleReorderChecklist(item.id, 'down')}
-                              disabled={isLast || reorderChecklistMutation.isPending}
-                              className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isLast ? 'invisible' : ''}`}
-                              title="Move down"
-                            >
-                              ▼
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Delete button */}
-                        <button
-                          onClick={() => handleDeleteItem(item.id)}
-                          disabled={deleteItemMutation.isPending}
-                          className="min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-red-600 flex-shrink-0"
-                          title="Delete item"
-                        >
-                          ✕
-                        </button>
                       </div>
                     )
                   })}
