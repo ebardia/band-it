@@ -50,7 +50,7 @@ export const projectHierarchyRouter = router({
           },
         },
         orderBy: {
-          createdAt: 'desc',
+          orderIndex: 'asc',
         },
       })
 
@@ -127,7 +127,7 @@ export const projectHierarchyRouter = router({
           },
         },
         orderBy: {
-          createdAt: 'asc',
+          orderIndex: 'asc',
         },
       })
 
@@ -179,7 +179,7 @@ export const projectHierarchyRouter = router({
           },
         },
         orderBy: {
-          createdAt: 'asc',
+          orderIndex: 'asc',
         },
       })
 
