@@ -104,6 +104,11 @@ export default function BandProjectsPage() {
   const [tasksCache, setTasksCache] = useState<Record<string, TaskData[]>>({})
   const [checklistCache, setChecklistCache] = useState<Record<string, ChecklistData[]>>({})
 
+  // Reorder mutations
+  const reorderProjectMutation = trpc.reorder.reorderProject.useMutation()
+  const reorderTaskMutation = trpc.reorder.reorderTask.useMutation()
+  const reorderChecklistMutation = trpc.reorder.reorderChecklistItem.useMutation()
+
   // Restore expansion state from localStorage on mount
   useEffect(() => {
     if (slug && !expansionRestored) {
@@ -124,6 +129,55 @@ export default function BandProjectsPage() {
   }, [slug, expandedProjects, expandedTasks, expansionRestored])
 
   const utils = trpc.useUtils()
+
+  // Reorder handlers
+  const handleReorderProject = async (projectId: string, direction: 'up' | 'down') => {
+    if (!userId) return
+    try {
+      await reorderProjectMutation.mutateAsync({ projectId, direction, userId })
+      utils.project.getProjectsList.invalidate()
+    } catch (error) {
+      console.error('Failed to reorder project:', error)
+    }
+  }
+
+  const handleReorderTask = async (taskId: string, projectId: string, direction: 'up' | 'down') => {
+    if (!userId) return
+    try {
+      await reorderTaskMutation.mutateAsync({ taskId, direction, userId })
+      // Invalidate the tasks cache for this project
+      setTasksCache(prev => {
+        const { [projectId]: _, ...rest } = prev
+        return rest
+      })
+      // Re-fetch tasks for the project
+      const result = await utils.project.getTasksForProject.fetch({ projectId })
+      if (result.tasks) {
+        setTasksCache(prev => ({ ...prev, [projectId]: result.tasks }))
+      }
+    } catch (error) {
+      console.error('Failed to reorder task:', error)
+    }
+  }
+
+  const handleReorderChecklist = async (itemId: string, taskId: string, direction: 'up' | 'down') => {
+    if (!userId) return
+    try {
+      await reorderChecklistMutation.mutateAsync({ itemId, direction, userId })
+      // Invalidate the checklist cache for this task
+      setChecklistCache(prev => {
+        const { [taskId]: _, ...rest } = prev
+        return rest
+      })
+      // Re-fetch checklist for the task
+      const result = await utils.project.getChecklistForTask.fetch({ taskId })
+      if (result.checklistItems) {
+        setChecklistCache(prev => ({ ...prev, [taskId]: result.checklistItems }))
+      }
+    } catch (error) {
+      console.error('Failed to reorder checklist item:', error)
+    }
+  }
 
   // Fetch data for restored expanded items
   useEffect(() => {
@@ -298,11 +352,13 @@ export default function BandProjectsPage() {
   const counts = projectsData?.counts || { active: 0, planning: 0, onHold: 0, completed: 0, cancelled: 0 }
 
   // Render a single project row
-  const renderProjectRow = (project: ProjectData) => {
+  const renderProjectRow = (project: ProjectData, index: number, totalInSection: number) => {
     const isExpanded = expandedProjects.has(project.id)
     const hasTasks = project.taskCount > 0
     const tasks = tasksCache[project.id] || []
     const statusIcon = getStatusIndicator(project.tasksCompleted, project.taskCount)
+    const isFirst = index === 0
+    const isLast = index === totalInSection - 1
 
     return (
       <div key={project.id} className="border-b border-gray-100 last:border-b-0">
@@ -351,6 +407,28 @@ export default function BandProjectsPage() {
               )}
             </div>
           </div>
+
+          {/* Reorder buttons */}
+          {canAccessAdminTools && (
+            <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={(e) => { e.stopPropagation(); handleReorderProject(project.id, 'up') }}
+                disabled={isFirst || reorderProjectMutation.isPending}
+                className={`p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isFirst ? 'invisible' : ''}`}
+                title="Move up"
+              >
+                ▲
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleReorderProject(project.id, 'down') }}
+                disabled={isLast || reorderProjectMutation.isPending}
+                className={`p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isLast ? 'invisible' : ''}`}
+                title="Move down"
+              >
+                ▼
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Expanded tasks - 8px indent mobile, 16px desktop */}
@@ -359,7 +437,7 @@ export default function BandProjectsPage() {
             {tasks.length === 0 ? (
               <div className="py-2 px-4 text-sm text-gray-400">Loading tasks...</div>
             ) : (
-              tasks.map(task => renderTaskRow(task, project.id))
+              tasks.map((task, idx) => renderTaskRow(task, project.id, idx, tasks.length))
             )}
           </div>
         )}
@@ -368,15 +446,17 @@ export default function BandProjectsPage() {
   }
 
   // Render a task row
-  const renderTaskRow = (task: TaskData, projectId: string) => {
+  const renderTaskRow = (task: TaskData, projectId: string, index: number, totalInProject: number) => {
     const isExpanded = expandedTasks.has(task.id)
     const hasChecklist = task.checklistCount > 0
     const checklistItems = checklistCache[task.id] || []
     const isCompleted = task.status === 'COMPLETED'
     const statusIcon = isCompleted ? '✅' : (task.status === 'IN_PROGRESS' || task.status === 'IN_REVIEW') ? '⏳' : '○'
+    const isFirst = index === 0
+    const isLast = index === totalInProject - 1
 
     return (
-      <div key={task.id}>
+      <div key={task.id} className="group/task">
         {/* Task row */}
         <div className="flex items-center py-1 md:py-2 px-1 md:px-2 hover:bg-gray-50">
           {/* Expand toggle - 44px tap target on mobile */}
@@ -410,6 +490,28 @@ export default function BandProjectsPage() {
               </Text>
             )}
           </div>
+
+          {/* Reorder buttons */}
+          {canAccessAdminTools && (
+            <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover/task:opacity-100 transition-opacity">
+              <button
+                onClick={(e) => { e.stopPropagation(); handleReorderTask(task.id, projectId, 'up') }}
+                disabled={isFirst || reorderTaskMutation.isPending}
+                className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isFirst ? 'invisible' : ''}`}
+                title="Move up"
+              >
+                ▲
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleReorderTask(task.id, projectId, 'down') }}
+                disabled={isLast || reorderTaskMutation.isPending}
+                className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isLast ? 'invisible' : ''}`}
+                title="Move down"
+              >
+                ▼
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Expanded checklist - 8px indent mobile, 16px desktop */}
@@ -418,7 +520,7 @@ export default function BandProjectsPage() {
             {checklistItems.length === 0 ? (
               <div className="py-1 px-4 text-sm text-gray-400">Loading checklist...</div>
             ) : (
-              checklistItems.map(item => renderChecklistRow(item, task.id))
+              checklistItems.map((item, idx) => renderChecklistRow(item, task.id, idx, checklistItems.length))
             )}
           </div>
         )}
@@ -427,9 +529,14 @@ export default function BandProjectsPage() {
   }
 
   // Render a checklist item row
-  const renderChecklistRow = (item: ChecklistData, taskId: string) => {
+  const renderChecklistRow = (item: ChecklistData, taskId: string, index: number, totalInTask: number) => {
+    const isFirst = index === 0
+    const isLast = index === totalInTask - 1
+    // Assignee can also reorder their own checklist items
+    const canReorderItem = canAccessAdminTools || (item.assignee && userId && item.assignee.id === userId)
+
     return (
-      <div key={item.id} className="flex items-center py-1 px-1 md:px-2 hover:bg-gray-50 min-h-[44px] md:min-h-0">
+      <div key={item.id} className="flex items-center py-1 px-1 md:px-2 hover:bg-gray-50 min-h-[44px] md:min-h-0 group/checklist">
         {/* Spacer for alignment - smaller on mobile */}
         <div className="w-4 md:w-6 flex-shrink-0" />
 
@@ -449,6 +556,28 @@ export default function BandProjectsPage() {
             </button>
           </div>
         </div>
+
+        {/* Reorder buttons */}
+        {canReorderItem && (
+          <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover/checklist:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => { e.stopPropagation(); handleReorderChecklist(item.id, taskId, 'up') }}
+              disabled={isFirst || reorderChecklistMutation.isPending}
+              className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isFirst ? 'invisible' : ''}`}
+              title="Move up"
+            >
+              ▲
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleReorderChecklist(item.id, taskId, 'down') }}
+              disabled={isLast || reorderChecklistMutation.isPending}
+              className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isLast ? 'invisible' : ''}`}
+              title="Move down"
+            >
+              ▼
+            </button>
+          </div>
+        )}
       </div>
     )
   }
@@ -574,7 +703,7 @@ function SectionHeader({
   title: string
   count: number
   projects: ProjectData[]
-  renderProjectRow: (project: ProjectData) => React.ReactNode
+  renderProjectRow: (project: ProjectData, index: number, total: number) => React.ReactNode
   defaultCollapsed?: boolean
 }) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
@@ -594,7 +723,7 @@ function SectionHeader({
 
       {!isCollapsed && (
         <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-          {projects.map(project => renderProjectRow(project))}
+          {projects.map((project, index) => renderProjectRow(project, index, projects.length))}
         </div>
       )}
     </div>

@@ -223,6 +223,21 @@ export default function TaskDetailPage() {
     }
   })
 
+  // Reorder checklist mutation
+  const reorderChecklistMutation = trpc.reorder.reorderChecklistItem.useMutation({
+    onSuccess: () => {
+      refetchChecklist()
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
+  const handleReorderChecklist = (itemId: string, direction: 'up' | 'down') => {
+    if (!userId) return
+    reorderChecklistMutation.mutate({ itemId, direction, userId })
+  }
+
   const handleClaimTask = () => {
     if (!userId) return
     claimTaskMutation.mutate({ taskId, userId })
@@ -706,69 +721,97 @@ export default function TaskDetailPage() {
                 <Text variant="small" color="muted">No checklist items yet. Add items to track progress or use AI to suggest some.</Text>
               ) : checklistItems.length > 0 ? (
                 <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-                  {checklistItems.map((item: any) => (
-                    <div key={item.id} className="flex items-start py-2 px-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
-                      {/* Toggle checkbox */}
-                      <button
-                        onClick={() => handleToggleItem(item.id)}
-                        disabled={toggleItemMutation.isPending}
-                        className="min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center flex-shrink-0"
-                      >
-                        <span className="text-lg">{item.isCompleted ? '☑️' : '☐'}</span>
-                      </button>
+                  {checklistItems.map((item: any, index: number) => {
+                    const isFirst = index === 0
+                    const isLast = index === checklistItems.length - 1
+                    const canReorderItem = canUpdate || (item.assignee && userId && item.assignee.id === userId)
 
-                      {/* Item info */}
-                      <div className="flex-1 min-w-0 ml-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <button
-                            onClick={() => handleViewChecklistItem(item.id)}
-                            className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav min-h-[44px] md:min-h-0"
-                            title="View checklist item"
-                          >
-                            <Text
-                              variant="small"
-                              weight="semibold"
-                              className={`truncate group-hover/nav:text-blue-600 ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}
+                    return (
+                      <div key={item.id} className="flex items-start py-2 px-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 group/item">
+                        {/* Toggle checkbox */}
+                        <button
+                          onClick={() => handleToggleItem(item.id)}
+                          disabled={toggleItemMutation.isPending}
+                          className="min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center flex-shrink-0"
+                        >
+                          <span className="text-lg">{item.isCompleted ? '☑️' : '☐'}</span>
+                        </button>
+
+                        {/* Item info */}
+                        <div className="flex-1 min-w-0 ml-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <button
+                              onClick={() => handleViewChecklistItem(item.id)}
+                              className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav min-h-[44px] md:min-h-0"
+                              title="View checklist item"
                             >
-                              {item.description}
-                            </Text>
-                            <span className="text-blue-500 font-bold text-sm">→</span>
-                          </button>
-                          {item.isCompleted && item.completedBy && (
-                            <Text variant="small" color="muted">
-                              — {item.completedBy.name}
-                            </Text>
-                          )}
+                              <Text
+                                variant="small"
+                                weight="semibold"
+                                className={`truncate group-hover/nav:text-blue-600 ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}
+                              >
+                                {item.description}
+                              </Text>
+                              <span className="text-blue-500 font-bold text-sm">→</span>
+                            </button>
+                            {item.isCompleted && item.completedBy && (
+                              <Text variant="small" color="muted">
+                                — {item.completedBy.name}
+                              </Text>
+                            )}
+                          </div>
+                          {/* Additional info badges */}
+                          <Flex gap="sm" className="flex-wrap mt-1">
+                            {item.assignee && (
+                              <Badge variant="info">{item.assignee.name}</Badge>
+                            )}
+                            {item.dueDate && (
+                              <Badge
+                                variant={new Date(item.dueDate) < new Date() && !item.isCompleted ? 'danger' : 'neutral'}
+                              >
+                                Due: {new Date(item.dueDate).toLocaleDateString()}
+                              </Badge>
+                            )}
+                            {item.files && item.files.length > 0 && (
+                              <Badge variant="neutral">📎 {item.files.length}</Badge>
+                            )}
+                          </Flex>
                         </div>
-                        {/* Additional info badges */}
-                        <Flex gap="sm" className="flex-wrap mt-1">
-                          {item.assignee && (
-                            <Badge variant="info">{item.assignee.name}</Badge>
-                          )}
-                          {item.dueDate && (
-                            <Badge
-                              variant={new Date(item.dueDate) < new Date() && !item.isCompleted ? 'danger' : 'neutral'}
-                            >
-                              Due: {new Date(item.dueDate).toLocaleDateString()}
-                            </Badge>
-                          )}
-                          {item.files && item.files.length > 0 && (
-                            <Badge variant="neutral">📎 {item.files.length}</Badge>
-                          )}
-                        </Flex>
-                      </div>
 
-                      {/* Delete button */}
-                      <button
-                        onClick={() => handleDeleteItem(item.id)}
-                        disabled={deleteItemMutation.isPending}
-                        className="min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-red-600 flex-shrink-0"
-                        title="Delete item"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
+                        {/* Reorder buttons */}
+                        {canReorderItem && (
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0">
+                            <button
+                              onClick={() => handleReorderChecklist(item.id, 'up')}
+                              disabled={isFirst || reorderChecklistMutation.isPending}
+                              className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isFirst ? 'invisible' : ''}`}
+                              title="Move up"
+                            >
+                              ▲
+                            </button>
+                            <button
+                              onClick={() => handleReorderChecklist(item.id, 'down')}
+                              disabled={isLast || reorderChecklistMutation.isPending}
+                              className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isLast ? 'invisible' : ''}`}
+                              title="Move down"
+                            >
+                              ▼
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Delete button */}
+                        <button
+                          onClick={() => handleDeleteItem(item.id)}
+                          disabled={deleteItemMutation.isPending}
+                          className="min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 hover:text-red-600 flex-shrink-0"
+                          title="Delete item"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )
+                  })}
                 </div>
               ) : null}
 

@@ -30,6 +30,7 @@ import { analyticsRouter } from './analytics'
 import { documentsRouter } from './documents'
 import { onboardingRouter } from './onboarding'
 import { calendarRouter } from './calendar'
+import { reorderRouter } from './reorder'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -64,6 +65,7 @@ export const appRouter = router({
   documents: documentsRouter,
   onboarding: onboardingRouter,
   calendar: calendarRouter,
+  reorder: reorderRouter,
 })
 
 // Export type definition of API

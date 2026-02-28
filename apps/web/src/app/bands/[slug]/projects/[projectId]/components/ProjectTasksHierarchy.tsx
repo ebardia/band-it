@@ -119,6 +119,43 @@ export function ProjectTasksHierarchy({
   const [checklistCache, setChecklistCache] = useState<Record<string, ChecklistData[]>>({})
   const [expansionRestored, setExpansionRestored] = useState(false)
 
+  // Reorder mutations
+  const reorderTaskMutation = trpc.reorder.reorderTask.useMutation()
+  const reorderChecklistMutation = trpc.reorder.reorderChecklistItem.useMutation()
+
+  // Reorder handlers
+  const handleReorderTask = async (taskId: string, direction: 'up' | 'down') => {
+    if (!userId) return
+    try {
+      await reorderTaskMutation.mutateAsync({ taskId, direction, userId })
+      utils.task.getByProject.invalidate({ projectId })
+    } catch (error) {
+      console.error('Failed to reorder task:', error)
+    }
+  }
+
+  const handleReorderChecklist = async (itemId: string, taskId: string, direction: 'up' | 'down') => {
+    if (!userId) return
+    try {
+      await reorderChecklistMutation.mutateAsync({ itemId, direction, userId })
+      // Invalidate the checklist cache for this task
+      setChecklistCache(prev => {
+        const { [taskId]: _, ...rest } = prev
+        return rest
+      })
+      // Re-fetch checklist for the task
+      const result = await utils.project.getChecklistForTask.fetch({ taskId })
+      if (result.checklistItems) {
+        setChecklistCache(prev => ({ ...prev, [taskId]: result.checklistItems }))
+      }
+    } catch (error) {
+      console.error('Failed to reorder checklist item:', error)
+    }
+  }
+
+  // Check if user can reorder (FOUNDER, GOVERNOR, MODERATOR, CONDUCTOR)
+  const canReorder = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(userRole)
+
   // Restore expansion state from localStorage on mount
   useEffect(() => {
     if (projectId && !expansionRestored) {
@@ -206,7 +243,7 @@ export function ProjectTasksHierarchy({
     }
   }
 
-  const renderTaskRow = (task: any) => {
+  const renderTaskRow = (task: any, index: number, totalTasks: number) => {
     const isExpanded = expandedTasks.has(task.id)
     const checklistItems = checklistCache[task.id] || []
     const hasChecklist = task._count?.checklistItems > 0 || checklistItems.length > 0
@@ -217,9 +254,11 @@ export function ProjectTasksHierarchy({
     const isAssignee = task.assigneeId === userId
     const canModifyTask = isAssignee || canUpdate
     const isHighlighted = highlightedTaskId === task.id
+    const isFirst = index === 0
+    const isLast = index === totalTasks - 1
 
     return (
-      <div key={task.id} className={`border-b border-gray-100 last:border-b-0 ${isHighlighted ? 'bg-blue-50' : ''}`}>
+      <div key={task.id} className={`border-b border-gray-100 last:border-b-0 ${isHighlighted ? 'bg-blue-50' : ''} group/task`}>
         {/* Task row - single line compact */}
         <div className="flex items-center py-1.5 px-2 hover:bg-gray-50 gap-2 min-h-[40px]">
           {/* Expand toggle */}
@@ -313,6 +352,28 @@ export function ProjectTasksHierarchy({
             </div>
           )}
 
+          {/* Reorder buttons */}
+          {canReorder && (
+            <div className="flex items-center gap-0.5 opacity-0 group-hover/task:opacity-100 transition-opacity flex-shrink-0">
+              <button
+                onClick={(e) => { e.stopPropagation(); handleReorderTask(task.id, 'up') }}
+                disabled={isFirst || reorderTaskMutation.isPending}
+                className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isFirst ? 'invisible' : ''}`}
+                title="Move up"
+              >
+                ▲
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleReorderTask(task.id, 'down') }}
+                disabled={isLast || reorderTaskMutation.isPending}
+                className={`p-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isLast ? 'invisible' : ''}`}
+                title="Move down"
+              >
+                ▼
+              </button>
+            </div>
+          )}
+
           {/* Verification status badge - inline */}
           {task.verificationStatus && (
             <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${
@@ -331,20 +392,46 @@ export function ProjectTasksHierarchy({
             {checklistItems.length === 0 ? (
               <div className="py-1 text-xs text-gray-400">Loading...</div>
             ) : (
-              checklistItems.map((item: ChecklistData) => (
-                <div key={item.id} className="flex items-center py-0.5 hover:bg-gray-50 gap-1">
-                  <span className="text-xs">{item.isCompleted ? '☑️' : '☐'}</span>
-                  <button
-                    onClick={() => router.push(`/bands/${bandSlug}/tasks/${task.id}/checklist/${item.id}`)}
-                    className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav text-xs"
-                  >
-                    <span className={`truncate group-hover/nav:text-blue-600 ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}>
-                      {item.description}
-                    </span>
-                    <span className="text-blue-500 font-bold">→</span>
-                  </button>
-                </div>
-              ))
+              checklistItems.map((item: ChecklistData, itemIndex: number) => {
+                const isItemFirst = itemIndex === 0
+                const isItemLast = itemIndex === checklistItems.length - 1
+                const canReorderItem = canReorder || (item.assignee && userId && item.assignee.id === userId)
+
+                return (
+                  <div key={item.id} className="flex items-center py-0.5 hover:bg-gray-50 gap-1 group/checklist">
+                    <span className="text-xs">{item.isCompleted ? '☑️' : '☐'}</span>
+                    <button
+                      onClick={() => router.push(`/bands/${bandSlug}/tasks/${task.id}/checklist/${item.id}`)}
+                      className="flex items-center gap-1 hover:text-blue-600 transition-colors group/nav text-xs flex-1 min-w-0"
+                    >
+                      <span className={`truncate group-hover/nav:text-blue-600 ${item.isCompleted ? 'text-gray-400 line-through' : ''}`}>
+                        {item.description}
+                      </span>
+                      <span className="text-blue-500 font-bold">→</span>
+                    </button>
+                    {canReorderItem && (
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover/checklist:opacity-100 transition-opacity flex-shrink-0">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleReorderChecklist(item.id, task.id, 'up') }}
+                          disabled={isItemFirst || reorderChecklistMutation.isPending}
+                          className={`p-0.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isItemFirst ? 'invisible' : ''}`}
+                          title="Move up"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleReorderChecklist(item.id, task.id, 'down') }}
+                          disabled={isItemLast || reorderChecklistMutation.isPending}
+                          className={`p-0.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isItemLast ? 'invisible' : ''}`}
+                          title="Move down"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })
             )}
           </div>
         )}
@@ -405,7 +492,7 @@ export function ProjectTasksHierarchy({
 
       {tasks.length > 0 ? (
         <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-          {tasks.map((task: any) => renderTaskRow(task))}
+          {tasks.map((task: any, index: number) => renderTaskRow(task, index, tasks.length))}
         </div>
       ) : (
         <Alert variant="info">
