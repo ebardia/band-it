@@ -118,27 +118,10 @@ export function ChecklistItemHeaderCompact({
               {isToggling ? '...' : isCompleted ? 'Reopen' : 'Complete'}
             </button>
           )}
-          {canModify && (
-            <button
-              onClick={onEdit}
-              className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
-            >
-              Edit
-            </button>
-          )}
-          {canModify && (
-            <button
-              onClick={onDelete}
-              disabled={isDeleting}
-              className="text-xs px-2 py-1 text-red-600 hover:bg-red-50 rounded"
-            >
-              {isDeleting ? '...' : 'Delete'}
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Line 2: Metadata */}
+      {/* Line 2: Metadata + Edit/Delete */}
       <div className="flex items-center gap-3 text-sm text-gray-600 flex-wrap">
         <button
           onClick={() => router.push(`/bands/${bandSlug}/tasks/${task.id}`)}
@@ -157,12 +140,31 @@ export function ChecklistItemHeaderCompact({
             </span>
           </>
         )}
-        <button
-          onClick={() => setShowMore(!showMore)}
-          className="text-blue-600 hover:underline ml-auto"
-        >
-          {showMore ? '< Less' : '> More'}
-        </button>
+        <div className="flex items-center gap-1 ml-auto">
+          {canModify && (
+            <button
+              onClick={onEdit}
+              className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
+            >
+              Edit
+            </button>
+          )}
+          {canModify && (
+            <button
+              onClick={onDelete}
+              disabled={isDeleting}
+              className="text-xs px-2 py-1 text-red-600 hover:bg-red-50 rounded"
+            >
+              {isDeleting ? '...' : 'Delete'}
+            </button>
+          )}
+          <button
+            onClick={() => setShowMore(!showMore)}
+            className="text-blue-600 hover:underline"
+          >
+            {showMore ? '< Less' : '> More'}
+          </button>
+        </div>
       </div>
 
       {/* Verification status badge if applicable */}
