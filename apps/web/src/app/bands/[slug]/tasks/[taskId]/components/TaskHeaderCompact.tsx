@@ -14,8 +14,10 @@ interface TaskHeaderCompactProps {
   onEdit: () => void
   onStatusChange: (status: TaskStatus) => void
   onClaim: () => void
+  onDelete: () => void
   isUpdating: boolean
   isClaiming: boolean
+  isDeleting: boolean
 }
 
 const STATUS_CONFIG: Record<string, { icon: string; color: string }> = {
@@ -35,8 +37,10 @@ export function TaskHeaderCompact({
   onEdit,
   onStatusChange,
   onClaim,
+  onDelete,
   isUpdating,
   isClaiming,
+  isDeleting,
 }: TaskHeaderCompactProps) {
   const router = useRouter()
   const [showMore, setShowMore] = useState(false)
@@ -182,6 +186,15 @@ export function TaskHeaderCompact({
               className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
             >
               Edit
+            </button>
+          )}
+          {canUpdate && (
+            <button
+              onClick={onDelete}
+              disabled={isDeleting}
+              className="text-xs px-2 py-1 text-red-600 hover:bg-red-50 rounded"
+            >
+              {isDeleting ? '...' : 'Delete'}
             </button>
           )}
         </div>

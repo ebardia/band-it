@@ -212,9 +212,26 @@ export default function TaskDetailPage() {
     }
   })
 
+  // Task delete mutation
+  const deleteTaskMutation = trpc.task.delete.useMutation({
+    onSuccess: () => {
+      showToast('Task deleted!', 'success')
+      router.push(`/bands/${slug}/projects/${task?.projectId}`)
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    }
+  })
+
   const handleClaimTask = () => {
     if (!userId) return
     claimTaskMutation.mutate({ taskId, userId })
+  }
+
+  const handleDeleteTask = () => {
+    if (!userId) return
+    if (!window.confirm('Are you sure you want to delete this task? This will also delete all checklist items. This action cannot be undone.')) return
+    deleteTaskMutation.mutate({ taskId, userId })
   }
 
   const handleStatusChange = (newStatus: TaskStatus) => {
@@ -548,8 +565,10 @@ export default function TaskDetailPage() {
               onEdit={handleOpenEditModal}
               onStatusChange={handleStatusChange}
               onClaim={handleClaimTask}
+              onDelete={handleDeleteTask}
               isUpdating={updateTaskMutation.isPending}
               isClaiming={claimTaskMutation.isPending}
+              isDeleting={deleteTaskMutation.isPending}
             />
           </Card>
 

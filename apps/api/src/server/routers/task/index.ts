@@ -1,5 +1,6 @@
 import { router, publicProcedure } from '../../trpc'
 import { createTask } from './task.create'
+import { deleteTask } from './task.delete'
 import { getTasksByProject, getTaskById, getTasksByBand, getMyTasks, getMyProjectTasks, getClaimableTasks } from './task.query'
 import { updateTask } from './task.update'
 import { submitForVerification, verifyTask } from './task.verify'
@@ -22,6 +23,9 @@ export const taskRouter = router({
 
   // Update
   update: updateTask,
+
+  // Delete
+  delete: deleteTask,
 
   // Claiming
   claim: claimTask,
