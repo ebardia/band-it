@@ -159,6 +159,10 @@ model User {
 
   // Onboarding
   hasCompletedWelcome         Boolean          @default(false)
+
+  // Donations
+  donationsConfirmed          Donation[] @relation("DonationsConfirmed")
+  donationsRejected           Donation[] @relation("DonationsRejected")
 }
 
 enum SubscriptionStatus {
@@ -475,6 +479,16 @@ enum NotificationType {
   // Public Website Integration
   MEMBER_APPLIED                  // Someone applied via public website
   CONTACT_FORM_SUBMITTED          // Contact form submission from public website
+
+  // Donations
+  DONATION_RECEIVED               // New donation submitted (for treasurer)
+  DONATION_CONFIRMED              // Donation confirmed by treasurer (for donor)
+  DONATION_REJECTED               // Donation rejected by treasurer (for donor)
+  DONATION_DUE                    // Recurring donation due soon (for donor)
+  DONATION_OVERDUE                // Recurring donation past due (for donor)
+  DONATION_MISSED                 // Recurring donation marked as missed (for donor)
+  RECURRING_DONATION_CANCELLED    // Donor cancelled recurring donation (for treasurer)
+  RECURRING_DONATION_AUTO_CANCELLED // Auto-cancelled after 3 missed (for donor + treasurer)
 }
 
 enum NotificationPriority {
@@ -621,6 +635,8 @@ model Band {
   documents       Document[]
   onboarding      BandOnboarding?
   onboardingEvents OnboardingEvent[]
+  donations       Donation[]
+  recurringDonations RecurringDonation[]
 
   @@index([createdById])
   @@index([status])
@@ -897,6 +913,12 @@ model BandFinanceSettings {
   newMemberGraceDays     Int     @default(7)   // Days after approval before enforcement
   lapsedMemberGraceDays  Int     @default(3)   // Days after payment failure before enforcement
 
+  // Donations Configuration
+  donationsEnabled        Boolean @default(false)
+  donationPaymentInfo     Json?   // { venmo: "@handle", zelle: "email", etc. }
+  donationDefaultBucketId String? // Default bucket for donations (null = general fund)
+  donationDueWindowDays   Int     @default(7)  // Days after expected date before marking MISSED
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1106,6 +1128,138 @@ enum StripeEventProcessingStatus {
   OK
   IGNORED
   ERROR
+}
+
+// ============================================
+// FINANCE - DONATIONS
+// ============================================
+
+enum DonationStatus {
+  EXPECTED     // System-generated for recurring, awaiting payment
+  PENDING      // Donor reported payment, awaiting treasurer confirmation
+  CONFIRMED    // Treasurer confirmed receipt
+  MISSED       // Donor didn't pay within window (for recurring)
+  REJECTED     // Treasurer rejected (e.g., payment not found)
+  CANCELLED    // Donor cancelled before payment
+}
+
+enum RecurringDonationStatus {
+  ACTIVE         // Active and generating expected donations
+  PAUSED         // Temporarily paused by donor
+  CANCELLED      // Cancelled by donor
+  AUTO_CANCELLED // System cancelled after 3 missed payments
+}
+
+enum DonationFrequency {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+model RecurringDonation {
+  id              String   @id @default(cuid())
+  bandId          String
+  donorId         String   // User ID of the donor
+
+  // Payment details
+  amount          Int      // Amount in cents
+  currency        String   @default("usd")
+  frequency       DonationFrequency
+  paymentMethod   PaymentMethod
+  paymentMethodOther String?  // If method is OTHER
+
+  // Schedule
+  startDate       DateTime
+  nextDueDate     DateTime
+  dayOfWeek       Int?     // 0-6 for weekly
+  dayOfMonth      Int?     // 1-28 for monthly/quarterly/yearly
+
+  // Status
+  status          RecurringDonationStatus @default(ACTIVE)
+  missedCount     Int      @default(0)  // Auto-cancel after 3
+
+  // Metadata
+  note            String?  @db.Text  // Donor's recurring donation note
+
+  // Tracking
+  pausedAt        DateTime?
+  cancelledAt     DateTime?
+  autoCancelledAt DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  band            Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  donations       Donation[]
+
+  @@index([bandId, status])
+  @@index([donorId])
+  @@index([nextDueDate, status])
+}
+
+model Donation {
+  id                  String   @id @default(cuid())
+  bandId              String
+  donorId             String   // User ID of the donor
+
+  // Payment details
+  amount              Int      // Amount in cents
+  currency            String   @default("usd")
+  paymentMethod       PaymentMethod
+  paymentMethodOther  String?  // If method is OTHER
+  referenceNumber     String?  // Transaction reference (Venmo ID, etc.)
+
+  // Recurring link (null for one-time donations)
+  recurringDonationId String?
+
+  // Status
+  status              DonationStatus @default(PENDING)
+
+  // For EXPECTED donations (recurring)
+  expectedDate        DateTime?  // When payment was expected
+  dueWindowDays       Int        @default(7)  // Days after expectedDate before marking MISSED
+
+  // Donor submission
+  donorNote           String?    @db.Text
+  submittedAt         DateTime?  // When donor marked as paid
+
+  // Treasurer confirmation
+  confirmedById       String?
+  confirmedAt         DateTime?
+  confirmationNote    String?    @db.Text
+
+  // Rejection
+  rejectedById        String?
+  rejectedAt          DateTime?
+  rejectionReason     String?    @db.Text
+
+  // Missed
+  missedAt            DateTime?
+
+  // Cancellation
+  cancelledAt         DateTime?
+
+  // Reminders sent
+  reminderSentAt      DateTime?  // First reminder
+  overdueReminderSentAt DateTime?  // Overdue reminder
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  band                Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  recurringDonation   RecurringDonation? @relation(fields: [recurringDonationId], references: [id])
+  confirmedBy         User?    @relation("DonationsConfirmed", fields: [confirmedById], references: [id])
+  rejectedBy          User?    @relation("DonationsRejected", fields: [rejectedById], references: [id])
+  files               File[]
+
+  @@index([bandId, status])
+  @@index([donorId])
+  @@index([recurringDonationId])
+  @@index([expectedDate, status])
+  @@index([status, confirmedAt])
 }
 
 // ============================================
@@ -1903,6 +2057,7 @@ model File {
   feedbackId      String?
   deliverableId   String?
   checklistDeliverableId String?
+  donationId      String?
 
   // Metadata
   description   String?
@@ -1923,6 +2078,7 @@ model File {
   feedback      Feedback? @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
   deliverable   TaskDeliverable? @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
   checklistDeliverable ChecklistItemDeliverable? @relation(fields: [checklistDeliverableId], references: [id], onDelete: Cascade)
+  donation      Donation? @relation(fields: [donationId], references: [id], onDelete: Cascade)
   document      Document?
 
   @@index([uploadedById])
@@ -1936,6 +2092,7 @@ model File {
   @@index([feedbackId])
   @@index([deliverableId])
   @@index([checklistDeliverableId])
+  @@index([donationId])
   @@index([category])
 }
 

@@ -13,6 +13,7 @@ import { initDigestCron } from './cron/digest-cron'
 import { initTaskEscalationCron } from './cron/task-escalation-cron'
 import { initChecklistCron } from './cron/checklist-cron'
 import { initStatusUpdateCron } from './cron/status-update-cron'
+import { initDonationCron } from './cron/donation-cron'
 import { initializeEffectHandlers } from './services/effects'
 import stripeConnectRoutes from './routes/stripe-connect'
 import bandDuesRoutes from './routes/band-dues'
@@ -132,4 +133,8 @@ app.listen(PORT, () => {
   // Initialize status update cron job (weekly webhook updates)
   initStatusUpdateCron()
   console.log(`📊 Status update cron job scheduled`)
+
+  // Initialize donation cron jobs (reminders, missed payments)
+  initDonationCron()
+  console.log(`🎁 Donation cron jobs scheduled`)
 })

@@ -31,6 +31,7 @@ import { documentsRouter } from './documents'
 import { onboardingRouter } from './onboarding'
 import { calendarRouter } from './calendar'
 import { reorderRouter } from './reorder'
+import { donationRouter } from './donation'
 
 // Main app router - combines all sub-routers
 export const appRouter = router({
@@ -66,6 +67,7 @@ export const appRouter = router({
   onboarding: onboardingRouter,
   calendar: calendarRouter,
   reorder: reorderRouter,
+  donation: donationRouter,
 })
 
 // Export type definition of API

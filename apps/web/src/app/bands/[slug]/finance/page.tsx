@@ -47,6 +47,13 @@ export default function FinancePage() {
   const [disconnectingStripe, setDisconnectingStripe] = useState(false)
   const [showDisconnectModal, setShowDisconnectModal] = useState(false)
 
+  // Donation settings state
+  const [showDonationSettingsModal, setShowDonationSettingsModal] = useState(false)
+  const [donationsEnabled, setDonationsEnabled] = useState(false)
+  const [donationPaymentInfo, setDonationPaymentInfo] = useState<Record<string, string>>({})
+  const [donationDueWindowDays, setDonationDueWindowDays] = useState(7)
+  const [savingDonationSettings, setSavingDonationSettings] = useState(false)
+
   useEffect(() => {
     const storedToken = localStorage.getItem('accessToken')
     if (storedToken) {
@@ -146,6 +153,49 @@ export default function FinancePage() {
       fetchStripeStatus(bandData.band.id, canRefresh || false)
     }
   }, [bandData?.band?.id, token, userId, fetchStripeStatus])
+
+  // Fetch donation settings
+  const { data: donationSettingsData, refetch: refetchDonationSettings } = trpc.donation.getSettings.useQuery(
+    { bandId: bandData?.band?.id || '', userId: userId || '' },
+    { enabled: !!bandData?.band?.id && !!userId }
+  )
+
+  // Update donation settings mutation
+  const updateDonationSettingsMutation = trpc.donation.updateSettings.useMutation({
+    onSuccess: () => {
+      showToast('Donation settings saved!', 'success')
+      refetchDonationSettings()
+      setShowDonationSettingsModal(false)
+      setSavingDonationSettings(false)
+    },
+    onError: (error) => {
+      showToast(error.message || 'Failed to save donation settings', 'error')
+      setSavingDonationSettings(false)
+    },
+  })
+
+  // Initialize donation settings form when data loads
+  useEffect(() => {
+    if (donationSettingsData?.settings) {
+      const settings = donationSettingsData.settings
+      setDonationsEnabled(settings.donationsEnabled || false)
+      setDonationPaymentInfo((settings.donationPaymentInfo as Record<string, string>) || {})
+      setDonationDueWindowDays(settings.donationDueWindowDays || 7)
+    }
+  }, [donationSettingsData])
+
+  // Save donation settings
+  const handleSaveDonationSettings = () => {
+    if (!bandData?.band?.id || !userId) return
+    setSavingDonationSettings(true)
+    updateDonationSettingsMutation.mutate({
+      bandId: bandData.band.id,
+      userId,
+      donationsEnabled,
+      donationPaymentInfo,
+      donationDueWindowDays,
+    })
+  }
 
   // Connect Stripe
   const handleConnectStripe = async () => {
@@ -443,6 +493,50 @@ export default function FinancePage() {
             )}
           </div>
 
+          {/* Donations Section */}
+          <div className="border border-gray-200 rounded-lg bg-white p-3">
+            <div className="flex items-center justify-between mb-2">
+              <Text weight="semibold">Donations</Text>
+              {canManageStripe && (
+                <Button variant="ghost" size="sm" onClick={() => setShowDonationSettingsModal(true)}>
+                  Configure
+                </Button>
+              )}
+            </div>
+            {donationSettingsData?.settings?.donationsEnabled ? (
+              <div className="space-y-2">
+                <Flex gap="sm" align="center">
+                  <Badge variant="success">Enabled</Badge>
+                  {donationSettingsData.settings.donationDueWindowDays && (
+                    <Text variant="small" color="muted">
+                      {donationSettingsData.settings.donationDueWindowDays} day due window
+                    </Text>
+                  )}
+                </Flex>
+                {donationSettingsData.settings.donationPaymentInfo && Object.keys(donationSettingsData.settings.donationPaymentInfo as Record<string, string>).length > 0 && (
+                  <div className="text-sm text-gray-600">
+                    <Text variant="small" weight="semibold">Payment methods:</Text>
+                    {Object.entries(donationSettingsData.settings.donationPaymentInfo as Record<string, string>).map(([method, info]) => (
+                      <div key={method} className="ml-2">
+                        <Badge variant="neutral">{method.charAt(0).toUpperCase() + method.slice(1)}</Badge>
+                        <span className="ml-2">{info}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <Text variant="small" color="muted">Donations are not enabled</Text>
+                {canManageStripe && (
+                  <Button variant="primary" size="sm" onClick={() => setShowDonationSettingsModal(true)}>
+                    Enable Donations
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Finance Governance Info */}
           <div className="border border-blue-200 rounded-lg bg-blue-50 p-3">
             <div className="flex items-center justify-between">
@@ -472,6 +566,79 @@ export default function FinancePage() {
               </Button>
               <Button variant="danger" size="sm" onClick={handleDisconnectStripe} disabled={disconnectingStripe}>
                 {disconnectingStripe ? 'Disconnecting...' : 'Disconnect'}
+              </Button>
+            </Flex>
+          </Stack>
+        </Modal>
+
+        {/* Donation Settings Modal */}
+        <Modal isOpen={showDonationSettingsModal} onClose={() => setShowDonationSettingsModal(false)}>
+          <Stack spacing="md">
+            <Text weight="semibold" className="text-lg">Donation Settings</Text>
+
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="donationsEnabled"
+                checked={donationsEnabled}
+                onChange={(e) => setDonationsEnabled(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300"
+              />
+              <label htmlFor="donationsEnabled" className="text-sm font-medium">
+                Enable Donations
+              </label>
+            </div>
+
+            {donationsEnabled && (
+              <>
+                <div>
+                  <Text variant="small" weight="semibold" className="mb-2">Payment Information</Text>
+                  <Text variant="small" color="muted" className="mb-2">
+                    Add your payment handles so donors know where to send money.
+                  </Text>
+
+                  <div className="space-y-2">
+                    {['venmo', 'zelle', 'cashapp', 'check'].map((method) => (
+                      <div key={method} className="flex items-center gap-2">
+                        <span className="text-sm font-medium w-20 capitalize">{method}</span>
+                        <input
+                          type="text"
+                          value={donationPaymentInfo[method] || ''}
+                          onChange={(e) => setDonationPaymentInfo(prev => ({
+                            ...prev,
+                            [method]: e.target.value
+                          }))}
+                          placeholder={method === 'venmo' ? '@username' : method === 'zelle' ? 'email@example.com' : method === 'cashapp' ? '$cashtag' : 'Mailing address'}
+                          className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Due Window (days)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={donationDueWindowDays}
+                    onChange={(e) => setDonationDueWindowDays(parseInt(e.target.value) || 7)}
+                    className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <Text variant="small" color="muted" className="mt-1">
+                    Days after expected date before marking recurring donations as missed.
+                  </Text>
+                </div>
+              </>
+            )}
+
+            <Flex gap="sm" justify="end">
+              <Button variant="ghost" size="sm" onClick={() => setShowDonationSettingsModal(false)} disabled={savingDonationSettings}>
+                Cancel
+              </Button>
+              <Button variant="primary" size="sm" onClick={handleSaveDonationSettings} disabled={savingDonationSettings}>
+                {savingDonationSettings ? 'Saving...' : 'Save'}
               </Button>
             </Flex>
           </Stack>

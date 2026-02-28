@@ -23,6 +23,10 @@ import {
   RecordPaymentModal,
   PendingConfirmationsBanner,
 } from '@/components/billing'
+import {
+  CreateDonationModal,
+  DonationsTabContent,
+} from '@/components/donations'
 
 // Roles that can manage dues
 const CAN_MANAGE_DUES = ['FOUNDER', 'GOVERNOR']
@@ -71,10 +75,13 @@ export default function BillingPage() {
   const [token, setToken] = useState<string | null>(null)
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'overview' | 'manual'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'manual' | 'donations'>('overview')
 
   // Manual payment modal state
   const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false)
+
+  // Donation modal state
+  const [showDonationModal, setShowDonationModal] = useState(false)
 
   // Dues plan state
   const [duesPlan, setDuesPlan] = useState<DuesPlan | null>(null)
@@ -122,6 +129,8 @@ export default function BillingPage() {
 
     if (tab === 'manual') {
       setActiveTab('manual')
+    } else if (tab === 'donations' || tab === 'my-donations') {
+      setActiveTab('donations')
     }
 
     if (success === 'true') {
@@ -375,6 +384,16 @@ export default function BillingPage() {
             >
               Manual Payments
             </button>
+            <button
+              onClick={() => setActiveTab('donations')}
+              className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+                activeTab === 'donations'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Donations
+            </button>
           </Flex>
 
           {/* Pending Confirmations Banner - show on both tabs */}
@@ -535,6 +554,17 @@ export default function BillingPage() {
               </div>
             </>
           )}
+
+          {/* Donations Tab Content */}
+          {activeTab === 'donations' && userId && (
+            <DonationsTabContent
+              bandId={band.id}
+              userId={userId}
+              bandSlug={slug}
+              isTreasurer={isTreasurer || false}
+              onOpenDonationModal={() => setShowDonationModal(true)}
+            />
+          )}
         </Stack>
 
         {/* Edit Dues Plan Modal */}
@@ -588,6 +618,16 @@ export default function BillingPage() {
             bandId={band.id}
             userId={userId}
             isTreasurer={isTreasurer || false}
+          />
+        )}
+
+        {/* Create Donation Modal */}
+        {userId && (
+          <CreateDonationModal
+            isOpen={showDonationModal}
+            onClose={() => setShowDonationModal(false)}
+            bandId={band.id}
+            userId={userId}
           />
         )}
       </BandLayout>
