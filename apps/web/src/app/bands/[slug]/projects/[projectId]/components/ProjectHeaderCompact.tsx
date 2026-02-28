@@ -38,7 +38,7 @@ export function ProjectHeaderCompact({
   isUpdatingStatus,
 }: ProjectHeaderCompactProps) {
   const router = useRouter()
-  const [showMore, setShowMore] = useState(false)
+  const [showMore, setShowMore] = useState(true)
   const [showStatusMenu, setShowStatusMenu] = useState(false)
 
   const progressPercent = project.totalTasks > 0

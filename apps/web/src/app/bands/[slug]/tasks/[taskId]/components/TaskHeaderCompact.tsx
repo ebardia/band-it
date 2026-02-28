@@ -43,7 +43,7 @@ export function TaskHeaderCompact({
   isDeleting,
 }: TaskHeaderCompactProps) {
   const router = useRouter()
-  const [showMore, setShowMore] = useState(false)
+  const [showMore, setShowMore] = useState(true)
   const [showStatusMenu, setShowStatusMenu] = useState(false)
 
   const statusConfig = STATUS_CONFIG[task.status] || { icon: '○', color: 'text-gray-600' }
