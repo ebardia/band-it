@@ -134,13 +134,18 @@ export default function BandProjectsPage() {
 
   // Reorder handlers
   const handleReorderProject = async (projectId: string, direction: 'up' | 'down') => {
+    console.log('handleReorderProject called', { projectId, direction, userId, bandId: bandData?.band?.id })
     if (!userId || !bandData?.band?.id) {
+      console.log('handleReorderProject early return - missing userId or bandId')
       showToast('Unable to reorder - please refresh the page', 'error')
       return
     }
     try {
+      console.log('Calling reorderProjectMutation...')
       await reorderProjectMutation.mutateAsync({ projectId, direction, userId })
+      console.log('Reorder successful, invalidating cache...')
       await utils.project.getProjectsList.invalidate({ bandId: bandData.band.id })
+      console.log('Cache invalidated')
     } catch (error: any) {
       console.error('Failed to reorder project:', error)
       showToast(error?.message || 'Failed to reorder project', 'error')
@@ -426,7 +431,7 @@ export default function BandProjectsPage() {
           {canAccessAdminTools && (
             <div className="flex items-center gap-0.5 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
-                onClick={(e) => { e.stopPropagation(); handleReorderProject(project.id, 'up') }}
+                onClick={(e) => { e.stopPropagation(); console.log('Up arrow clicked for project', project.id); handleReorderProject(project.id, 'up') }}
                 disabled={isFirst || reorderProjectMutation.isPending}
                 className={`p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isFirst ? 'invisible' : ''}`}
                 title="Move up"
@@ -434,7 +439,7 @@ export default function BandProjectsPage() {
                 ▲
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); handleReorderProject(project.id, 'down') }}
+                onClick={(e) => { e.stopPropagation(); console.log('Down arrow clicked for project', project.id); handleReorderProject(project.id, 'down') }}
                 disabled={isLast || reorderProjectMutation.isPending}
                 className={`p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded ${isLast ? 'invisible' : ''}`}
                 title="Move down"
