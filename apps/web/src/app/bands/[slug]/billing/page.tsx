@@ -26,6 +26,7 @@ import {
 import {
   CreateDonationModal,
   DonationsTabContent,
+  CardDonationButton,
 } from '@/components/donations'
 import { isP2PPaymentsEnabled } from '@/lib/features'
 
@@ -105,6 +106,15 @@ export default function BillingPage() {
 
   // Checkout state
   const [startingCheckout, setStartingCheckout] = useState(false)
+
+  // Card donation state
+  const [stripeStatus, setStripeStatus] = useState<{
+    connected: boolean
+    stripeAccountId?: string
+    chargesEnabled?: boolean
+  } | null>(null)
+  const [cardDonationAmount, setCardDonationAmount] = useState('')
+  const [showCardDonation, setShowCardDonation] = useState(false)
 
   useEffect(() => {
     const storedToken = localStorage.getItem('accessToken')
@@ -217,13 +227,32 @@ export default function BillingPage() {
     }
   }, [token])
 
+  // Fetch Stripe status for card donations
+  const fetchStripeStatus = useCallback(async (bandId: string) => {
+    if (!token) return
+
+    try {
+      const response = await fetch(`${API_URL}/api/bands/${bandId}/stripe/status`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setStripeStatus(data)
+      }
+    } catch (error) {
+      console.log('Error fetching Stripe status:', error)
+    }
+  }, [token])
+
   useEffect(() => {
     if (bandData?.band?.id && token && userId) {
       fetchDuesPlan(bandData.band.id)
       fetchMyBilling(bandData.band.id)
       fetchMembersBilling(bandData.band.id)
+      fetchStripeStatus(bandData.band.id)
     }
-  }, [bandData?.band?.id, token, userId, fetchDuesPlan, fetchMyBilling, fetchMembersBilling])
+  }, [bandData?.band?.id, token, userId, fetchDuesPlan, fetchMyBilling, fetchMembersBilling, fetchStripeStatus])
 
   // Save dues plan
   const handleSavePlan = async () => {
@@ -477,6 +506,67 @@ export default function BillingPage() {
                   </div>
                 )}
               </div>
+
+              {/* Card Donations (Apple Pay / Google Pay) */}
+              {stripeStatus?.connected && stripeStatus?.chargesEnabled && (
+                <div className="border border-gray-200 rounded-lg bg-white p-3">
+                  <div className="flex justify-between items-center mb-2">
+                    <Text weight="semibold">Quick Donation</Text>
+                    <Badge variant="success">Apple Pay / Google Pay</Badge>
+                  </div>
+
+                  {!showCardDonation ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setShowCardDonation(true)}
+                    >
+                      Make a Donation
+                    </Button>
+                  ) : (
+                    <div className="space-y-3">
+                      <Input
+                        label="Amount (USD)"
+                        type="number"
+                        min="0.50"
+                        step="0.01"
+                        value={cardDonationAmount}
+                        onChange={(e) => setCardDonationAmount(e.target.value)}
+                        placeholder="10.00"
+                        helperText="Minimum $0.50"
+                      />
+
+                      {cardDonationAmount && parseFloat(cardDonationAmount) >= 0.5 && (
+                        <CardDonationButton
+                          bandId={band.id}
+                          bandName={band.name}
+                          stripeAccountId={stripeStatus.stripeAccountId!}
+                          amount={Math.round(parseFloat(cardDonationAmount) * 100)}
+                          onSuccess={() => {
+                            showToast('Donation successful! Thank you for your support.', 'success')
+                            setShowCardDonation(false)
+                            setCardDonationAmount('')
+                          }}
+                          onError={(error) => {
+                            showToast(error || 'Donation failed', 'error')
+                          }}
+                        />
+                      )}
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setShowCardDonation(false)
+                          setCardDonationAmount('')
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* All Members Billing (Admin View) */}
               {canViewAllBilling && (

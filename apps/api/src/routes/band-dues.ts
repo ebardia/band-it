@@ -599,4 +599,155 @@ router.get('/bands/:bandId/billing', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * POST /api/bands/:bandId/card-donation
+ *
+ * Process a card donation (Apple Pay / Google Pay) via Stripe.
+ * Creates and confirms a PaymentIntent on the band's connected account.
+ */
+router.post('/bands/:bandId/card-donation', async (req: Request, res: Response) => {
+  try {
+    const { bandId } = req.params
+    const { amount, paymentMethodId } = req.body
+    const user = getUserFromRequest(req)
+
+    // Auth check
+    if (!user) {
+      return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Authentication required' })
+    }
+
+    // Validate input
+    if (!amount || typeof amount !== 'number' || amount < 50) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Amount must be at least 50 cents',
+      })
+    }
+
+    if (!paymentMethodId || typeof paymentMethodId !== 'string') {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Payment method ID is required',
+      })
+    }
+
+    // Membership check - must be a band member to donate
+    const member = await getMembership(user.userId, bandId)
+    if (!member || member.status !== 'ACTIVE') {
+      return res.status(403).json({
+        error: 'NOT_A_MEMBER',
+        message: 'You must be an active band member to donate',
+      })
+    }
+
+    // Get band's Stripe account
+    const stripeAccount = await getActiveBandStripeAccount(bandId)
+    if (!stripeAccount) {
+      return res.status(400).json({
+        error: 'BAND_STRIPE_NOT_CONNECTED',
+        message: 'This band does not have a connected Stripe account',
+      })
+    }
+
+    if (!stripeAccount.chargesEnabled) {
+      return res.status(400).json({
+        error: 'STRIPE_NOT_READY',
+        message: "This band's Stripe account setup is incomplete",
+      })
+    }
+
+    // Get band name for description
+    const band = await prisma.band.findUnique({
+      where: { id: bandId },
+      select: { name: true },
+    })
+
+    // Create PaymentIntent on the connected account
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
+      payment_method: paymentMethodId,
+      confirm: true,
+      description: `Donation to ${band?.name || 'band'}`,
+      metadata: {
+        band_id: bandId,
+        donor_user_id: user.userId,
+        type: 'donation',
+      },
+      // For PaymentRequest API, we need to handle redirect-based confirmations
+      return_url: `${FRONTEND_URL}/bands/${bandId}/billing?donation=success`,
+    }, {
+      stripeAccount: stripeAccount.stripeAccountId,
+    })
+
+    // Check payment status
+    if (paymentIntent.status === 'requires_action') {
+      // 3D Secure or other action required
+      return res.json({
+        requiresAction: true,
+        clientSecret: paymentIntent.client_secret,
+      })
+    }
+
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({
+        error: 'PAYMENT_FAILED',
+        message: `Payment failed with status: ${paymentIntent.status}`,
+      })
+    }
+
+    // Payment succeeded - record the donation
+    const donation = await prisma.donation.create({
+      data: {
+        bandId,
+        donorId: user.userId,
+        amount,
+        currency: 'usd',
+        paymentMethod: 'CARD',
+        stripePaymentIntentId: paymentIntent.id,
+        status: 'CONFIRMED',
+        submittedAt: new Date(),
+        confirmedAt: new Date(),
+        confirmedById: user.userId, // Self-confirmed since payment is instant
+      },
+    })
+
+    console.log('Card Donation: Payment succeeded', {
+      bandId,
+      donorId: user.userId,
+      amount,
+      donationId: donation.id,
+      paymentIntentId: paymentIntent.id,
+    })
+
+    // Log audit event
+    const auditContext = getAuditContextFromRequest(req, user.userId)
+    await auditStorage.run(auditContext, async () => {
+      await logAuditEvent({
+        bandId,
+        action: 'donation_card_payment',
+        entityType: 'Donation',
+        entityId: donation.id,
+        entityName: `$${(amount / 100).toFixed(2)} card donation`,
+      })
+    })
+
+    return res.json({
+      success: true,
+      donationId: donation.id,
+    })
+  } catch (error: any) {
+    console.error('Error processing card donation:', error)
+
+    if (error.type?.startsWith('Stripe')) {
+      return res.status(400).json({
+        error: 'PAYMENT_FAILED',
+        message: error.message || 'Payment failed',
+      })
+    }
+
+    return res.status(500).json({ error: 'SERVER_ERROR', message: 'Failed to process donation' })
+  }
+})
+
 export default router

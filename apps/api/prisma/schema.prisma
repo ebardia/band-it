@@ -1085,6 +1085,7 @@ enum PaymentMethod {
   CASHAPP
   CASH
   CHECK
+  CARD        // Apple Pay, Google Pay, or direct card payment via Stripe
   OTHER
 }
 
@@ -1210,6 +1211,7 @@ model Donation {
   paymentMethod       PaymentMethod
   paymentMethodOther  String?  // If method is OTHER
   referenceNumber     String?  // Transaction reference (Venmo ID, etc.)
+  stripePaymentIntentId String?  // For CARD payments via Stripe
 
   // Recurring link (null for one-time donations)
   recurringDonationId String?
