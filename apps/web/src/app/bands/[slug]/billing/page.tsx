@@ -27,6 +27,7 @@ import {
   CreateDonationModal,
   DonationsTabContent,
 } from '@/components/donations'
+import { isP2PPaymentsEnabled } from '@/lib/features'
 
 // Roles that can manage dues
 const CAN_MANAGE_DUES = ['FOUNDER', 'GOVERNOR']
@@ -374,30 +375,34 @@ export default function BillingPage() {
             >
               Overview
             </button>
-            <button
-              onClick={() => setActiveTab('manual')}
-              className={`px-4 py-2 font-medium border-b-2 transition-colors ${
-                activeTab === 'manual'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Manual Payments
-            </button>
-            <button
-              onClick={() => setActiveTab('donations')}
-              className={`px-4 py-2 font-medium border-b-2 transition-colors ${
-                activeTab === 'donations'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Donations
-            </button>
+            {isP2PPaymentsEnabled() && (
+              <button
+                onClick={() => setActiveTab('manual')}
+                className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+                  activeTab === 'manual'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Manual Payments
+              </button>
+            )}
+            {isP2PPaymentsEnabled() && (
+              <button
+                onClick={() => setActiveTab('donations')}
+                className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+                  activeTab === 'donations'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Donations
+              </button>
+            )}
           </Flex>
 
           {/* Pending Confirmations Banner - show on both tabs */}
-          {userId && (
+          {isP2PPaymentsEnabled() && userId && (
             <PendingConfirmationsBanner
               bandId={band.id}
               userId={userId}
@@ -526,7 +531,7 @@ export default function BillingPage() {
           )}
 
           {/* Manual Payments Tab Content */}
-          {activeTab === 'manual' && userId && (
+          {isP2PPaymentsEnabled() && activeTab === 'manual' && userId && (
             <>
               <div className="border border-gray-200 rounded-lg bg-white p-3">
                 <div className="flex justify-between items-center mb-2">
@@ -556,7 +561,7 @@ export default function BillingPage() {
           )}
 
           {/* Donations Tab Content */}
-          {activeTab === 'donations' && userId && (
+          {isP2PPaymentsEnabled() && activeTab === 'donations' && userId && (
             <DonationsTabContent
               bandId={band.id}
               userId={userId}
@@ -611,7 +616,7 @@ export default function BillingPage() {
         </Modal>
 
         {/* Record Manual Payment Modal */}
-        {userId && (
+        {isP2PPaymentsEnabled() && userId && (
           <RecordPaymentModal
             isOpen={showRecordPaymentModal}
             onClose={() => setShowRecordPaymentModal(false)}
@@ -622,7 +627,7 @@ export default function BillingPage() {
         )}
 
         {/* Create Donation Modal */}
-        {userId && (
+        {isP2PPaymentsEnabled() && userId && (
           <CreateDonationModal
             isOpen={showDonationModal}
             onClose={() => setShowDonationModal(false)}
