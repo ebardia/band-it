@@ -30,7 +30,7 @@ export const proposalUpdateRouter = router({
         problemStatement: z.string().optional().nullable(),
         expectedOutcome: z.string().optional().nullable(),
         risksAndConcerns: z.string().optional().nullable(),
-        budgetRequested: z.number().optional().nullable(),
+        budgetRequested: z.number().min(0).max(10000000).optional().nullable(),
         budgetBreakdown: z.string().optional().nullable(),
         fundingSource: z.string().optional().nullable(),
         proposedStartDate: z.string().optional().nullable(),

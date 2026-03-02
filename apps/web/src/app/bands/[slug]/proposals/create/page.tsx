@@ -866,9 +866,13 @@ export default function CreateProposalPage() {
                       <Input
                         label="Budget Requested ($)"
                         type="number"
+                        min="0"
+                        max="10000000"
+                        step="0.01"
                         value={budgetRequested}
                         onChange={(e) => setBudgetRequested(e.target.value)}
                         placeholder="0.00"
+                        helperText="Maximum $10,000,000"
                       />
 
                       <Textarea

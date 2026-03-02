@@ -49,8 +49,8 @@ export const proposalCreateRouter = router({
         expectedOutcome: z.string().optional(),
         risksAndConcerns: z.string().optional(),
 
-        // Budget
-        budgetRequested: z.number().optional(),
+        // Budget (max $10 million)
+        budgetRequested: z.number().min(0).max(10000000).optional(),
         budgetBreakdown: z.string().optional(),
         fundingSource: z.string().optional(),
 
