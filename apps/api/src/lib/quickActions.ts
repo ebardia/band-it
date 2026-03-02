@@ -97,7 +97,7 @@ export async function getQuickActionsForUser(
     .map(m => m.bandId)
 
   // Run queries in parallel for better performance
-  const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions, claimableChecklistItems, pendingApplications, pendingReimbursements, awaitingReimbursementConfirmation] = await Promise.all([
+  const [pendingVotes, pendingPayments, pendingEventRsvps, pendingInvitations, unreadMentions, unreadCommentMentions, claimableChecklistItems, pendingApplications, pendingReimbursements, awaitingReimbursementConfirmation] = await Promise.all([
     // 1. Pending votes - proposals open for voting where user hasn't voted
     prisma.proposal.findMany({
       where: {
@@ -180,7 +180,7 @@ export async function getQuickActionsForUser(
       take: limit,
     }),
 
-    // 5. Unread @mentions - only since last digest was sent
+    // 5. Unread @mentions in discussions - only since last digest was sent
     prisma.messageMention.findMany({
       where: {
         userId,
@@ -209,7 +209,52 @@ export async function getQuickActionsForUser(
       take: limit,
     }),
 
-    // 6. Claimable checklist items - unassigned items user can claim (excluding dismissed)
+    // 6. Unread @mentions in comments (proposals, projects, tasks)
+    prisma.mention.findMany({
+      where: {
+        userId,
+        isRead: false,
+        comment: {
+          createdAt: { gt: mentionsSince },
+          deletedAt: null,
+          // Exclude own comments
+          NOT: { authorId: userId },
+        },
+      },
+      include: {
+        comment: {
+          include: {
+            author: { select: { id: true, name: true, deletedAt: true } },
+            band: { select: { id: true, name: true, slug: true } },
+            proposal: {
+              select: {
+                id: true,
+                title: true,
+                band: { select: { id: true, name: true, slug: true } },
+              },
+            },
+            project: {
+              select: {
+                id: true,
+                name: true,
+                band: { select: { id: true, name: true, slug: true } },
+              },
+            },
+            task: {
+              select: {
+                id: true,
+                name: true,
+                band: { select: { id: true, name: true, slug: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { comment: { createdAt: 'desc' } },
+      take: limit,
+    }),
+
+    // 8. Claimable checklist items - unassigned items user can claim (excluding dismissed)
     userBandIds.length > 0 ? prisma.checklistItem.findMany({
       where: {
         task: {
@@ -247,7 +292,7 @@ export async function getQuickActionsForUser(
       take: limit * 2, // Fetch extra since we'll filter by role
     }) : Promise.resolve([]),
 
-    // 7. Pending applications - applications to bands where user can review
+    // 9. Pending applications - applications to bands where user can review
     reviewerBandIds.length > 0 ? prisma.member.findMany({
       where: {
         bandId: { in: reviewerBandIds },
@@ -261,7 +306,7 @@ export async function getQuickActionsForUser(
       take: limit,
     }) : Promise.resolve([]),
 
-    // 8. Pending reimbursements - expenses awaiting reimbursement (for treasurers)
+    // 10. Pending reimbursements - expenses awaiting reimbursement (for treasurers)
     reimburserBandIds.length > 0 ? prisma.checklistItem.findMany({
       where: {
         task: { bandId: { in: reimburserBandIds } },
@@ -282,7 +327,7 @@ export async function getQuickActionsForUser(
       take: limit,
     }) : Promise.resolve([]),
 
-    // 9. Awaiting reimbursement confirmation - reimbursements user needs to confirm
+    // 11. Awaiting reimbursement confirmation - reimbursements user needs to confirm
     prisma.checklistItem.findMany({
       where: {
         assigneeId: userId,
@@ -390,7 +435,7 @@ export async function getQuickActionsForUser(
     })
   }
 
-  // Process unread mentions from MessageMention table
+  // Process unread mentions from MessageMention table (discussions)
   for (const mention of unreadMentions) {
     const message = mention.message
     actions.push({
@@ -408,6 +453,53 @@ export async function getQuickActionsForUser(
         createdAt: message.createdAt,
       },
     })
+  }
+
+  // Process unread mentions from Mention table (comments on proposals, projects, tasks)
+  for (const mention of unreadCommentMentions) {
+    const comment = mention.comment
+    const authorName = comment.author.deletedAt ? 'Deleted User' : (comment.author.name || 'Someone')
+
+    // Determine band and URL based on what the comment is attached to
+    let band: { id: string; name: string; slug: string } | null = null
+    let entityName = ''
+    let url = ''
+
+    if (comment.proposal) {
+      band = comment.proposal.band
+      entityName = `proposal "${comment.proposal.title}"`
+      url = `/bands/${band.slug}/proposals/${comment.proposal.id}`
+    } else if (comment.project) {
+      band = comment.project.band
+      entityName = `project "${comment.project.name}"`
+      url = `/bands/${band.slug}/projects/${comment.project.id}`
+    } else if (comment.task) {
+      band = comment.task.band
+      entityName = `task "${comment.task.name}"`
+      url = `/bands/${band.slug}/tasks/${comment.task.id}`
+    } else if (comment.band) {
+      band = comment.band
+      entityName = 'a discussion'
+      url = `/bands/${band.slug}`
+    }
+
+    if (band) {
+      actions.push({
+        type: 'MENTION',
+        id: comment.id,
+        title: `${authorName} mentioned you in ${entityName}`,
+        bandName: band.name,
+        bandId: band.id,
+        url,
+        urgency: 'low',
+        meta: {
+          authorName,
+          entityName,
+          preview: comment.content.substring(0, 100),
+          createdAt: comment.createdAt,
+        },
+      })
+    }
   }
 
   // Process claimable checklist items - filter by role requirement
