@@ -79,6 +79,21 @@ export default function BandApplicationsPage() {
     return approveRoles[application.id] || application.requestedRole || 'VOTING_MEMBER'
   }
 
+  // Parse external application notes (from public website submissions)
+  const parseExternalNotes = (notes: string | null) => {
+    if (!notes) return null
+    try {
+      const parsed = JSON.parse(notes)
+      // Check if this looks like an external website submission
+      if (parsed.source || parsed.expertise || parsed.committees) {
+        return parsed
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
   const handleApprove = (membershipId: string, role: string) => {
     if (!userId) return
     approveMutation.mutate({ membershipId, approverId: userId, role: role as any })
@@ -147,10 +162,105 @@ export default function BandApplicationsPage() {
                       </Flex>
                     </Flex>
 
-                    <Stack spacing="sm">
-                      <Text variant="small" weight="semibold">Why they want to join:</Text>
-                      <Text variant="small">{application.notes}</Text>
-                    </Stack>
+                    {(() => {
+                      const externalData = parseExternalNotes(application.notes)
+                      if (externalData) {
+                        // External website application - show formatted data
+                        return (
+                          <Stack spacing="md">
+                            {externalData.source && (
+                              <Badge variant="secondary">Applied via {externalData.source}</Badge>
+                            )}
+
+                            {externalData.message && (
+                              <Stack spacing="sm">
+                                <Text variant="small" weight="semibold">Why they want to join:</Text>
+                                <Text variant="small">{externalData.message}</Text>
+                              </Stack>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {externalData.location && (
+                                <div>
+                                  <Text variant="small" weight="semibold">Location:</Text>
+                                  <Text variant="small">{externalData.location}</Text>
+                                </div>
+                              )}
+
+                              {externalData.phone && (
+                                <div>
+                                  <Text variant="small" weight="semibold">Phone:</Text>
+                                  <Text variant="small">{externalData.phone}</Text>
+                                </div>
+                              )}
+
+                              {externalData.linkedin && (
+                                <div>
+                                  <Text variant="small" weight="semibold">LinkedIn:</Text>
+                                  <a href={externalData.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                                    {externalData.linkedin}
+                                  </a>
+                                </div>
+                              )}
+
+                              {externalData.timeCommitment && (
+                                <div>
+                                  <Text variant="small" weight="semibold">Time Commitment:</Text>
+                                  <Text variant="small">{externalData.timeCommitment} hours/week</Text>
+                                </div>
+                              )}
+                            </div>
+
+                            {externalData.languages && externalData.languages.length > 0 && (
+                              <Stack spacing="sm">
+                                <Text variant="small" weight="semibold">Languages:</Text>
+                                <Flex gap="sm" wrap="wrap">
+                                  {externalData.languages.map((lang: string, idx: number) => (
+                                    <Badge key={idx} variant="secondary">{lang}</Badge>
+                                  ))}
+                                </Flex>
+                              </Stack>
+                            )}
+
+                            {externalData.expertise && externalData.expertise.length > 0 && (
+                              <Stack spacing="sm">
+                                <Text variant="small" weight="semibold">Areas of Expertise:</Text>
+                                <Flex gap="sm" wrap="wrap">
+                                  {externalData.expertise.map((exp: string, idx: number) => (
+                                    <Badge key={idx} variant="info">{exp}</Badge>
+                                  ))}
+                                </Flex>
+                              </Stack>
+                            )}
+
+                            {externalData.committees && externalData.committees.length > 0 && (
+                              <Stack spacing="sm">
+                                <Text variant="small" weight="semibold">Committees of Interest:</Text>
+                                <Flex gap="sm" wrap="wrap">
+                                  {externalData.committees.map((comm: string, idx: number) => (
+                                    <Badge key={idx} variant="success">{comm}</Badge>
+                                  ))}
+                                </Flex>
+                              </Stack>
+                            )}
+
+                            {externalData.submittedAt && (
+                              <Text variant="small" color="muted">
+                                Submitted: {new Date(externalData.submittedAt).toLocaleString()}
+                              </Text>
+                            )}
+                          </Stack>
+                        )
+                      } else {
+                        // Regular application - show notes as-is
+                        return (
+                          <Stack spacing="sm">
+                            <Text variant="small" weight="semibold">Why they want to join:</Text>
+                            <Text variant="small">{application.notes}</Text>
+                          </Stack>
+                        )
+                      }
+                    })()}
 
                     {application.user.strengths && application.user.strengths.length > 0 && (
                       <Stack spacing="sm">
