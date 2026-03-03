@@ -87,4 +87,5 @@ export const bandRouter = router({
   generateApiKey: bandWebsiteRouter.generateApiKey,
   generateWebhookSecret: bandWebsiteRouter.generateWebhookSecret,
   sendStatusUpdate: bandWebsiteRouter.sendStatusUpdate,
+  syncMembers: bandWebsiteRouter.syncMembers,
 })
