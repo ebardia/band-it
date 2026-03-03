@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "prisma generate && prisma db push && npm run generate-help-context && tsc",
-    "start": "node dist/index.js",
+    "build": "prisma generate && npm run generate-help-context && tsc",
+    "start": "prisma db push && node dist/index.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
