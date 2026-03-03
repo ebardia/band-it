@@ -14,6 +14,7 @@ import { initTaskEscalationCron } from './cron/task-escalation-cron'
 import { initChecklistCron } from './cron/checklist-cron'
 import { initStatusUpdateCron } from './cron/status-update-cron'
 import { initDonationCron } from './cron/donation-cron'
+import { initApplicationVotingCron } from './cron/application-voting-cron'
 import { initializeEffectHandlers } from './services/effects'
 import stripeConnectRoutes from './routes/stripe-connect'
 import bandDuesRoutes from './routes/band-dues'
@@ -137,4 +138,8 @@ app.listen(PORT, () => {
   // Initialize donation cron jobs (reminders, missed payments)
   initDonationCron()
   console.log(`🎁 Donation cron jobs scheduled`)
+
+  // Initialize application voting cron job (deadline checking)
+  initApplicationVotingCron()
+  console.log(`🗳️ Application voting cron job scheduled`)
 })

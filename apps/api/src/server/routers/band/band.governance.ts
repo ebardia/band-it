@@ -46,6 +46,11 @@ export const bandGovernanceRouter = router({
           quorumPercentage: true,
           requireProposalReview: true,
           whoCanManageDocuments: true,
+          // Member approval voting settings
+          memberApprovalThreshold: true,
+          memberApprovalQuorum: true,
+          memberApprovalWindowDays: true,
+          memberApprovalWindowHours: true,
         },
       })
 
@@ -76,6 +81,11 @@ export const bandGovernanceRouter = router({
         quorumPercentage: z.number().int().min(0).max(100).optional(),
         requireProposalReview: z.boolean().optional(),
         whoCanManageDocuments: z.array(z.enum(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'])).optional(),
+        // Member approval voting settings
+        memberApprovalThreshold: z.number().int().min(1).max(100).optional(),  // % of votes needed to approve
+        memberApprovalQuorum: z.number().int().min(0).max(100).optional(),     // Minimum % of voting members that must vote
+        memberApprovalWindowDays: z.number().int().min(0).max(30).optional(),  // Days for voting
+        memberApprovalWindowHours: z.number().int().min(0).max(720).optional(), // Additional hours
       })
     )
     .mutation(async ({ input }) => {
@@ -114,6 +124,10 @@ export const bandGovernanceRouter = router({
           quorumPercentage: true,
           requireProposalReview: true,
           whoCanManageDocuments: true,
+          memberApprovalThreshold: true,
+          memberApprovalQuorum: true,
+          memberApprovalWindowDays: true,
+          memberApprovalWindowHours: true,
         },
       })
 
@@ -153,6 +167,24 @@ export const bandGovernanceRouter = router({
         changes.whoCanManageDocuments = { from: currentBand.whoCanManageDocuments, to: input.whoCanManageDocuments }
       }
 
+      // Member approval voting settings
+      if (input.memberApprovalThreshold !== undefined && input.memberApprovalThreshold !== currentBand.memberApprovalThreshold) {
+        updateData.memberApprovalThreshold = input.memberApprovalThreshold
+        changes.memberApprovalThreshold = { from: currentBand.memberApprovalThreshold, to: input.memberApprovalThreshold }
+      }
+      if (input.memberApprovalQuorum !== undefined && input.memberApprovalQuorum !== currentBand.memberApprovalQuorum) {
+        updateData.memberApprovalQuorum = input.memberApprovalQuorum
+        changes.memberApprovalQuorum = { from: currentBand.memberApprovalQuorum, to: input.memberApprovalQuorum }
+      }
+      if (input.memberApprovalWindowDays !== undefined && input.memberApprovalWindowDays !== currentBand.memberApprovalWindowDays) {
+        updateData.memberApprovalWindowDays = input.memberApprovalWindowDays
+        changes.memberApprovalWindowDays = { from: currentBand.memberApprovalWindowDays, to: input.memberApprovalWindowDays }
+      }
+      if (input.memberApprovalWindowHours !== undefined && input.memberApprovalWindowHours !== currentBand.memberApprovalWindowHours) {
+        updateData.memberApprovalWindowHours = input.memberApprovalWindowHours
+        changes.memberApprovalWindowHours = { from: currentBand.memberApprovalWindowHours, to: input.memberApprovalWindowHours }
+      }
+
       if (Object.keys(updateData).length === 0) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -174,6 +206,10 @@ export const bandGovernanceRouter = router({
           quorumPercentage: true,
           requireProposalReview: true,
           whoCanManageDocuments: true,
+          memberApprovalThreshold: true,
+          memberApprovalQuorum: true,
+          memberApprovalWindowDays: true,
+          memberApprovalWindowHours: true,
         },
       })
 

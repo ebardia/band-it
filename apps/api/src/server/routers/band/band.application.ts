@@ -7,6 +7,79 @@ import { memberBillingTriggers } from '../../services/member-billing-triggers'
 import { checkAndSetBandActivation } from './band.dissolve'
 import { hasActiveDissolutionVote } from '../../../lib/dues-enforcement'
 
+// Helper to calculate voting deadline
+function calculateVotingDeadline(days: number, hours: number): Date {
+  const deadline = new Date()
+  deadline.setDate(deadline.getDate() + days)
+  deadline.setHours(deadline.getHours() + hours)
+  return deadline
+}
+
+// Helper to check if voting thresholds are met and auto-approve/reject
+async function checkVotingThresholds(membershipId: string): Promise<{ action: 'approve' | 'reject' | null; reason?: string }> {
+  const membership = await prisma.member.findUnique({
+    where: { id: membershipId },
+    include: {
+      band: {
+        select: {
+          id: true,
+          memberApprovalThreshold: true,
+          memberApprovalQuorum: true,
+        },
+      },
+      applicationVotes: true,
+    },
+  })
+
+  if (!membership || membership.status !== 'PENDING') {
+    return { action: null }
+  }
+
+  // Count voting members in the band (VOTING_MEMBER and above, excluding the applicant)
+  const votingMemberCount = await prisma.member.count({
+    where: {
+      bandId: membership.bandId,
+      status: 'ACTIVE',
+      role: { in: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER'] },
+    },
+  })
+
+  if (votingMemberCount === 0) {
+    return { action: null }
+  }
+
+  const votes = membership.applicationVotes
+  const approveVotes = votes.filter(v => v.vote === 'APPROVE').length
+  const rejectVotes = votes.filter(v => v.vote === 'REJECT').length
+  const totalVotes = votes.length
+
+  const quorumRequired = Math.ceil((membership.band.memberApprovalQuorum / 100) * votingMemberCount)
+  const approvalThreshold = membership.band.memberApprovalThreshold
+
+  // Check if quorum is met
+  if (totalVotes < quorumRequired) {
+    return { action: null, reason: `Quorum not met: ${totalVotes}/${quorumRequired} votes` }
+  }
+
+  // Calculate approval percentage (of votes cast, not total members)
+  const approvalPercentage = (approveVotes / totalVotes) * 100
+
+  if (approvalPercentage >= approvalThreshold) {
+    return { action: 'approve', reason: `Threshold met: ${approvalPercentage.toFixed(1)}% approve (${approveVotes}/${totalVotes})` }
+  } else if ((100 - approvalPercentage) > (100 - approvalThreshold)) {
+    // Reject if it's mathematically impossible to reach approval threshold
+    // e.g., if threshold is 60% and we have 50% reject, even with remaining votes it won't pass
+    const remainingVotes = votingMemberCount - totalVotes
+    const maxPossibleApprovePercentage = ((approveVotes + remainingVotes) / (totalVotes + remainingVotes)) * 100
+
+    if (maxPossibleApprovePercentage < approvalThreshold && totalVotes >= quorumRequired) {
+      return { action: 'reject', reason: `Cannot reach threshold: max possible ${maxPossibleApprovePercentage.toFixed(1)}%` }
+    }
+  }
+
+  return { action: null }
+}
+
 export const bandApplicationRouter = router({
   /**
    * Apply to join a band
@@ -46,7 +119,14 @@ export const bandApplicationRouter = router({
       // Get band and applicant details
       const band = await prisma.band.findUnique({
         where: { id: input.bandId },
-        select: { name: true, slug: true, whoCanApprove: true, dissolvedAt: true },
+        select: {
+          name: true,
+          slug: true,
+          whoCanApprove: true,
+          dissolvedAt: true,
+          memberApprovalWindowDays: true,
+          memberApprovalWindowHours: true,
+        },
       })
 
       const applicant = await prisma.user.findUnique({
@@ -69,6 +149,12 @@ export const bandApplicationRouter = router({
         throw new Error('This band has a dissolution vote in progress. New applications are temporarily frozen.')
       }
 
+      // Calculate voting deadline
+      const votingDeadline = calculateVotingDeadline(
+        band.memberApprovalWindowDays,
+        band.memberApprovalWindowHours
+      )
+
       // Create membership application
       const membership = await prisma.member.create({
         data: {
@@ -78,22 +164,23 @@ export const bandApplicationRouter = router({
           requestedRole: input.requestedRole,
           status: 'PENDING',
           notes: input.notes,
+          votingDeadline,
         },
       })
 
-      // Notify members who can approve
-      const approvers = await prisma.member.findMany({
+      // Notify all voting members (they can vote on applications)
+      const votingMembers = await prisma.member.findMany({
         where: {
           bandId: input.bandId,
           status: 'ACTIVE',
-          role: { in: band.whoCanApprove },
+          role: { in: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER'] },
         },
         select: { userId: true },
       })
 
-      for (const approver of approvers) {
+      for (const member of votingMembers) {
         await notificationService.create({
-          userId: approver.userId,
+          userId: member.userId,
           type: 'BAND_APPLICATION_RECEIVED',
           actionUrl: `/bands/${band.slug}/applications`,
           priority: 'MEDIUM',
@@ -102,6 +189,7 @@ export const bandApplicationRouter = router({
             bandName: band.name,
             bandSlug: band.slug,
             membershipId: membership.id,
+            votingDeadline: votingDeadline.toISOString(),
           },
           relatedId: input.bandId,
           relatedType: 'BAND',
@@ -125,6 +213,24 @@ export const bandApplicationRouter = router({
       })
     )
     .query(async ({ input }) => {
+      // Get band settings for threshold info
+      const band = await prisma.band.findUnique({
+        where: { id: input.bandId },
+        select: {
+          memberApprovalThreshold: true,
+          memberApprovalQuorum: true,
+        },
+      })
+
+      // Count voting members
+      const votingMemberCount = await prisma.member.count({
+        where: {
+          bandId: input.bandId,
+          status: 'ACTIVE',
+          role: { in: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER'] },
+        },
+      })
+
       const applications = await prisma.member.findMany({
         where: {
           bandId: input.bandId,
@@ -141,6 +247,16 @@ export const bandApplicationRouter = router({
               developmentPath: true,
             },
           },
+          applicationVotes: {
+            include: {
+              voter: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -150,6 +266,12 @@ export const bandApplicationRouter = router({
       return {
         success: true,
         applications,
+        votingSettings: {
+          threshold: band?.memberApprovalThreshold || 50,
+          quorum: band?.memberApprovalQuorum || 25,
+          totalVotingMembers: votingMemberCount,
+          quorumRequired: Math.ceil(((band?.memberApprovalQuorum || 25) / 100) * votingMemberCount),
+        },
       }
     }),
 
@@ -337,6 +459,301 @@ export const bandApplicationRouter = router({
         success: true,
         message: 'Application rejected',
         membership: updatedMembership,
+      }
+    }),
+
+  /**
+   * Vote on a membership application
+   */
+  voteOnApplication: publicProcedure
+    .input(
+      z.object({
+        membershipId: z.string(),
+        voterId: z.string(),
+        vote: z.enum(['APPROVE', 'REJECT']),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Get the membership application
+      const membership = await prisma.member.findUnique({
+        where: { id: input.membershipId },
+        include: {
+          band: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              whoCanApprove: true,
+              dissolvedAt: true,
+            },
+          },
+          user: {
+            select: { name: true },
+          },
+        },
+      })
+
+      if (!membership) {
+        throw new Error('Application not found')
+      }
+
+      if (membership.status !== 'PENDING') {
+        throw new Error('This application has already been processed')
+      }
+
+      // Check if voting deadline has passed
+      if (membership.votingDeadline && new Date() > membership.votingDeadline) {
+        throw new Error('Voting deadline has passed for this application')
+      }
+
+      // Check if band is dissolved
+      if (membership.band.dissolvedAt) {
+        throw new Error('This band is no longer active')
+      }
+
+      // Check if there's an active dissolution vote
+      const dissolutionVoteActive = await hasActiveDissolutionVote(membership.bandId)
+      if (dissolutionVoteActive) {
+        throw new Error('This band has a dissolution vote in progress. Voting is temporarily frozen.')
+      }
+
+      // Check if voter is a voting member of the band
+      const voterMembership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: {
+            userId: input.voterId,
+            bandId: membership.bandId,
+          },
+        },
+      })
+
+      if (!voterMembership || voterMembership.status !== 'ACTIVE') {
+        throw new Error('You must be an active member of this band to vote')
+      }
+
+      const votingRoles = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
+      if (!votingRoles.includes(voterMembership.role)) {
+        throw new Error('You do not have voting rights in this band')
+      }
+
+      // Get voter info for notification
+      const voter = await prisma.user.findUnique({
+        where: { id: input.voterId },
+        select: { name: true },
+      })
+
+      // Upsert the vote (create or update)
+      const vote = await prisma.applicationVote.upsert({
+        where: {
+          memberId_voterId: {
+            memberId: input.membershipId,
+            voterId: input.voterId,
+          },
+        },
+        create: {
+          memberId: input.membershipId,
+          voterId: input.voterId,
+          vote: input.vote,
+        },
+        update: {
+          vote: input.vote,
+          updatedAt: new Date(),
+        },
+      })
+
+      // Check if voting thresholds are met
+      const thresholdResult = await checkVotingThresholds(input.membershipId)
+
+      if (thresholdResult.action === 'approve') {
+        // Auto-approve
+        await prisma.member.update({
+          where: { id: input.membershipId },
+          data: {
+            status: 'ACTIVE',
+            role: membership.requestedRole || 'VOTING_MEMBER',
+          },
+        })
+
+        // Notify applicant
+        await notificationService.create({
+          userId: membership.userId,
+          type: 'BAND_APPLICATION_APPROVED',
+          actionUrl: `/bands/${membership.band.slug}`,
+          priority: 'HIGH',
+          metadata: {
+            bandName: membership.band.name,
+            bandSlug: membership.band.slug,
+            approvedByVote: true,
+          },
+          relatedId: membership.bandId,
+          relatedType: 'BAND',
+        })
+
+        // Notify all band members about new member
+        const allMembers = await prisma.member.findMany({
+          where: {
+            bandId: membership.bandId,
+            status: 'ACTIVE',
+            userId: { not: membership.userId },
+          },
+          select: { userId: true },
+        })
+
+        for (const member of allMembers) {
+          await notificationService.create({
+            userId: member.userId,
+            type: 'BAND_MEMBER_JOINED',
+            actionUrl: `/bands/${membership.band.slug}/members`,
+            priority: 'LOW',
+            metadata: {
+              userName: membership.user.name,
+              bandName: membership.band.name,
+              bandSlug: membership.band.slug,
+              approvedByVote: true,
+            },
+            relatedId: membership.bandId,
+            relatedType: 'BAND',
+          })
+        }
+
+        // Check band activation and billing
+        await checkAndSetBandActivation(membership.bandId)
+        await memberBillingTriggers.onMemberActivated(membership.bandId)
+
+        // Webhooks for external website
+        webhookService.memberJoined(membership.bandId, {
+          name: membership.user.name,
+          role: membership.requestedRole || 'VOTING_MEMBER',
+          joinedAt: new Date(),
+        }).catch(err => console.error('Webhook error:', err))
+        webhookService.syncMembersWithParent(membership.bandId)
+
+        return {
+          success: true,
+          message: 'Vote recorded. Application has been approved by vote!',
+          vote,
+          applicationStatus: 'APPROVED',
+        }
+      } else if (thresholdResult.action === 'reject') {
+        // Auto-reject
+        await prisma.member.update({
+          where: { id: input.membershipId },
+          data: { status: 'REJECTED' },
+        })
+
+        // Notify applicant
+        await notificationService.create({
+          userId: membership.userId,
+          type: 'BAND_APPLICATION_REJECTED',
+          actionUrl: `/bands`,
+          priority: 'LOW',
+          metadata: {
+            bandName: membership.band.name,
+            bandSlug: membership.band.slug,
+            rejectedByVote: true,
+          },
+          relatedId: membership.bandId,
+          relatedType: 'BAND',
+        })
+
+        return {
+          success: true,
+          message: 'Vote recorded. Application has been rejected by vote.',
+          vote,
+          applicationStatus: 'REJECTED',
+        }
+      }
+
+      return {
+        success: true,
+        message: `Vote recorded: ${input.vote}`,
+        vote,
+        applicationStatus: 'PENDING',
+      }
+    }),
+
+  /**
+   * Get votes for a specific application
+   */
+  getApplicationVotes: publicProcedure
+    .input(
+      z.object({
+        membershipId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      // Verify user is a member of the band
+      const membership = await prisma.member.findUnique({
+        where: { id: input.membershipId },
+        include: {
+          band: {
+            select: {
+              memberApprovalThreshold: true,
+              memberApprovalQuorum: true,
+            },
+          },
+        },
+      })
+
+      if (!membership) {
+        throw new Error('Application not found')
+      }
+
+      const userMembership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: {
+            userId: input.userId,
+            bandId: membership.bandId,
+          },
+        },
+      })
+
+      if (!userMembership || userMembership.status !== 'ACTIVE') {
+        throw new Error('You must be an active member to view votes')
+      }
+
+      // Get all votes
+      const votes = await prisma.applicationVote.findMany({
+        where: { memberId: input.membershipId },
+        include: {
+          voter: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      })
+
+      // Count voting members
+      const votingMemberCount = await prisma.member.count({
+        where: {
+          bandId: membership.bandId,
+          status: 'ACTIVE',
+          role: { in: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER'] },
+        },
+      })
+
+      const approveVotes = votes.filter(v => v.vote === 'APPROVE').length
+      const rejectVotes = votes.filter(v => v.vote === 'REJECT').length
+
+      // Find current user's vote
+      const userVote = votes.find(v => v.voterId === input.userId)
+
+      return {
+        success: true,
+        votes,
+        summary: {
+          approve: approveVotes,
+          reject: rejectVotes,
+          total: votes.length,
+          totalVotingMembers: votingMemberCount,
+          quorumRequired: Math.ceil((membership.band.memberApprovalQuorum / 100) * votingMemberCount),
+          threshold: membership.band.memberApprovalThreshold,
+          userVote: userVote?.vote || null,
+        },
       }
     }),
 

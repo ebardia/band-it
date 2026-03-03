@@ -44,6 +44,11 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
   const [quorumPercentage, setQuorumPercentage] = useState(50)
   const [requireProposalReview, setRequireProposalReview] = useState(false)
   const [whoCanManageDocuments, setWhoCanManageDocuments] = useState<string[]>(['FOUNDER', 'GOVERNOR', 'MODERATOR'])
+  // Member approval voting settings
+  const [memberApprovalThreshold, setMemberApprovalThreshold] = useState(50)
+  const [memberApprovalQuorum, setMemberApprovalQuorum] = useState(25)
+  const [memberApprovalWindowDays, setMemberApprovalWindowDays] = useState(7)
+  const [memberApprovalWindowHours, setMemberApprovalWindowHours] = useState(0)
 
   const utils = trpc.useUtils()
 
@@ -78,6 +83,11 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
       setQuorumPercentage(data.settings.quorumPercentage)
       setRequireProposalReview(data.settings.requireProposalReview)
       setWhoCanManageDocuments(data.settings.whoCanManageDocuments || ['FOUNDER', 'GOVERNOR', 'MODERATOR'])
+      // Member approval settings
+      setMemberApprovalThreshold(data.settings.memberApprovalThreshold ?? 50)
+      setMemberApprovalQuorum(data.settings.memberApprovalQuorum ?? 25)
+      setMemberApprovalWindowDays(data.settings.memberApprovalWindowDays ?? 7)
+      setMemberApprovalWindowHours(data.settings.memberApprovalWindowHours ?? 0)
     }
   }, [data?.settings])
 
@@ -95,6 +105,11 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
       quorumPercentage,
       requireProposalReview,
       whoCanManageDocuments: whoCanManageDocuments as any,
+      // Member approval settings
+      memberApprovalThreshold,
+      memberApprovalQuorum,
+      memberApprovalWindowDays,
+      memberApprovalWindowHours,
     })
   }
 
@@ -112,6 +127,11 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
       setQuorumPercentage(data.settings.quorumPercentage)
       setRequireProposalReview(data.settings.requireProposalReview)
       setWhoCanManageDocuments(data.settings.whoCanManageDocuments || ['FOUNDER', 'GOVERNOR', 'MODERATOR'])
+      // Reset member approval settings
+      setMemberApprovalThreshold(data.settings.memberApprovalThreshold ?? 50)
+      setMemberApprovalQuorum(data.settings.memberApprovalQuorum ?? 25)
+      setMemberApprovalWindowDays(data.settings.memberApprovalWindowDays ?? 7)
+      setMemberApprovalWindowHours(data.settings.memberApprovalWindowHours ?? 0)
     }
     setIsEditing(false)
   }
@@ -227,6 +247,57 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
               ))}
             </div>
           </div>
+
+          {/* Member Application Voting Settings */}
+          <div className="border-t pt-3 mt-2">
+            <Text variant="small" weight="semibold" className="mb-2">Member Application Voting</Text>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Approval Threshold %</label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={memberApprovalThreshold}
+                  onChange={(e) => setMemberApprovalThreshold(parseInt(e.target.value) || 50)}
+                />
+                <Text variant="small" color="muted" className="mt-1">% of votes needed to approve</Text>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Quorum %</label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={memberApprovalQuorum}
+                  onChange={(e) => setMemberApprovalQuorum(parseInt(e.target.value) || 0)}
+                />
+                <Text variant="small" color="muted" className="mt-1">Min % of members that must vote</Text>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Voting Window (days)</label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={30}
+                  value={memberApprovalWindowDays}
+                  onChange={(e) => setMemberApprovalWindowDays(parseInt(e.target.value) || 0)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Additional Hours</label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={720}
+                  value={memberApprovalWindowHours}
+                  onChange={(e) => setMemberApprovalWindowHours(parseInt(e.target.value) || 0)}
+                />
+                <Text variant="small" color="muted" className="mt-1">e.g., 2 days + 12 hours</Text>
+              </div>
+            </div>
+          </div>
+
           <Flex gap="sm" justify="end" className="pt-2 border-t">
             <Button variant="ghost" size="sm" onClick={handleCancel} disabled={updateMutation.isPending}>Cancel</Button>
             <Button variant="primary" size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
@@ -235,13 +306,28 @@ export function GovernanceSettings({ bandId, userId }: GovernanceSettingsProps) 
           </Flex>
         </Stack>
       ) : (
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-          <span><span className="text-gray-500">Method:</span> {VOTING_METHODS.find(m => m.value === settings.votingMethod)?.label.split(' ')[0]}</span>
-          <span><span className="text-gray-500">Period:</span> {settings.votingPeriodHours ? `${settings.votingPeriodHours}h` : `${settings.votingPeriodDays}d`}</span>
-          <span><span className="text-gray-500">Quorum:</span> {settings.quorumPercentage}%</span>
-          <span><span className="text-gray-500">Review:</span> {settings.requireProposalReview ? 'Yes' : 'No'}</span>
-          <span><span className="text-gray-500">Docs:</span> {settings.whoCanManageDocuments?.map((r: string) => ROLE_OPTIONS.find(o => o.value === r)?.label.split(' ')[0]).join(', ') || 'Founder, Governor, Mod'}</span>
-        </div>
+        <Stack spacing="sm">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+            <span><span className="text-gray-500">Method:</span> {VOTING_METHODS.find(m => m.value === settings.votingMethod)?.label.split(' ')[0]}</span>
+            <span><span className="text-gray-500">Period:</span> {settings.votingPeriodHours ? `${settings.votingPeriodHours}h` : `${settings.votingPeriodDays}d`}</span>
+            <span><span className="text-gray-500">Quorum:</span> {settings.quorumPercentage}%</span>
+            <span><span className="text-gray-500">Review:</span> {settings.requireProposalReview ? 'Yes' : 'No'}</span>
+            <span><span className="text-gray-500">Docs:</span> {settings.whoCanManageDocuments?.map((r: string) => ROLE_OPTIONS.find(o => o.value === r)?.label.split(' ')[0]).join(', ') || 'Founder, Governor, Mod'}</span>
+          </div>
+          <div className="border-t pt-2 mt-1">
+            <Text variant="small" weight="semibold" className="text-gray-600 mb-1">Member Application Voting</Text>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <span><span className="text-gray-500">Threshold:</span> {settings.memberApprovalThreshold ?? 50}%</span>
+              <span><span className="text-gray-500">Quorum:</span> {settings.memberApprovalQuorum ?? 25}%</span>
+              <span>
+                <span className="text-gray-500">Window:</span>{' '}
+                {(settings.memberApprovalWindowDays ?? 7) > 0 && `${settings.memberApprovalWindowDays ?? 7}d`}
+                {(settings.memberApprovalWindowHours ?? 0) > 0 && ` ${settings.memberApprovalWindowHours}h`}
+                {(settings.memberApprovalWindowDays ?? 7) === 0 && (settings.memberApprovalWindowHours ?? 0) === 0 && '7d'}
+              </span>
+            </div>
+          </div>
+        </Stack>
       )}
     </div>
   )

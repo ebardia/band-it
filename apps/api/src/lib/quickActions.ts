@@ -16,7 +16,7 @@ const ROLE_HIERARCHY: Record<MemberRole, number> = {
 }
 
 // Quick action types - desktop users redirected to full pages
-export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION' | 'CHECKLIST' | 'REVIEW_APPLICATION' | 'REIMBURSE' | 'CONFIRM_REIMBURSEMENT'
+export type QuickActionType = 'VOTE' | 'CONFIRM_PAYMENT' | 'EVENT_RSVP' | 'BAND_INVITE' | 'MENTION' | 'CHECKLIST' | 'REVIEW_APPLICATION' | 'VOTE_ON_APPLICATION' | 'REIMBURSE' | 'CONFIRM_REIMBURSEMENT'
 
 // Roles that can review applications
 const CAN_REVIEW_APPLICATIONS = ['FOUNDER', 'GOVERNOR', 'MODERATOR']
@@ -292,17 +292,22 @@ export async function getQuickActionsForUser(
       take: limit * 2, // Fetch extra since we'll filter by role
     }) : Promise.resolve([]),
 
-    // 9. Pending applications - applications to bands where user can review
-    reviewerBandIds.length > 0 ? prisma.member.findMany({
+    // 9. Pending applications - applications to bands where user can vote
+    // Now all voting members can vote, not just reviewers
+    userBandIds.length > 0 ? prisma.member.findMany({
       where: {
-        bandId: { in: reviewerBandIds },
+        bandId: { in: userBandIds },
         status: 'PENDING', // Application pending review
       },
       include: {
         user: { select: { id: true, name: true, email: true } },
         band: { select: { id: true, name: true, slug: true } },
+        applicationVotes: {
+          where: { voterId: userId },
+          select: { vote: true },
+        },
       },
-      orderBy: { createdAt: 'asc' }, // Oldest first
+      orderBy: { votingDeadline: 'asc' }, // Soonest deadline first
       take: limit,
     }) : Promise.resolve([]),
 
@@ -550,18 +555,44 @@ export async function getQuickActionsForUser(
     })
   }
 
-  // Process pending applications
+  // Process pending applications - check if user has already voted
   for (const application of pendingApplications) {
-    // Calculate how long the application has been waiting
-    const hoursWaiting = (now.getTime() - application.createdAt.getTime()) / (1000 * 60 * 60)
+    // Check user's role in this band
+    const userRole = bandRoles.get(application.band.id)
+    if (!userRole || !CAN_VOTE.includes(userRole)) continue // User can't vote
+
+    // Skip if user has already voted
+    const hasVoted = application.applicationVotes && application.applicationVotes.length > 0
+
+    // Calculate urgency based on voting deadline or waiting time
     let urgency: Urgency = 'low'
-    if (hoursWaiting > 72) urgency = 'high' // Waiting more than 3 days
-    else if (hoursWaiting > 24) urgency = 'medium' // Waiting more than 1 day
+    let timeRemaining: string | null = null
+
+    if (application.votingDeadline) {
+      const deadline = new Date(application.votingDeadline)
+      const hoursLeft = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60)
+      if (hoursLeft <= 0) continue // Deadline passed, skip
+      if (hoursLeft < 24) urgency = 'high'
+      else if (hoursLeft < 72) urgency = 'medium'
+      timeRemaining = formatTimeRemaining(deadline)
+    } else {
+      // No deadline - use waiting time
+      const hoursWaiting = (now.getTime() - application.createdAt.getTime()) / (1000 * 60 * 60)
+      if (hoursWaiting > 72) urgency = 'high'
+      else if (hoursWaiting > 24) urgency = 'medium'
+    }
+
+    // If already voted, lower urgency
+    if (hasVoted) {
+      urgency = 'low'
+    }
 
     actions.push({
-      type: 'REVIEW_APPLICATION',
+      type: hasVoted ? 'REVIEW_APPLICATION' : 'VOTE_ON_APPLICATION',
       id: application.id,
-      title: `${application.user.name || application.user.email} wants to join`,
+      title: hasVoted
+        ? `${application.user.name || application.user.email} (you voted)`
+        : `Vote on ${application.user.name || application.user.email}'s application`,
       bandName: application.band.name,
       bandId: application.band.id,
       url: `/bands/${application.band.slug}/applications`,
@@ -570,9 +601,10 @@ export async function getQuickActionsForUser(
         applicantName: application.user.name,
         applicantEmail: application.user.email,
         appliedAt: application.createdAt,
-        waitingTime: hoursWaiting > 24
-          ? `${Math.floor(hoursWaiting / 24)} day${Math.floor(hoursWaiting / 24) === 1 ? '' : 's'}`
-          : `${Math.floor(hoursWaiting)} hour${Math.floor(hoursWaiting) === 1 ? '' : 's'}`,
+        votingDeadline: application.votingDeadline,
+        timeRemaining,
+        hasVoted,
+        userVote: application.applicationVotes?.[0]?.vote,
         bandSlug: application.band.slug,
       },
     })

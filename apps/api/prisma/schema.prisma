@@ -163,6 +163,9 @@ model User {
   // Donations
   donationsConfirmed          Donation[] @relation("DonationsConfirmed")
   donationsRejected           Donation[] @relation("DonationsRejected")
+
+  // Application Votes
+  applicationVotes            ApplicationVote[]
 }
 
 enum SubscriptionStatus {
@@ -377,6 +380,8 @@ enum NotificationType {
   BAND_APPLICATION_RECEIVED
   BAND_APPLICATION_APPROVED
   BAND_APPLICATION_REJECTED
+  APPLICATION_VOTE_CAST              // Someone voted on an application
+  APPLICATION_QUORUM_NOT_MET         // Voting deadline passed without quorum
 
   // Band membership
   BAND_MEMBER_JOINED
@@ -575,7 +580,13 @@ model Band {
 
   // Membership Configuration
   membershipRequirements String @db.Text
-  whoCanApprove         MemberRole[]
+  whoCanApprove         MemberRole[]  // DEPRECATED: Use voting-based approval instead
+
+  // Member Application Voting
+  memberApprovalThreshold    Int @default(50)  // % of votes needed to approve (e.g., 50 = majority)
+  memberApprovalQuorum       Int @default(25)  // Minimum % of voting members that must vote
+  memberApprovalWindowDays   Int @default(7)   // Days before voting closes
+  memberApprovalWindowHours  Int @default(0)   // Additional hours (for quick decisions)
 
   // Voting Configuration
   votingMethod          VotingMethod @default(SIMPLE_MAJORITY)
@@ -685,17 +696,22 @@ model Member {
   invitedBy String?
   notes     String? @db.Text
 
+  // Application voting
+  votingDeadline DateTime?  // When voting on this application closes (for PENDING status)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   band Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
   manualPayments ManualPayment[]
+  applicationVotes ApplicationVote[]  // Votes on this application (when status is PENDING)
 
   @@unique([userId, bandId])
   @@index([bandId])
   @@index([userId])
   @@index([status])
+  @@index([votingDeadline])
 }
 
 enum MemberRole {
@@ -712,6 +728,29 @@ enum MemberStatus {
   PENDING
   ACTIVE
   REJECTED
+}
+
+// Votes on pending member applications
+model ApplicationVote {
+  id          String   @id @default(cuid())
+  memberId    String   // The pending application being voted on
+  voterId     String   // The user casting the vote
+  vote        ApplicationVoteType
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  voter       User     @relation(fields: [voterId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, voterId])  // One vote per user per application
+  @@index([memberId])
+  @@index([voterId])
+}
+
+enum ApplicationVoteType {
+  APPROVE
+  REJECT
 }
 
 // ============================================
