@@ -4,6 +4,7 @@ import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { statusUpdateService } from '../../../services/status-update.service'
+import { webhookService } from '../../../services/webhook.service'
 
 // Only founders and governors can manage website integration settings
 const CAN_MANAGE_WEBSITE = ['FOUNDER', 'GOVERNOR']
@@ -300,6 +301,70 @@ export const bandWebsiteRouter = router({
       return {
         success: true,
         message: 'Status update sent successfully',
+      }
+    }),
+
+  /**
+   * Manually sync member list to external website
+   * Sends the full member list (including sub-band members) to the webhook
+   */
+  syncMembers: publicProcedure
+    .input(z.object({
+      bandId: z.string(),
+      userId: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      const { bandId, userId } = input
+
+      // Check user membership and permissions
+      const membership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: { userId, bandId },
+        },
+        select: { role: true, status: true },
+      })
+
+      if (!membership || membership.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You must be an active member',
+        })
+      }
+
+      if (!CAN_SEND_STATUS_UPDATE.includes(membership.role)) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You must be a Conductor or above to sync members',
+        })
+      }
+
+      // Check if webhook is configured
+      const band = await prisma.band.findUnique({
+        where: { id: bandId },
+        select: { webhookUrl: true, webhookSecret: true },
+      })
+
+      if (!band?.webhookUrl || !band?.webhookSecret) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Webhook URL and secret must be configured before syncing members',
+        })
+      }
+
+      // Send the member sync
+      const result = await webhookService.syncMembers(bandId)
+
+      if (!result.sent) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: result.error || 'Failed to sync members',
+        })
+      }
+
+      return {
+        success: true,
+        message: `Successfully synced ${result.memberCount} members`,
+        memberCount: result.memberCount,
       }
     }),
 })

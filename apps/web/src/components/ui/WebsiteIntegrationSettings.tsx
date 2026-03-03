@@ -80,6 +80,15 @@ export function WebsiteIntegrationSettings({ bandId, userId, userRole }: Website
     },
   })
 
+  const syncMembersMutation = trpc.band.syncMembers.useMutation({
+    onSuccess: (data) => {
+      showToast(`Successfully synced ${data.memberCount} members to your website!`, 'success')
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
   // Initialize form values when data loads
   useEffect(() => {
     if (data?.settings) {
@@ -333,31 +342,56 @@ export function WebsiteIntegrationSettings({ bandId, userId, userRole }: Website
           )}
         </div>
 
-        {/* Send Status Update Section */}
+        {/* Send Status Update & Sync Members Section */}
         {settings?.webhookUrl && settings?.webhookSecret && (
           <>
             <hr className="my-2" />
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <Flex justify="between" align="center">
-                <div>
-                  <Text weight="semibold">Send Weekly Status Update</Text>
-                  <Text variant="small" className="text-gray-600">
-                    Manually send a status update with the last 7 days of activity to your website.
-                  </Text>
-                  <Text variant="small" className="text-gray-500 mt-1">
-                    Includes: proposals, completed tasks, events, member changes
-                  </Text>
-                </div>
-                <Button
-                  onClick={() => sendStatusUpdateMutation.mutate({ bandId, userId })}
-                  disabled={sendStatusUpdateMutation.isPending}
-                >
-                  {sendStatusUpdateMutation.isPending ? 'Sending...' : 'Send Now'}
-                </Button>
-              </Flex>
-              <Text variant="small" className="text-green-700 mt-2">
-                Status updates are also sent automatically every Sunday at 6 PM UTC.
-              </Text>
+            <div className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <Flex justify="between" align="center">
+                  <div>
+                    <Text weight="semibold">Send Weekly Status Update</Text>
+                    <Text variant="small" className="text-gray-600">
+                      Manually send a status update with the last 7 days of activity to your website.
+                    </Text>
+                    <Text variant="small" className="text-gray-500 mt-1">
+                      Includes: proposals, completed tasks, events, member changes
+                    </Text>
+                  </div>
+                  <Button
+                    onClick={() => sendStatusUpdateMutation.mutate({ bandId, userId })}
+                    disabled={sendStatusUpdateMutation.isPending}
+                  >
+                    {sendStatusUpdateMutation.isPending ? 'Sending...' : 'Send Now'}
+                  </Button>
+                </Flex>
+                <Text variant="small" className="text-green-700 mt-2">
+                  Status updates are also sent automatically every Sunday at 6 PM UTC.
+                </Text>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <Flex justify="between" align="center">
+                  <div>
+                    <Text weight="semibold">Sync Member List</Text>
+                    <Text variant="small" className="text-gray-600">
+                      Push the current member list to your website (includes sub-band members).
+                    </Text>
+                    <Text variant="small" className="text-gray-500 mt-1">
+                      Use this for initial sync or to fix any discrepancies.
+                    </Text>
+                  </div>
+                  <Button
+                    onClick={() => syncMembersMutation.mutate({ bandId, userId })}
+                    disabled={syncMembersMutation.isPending}
+                  >
+                    {syncMembersMutation.isPending ? 'Syncing...' : 'Sync Now'}
+                  </Button>
+                </Flex>
+                <Text variant="small" className="text-blue-700 mt-2">
+                  Members are automatically synced when members join, leave, or change roles.
+                </Text>
+              </div>
             </div>
           </>
         )}
