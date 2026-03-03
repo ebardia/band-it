@@ -13,6 +13,7 @@ export type WebhookEventType =
   | 'member.joined'
   | 'member.left'
   | 'member.updated'
+  | 'members.sync'
   | 'status.update'
   | 'event.created'
   | 'event.updated'
@@ -220,5 +221,128 @@ export const webhookService = {
       id: event.id,
       title: event.title,
     })
+  },
+
+  /**
+   * Sync members for a band AND its parent (if it has one)
+   * Call this when a member joins or leaves any band
+   */
+  async syncMembersWithParent(bandId: string): Promise<void> {
+    // Get the band to check if it has a parent
+    const band = await prisma.band.findUnique({
+      where: { id: bandId },
+      select: {
+        id: true,
+        parentBandId: true,
+        webhookUrl: true,
+      },
+    })
+
+    if (!band) return
+
+    // Sync the current band if it has a webhook
+    if (band.webhookUrl) {
+      this.syncMembers(bandId).catch(err =>
+        console.error('Error syncing members for band:', err)
+      )
+    }
+
+    // If this band has a parent, sync the parent's members too
+    // (the parent's member list includes all sub-band members)
+    if (band.parentBandId) {
+      this.syncMembers(band.parentBandId).catch(err =>
+        console.error('Error syncing members for parent band:', err)
+      )
+    }
+  },
+
+  /**
+   * Sync full member list to external website
+   * Gets all unique members across a band and its sub-bands
+   */
+  async syncMembers(bandId: string): Promise<{ sent: boolean; memberCount: number; error?: string }> {
+    // Get the band with its sub-bands
+    const band = await prisma.band.findUnique({
+      where: { id: bandId },
+      select: {
+        id: true,
+        slug: true,
+        webhookUrl: true,
+        webhookSecret: true,
+        subBands: {
+          select: { id: true },
+        },
+      },
+    })
+
+    if (!band || !band.webhookUrl || !band.webhookSecret) {
+      return { sent: false, memberCount: 0, error: 'No webhook configured' }
+    }
+
+    // Collect all band IDs (parent + sub-bands)
+    const allBandIds = [band.id, ...band.subBands.map(sb => sb.id)]
+
+    // Get all active members across all bands
+    const members = await prisma.member.findMany({
+      where: {
+        bandId: { in: allBandIds },
+        status: 'ACTIVE',
+      },
+      select: {
+        userId: true,
+        role: true,
+        createdAt: true,
+        user: {
+          select: { name: true },
+        },
+      },
+      orderBy: [
+        { role: 'asc' },
+        { createdAt: 'asc' },
+      ],
+    })
+
+    // De-duplicate by userId, keeping the highest role (earliest in order)
+    const roleOrder = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER']
+    const uniqueMembers = new Map<string, {
+      name: string
+      role: string
+      joinedAt: string
+    }>()
+
+    for (const member of members) {
+      const existing = uniqueMembers.get(member.userId)
+      if (!existing) {
+        uniqueMembers.set(member.userId, {
+          name: member.user.name,
+          role: member.role,
+          joinedAt: member.createdAt.toISOString(),
+        })
+      } else {
+        // Keep the higher role (lower index in roleOrder)
+        const existingRoleIndex = roleOrder.indexOf(existing.role)
+        const newRoleIndex = roleOrder.indexOf(member.role)
+        if (newRoleIndex < existingRoleIndex) {
+          uniqueMembers.set(member.userId, {
+            name: member.user.name,
+            role: member.role,
+            joinedAt: member.createdAt.toISOString(),
+          })
+        }
+      }
+    }
+
+    const memberList = Array.from(uniqueMembers.values())
+
+    const result = await this.emit(bandId, 'members.sync', {
+      members: memberList,
+      count: memberList.length,
+    })
+
+    return {
+      sent: result.sent,
+      memberCount: memberList.length,
+      error: result.error,
+    }
   },
 }

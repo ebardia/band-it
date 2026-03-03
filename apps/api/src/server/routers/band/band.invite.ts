@@ -331,6 +331,9 @@ export const bandInviteRouter = router({
         joinedAt: new Date(),
       }).catch(err => console.error('Webhook error:', err))
 
+      // Sync full member list to external website (includes parent band if applicable)
+      webhookService.syncMembersWithParent(membership.bandId)
+
       return {
         success: true,
         message: 'Invitation accepted',
@@ -477,6 +480,9 @@ export const bandInviteRouter = router({
         name: membership.user.name,
         leftAt: new Date(),
       }).catch(err => console.error('Webhook error:', err))
+
+      // Sync full member list to external website (includes parent band if applicable)
+      webhookService.syncMembersWithParent(input.bandId)
 
       return {
         success: true,

@@ -265,6 +265,9 @@ export const bandApplicationRouter = router({
         joinedAt: new Date(),
       }).catch(err => console.error('Webhook error:', err))
 
+      // Sync full member list to external website (includes parent band if applicable)
+      webhookService.syncMembersWithParent(membership.bandId)
+
       return {
         success: true,
         message: 'Application approved',

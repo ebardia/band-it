@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
+import { webhookService } from '../../../services/webhook.service'
 
 const MemberRoleEnum = z.enum(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER'])
 
@@ -319,6 +320,9 @@ export const changeRole = publicProcedure
       relatedType: 'band',
       actionUrl: `/bands/${band.slug}/members`,
     })
+
+    // Sync full member list to external website (role changed)
+    webhookService.syncMembersWithParent(bandId)
 
     return { member: updatedMember }
   })
