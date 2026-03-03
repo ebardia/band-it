@@ -155,6 +155,20 @@ async function handleApplication(
     return res.status(400).json({ error: 'Missing required fields: firstName, lastName, email' })
   }
 
+  // Get band's voting window settings
+  const bandSettings = await prisma.band.findUnique({
+    where: { id: band.id },
+    select: {
+      memberApprovalWindowDays: true,
+      memberApprovalWindowHours: true,
+    },
+  })
+
+  // Calculate voting deadline
+  const votingDeadline = new Date()
+  votingDeadline.setDate(votingDeadline.getDate() + (bandSettings?.memberApprovalWindowDays ?? 7))
+  votingDeadline.setHours(votingDeadline.getHours() + (bandSettings?.memberApprovalWindowHours ?? 0))
+
   // Check if user already exists
   let user = await prisma.user.findUnique({
     where: { email: email.toLowerCase() },
@@ -201,6 +215,7 @@ async function handleApplication(
       userId: user.id,
       status: 'PENDING',
       role: 'OBSERVER', // Will be set properly when approved
+      votingDeadline,
       notes: JSON.stringify({
         source: source || 'public-website',
         submittedAt: new Date().toISOString(),
@@ -210,19 +225,34 @@ async function handleApplication(
     },
   })
 
-  // Notify band admins
-  const adminIds = await getBandAdmins(band.id)
-  for (const adminId of adminIds) {
+  // Notify all voting members (they can vote on applications)
+  const votingMembers = await prisma.member.findMany({
+    where: {
+      bandId: band.id,
+      status: 'ACTIVE',
+      role: { in: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER'] },
+    },
+    select: { userId: true },
+  })
+
+  for (const votingMember of votingMembers) {
     await notificationService.create({
-      userId: adminId,
-      type: 'MEMBER_APPLIED',
+      userId: votingMember.userId,
+      type: 'BAND_APPLICATION_RECEIVED',
       title: 'New Membership Application',
-      message: `${firstName} ${lastName} has applied to join ${band.name} via the public website.`,
+      message: `${firstName} ${lastName} has applied to join ${band.name}. Vote before ${votingDeadline.toLocaleDateString()}.`,
       actionUrl: `/bands/${band.slug}/applications`,
       priority: 'MEDIUM',
       bandId: band.id,
       relatedId: member.id,
       relatedType: 'member',
+      metadata: {
+        userName: `${firstName} ${lastName}`,
+        bandName: band.name,
+        bandSlug: band.slug,
+        membershipId: member.id,
+        votingDeadline: votingDeadline.toISOString(),
+      },
     })
   }
 
