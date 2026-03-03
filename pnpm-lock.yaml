@@ -68,6 +68,9 @@ importers:
       p-limit:
         specifier: ^7.2.0
         version: 7.2.0
+      prisma:
+        specifier: ^5.22.0
+        version: 5.22.0
       resend:
         specifier: ^3.2.0
         version: 3.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -77,6 +80,12 @@ importers:
       stripe:
         specifier: ^17.5.0
         version: 17.7.0
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
       zod:
         specifier: ^3.23.8
         version: 3.25.76
@@ -108,15 +117,6 @@ importers:
       '@types/p-limit':
         specifier: ^2.1.0
         version: 2.2.0
-      prisma:
-        specifier: ^5.22.0
-        version: 5.22.0
-      tsx:
-        specifier: ^4.7.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
 
   apps/web:
     dependencies:
