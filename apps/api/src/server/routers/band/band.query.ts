@@ -73,15 +73,6 @@ export const bandQueryRouter = router({
       })
     )
     .query(async ({ input }) => {
-      console.log('[getMyBands] Querying for userId:', input.userId)
-
-      // Debug: Check all memberships for this user (any status)
-      const allMemberships = await prisma.member.findMany({
-        where: { userId: input.userId },
-        select: { id: true, status: true, bandId: true },
-      })
-      console.log('[getMyBands] All memberships for user:', JSON.stringify(allMemberships))
-
       const memberships = await prisma.member.findMany({
         where: {
           userId: input.userId,
@@ -121,11 +112,6 @@ export const bandQueryRouter = router({
           createdAt: 'desc',
         },
       })
-
-      console.log('[getMyBands] Found active memberships:', memberships.length)
-      if (memberships.length > 0) {
-        console.log('[getMyBands] Band names:', memberships.map(m => m.band.name))
-      }
 
       return {
         success: true,

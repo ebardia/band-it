@@ -15,71 +15,6 @@ function calculateVotingDeadline(days: number, hours: number): Date {
   return deadline
 }
 
-// Helper to check if voting thresholds are met and auto-approve/reject
-async function checkVotingThresholds(membershipId: string): Promise<{ action: 'approve' | 'reject' | null; reason?: string }> {
-  const membership = await prisma.member.findUnique({
-    where: { id: membershipId },
-    include: {
-      band: {
-        select: {
-          id: true,
-          memberApprovalThreshold: true,
-          memberApprovalQuorum: true,
-        },
-      },
-      applicationVotes: true,
-    },
-  })
-
-  if (!membership || membership.status !== 'PENDING') {
-    return { action: null }
-  }
-
-  // Count voting members in the band (VOTING_MEMBER and above, excluding the applicant)
-  const votingMemberCount = await prisma.member.count({
-    where: {
-      bandId: membership.bandId,
-      status: 'ACTIVE',
-      role: { in: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER'] },
-    },
-  })
-
-  if (votingMemberCount === 0) {
-    return { action: null }
-  }
-
-  const votes = membership.applicationVotes
-  const approveVotes = votes.filter(v => v.vote === 'APPROVE').length
-  const rejectVotes = votes.filter(v => v.vote === 'REJECT').length
-  const totalVotes = votes.length
-
-  const quorumRequired = Math.ceil((membership.band.memberApprovalQuorum / 100) * votingMemberCount)
-  const approvalThreshold = membership.band.memberApprovalThreshold
-
-  // Check if quorum is met
-  if (totalVotes < quorumRequired) {
-    return { action: null, reason: `Quorum not met: ${totalVotes}/${quorumRequired} votes` }
-  }
-
-  // Calculate approval percentage (of votes cast, not total members)
-  const approvalPercentage = (approveVotes / totalVotes) * 100
-
-  if (approvalPercentage >= approvalThreshold) {
-    return { action: 'approve', reason: `Threshold met: ${approvalPercentage.toFixed(1)}% approve (${approveVotes}/${totalVotes})` }
-  } else if ((100 - approvalPercentage) > (100 - approvalThreshold)) {
-    // Reject if it's mathematically impossible to reach approval threshold
-    // e.g., if threshold is 60% and we have 50% reject, even with remaining votes it won't pass
-    const remainingVotes = votingMemberCount - totalVotes
-    const maxPossibleApprovePercentage = ((approveVotes + remainingVotes) / (totalVotes + remainingVotes)) * 100
-
-    if (maxPossibleApprovePercentage < approvalThreshold && totalVotes >= quorumRequired) {
-      return { action: 'reject', reason: `Cannot reach threshold: max possible ${maxPossibleApprovePercentage.toFixed(1)}%` }
-    }
-  }
-
-  return { action: null }
-}
-
 export const bandApplicationRouter = router({
   /**
    * Apply to join a band
@@ -561,112 +496,19 @@ export const bandApplicationRouter = router({
         },
       })
 
-      // Check if voting thresholds are met
-      const thresholdResult = await checkVotingThresholds(input.membershipId)
+      // Get current vote counts for the response
+      const allVotes = await prisma.applicationVote.findMany({
+        where: { memberId: input.membershipId },
+      })
+      const approveCount = allVotes.filter(v => v.vote === 'APPROVE').length
+      const rejectCount = allVotes.filter(v => v.vote === 'REJECT').length
 
-      if (thresholdResult.action === 'approve') {
-        // Auto-approve
-        await prisma.member.update({
-          where: { id: input.membershipId },
-          data: {
-            status: 'ACTIVE',
-            role: membership.requestedRole || 'VOTING_MEMBER',
-          },
-        })
-
-        // Notify applicant
-        await notificationService.create({
-          userId: membership.userId,
-          type: 'BAND_APPLICATION_APPROVED',
-          actionUrl: `/bands/${membership.band.slug}`,
-          priority: 'HIGH',
-          metadata: {
-            bandName: membership.band.name,
-            bandSlug: membership.band.slug,
-            approvedByVote: true,
-          },
-          relatedId: membership.bandId,
-          relatedType: 'BAND',
-        })
-
-        // Notify all band members about new member
-        const allMembers = await prisma.member.findMany({
-          where: {
-            bandId: membership.bandId,
-            status: 'ACTIVE',
-            userId: { not: membership.userId },
-          },
-          select: { userId: true },
-        })
-
-        for (const member of allMembers) {
-          await notificationService.create({
-            userId: member.userId,
-            type: 'BAND_MEMBER_JOINED',
-            actionUrl: `/bands/${membership.band.slug}/members`,
-            priority: 'LOW',
-            metadata: {
-              userName: membership.user.name,
-              bandName: membership.band.name,
-              bandSlug: membership.band.slug,
-              approvedByVote: true,
-            },
-            relatedId: membership.bandId,
-            relatedType: 'BAND',
-          })
-        }
-
-        // Check band activation and billing
-        await checkAndSetBandActivation(membership.bandId)
-        await memberBillingTriggers.onMemberActivated(membership.bandId)
-
-        // Webhooks for external website
-        webhookService.memberJoined(membership.bandId, {
-          name: membership.user.name,
-          role: membership.requestedRole || 'VOTING_MEMBER',
-          joinedAt: new Date(),
-        }).catch(err => console.error('Webhook error:', err))
-        webhookService.syncMembersWithParent(membership.bandId)
-
-        return {
-          success: true,
-          message: 'Vote recorded. Application has been approved by vote!',
-          vote,
-          applicationStatus: 'APPROVED',
-        }
-      } else if (thresholdResult.action === 'reject') {
-        // Auto-reject
-        await prisma.member.update({
-          where: { id: input.membershipId },
-          data: { status: 'REJECTED' },
-        })
-
-        // Notify applicant
-        await notificationService.create({
-          userId: membership.userId,
-          type: 'BAND_APPLICATION_REJECTED',
-          actionUrl: `/bands`,
-          priority: 'LOW',
-          metadata: {
-            bandName: membership.band.name,
-            bandSlug: membership.band.slug,
-            rejectedByVote: true,
-          },
-          relatedId: membership.bandId,
-          relatedType: 'BAND',
-        })
-
-        return {
-          success: true,
-          message: 'Vote recorded. Application has been rejected by vote.',
-          vote,
-          applicationStatus: 'REJECTED',
-        }
-      }
+      // Voting will be tallied when the deadline is reached (via cron job)
+      // No early termination - everyone gets a chance to vote
 
       return {
         success: true,
-        message: `Vote recorded: ${input.vote}`,
+        message: `Vote recorded: ${input.vote}. Current tally: ${approveCount} approve, ${rejectCount} reject. Final decision will be made when voting period ends.`,
         vote,
         applicationStatus: 'PENDING',
       }
