@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "start": "cd apps/api && prisma db push --skip-generate && node dist/index.js",
+    "start": "cd apps/api && npx prisma db push --skip-generate && node dist/index.js",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "clean": "turbo run clean"
