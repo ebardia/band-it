@@ -695,6 +695,7 @@ model Member {
 
   invitedBy String?
   notes     String? @db.Text
+  metadata  Json?   // Band-specific structured data (e.g. application fields from external website)
 
   // Application voting
   votingDeadline DateTime?  // When voting on this application closes (for PENDING status)

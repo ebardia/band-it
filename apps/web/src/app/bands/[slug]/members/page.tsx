@@ -295,6 +295,72 @@ export default function BandMembersPage() {
                   </div>
                 )}
 
+                {(() => {
+                  const meta = profileData.member.metadata as Record<string, any> | null
+                  if (!meta) return null
+                  return (
+                    <div className="border-t border-gray-200 pt-3">
+                      <Text variant="small" weight="semibold" className="mb-2">Application Info</Text>
+                      <div className="space-y-2">
+                        {profileData.member.notes && (
+                          <div>
+                            <Text variant="small" weight="semibold">Motivation:</Text>
+                            <Text variant="small">{profileData.member.notes}</Text>
+                          </div>
+                        )}
+                        {meta.location && (
+                          <div>
+                            <Text variant="small" weight="semibold">Location:</Text>
+                            <Text variant="small">{meta.location}</Text>
+                          </div>
+                        )}
+                        {meta.linkedin && (
+                          <div>
+                            <Text variant="small" weight="semibold">LinkedIn:</Text>
+                            <a href={meta.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">{meta.linkedin}</a>
+                          </div>
+                        )}
+                        {meta.timeCommitment && (
+                          <div>
+                            <Text variant="small" weight="semibold">Time Commitment:</Text>
+                            <Text variant="small">{meta.timeCommitment} hours/week</Text>
+                          </div>
+                        )}
+                        {meta.languages?.length > 0 && (
+                          <div>
+                            <Text variant="small" weight="semibold">Languages:</Text>
+                            <Flex gap="sm" className="flex-wrap mt-1">
+                              {meta.languages.map((l: string, i: number) => (
+                                <Badge key={i} variant="neutral">{l}</Badge>
+                              ))}
+                            </Flex>
+                          </div>
+                        )}
+                        {meta.expertise?.length > 0 && (
+                          <div>
+                            <Text variant="small" weight="semibold">Expertise:</Text>
+                            <Flex gap="sm" className="flex-wrap mt-1">
+                              {meta.expertise.map((e: string, i: number) => (
+                                <Badge key={i} variant="info">{e}</Badge>
+                              ))}
+                            </Flex>
+                          </div>
+                        )}
+                        {meta.committees?.length > 0 && (
+                          <div>
+                            <Text variant="small" weight="semibold">Committees of Interest:</Text>
+                            <Flex gap="sm" className="flex-wrap mt-1">
+                              {meta.committees.map((c: string, i: number) => (
+                                <Badge key={i} variant="success">{c}</Badge>
+                              ))}
+                            </Flex>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
+
                 <Text variant="small" color="muted">
                   Member since {new Date(profileData.member.createdAt).toLocaleDateString()}
                 </Text>

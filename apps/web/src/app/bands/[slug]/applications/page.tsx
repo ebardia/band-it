@@ -95,19 +95,12 @@ export default function BandApplicationsPage() {
     return approveRoles[application.id] || application.requestedRole || 'VOTING_MEMBER'
   }
 
-  // Parse external application notes (from public website submissions)
-  const parseExternalNotes = (notes: string | null) => {
-    if (!notes) return null
-    try {
-      const parsed = JSON.parse(notes)
-      // Check if this looks like an external website submission
-      if (parsed.source || parsed.expertise || parsed.committees) {
-        return parsed
-      }
-      return null
-    } catch {
-      return null
+  // Get structured application metadata (from public website submissions)
+  const getApplicationMetadata = (application: any) => {
+    if (application.metadata && typeof application.metadata === 'object') {
+      return application.metadata
     }
+    return null
   }
 
   const handleVote = (membershipId: string, vote: 'APPROVE' | 'REJECT') => {
@@ -320,103 +313,96 @@ export default function BandApplicationsPage() {
                       </div>
 
                       {(() => {
-                        const externalData = parseExternalNotes(application.notes)
-                        if (externalData) {
-                          // External website application - show formatted data
-                          return (
-                            <Stack spacing="md">
-                              {externalData.source && (
-                                <Badge variant="secondary">Applied via {externalData.source}</Badge>
-                              )}
+                        const meta = getApplicationMetadata(application)
+                        return (
+                          <Stack spacing="md">
+                            {meta?.source && (
+                              <Badge variant="secondary">Applied via {meta.source}</Badge>
+                            )}
 
-                              {externalData.message && (
-                                <Stack spacing="sm">
-                                  <Text variant="small" weight="semibold">Why they want to join:</Text>
-                                  <Text variant="small">{externalData.message}</Text>
-                                </Stack>
-                              )}
+                            {application.notes && (
+                              <Stack spacing="sm">
+                                <Text variant="small" weight="semibold">Why they want to join:</Text>
+                                <Text variant="small">{application.notes}</Text>
+                              </Stack>
+                            )}
 
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {externalData.location && (
-                                  <div>
-                                    <Text variant="small" weight="semibold">Location:</Text>
-                                    <Text variant="small">{externalData.location}</Text>
-                                  </div>
+                            {meta && (
+                              <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {meta.location && (
+                                    <div>
+                                      <Text variant="small" weight="semibold">Location:</Text>
+                                      <Text variant="small">{meta.location}</Text>
+                                    </div>
+                                  )}
+
+                                  {meta.phone && (
+                                    <div>
+                                      <Text variant="small" weight="semibold">Phone:</Text>
+                                      <Text variant="small">{meta.phone}</Text>
+                                    </div>
+                                  )}
+
+                                  {meta.linkedin && (
+                                    <div>
+                                      <Text variant="small" weight="semibold">LinkedIn:</Text>
+                                      <a href={meta.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                                        {meta.linkedin}
+                                      </a>
+                                    </div>
+                                  )}
+
+                                  {meta.timeCommitment && (
+                                    <div>
+                                      <Text variant="small" weight="semibold">Time Commitment:</Text>
+                                      <Text variant="small">{meta.timeCommitment} hours/week</Text>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {meta.languages && meta.languages.length > 0 && (
+                                  <Stack spacing="sm">
+                                    <Text variant="small" weight="semibold">Languages:</Text>
+                                    <Flex gap="sm" wrap="wrap">
+                                      {meta.languages.map((lang: string, idx: number) => (
+                                        <Badge key={idx} variant="secondary">{lang}</Badge>
+                                      ))}
+                                    </Flex>
+                                  </Stack>
                                 )}
 
-                                {externalData.phone && (
-                                  <div>
-                                    <Text variant="small" weight="semibold">Phone:</Text>
-                                    <Text variant="small">{externalData.phone}</Text>
-                                  </div>
+                                {meta.expertise && meta.expertise.length > 0 && (
+                                  <Stack spacing="sm">
+                                    <Text variant="small" weight="semibold">Areas of Expertise:</Text>
+                                    <Flex gap="sm" wrap="wrap">
+                                      {meta.expertise.map((exp: string, idx: number) => (
+                                        <Badge key={idx} variant="info">{exp}</Badge>
+                                      ))}
+                                    </Flex>
+                                  </Stack>
                                 )}
 
-                                {externalData.linkedin && (
-                                  <div>
-                                    <Text variant="small" weight="semibold">LinkedIn:</Text>
-                                    <a href={externalData.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
-                                      {externalData.linkedin}
-                                    </a>
-                                  </div>
+                                {meta.committees && meta.committees.length > 0 && (
+                                  <Stack spacing="sm">
+                                    <Text variant="small" weight="semibold">Committees of Interest:</Text>
+                                    <Flex gap="sm" wrap="wrap">
+                                      {meta.committees.map((comm: string, idx: number) => (
+                                        <Badge key={idx} variant="success">{comm}</Badge>
+                                      ))}
+                                    </Flex>
+                                  </Stack>
                                 )}
 
-                                {externalData.timeCommitment && (
-                                  <div>
-                                    <Text variant="small" weight="semibold">Time Commitment:</Text>
-                                    <Text variant="small">{externalData.timeCommitment} hours/week</Text>
-                                  </div>
+                                {meta.submittedAt && (
+                                  <Text variant="small" color="muted">
+                                    Submitted: {new Date(meta.submittedAt).toLocaleString()}
+                                  </Text>
                                 )}
-                              </div>
-
-                              {externalData.languages && externalData.languages.length > 0 && (
-                                <Stack spacing="sm">
-                                  <Text variant="small" weight="semibold">Languages:</Text>
-                                  <Flex gap="sm" wrap="wrap">
-                                    {externalData.languages.map((lang: string, idx: number) => (
-                                      <Badge key={idx} variant="secondary">{lang}</Badge>
-                                    ))}
-                                  </Flex>
-                                </Stack>
-                              )}
-
-                              {externalData.expertise && externalData.expertise.length > 0 && (
-                                <Stack spacing="sm">
-                                  <Text variant="small" weight="semibold">Areas of Expertise:</Text>
-                                  <Flex gap="sm" wrap="wrap">
-                                    {externalData.expertise.map((exp: string, idx: number) => (
-                                      <Badge key={idx} variant="info">{exp}</Badge>
-                                    ))}
-                                  </Flex>
-                                </Stack>
-                              )}
-
-                              {externalData.committees && externalData.committees.length > 0 && (
-                                <Stack spacing="sm">
-                                  <Text variant="small" weight="semibold">Committees of Interest:</Text>
-                                  <Flex gap="sm" wrap="wrap">
-                                    {externalData.committees.map((comm: string, idx: number) => (
-                                      <Badge key={idx} variant="success">{comm}</Badge>
-                                    ))}
-                                  </Flex>
-                                </Stack>
-                              )}
-
-                              {externalData.submittedAt && (
-                                <Text variant="small" color="muted">
-                                  Submitted: {new Date(externalData.submittedAt).toLocaleString()}
-                                </Text>
-                              )}
-                            </Stack>
-                          )
-                        } else {
-                          // Regular application - show notes as-is
-                          return (
-                            <Stack spacing="sm">
-                              <Text variant="small" weight="semibold">Why they want to join:</Text>
-                              <Text variant="small">{application.notes}</Text>
-                            </Stack>
-                          )
-                        }
+                              </>
+                            )}
+                          </Stack>
+                        )
                       })()}
 
                       {application.user.strengths && application.user.strengths.length > 0 && (

@@ -209,6 +209,8 @@ async function handleApplication(
   }
 
   // Create pending member record
+  // notes = plain-text motivation message
+  // metadata = structured band-specific application data
   const member = await prisma.member.create({
     data: {
       bandId: band.id,
@@ -216,12 +218,18 @@ async function handleApplication(
       status: 'PENDING',
       role: 'OBSERVER', // Will be set properly when approved
       votingDeadline,
-      notes: JSON.stringify({
+      notes: metadata.message || null,
+      metadata: {
         source: source || 'public-website',
         submittedAt: new Date().toISOString(),
         phone: phone || null,
-        ...metadata,
-      }),
+        expertise: metadata.expertise || [],
+        committees: metadata.committees || [],
+        location: metadata.location || null,
+        languages: metadata.languages || [],
+        linkedin: metadata.linkedin || null,
+        timeCommitment: metadata.timeCommitment || null,
+      },
     },
   })
 

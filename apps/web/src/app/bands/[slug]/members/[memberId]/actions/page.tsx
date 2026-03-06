@@ -300,6 +300,83 @@ export default function MemberActionsPage() {
                 </Flex>
               </Card>
 
+              {/* Application Info */}
+              {(() => {
+                const meta = member.metadata as Record<string, any> | null
+                if (!meta && !member.notes) return null
+                return (
+                  <Card className="bg-gray-50">
+                    <Stack spacing="sm">
+                      <Text weight="semibold">Application Info</Text>
+                      {member.notes && (
+                        <div>
+                          <Text variant="small" weight="semibold">Motivation:</Text>
+                          <Text variant="small">{member.notes}</Text>
+                        </div>
+                      )}
+                      {meta && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {meta.location && (
+                            <div>
+                              <Text variant="small" weight="semibold">Location:</Text>
+                              <Text variant="small">{meta.location}</Text>
+                            </div>
+                          )}
+                          {meta.phone && (
+                            <div>
+                              <Text variant="small" weight="semibold">Phone:</Text>
+                              <Text variant="small">{meta.phone}</Text>
+                            </div>
+                          )}
+                          {meta.linkedin && (
+                            <div>
+                              <Text variant="small" weight="semibold">LinkedIn:</Text>
+                              <a href={meta.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">{meta.linkedin}</a>
+                            </div>
+                          )}
+                          {meta.timeCommitment && (
+                            <div>
+                              <Text variant="small" weight="semibold">Time Commitment:</Text>
+                              <Text variant="small">{meta.timeCommitment} hours/week</Text>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {meta?.languages?.length > 0 && (
+                        <div>
+                          <Text variant="small" weight="semibold">Languages:</Text>
+                          <Flex gap="sm" className="flex-wrap mt-1">
+                            {meta.languages.map((l: string, i: number) => (
+                              <Badge key={i} variant="neutral">{l}</Badge>
+                            ))}
+                          </Flex>
+                        </div>
+                      )}
+                      {meta?.expertise?.length > 0 && (
+                        <div>
+                          <Text variant="small" weight="semibold">Expertise:</Text>
+                          <Flex gap="sm" className="flex-wrap mt-1">
+                            {meta.expertise.map((e: string, i: number) => (
+                              <Badge key={i} variant="info">{e}</Badge>
+                            ))}
+                          </Flex>
+                        </div>
+                      )}
+                      {meta?.committees?.length > 0 && (
+                        <div>
+                          <Text variant="small" weight="semibold">Committees of Interest:</Text>
+                          <Flex gap="sm" className="flex-wrap mt-1">
+                            {meta.committees.map((c: string, i: number) => (
+                              <Badge key={i} variant="success">{c}</Badge>
+                            ))}
+                          </Flex>
+                        </div>
+                      )}
+                    </Stack>
+                  </Card>
+                )
+              })()}
+
               {/* Actions */}
               <Stack spacing="lg">
                 <Heading level={3}>Member Actions</Heading>
