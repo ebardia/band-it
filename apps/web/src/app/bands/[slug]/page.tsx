@@ -228,8 +228,8 @@ export default function BandDiscussionsPage() {
   return (
     <>
       <AppNav />
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto px-2 md:px-4 max-w-[1600px]">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="mx-auto px-2 md:px-4 max-w-[1600px] w-full flex flex-col flex-1 min-h-0 md:flex-initial md:min-h-0">
           {/* Mobile Header */}
           <div className="md:hidden py-3">
             <div className="flex items-center justify-between mb-3">
@@ -256,6 +256,11 @@ export default function BandDiscussionsPage() {
                 {userId && (
                   <Button variant="ghost" size="sm" onClick={() => setShowSearch(true)}>
                     🔍
+                  </Button>
+                )}
+                {selectedChannel && selectedChannel.hasAccess && (
+                  <Button variant="ghost" size="sm" onClick={() => setShowChannelSettings(true)}>
+                    ⚙️
                   </Button>
                 )}
               </Flex>
@@ -413,9 +418,9 @@ export default function BandDiscussionsPage() {
             </div>
           )}
 
-          {/* Main Content */}
-          <div className="pb-4">
-            <Flex gap="md" align="start" className="flex-col md:flex-row">
+          {/* Main Content - flex-1 min-h-0 so discussion area can scroll on mobile */}
+          <div className="pb-4 flex-1 flex flex-col min-h-0 md:flex-initial md:min-h-0">
+            <Flex gap="md" align="start" className="flex-col md:flex-row flex-1 min-h-0 md:min-h-0">
               {/* Left Sidebar - Band Navigation (hidden on mobile) */}
               <BandSidebar
                 bandSlug={slug}
@@ -425,9 +430,9 @@ export default function BandDiscussionsPage() {
                 canAccessAdminTools={canAccessAdminTools}
               />
 
-              {/* Discussion Area */}
-              <div className="w-full md:flex-1 bg-white rounded-lg shadow">
-                <div className="flex">
+              {/* Discussion Area - flex-1 min-h-0 on mobile so messages panel has bounded height */}
+              <div className="w-full md:flex-1 bg-white rounded-lg shadow flex flex-col min-h-0 flex-1 md:min-h-0 md:flex-initial">
+                <div className="flex flex-1 min-h-0 flex-col md:flex-row">
                   {/* Channel List - Hidden on mobile */}
                   <div className="hidden md:block w-56 flex-shrink-0">
                     <ChannelList
@@ -440,47 +445,54 @@ export default function BandDiscussionsPage() {
                     />
                   </div>
 
-                  {/* Messages Area */}
-                  <div className="flex-1 flex flex-col border-l-0 md:border-l border-gray-200 min-w-0 md:overflow-hidden">
+                  {/* Messages Area - flex column with min-h-0 so MessageList can scroll on mobile */}
+                  <div className="flex-1 flex flex-col border-l-0 md:border-l border-gray-200 min-w-0 overflow-hidden min-h-0">
                     {selectedChannelId && selectedChannel?.hasAccess ? (
                       <>
-                        {/* Onboarding Hint for sending first message */}
-                        {userId && band.id && (
-                          <div className="p-2">
-                            <OnboardingHint
+                        {/* On mobile: flex column with composer at bottom (order), list scrolls in between */}
+                        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                          {/* Pinned Messages Header - shrink */}
+                          <div className="flex-shrink-0">
+                            <PinnedMessagesHeader
                               bandId={band.id}
-                              userId={userId}
-                              relevantSteps={[4]}
-                            />
-                          </div>
-                        )}
-
-                        {/* Pinned Messages Header */}
-                        <PinnedMessagesHeader
-                          bandId={band.id}
-                          channelId={selectedChannelId}
-                          userId={userId}
-                        />
-                        {/* Message Composer - top on both mobile and desktop */}
-                        {!selectedChannel?.isArchived && (
-                          <div>
-                            <MessageComposer
                               channelId={selectedChannelId}
                               userId={userId}
                             />
                           </div>
-                        )}
-                        {selectedChannel?.isArchived && (
-                          <div className="p-4 bg-gray-100 border-b text-center">
-                            <Text color="muted">This channel is archived. Messages are read-only.</Text>
+                          {/* Onboarding Hint - shrink */}
+                          {userId && band.id && (
+                            <div className="flex-shrink-0 p-2">
+                              <OnboardingHint
+                                bandId={band.id}
+                                userId={userId}
+                                relevantSteps={[4]}
+                              />
+                            </div>
+                          )}
+                          {/* Message Composer - top on desktop, bottom on mobile (order); safe area on mobile */}
+                          {!selectedChannel?.isArchived && (
+                            <div className="flex-shrink-0 order-3 md:order-none border-t md:border-t-0 border-gray-200 pb-4 md:pb-0">
+                              <MessageComposer
+                                channelId={selectedChannelId}
+                                userId={userId}
+                              />
+                            </div>
+                          )}
+                          {selectedChannel?.isArchived && (
+                            <div className="flex-shrink-0 p-4 bg-gray-100 border-b text-center">
+                              <Text color="muted">This channel is archived. Messages are read-only.</Text>
+                            </div>
+                          )}
+                          {/* Message list - scrollable middle on mobile (order 1 so it's above composer) */}
+                          <div className="flex-1 min-h-0 overflow-hidden order-1 md:order-none flex flex-col">
+                            <MessageList
+                              bandId={band.id}
+                              channelId={selectedChannelId}
+                              userId={userId}
+                              userRole={userRole}
+                            />
                           </div>
-                        )}
-                        <MessageList
-                          bandId={band.id}
-                          channelId={selectedChannelId}
-                          userId={userId}
-                          userRole={userRole}
-                        />
+                        </div>
                       </>
                     ) : selectedChannel && !selectedChannel.hasAccess ? (
                       <div className="flex-1 flex items-center justify-center">
