@@ -218,47 +218,47 @@ function InlineReply({ reply, userId, userRole, bandId }: InlineReplyProps) {
   }
 
   return (
-    <div className="py-1">
-      <Flex gap="sm" align="start">
+    <div className="py-2 w-full">
+      {/* Row 1: avatar + name + time (full width, no column wasted) */}
+      <div className="flex items-center gap-2 w-full mb-1">
         <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
           <Text variant="small" className="text-xs">
             {reply.author.name.charAt(0).toUpperCase()}
           </Text>
         </div>
-        <div className="flex-1 min-w-0">
-          <Flex gap="sm" align="center" className="flex-wrap">
-            <Text variant="small" weight="semibold" className="truncate max-w-[120px] md:max-w-none">{reply.author.name}</Text>
-            <Text variant="small" color="muted">{formatTime(reply.createdAt)}</Text>
-            {reply.isEdited && <Text variant="small" color="muted">(edited)</Text>}
-          </Flex>
-          <div dir="auto" style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}>
-            <Text variant="small" className="whitespace-pre-wrap break-words">
-              {highlightMentions(reply.content)}
-            </Text>
-          </div>
-          <Flex gap="sm" align="center" className="mt-1">
-            <ReactionBar
-              messageId={reply.id}
-              userId={userId}
-              reactions={reply.reactions || []}
-              compact
-            />
-            {canDelete && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (confirm('Delete this reply?')) {
-                    deleteMutation.mutate({ messageId: reply.id, userId: userId! })
-                  }
-                }}
-                className="min-h-[44px] md:min-h-0 px-3 py-2 md:px-2 md:py-0 text-red-600 text-sm md:text-xs"
-              >
-                Delete
-              </Button>
-            )}
-          </Flex>
-        </div>
+        <Flex gap="sm" align="center" className="flex-wrap min-w-0 flex-1">
+          <Text variant="small" weight="semibold" className="truncate">{reply.author.name}</Text>
+          <Text variant="small" color="muted">{formatTime(reply.createdAt)}</Text>
+          {reply.isEdited && <Text variant="small" color="muted">(edited)</Text>}
+        </Flex>
+      </div>
+      {/* Row 2: reply content full width */}
+      <div dir="auto" className="w-full" style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}>
+        <Text variant="small" className="whitespace-pre-wrap break-words w-full">
+          {highlightMentions(reply.content)}
+        </Text>
+      </div>
+      <Flex gap="sm" align="center" className="mt-1 flex-wrap w-full">
+        <ReactionBar
+          messageId={reply.id}
+          userId={userId}
+          reactions={reply.reactions || []}
+          compact
+        />
+        {canDelete && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (confirm('Delete this reply?')) {
+                deleteMutation.mutate({ messageId: reply.id, userId: userId! })
+              }
+            }}
+            className="min-h-[44px] md:min-h-0 px-3 py-2 md:px-2 md:py-0 text-red-600 text-sm md:text-xs"
+          >
+            Delete
+          </Button>
+        )}
       </Flex>
     </div>
   )
@@ -369,27 +369,27 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
         </div>
       )}
 
-      <Flex gap="md" align="start">
-        {/* Avatar placeholder */}
-        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-          <Text variant="small" weight="semibold">
-            {message.author.name.charAt(0).toUpperCase()}
-          </Text>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          {/* Header */}
-          <Flex gap="sm" align="center" className="mb-1">
-            <Text weight="semibold">{message.author.name}</Text>
+      {/* Stacked layout: row 1 = avatar + name + time, row 2 = content full width (no empty space under avatar) */}
+      <div className="w-full flex flex-col">
+        <div className="flex items-center gap-2 w-full mb-1">
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+            <Text variant="small" weight="semibold" className="text-sm md:text-base">
+              {message.author.name.charAt(0).toUpperCase()}
+            </Text>
+          </div>
+          <Flex gap="sm" align="center" className="flex-wrap min-w-0 flex-1">
+            <Text weight="semibold" className="truncate">{message.author.name}</Text>
             <Text variant="small" color="muted">{formatTime(message.createdAt)}</Text>
             {message.isEdited && (
               <Text variant="small" color="muted">(edited)</Text>
             )}
           </Flex>
+        </div>
 
-          {/* Content - Edit mode or Display mode */}
+        {/* Content row - full width (no indent under avatar) */}
+        <div className="w-full min-w-0">
           {isEditing ? (
-            <Stack spacing="sm">
+            <Stack spacing="sm" className="w-full">
               <Textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
@@ -411,22 +411,21 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
               </Flex>
             </Stack>
           ) : (
-            <div dir="auto" style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}>
-              <Text className="whitespace-pre-wrap break-words">
+            <div dir="auto" className="w-full" style={{ textAlign: 'start', unicodeBidi: 'plaintext' }}>
+              <Text className="whitespace-pre-wrap break-words w-full">
                 {highlightMentions(message.content)}
               </Text>
             </div>
           )}
 
-          {/* Reactions & Actions - single row */}
+          {/* Reactions & Actions - full width row */}
           {!isEditing && (
-            <Flex gap="sm" align="center" className="mt-1 flex-wrap">
+            <Flex gap="sm" align="center" className="mt-1 flex-wrap w-full">
               <ReactionBar
                 messageId={message.id}
                 userId={userId}
                 reactions={message.reactions || []}
               />
-              {/* Action buttons - larger touch targets on mobile */}
               <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="min-h-[48px] min-w-[120px] md:min-h-0 md:min-w-0 px-4 py-2.5 md:px-2 text-base md:text-sm font-medium">
                 💬 {message.replyCount > 0 ? `${message.replyCount} replies` : 'Reply'}
                 {isExpanded ? ' ▲' : ''}
@@ -449,9 +448,9 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
             </Flex>
           )}
 
-          {/* Inline Thread Expansion - minimal indent on mobile so replies use most of width */}
+          {/* Thread replies - full width, no indent on mobile */}
           {isExpanded && (
-            <div className="mt-2 ml-0 pl-2 md:ml-6 md:pl-4 border-l-2 border-gray-200">
+            <div className="mt-2 w-full pl-0 md:pl-4 border-l-0 md:border-l-2 md:border-gray-200">
               {/* Replies */}
               <Stack spacing="xs">
                 {threadData?.replies?.length === 0 ? (
@@ -484,7 +483,7 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
             </div>
           )}
         </div>
-      </Flex>
+      </div>
     </div>
   )
 }
