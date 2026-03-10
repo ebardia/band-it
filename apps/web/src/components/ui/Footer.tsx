@@ -6,7 +6,7 @@ export function Footer() {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4">
           <p className="text-xs md:text-sm text-gray-500 text-center md:text-left">
-            © {new Date().getFullYear()} BAND IT • Tools for collective decision-making and action
+            © {new Date().getFullYear()} BAND IT • Collective decision-making and action
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-3 md:gap-5 text-xs md:text-sm">
             <Link

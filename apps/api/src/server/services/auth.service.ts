@@ -69,10 +69,7 @@ export const authService = {
       },
     })
 
-    // Add user to the default band (BAND IT Doings) as CONDUCTOR
-    await this.addToPracticeBand(user.id)
-
-    // Generate tokens
+    // Generate tokens (no default band membership)
     const { accessToken, refreshToken } = await this.generateTokens(user.id)
 
     // Send verification email (skip if auto-verified)
