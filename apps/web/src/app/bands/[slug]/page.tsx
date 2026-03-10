@@ -230,9 +230,9 @@ export default function BandDiscussionsPage() {
     <>
       <AppNav />
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="mx-auto px-2 md:px-4 max-w-[1600px] w-full flex flex-col flex-1 min-h-0 md:flex-initial md:min-h-0">
-          {/* Mobile Header */}
-          <div className="md:hidden py-3">
+        <div className="mx-auto px-0 md:px-4 max-w-[1600px] w-full flex flex-col flex-1 min-h-0 md:flex-initial md:min-h-0">
+          {/* Mobile Header - horizontal padding here only so discussion area is full width below */}
+          <div className="md:hidden py-3 px-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {/* Back to dashboard button */}
@@ -400,7 +400,7 @@ export default function BandDiscussionsPage() {
 
           {/* Billing Banner */}
           {isMember && userId && (
-            <div className="pb-2">
+            <div className="pb-2 px-3 md:px-0">
               <Flex gap="md" className="flex-col md:flex-row">
                 <div className="hidden md:block w-64 flex-shrink-0" />
                 <div className="flex-1">
@@ -419,8 +419,8 @@ export default function BandDiscussionsPage() {
             </div>
           )}
 
-          {/* Main Content - flex-1 min-h-0 so discussion area can scroll on mobile */}
-          <div className="pb-4 flex-1 flex flex-col min-h-0 md:flex-initial md:min-h-0">
+          {/* Main Content - full width on mobile so discussion area uses most of screen */}
+          <div className="pb-2 md:pb-4 flex-1 flex flex-col min-h-0 md:flex-initial md:min-h-0">
             <Flex gap="md" align="start" className="flex-col md:flex-row flex-1 min-h-0 md:min-h-0">
               {/* Left Sidebar - Band Navigation (hidden on mobile) */}
               <BandSidebar
@@ -431,8 +431,8 @@ export default function BandDiscussionsPage() {
                 canAccessAdminTools={canAccessAdminTools}
               />
 
-              {/* Discussion Area - flex-1 min-h-0 on mobile so messages panel has bounded height */}
-              <div className="w-full md:flex-1 bg-white rounded-lg shadow flex flex-col min-h-0 flex-1 md:min-h-0 md:flex-initial">
+              {/* Discussion Area - full width on mobile (no side margin), rounded on desktop */}
+              <div className="w-full md:flex-1 bg-white rounded-none md:rounded-lg shadow flex flex-col min-h-0 flex-1 md:min-h-0 md:flex-initial min-w-0">
                 <div className="flex flex-1 min-h-0 flex-col md:flex-row">
                   {/* Channel List - Hidden on mobile */}
                   <div className="hidden md:block w-56 flex-shrink-0">

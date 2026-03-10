@@ -126,7 +126,7 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
   return (
     <div
       ref={containerRef}
-      className="flex-1 min-h-0 overflow-y-auto p-4 relative"
+      className="flex-1 min-h-0 overflow-y-auto p-3 md:p-4 relative"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -252,7 +252,7 @@ function InlineReply({ reply, userId, userRole, bandId }: InlineReplyProps) {
                     deleteMutation.mutate({ messageId: reply.id, userId: userId! })
                   }
                 }}
-                className="min-h-[44px] md:min-h-0 px-3 md:px-2 text-red-600 text-xs"
+                className="min-h-[44px] md:min-h-0 px-3 py-2 md:px-2 md:py-0 text-red-600 text-sm md:text-xs"
               >
                 Delete
               </Button>
@@ -426,32 +426,32 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
                 userId={userId}
                 reactions={message.reactions || []}
               />
-              {/* Action buttons with mobile-friendly touch targets (44px min) */}
-              <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="min-h-[44px] md:min-h-0 px-3 md:px-2">
+              {/* Action buttons - larger touch targets on mobile */}
+              <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="min-h-[48px] min-w-[120px] md:min-h-0 md:min-w-0 px-4 py-2.5 md:px-2 text-base md:text-sm font-medium">
                 💬 {message.replyCount > 0 ? `${message.replyCount} replies` : 'Reply'}
                 {isExpanded ? ' ▲' : ''}
               </Button>
               {canEdit && (
-                <Button variant="ghost" size="sm" onClick={handleStartEdit} className="min-h-[44px] md:min-h-0 px-3 md:px-2">
+                <Button variant="ghost" size="sm" onClick={handleStartEdit} className="min-h-[48px] md:min-h-0 px-4 md:px-2 py-2.5 md:py-0 text-base md:text-sm">
                   ✏️ Edit
                 </Button>
               )}
               {canPin && (
-                <Button variant="ghost" size="sm" onClick={handlePin} className="min-h-[44px] md:min-h-0 px-3 md:px-2">
+                <Button variant="ghost" size="sm" onClick={handlePin} className="min-h-[48px] md:min-h-0 px-4 md:px-2 py-2.5 md:py-0 text-base md:text-sm">
                   {message.isPinned ? '📌 Unpin' : '📌 Pin'}
                 </Button>
               )}
               {canDelete && (
-                <Button variant="ghost" size="sm" onClick={handleDelete} className="min-h-[44px] md:min-h-0 px-3 md:px-2 text-red-600">
+                <Button variant="ghost" size="sm" onClick={handleDelete} className="min-h-[48px] md:min-h-0 px-4 md:px-2 py-2.5 md:py-0 text-base md:text-sm text-red-600">
                   🗑️ Delete
                 </Button>
               )}
             </Flex>
           )}
 
-          {/* Inline Thread Expansion - reduced indent on mobile */}
+          {/* Inline Thread Expansion - minimal indent on mobile so replies use most of width */}
           {isExpanded && (
-            <div className="mt-2 ml-2 pl-2 md:ml-6 md:pl-4 border-l-2 border-gray-200">
+            <div className="mt-2 ml-0 pl-2 md:ml-6 md:pl-4 border-l-2 border-gray-200">
               {/* Replies */}
               <Stack spacing="xs">
                 {threadData?.replies?.length === 0 ? (
@@ -471,8 +471,8 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
                 )}
               </Stack>
 
-              {/* Compact Reply Composer */}
-              <div className="mt-2">
+              {/* Reply Composer - full width, larger on mobile */}
+              <div className="mt-3 w-full">
                 <MessageComposer
                   channelId={channelId}
                   userId={userId}
