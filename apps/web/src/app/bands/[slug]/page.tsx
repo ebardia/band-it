@@ -419,7 +419,7 @@ export default function BandDiscussionsPage() {
             </div>
           )}
 
-          {/* Main Content - full width on mobile so discussion area uses most of screen */}
+          {/* Main Content - on mobile fill viewport so discussion area is Reddit-style full screen */}
           <div className="pb-2 md:pb-4 flex-1 flex flex-col min-h-0 md:flex-initial md:min-h-0">
             <Flex gap="md" align="start" className="flex-col md:flex-row flex-1 min-h-0 md:min-h-0">
               {/* Left Sidebar - Band Navigation (hidden on mobile) */}
@@ -431,8 +431,8 @@ export default function BandDiscussionsPage() {
                 canAccessAdminTools={canAccessAdminTools}
               />
 
-              {/* Discussion Area - full width on mobile (no side margin), rounded on desktop */}
-              <div className="w-full md:flex-1 bg-white rounded-none md:rounded-lg shadow flex flex-col min-h-0 flex-1 md:min-h-0 md:flex-initial min-w-0">
+              {/* Discussion Area - full width; on mobile min-height so it fills most of screen (Reddit-style) */}
+              <div className="w-full md:flex-1 bg-white rounded-none md:rounded-lg shadow flex flex-col flex-1 min-h-0 md:flex-initial min-w-0 min-h-[calc(100dvh-12rem)] md:min-h-0">
                 <div className="flex flex-1 min-h-0 flex-col md:flex-row">
                   {/* Channel List - Hidden on mobile */}
                   <div className="hidden md:block w-56 flex-shrink-0">
