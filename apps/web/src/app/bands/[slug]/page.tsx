@@ -229,117 +229,117 @@ export default function BandDiscussionsPage() {
   return (
     <>
       <AppNav />
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="mx-auto px-0 md:px-4 max-w-[1600px] w-full flex flex-col flex-1 min-h-0 md:flex-initial md:min-h-0">
-          {/* Mobile Header - horizontal padding here only so discussion area is full width below */}
-          <div className="md:hidden py-3 px-3">
-            <div className="flex items-center justify-between mb-3">
+      {/* On mobile use fixed viewport height so discussion area can fill ~95% (Reddit-style) */}
+      <div className="h-[100dvh] md:min-h-screen md:h-auto bg-gray-50 flex flex-col overflow-hidden md:overflow-visible">
+        <div className="mx-auto px-0 md:px-4 max-w-[1600px] w-full flex flex-col flex-1 min-h-0 md:flex-initial md:min-h-0 overflow-hidden md:overflow-visible">
+          {/* Mobile Header - compact so discussion area gets maximum space */}
+          <div className="md:hidden flex-shrink-0 py-2 px-3">
+            <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                {/* Back to dashboard button */}
                 <button
                   onClick={() => router.push('/user-dashboard')}
-                  className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 active:bg-gray-200 flex-shrink-0"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 active:bg-gray-200 flex-shrink-0"
                   aria-label="Back to dashboard"
                 >
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
                 {band.imageUrl && (
-                  <img src={band.imageUrl} alt={band.name} className="w-10 h-10 object-cover rounded-lg flex-shrink-0" />
+                  <img src={band.imageUrl} alt={band.name} className="w-8 h-8 object-cover rounded-lg flex-shrink-0" />
                 )}
                 <div className="min-w-0">
-                  <h1 className="text-xl font-bold text-gray-900 truncate">{band.name}</h1>
-                  <Text color="muted" className="text-sm truncate">Discussions</Text>
+                  <h1 className="text-base font-bold text-gray-900 truncate">{band.name}</h1>
+                  <Text color="muted" className="text-xs truncate">Discussions</Text>
                 </div>
               </div>
               <Flex gap="sm">
                 {userId && (
-                  <Button variant="ghost" size="sm" onClick={() => setShowSearch(true)}>
+                  <Button variant="ghost" size="sm" className="min-w-[36px]" onClick={() => setShowSearch(true)}>
                     🔍
                   </Button>
                 )}
                 {selectedChannel && selectedChannel.hasAccess && (
-                  <Button variant="ghost" size="sm" onClick={() => setShowChannelSettings(true)}>
+                  <Button variant="ghost" size="sm" className="min-w-[36px]" onClick={() => setShowChannelSettings(true)}>
                     ⚙️
                   </Button>
                 )}
               </Flex>
             </div>
 
-            {/* Mobile Page Navigation */}
-            <div className="relative mb-2">
-              <button
-                onClick={() => setShowMobileNav(!showMobileNav)}
-                className="w-full flex items-center justify-between px-4 py-2 bg-white rounded-lg shadow border border-gray-200 text-sm"
-              >
-                <span className="flex items-center gap-2">
-                  <span>💬</span>
-                  <span className="font-medium">Discussions</span>
-                </span>
-                <svg className={`w-4 h-4 text-gray-500 transition-transform ${showMobileNav ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {showMobileNav && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-64 overflow-y-auto">
-                  {mobileNavItems.map((item) => (
-                    <button
-                      key={item.path}
-                      onClick={() => { setShowMobileNav(false); router.push(item.path) }}
-                      className={`w-full flex items-center gap-2 px-4 py-2 text-left text-sm ${
-                        item.path === `/bands/${slug}` ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span>{item.emoji}</span>
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Mobile Channel Selector - larger touch target */}
-            <button
-              onClick={() => setShowMobileChannels(!showMobileChannels)}
-              className="w-full flex items-center justify-between px-4 py-3 min-h-[48px] bg-blue-50 rounded-lg border border-blue-200 text-base"
-            >
-              <span className="flex items-center gap-2">
-                <span className="text-blue-600 font-bold">#</span>
-                <span className="font-medium">{selectedChannel?.name || 'Select channel'}</span>
-              </span>
-              <svg className={`w-5 h-5 text-blue-500 transition-transform ${showMobileChannels ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {showMobileChannels && (
-              <div className="mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-64 overflow-y-auto">
-                {channelsData?.channels?.filter(c => c.hasAccess && !c.isArchived).map((channel) => (
-                  <button
-                    key={channel.id}
-                    onClick={() => {
-                      setSelectedChannelId(channel.id)
-                      setShowMobileChannels(false)
-                    }}
-                    className={`w-full flex items-center justify-between gap-2 px-4 py-3 min-h-[48px] text-left text-base border-b border-gray-100 last:border-b-0 ${
-                      channel.id === selectedChannelId ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 active:bg-gray-100'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className={channel.id === selectedChannelId ? 'text-blue-600' : 'text-gray-400'}>#</span>
-                      <span>{channel.name}</span>
-                    </span>
-                    {channel.id === selectedChannelId && (
-                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
+            {/* Single row: Page nav + Channel selector (saves vertical space) */}
+            <div className="flex gap-2">
+              <div className="relative flex-1 min-w-0">
+                <button
+                  onClick={() => setShowMobileNav(!showMobileNav)}
+                  className="w-full flex items-center justify-between px-3 py-2 bg-white rounded-lg border border-gray-200 text-sm min-h-[40px]"
+                >
+                  <span className="flex items-center gap-1.5 truncate">
+                    <span>💬</span>
+                    <span className="font-medium truncate">Discussions</span>
+                  </span>
+                  <svg className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform ${showMobileNav ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showMobileNav && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-64 overflow-y-auto">
+                    {mobileNavItems.map((item) => (
+                      <button
+                        key={item.path}
+                        onClick={() => { setShowMobileNav(false); router.push(item.path) }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm ${
+                          item.path === `/bands/${slug}` ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span>{item.emoji}</span>
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+              <div className="relative flex-1 min-w-0">
+                <button
+                  onClick={() => setShowMobileChannels(!showMobileChannels)}
+                  className="w-full flex items-center justify-between px-3 py-2 min-h-[40px] bg-blue-50 rounded-lg border border-blue-200 text-sm"
+                >
+                  <span className="flex items-center gap-1.5 truncate">
+                    <span className="text-blue-600 font-bold">#</span>
+                    <span className="font-medium truncate">{selectedChannel?.name || 'Channel'}</span>
+                  </span>
+                  <svg className={`w-4 h-4 text-blue-500 flex-shrink-0 transition-transform ${showMobileChannels ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showMobileChannels && (
+                  <div className="absolute top-full right-0 left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-64 overflow-y-auto">
+                    {channelsData?.channels?.filter(c => c.hasAccess && !c.isArchived).map((channel) => (
+                      <button
+                        key={channel.id}
+                        onClick={() => {
+                          setSelectedChannelId(channel.id)
+                          setShowMobileChannels(false)
+                        }}
+                        className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 min-h-[44px] text-left text-sm border-b border-gray-100 last:border-b-0 ${
+                          channel.id === selectedChannelId ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 active:bg-gray-100'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1.5 truncate">
+                          <span className={channel.id === selectedChannelId ? 'text-blue-600' : 'text-gray-400'}>#</span>
+                          <span className="truncate">{channel.name}</span>
+                        </span>
+                        {channel.id === selectedChannelId && (
+                          <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Desktop Page Header */}
@@ -419,9 +419,9 @@ export default function BandDiscussionsPage() {
             </div>
           )}
 
-          {/* Main Content - on mobile fill viewport so discussion area is Reddit-style full screen */}
-          <div className="pb-2 md:pb-4 flex-1 flex flex-col min-h-0 md:flex-initial md:min-h-0">
-            <Flex gap="md" align="start" className="flex-col md:flex-row flex-1 min-h-0 md:min-h-0">
+          {/* Main Content - flex-1 takes all remaining space on mobile (Reddit-style ~95%) */}
+          <div className="pb-2 md:pb-4 flex-1 flex flex-col min-h-0 md:flex-initial md:min-h-0 overflow-hidden md:overflow-visible">
+            <Flex gap="md" align="start" className="flex-col md:flex-row flex-1 min-h-0 md:min-h-0 overflow-hidden md:overflow-visible">
               {/* Left Sidebar - Band Navigation (hidden on mobile) */}
               <BandSidebar
                 bandSlug={slug}
@@ -431,8 +431,8 @@ export default function BandDiscussionsPage() {
                 canAccessAdminTools={canAccessAdminTools}
               />
 
-              {/* Discussion Area - full width; on mobile min-height so it fills most of screen (Reddit-style) */}
-              <div className="w-full md:flex-1 bg-white rounded-none md:rounded-lg shadow flex flex-col flex-1 min-h-0 md:flex-initial min-w-0 min-h-[calc(100dvh-12rem)] md:min-h-0">
+              {/* Discussion Area - fills all remaining viewport on mobile */}
+              <div className="w-full md:flex-1 bg-white rounded-none md:rounded-lg shadow flex flex-col flex-1 min-h-0 md:flex-initial min-w-0 overflow-hidden">
                 <div className="flex flex-1 min-h-0 flex-col md:flex-row">
                   {/* Channel List - Hidden on mobile */}
                   <div className="hidden md:block w-56 flex-shrink-0">
