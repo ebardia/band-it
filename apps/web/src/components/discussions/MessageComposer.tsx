@@ -96,8 +96,9 @@ export function MessageComposer({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Submit on Enter (without Shift)
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // Let Enter add a new line by default.
+    // Optional power-user shortcut: Ctrl/Cmd + Enter sends.
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault()
       handleSubmit()
     }

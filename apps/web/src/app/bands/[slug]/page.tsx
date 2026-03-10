@@ -470,9 +470,18 @@ export default function BandDiscussionsPage() {
                               />
                             </div>
                           )}
-                          {/* Message Composer - main input at top of messages area */}
+                          {/* Message list - main scrollable area */}
+                          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+                            <MessageList
+                              bandId={band.id}
+                              channelId={selectedChannelId}
+                              userId={userId}
+                              userRole={userRole}
+                            />
+                          </div>
+                          {/* Message Composer - main input at bottom of messages area */}
                           {!selectedChannel?.isArchived && (
-                            <div className="flex-shrink-0 border-b border-gray-200 pb-4 md:pb-3">
+                            <div className="flex-shrink-0 border-t border-gray-200 pb-4 md:pb-3">
                               <MessageComposer
                                 channelId={selectedChannelId}
                                 userId={userId}
@@ -484,15 +493,6 @@ export default function BandDiscussionsPage() {
                               <Text color="muted">This channel is archived. Messages are read-only.</Text>
                             </div>
                           )}
-                          {/* Message list - scrollable area below main composer */}
-                          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-                            <MessageList
-                              bandId={band.id}
-                              channelId={selectedChannelId}
-                              userId={userId}
-                              userRole={userRole}
-                            />
-                          </div>
                         </div>
                       </>
                     ) : selectedChannel && !selectedChannel.hasAccess ? (
