@@ -126,7 +126,7 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
   return (
     <div
       ref={containerRef}
-      className="flex-1 min-h-0 overflow-y-auto p-3 md:p-4 relative"
+      className="flex-1 min-h-0 overflow-y-auto px-2 py-3 md:p-4 relative w-full"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -142,8 +142,8 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
           </div>
         </div>
       )}
-      <div style={{ transform: `translateY(${pullDistance}px)`, transition: pullDistance === 0 ? 'transform 0.2s' : 'none' }}>
-        <Stack spacing="sm">
+      <div className="w-full min-w-0" style={{ transform: `translateY(${pullDistance}px)`, transition: pullDistance === 0 ? 'transform 0.2s' : 'none' }}>
+        <Stack spacing="sm" className="w-full min-w-0">
           {messages.map((message) => (
             <MessageItem
               key={message.id}
@@ -362,7 +362,7 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
   }
 
   return (
-    <div className={`group relative p-3 rounded-lg hover:bg-gray-50 ${message.isPinned ? 'bg-yellow-50 border-l-4 border-yellow-400' : ''}`}>
+    <div className={`group relative p-2 md:p-3 rounded-lg hover:bg-gray-50 w-full max-w-full ${message.isPinned ? 'bg-yellow-50 border-l-4 border-yellow-400' : ''}`}>
       {message.isPinned && (
         <div className="absolute -top-2 left-2">
           <Badge variant="warning">Pinned</Badge>
