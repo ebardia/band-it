@@ -1,5 +1,6 @@
 'use client'
 
+// Band discussions: channel list + messages + composer (mobile-friendly layout)
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
