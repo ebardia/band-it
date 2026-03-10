@@ -470,9 +470,9 @@ export default function BandDiscussionsPage() {
                               />
                             </div>
                           )}
-                          {/* Message Composer - top on desktop, bottom on mobile (order); safe area on mobile */}
+                          {/* Message Composer - main input at top of messages area */}
                           {!selectedChannel?.isArchived && (
-                            <div className="flex-shrink-0 order-3 md:order-none border-t md:border-t-0 border-gray-200 pb-4 md:pb-0">
+                            <div className="flex-shrink-0 border-b border-gray-200 pb-4 md:pb-3">
                               <MessageComposer
                                 channelId={selectedChannelId}
                                 userId={userId}
@@ -484,8 +484,8 @@ export default function BandDiscussionsPage() {
                               <Text color="muted">This channel is archived. Messages are read-only.</Text>
                             </div>
                           )}
-                          {/* Message list - scrollable middle on mobile (order 1 so it's above composer) */}
-                          <div className="flex-1 min-h-0 overflow-hidden order-1 md:order-none flex flex-col">
+                          {/* Message list - scrollable area below main composer */}
+                          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
                             <MessageList
                               bandId={band.id}
                               channelId={selectedChannelId}
