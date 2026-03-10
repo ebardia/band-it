@@ -142,7 +142,14 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
           </div>
         </div>
       )}
-      <div className="w-full min-w-0" style={{ transform: `translateY(${pullDistance}px)`, transition: pullDistance === 0 ? 'transform 0.2s' : 'none' }}>
+      <div
+        className="w-full min-w-0"
+        style={{ transform: `translateY(${pullDistance}px)`, transition: pullDistance === 0 ? 'transform 0.2s' : 'none' }}
+      >
+        {/* Main channel composer lives inside the scroll area so it scrolls away, not pinned */}
+        <div className="mb-3">
+          <MessageComposer channelId={channelId} userId={userId} />
+        </div>
         <Stack spacing="sm" className="w-full min-w-0">
           {messages.map((message) => (
             <MessageItem

@@ -470,7 +470,7 @@ export default function BandDiscussionsPage() {
                               />
                             </div>
                           )}
-                          {/* Message list - main scrollable area */}
+                          {/* Message list + main composer are both inside the scroll area (composer not pinned) */}
                           <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
                             <MessageList
                               bandId={band.id}
@@ -479,15 +479,6 @@ export default function BandDiscussionsPage() {
                               userRole={userRole}
                             />
                           </div>
-                          {/* Message Composer - main input at bottom of messages area */}
-                          {!selectedChannel?.isArchived && (
-                            <div className="flex-shrink-0 border-t border-gray-200 pb-4 md:pb-3">
-                              <MessageComposer
-                                channelId={selectedChannelId}
-                                userId={userId}
-                              />
-                            </div>
-                          )}
                           {selectedChannel?.isArchived && (
                             <div className="flex-shrink-0 p-4 bg-gray-100 border-b text-center">
                               <Text color="muted">This channel is archived. Messages are read-only.</Text>
