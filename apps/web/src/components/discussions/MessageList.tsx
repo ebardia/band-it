@@ -448,9 +448,9 @@ function MessageItem({ bandId, channelId, message, userId, userRole }: MessageIt
             </Flex>
           )}
 
-          {/* Thread replies - full width, no indent on mobile */}
+          {/* Thread replies - slight indent so they read as replies */}
           {isExpanded && (
-            <div className="mt-2 w-full pl-0 md:pl-4 border-l-0 md:border-l-2 md:border-gray-200">
+            <div className="mt-2 w-full pl-3 md:pl-4 border-l-2 border-gray-200">
               {/* Replies */}
               <Stack spacing="xs">
                 {threadData?.replies?.length === 0 ? (
