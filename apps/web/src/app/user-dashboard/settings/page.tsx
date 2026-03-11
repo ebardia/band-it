@@ -167,9 +167,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <UserDashboardLayout>
+    <UserDashboardLayout pageTitle="Settings">
       <Stack spacing="xl">
-        <Heading level={1}>Settings</Heading>
         <Text variant="muted">Manage your account settings</Text>
 
         {/* Warning Banner */}

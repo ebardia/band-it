@@ -99,9 +99,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <UserDashboardLayout>
+    <UserDashboardLayout pageTitle="My Profile">
       <Stack spacing="lg">
-        <Heading level={1}>My Profile</Heading>
         <Text variant="muted">View and manage your profile information</Text>
 
         <Alert variant="info">
