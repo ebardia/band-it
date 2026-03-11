@@ -63,6 +63,34 @@ function CreateBandContent() {
   const [whoCanCreateProposals, setWhoCanCreateProposals] = useState<string[]>(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'])
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [uploadedImageName, setUploadedImageName] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
+  // Validation rules matching backend (band.create.ts)
+  const validateForm = (): Record<string, string> => {
+    const errors: Record<string, string> = {}
+    const trim = (s: string) => s.trim()
+    if (trim(formData.name).length < 2) errors.name = 'Band name must be at least 2 characters'
+    if (trim(formData.description).length < 10) errors.description = 'Description must be at least 10 characters'
+    if (trim(formData.mission).length < 10) errors.mission = 'Mission must be at least 10 characters'
+    if (trim(formData.values).length < 1) errors.values = 'Please enter at least one value'
+    if (trim(formData.skillsLookingFor).length < 1) errors.skillsLookingFor = 'Please enter skills you are looking for'
+    if (trim(formData.whatMembersWillLearn).length < 1) errors.whatMembersWillLearn = 'Please enter what members will learn'
+    if (trim(formData.membershipRequirements).length < 10) errors.membershipRequirements = 'Please describe membership requirements'
+    const zip = trim(formData.zipcode)
+    if (zip.length > 0) {
+      if (zip.length < 3) errors.zipcode = 'Postal code must be at least 3 characters'
+      else if (zip.length > 10) errors.zipcode = 'Postal code must be at most 10 characters'
+    }
+    return errors
+  }
+
+  const clearFieldError = (field: string) => {
+    setFieldErrors((prev) => {
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
+  }
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -163,6 +191,15 @@ function CreateBandContent() {
       return
     }
 
+    const errors = validateForm()
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      const firstMessage = Object.values(errors)[0]
+      showToast(firstMessage, 'error')
+      return
+    }
+    setFieldErrors({})
+
     // Calculate voting period settings
     const votingPeriodDays = votingPeriodUnit === 'days' ? votingPeriodValue : 7
     const votingPeriodHours = votingPeriodUnit === 'hours' ? votingPeriodValue : null
@@ -262,8 +299,9 @@ function CreateBandContent() {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, name: e.target.value }); clearFieldError('name') }}
                   placeholder="The Rockin' Rebels"
+                  error={fieldErrors.name}
                   data-guide="band-name"
                 />
 
@@ -278,10 +316,11 @@ function CreateBandContent() {
                   label="Description"
                   required
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, description: e.target.value }); clearFieldError('description') }}
                   placeholder="Tell people about your band..."
                   rows={4}
                   helperText="At least 10 characters - What kind of music do you play? What's your band's story?"
+                  error={fieldErrors.description}
                   data-guide="band-description"
                 />
 
@@ -289,10 +328,11 @@ function CreateBandContent() {
                   label="Mission Statement"
                   required
                   value={formData.mission}
-                  onChange={(e) => setFormData({ ...formData, mission: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, mission: e.target.value }); clearFieldError('mission') }}
                   placeholder="Our mission is to..."
                   rows={3}
                   helperText="At least 10 characters - What is your band trying to achieve?"
+                  error={fieldErrors.mission}
                   data-guide="band-mission"
                 />
 
@@ -300,40 +340,44 @@ function CreateBandContent() {
                   label="Band Values"
                   required
                   value={formData.values}
-                  onChange={(e) => setFormData({ ...formData, values: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, values: e.target.value }); clearFieldError('values') }}
                   placeholder="Creativity, Collaboration, Community"
                   rows={2}
                   helperText="Separate with commas"
+                  error={fieldErrors.values}
                 />
 
                 <Textarea
                   label="Skills We're Looking For"
                   required
                   value={formData.skillsLookingFor}
-                  onChange={(e) => setFormData({ ...formData, skillsLookingFor: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, skillsLookingFor: e.target.value }); clearFieldError('skillsLookingFor') }}
                   placeholder="Guitar, Drums, Vocals, Marketing"
                   rows={2}
                   helperText="Separate with commas - these will be matched with potential members"
+                  error={fieldErrors.skillsLookingFor}
                 />
 
                 <Textarea
                   label="What Members Will Learn"
                   required
                   value={formData.whatMembersWillLearn}
-                  onChange={(e) => setFormData({ ...formData, whatMembersWillLearn: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, whatMembersWillLearn: e.target.value }); clearFieldError('whatMembersWillLearn') }}
                   placeholder="Performance skills, Music theory, Band management"
                   rows={2}
                   helperText="Separate with commas - these will be matched with members' development goals"
+                  error={fieldErrors.whatMembersWillLearn}
                 />
 
                 <Textarea
                   label="Membership Requirements"
                   required
                   value={formData.membershipRequirements}
-                  onChange={(e) => setFormData({ ...formData, membershipRequirements: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, membershipRequirements: e.target.value }); clearFieldError('membershipRequirements') }}
                   placeholder="We're looking for committed musicians who can practice weekly..."
                   rows={3}
                   helperText="At least 10 characters - What are the requirements to join your band?"
+                  error={fieldErrors.membershipRequirements}
                 />
 
                 <Box>
@@ -458,10 +502,11 @@ function CreateBandContent() {
                   label="Postal Code (Optional)"
                   type="text"
                   value={formData.zipcode}
-                  onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, zipcode: e.target.value }); clearFieldError('zipcode') }}
                   placeholder="e.g. 12345, SW1A 1AA"
                   maxLength={10}
                   helperText="Leave blank if your band covers a large area"
+                  error={fieldErrors.zipcode}
                 />
 
                 <Box>
