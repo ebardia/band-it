@@ -115,14 +115,6 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
   // Messages come from API newest first - keep that order
   const messages = data?.messages || []
 
-  if (messages.length === 0) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <Text color="muted">No messages yet. Start the conversation!</Text>
-      </div>
-    )
-  }
-
   return (
     <div
       ref={containerRef}
@@ -150,18 +142,24 @@ export function MessageList({ bandId, channelId, userId, userRole }: MessageList
         <div className="mb-3">
           <MessageComposer channelId={channelId} userId={userId} />
         </div>
-        <Stack spacing="sm" className="w-full min-w-0">
-          {messages.map((message) => (
-            <MessageItem
-              key={message.id}
-              bandId={bandId}
-              channelId={channelId}
-              message={message}
-              userId={userId}
-              userRole={userRole}
-            />
-          ))}
-        </Stack>
+        {messages.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <Text color="muted">No messages yet. Start the conversation!</Text>
+          </div>
+        ) : (
+          <Stack spacing="sm" className="w-full min-w-0">
+            {messages.map((message) => (
+              <MessageItem
+                key={message.id}
+                bandId={bandId}
+                channelId={channelId}
+                message={message}
+                userId={userId}
+                userRole={userRole}
+              />
+            ))}
+          </Stack>
+        )}
       </div>
     </div>
   )
