@@ -253,9 +253,9 @@ export function BandLayout({
               {children}
             </div>
 
-            {/* Optional Right Sidebar - Hidden on mobile */}
+            {/* Optional Right Sidebar - stacked below content on mobile, side on desktop */}
             {rightSidebar && (
-              <div className="hidden lg:block">
+              <div className="w-full lg:w-auto mt-4 md:mt-0">
                 {rightSidebar}
               </div>
             )}
