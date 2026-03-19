@@ -285,7 +285,7 @@ export default function PostsPage() {
                             e.stopPropagation()
                             router.push(`/bands/${slug}/posts/${category.slug}/new`)
                           }}
-                          className="hidden sm:inline-flex"
+                          className="inline-flex"
                           aria-label={`New post in ${category.name}`}
                         >
                           New Post
