@@ -150,6 +150,7 @@ export default function PostsPage() {
   const isMember = !!currentMember
   const canAccessAdminTools = currentMember && ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'].includes(currentMember.role)
   const canManageCategories = categoriesData?.canCreateCategory || false
+  const canCreatePost = categoriesData?.canCreatePost || false
 
   const getVisibilityBadge = (visibility: string) => {
     switch (visibility) {
@@ -275,6 +276,20 @@ export default function PostsPage() {
                           <span className="text-gray-400 mx-1">•</span>
                           <span className="text-gray-500">{formatDate(category.lastPostAt)}</span>
                         </div>
+                      )}
+                      {canCreatePost && category.hasAccess && !category.isArchived && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            router.push(`/bands/${slug}/posts/${category.slug}/new`)
+                          }}
+                          className="hidden sm:inline-flex"
+                          aria-label={`New post in ${category.name}`}
+                        >
+                          New Post
+                        </Button>
                       )}
                       {canManageCategories && (
                         <Flex gap="xs">
