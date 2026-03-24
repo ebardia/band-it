@@ -388,8 +388,6 @@ export default function ProposalDetailPage() {
   const votingEnded = proposal.votingEndsAt ? new Date() > new Date(proposal.votingEndsAt) : false
   const allVoted =
     voteSummary.eligibleVoters > 0 && voteSummary.total >= voteSummary.eligibleVoters
-  const canEarlyClose = proposal.allowEarlyClose && allVoted && !votingEnded
-
   const founderUserIdsForPreview =
     proposal.type === 'ADD_FOUNDER' && bandData?.band?.members
       ? new Set(
@@ -403,6 +401,23 @@ export default function ProposalDetailPage() {
     proposal.type === 'ADD_FOUNDER' && founderUserIdsForPreview
       ? proposal.votes.filter((v: any) => founderUserIdsForPreview.has(v.user.id))
       : []
+
+  const addFounderEveryFounderVotedYes =
+    proposal.type === 'ADD_FOUNDER' &&
+    !!founderUserIdsForPreview &&
+    founderUserIdsForPreview.size > 0 &&
+    votesFromFounders.length === founderUserIdsForPreview.size &&
+    votesFromFounders.every((v: any) => v.vote === 'YES')
+
+  const addFounderFounderVotedNo =
+    proposal.type === 'ADD_FOUNDER' &&
+    votesFromFounders.some((v: any) => v.vote === 'NO')
+
+  const canEarlyClose =
+    !votingEnded &&
+    (proposal.type === 'ADD_FOUNDER'
+      ? addFounderEveryFounderVotedYes
+      : proposal.allowEarlyClose && allVoted)
 
   const addFounderWouldApprove =
     proposal.type === 'ADD_FOUNDER' &&
@@ -518,11 +533,20 @@ export default function ProposalDetailPage() {
                       {proposal.status === 'OPEN' ? 'Ends:' : 'Ended:'} {new Date(proposal.votingEndsAt).toLocaleDateString()}
                     </span>
                   )}
-                  {proposal.allowEarlyClose && proposal.status === 'OPEN' && (
-                    <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
-                      Early close enabled
-                    </span>
-                  )}
+                  {proposal.status === 'OPEN' &&
+                    (proposal.type === 'ADD_FOUNDER' ? (
+                      addFounderEveryFounderVotedYes && (
+                        <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                          Can close early (all founders voted yes)
+                        </span>
+                      )
+                    ) : (
+                      proposal.allowEarlyClose && (
+                        <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                          Early close enabled
+                        </span>
+                      )
+                    ))}
                 </div>
               </div>
               {/* Voting method */}
@@ -609,9 +633,28 @@ export default function ProposalDetailPage() {
 
           {isOpen && canEarlyClose && (
             <Alert variant="success">
-              <Text>All {voteSummary.eligibleVoters} eligible members have voted. This proposal can be closed early.</Text>
+              <Text>
+                {proposal.type === 'ADD_FOUNDER'
+                  ? 'Every founder has voted yes. You can close and finalize this nomination now.'
+                  : `All ${voteSummary.eligibleVoters} eligible members have voted. This proposal can be closed early.`}
+              </Text>
             </Alert>
           )}
+
+          {isOpen &&
+            proposal.type === 'ADD_FOUNDER' &&
+            !votingEnded &&
+            addFounderFounderVotedNo && (
+              <Alert variant="warning">
+                <Text>
+                  A founder voted no. This nomination cannot be closed early; close and finalize after{' '}
+                  {proposal.votingEndsAt
+                    ? new Date(proposal.votingEndsAt).toLocaleDateString()
+                    : 'the voting period ends'}
+                  .
+                </Text>
+              </Alert>
+            )}
 
           {isOpen && !canVote && isMember && proposal.type !== 'ADD_FOUNDER' && (
             <Alert variant="info">
@@ -688,7 +731,11 @@ export default function ProposalDetailPage() {
                   {canEarlyClose && (
                     <>
                       <span className="text-gray-300">|</span>
-                      <span className="text-sm text-green-600 font-medium">Early close available</span>
+                      <span className="text-sm text-green-600 font-medium">
+                        {proposal.type === 'ADD_FOUNDER'
+                          ? 'Unanimous founder yes — early close'
+                          : 'Early close available'}
+                      </span>
                     </>
                   )}
                 </div>

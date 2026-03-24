@@ -186,8 +186,36 @@ export const proposalVoteRouter = router({
       const deadlinePassed = proposal.votingEndsAt ? now > proposal.votingEndsAt : false
 
       if (!deadlinePassed) {
-        // Check if early close is allowed and all have voted
-        if (proposal.allowEarlyClose && allVoted) {
+        // ADD_FOUNDER: early close only when every founder has voted YES (never while any founder voted NO)
+        if (proposal.type === 'ADD_FOUNDER') {
+          const founders = await prisma.member.findMany({
+            where: { bandId: proposal.bandId, status: 'ACTIVE', role: 'FOUNDER' },
+            select: { userId: true },
+          })
+          const founderIds = new Set(founders.map((f) => f.userId))
+          const founderVotes = proposal.votes.filter((v) => founderIds.has(v.userId))
+
+          if (founderVotes.some((v) => v.vote === 'NO')) {
+            const end = proposal.votingEndsAt?.toLocaleDateString() || 'the voting period ends'
+            throw new Error(
+              `This founder nomination cannot be closed early because at least one founder voted NO. You can close and finalize after ${end}.`
+            )
+          }
+
+          const everyFounderVotedYes =
+            founders.length > 0 &&
+            founders.every((f) =>
+              founderVotes.some((v) => v.userId === f.userId && v.vote === 'YES')
+            )
+
+          if (!everyFounderVotedYes) {
+            const end = proposal.votingEndsAt?.toLocaleDateString() || 'the deadline'
+            throw new Error(
+              `Voting period has not ended yet. All founders must vote YES to close this nomination early. You can close and finalize after ${end}.`
+            )
+          }
+          // allowed — early close for unanimous founder YES
+        } else if (proposal.allowEarlyClose && allVoted) {
           // Allow early close - all eligible members have voted
         } else if (input.forceClose && isFounder) {
           // Founders can force close early
