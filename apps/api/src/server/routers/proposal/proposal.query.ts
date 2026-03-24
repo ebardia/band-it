@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { router, publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
+import { getEligibleVoterCountForProposal } from '../../../lib/proposal-eligible-voters'
 
 // Roles that can vote
 const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
@@ -100,14 +101,10 @@ export const proposalQueryRouter = router({
       const abstainVotes = proposal.votes.filter(v => v.vote === 'ABSTAIN').length
       const totalVotes = proposal.votes.length
 
-      // Get eligible voters count
-      const eligibleVoters = await prisma.member.count({
-        where: {
-          bandId: proposal.bandId,
-          status: 'ACTIVE',
-          role: { in: CAN_VOTE as any },
-        },
-      })
+      const eligibleVoters = await getEligibleVoterCountForProposal(
+        proposal.bandId,
+        proposal.type
+      )
 
       // Calculate quorum
       const quorumPercentage = proposal.band.quorumPercentage

@@ -6,6 +6,7 @@ import { proposalEffectsService } from '../../../services/proposal-effects.servi
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
 import { executeDissolution, checkDissolutionVotePassed } from '../../../lib/band-dissolution'
 import { checkAndAdvanceOnboarding } from '../../../lib/onboarding/milestones'
+import { getEligibleVoterCountForProposal } from '../../../lib/proposal-eligible-voters'
 
 // Roles that can vote
 const CAN_VOTE = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER']
@@ -171,17 +172,14 @@ export const proposalVoteRouter = router({
         throw new Error('You do not have permission to close this proposal')
       }
 
-      // Get count of eligible voters (members with voting roles)
-      const eligibleVoters = await prisma.member.count({
-        where: {
-          bandId: proposal.bandId,
-          status: 'ACTIVE',
-          role: { in: CAN_VOTE as any },
-        },
-      })
+      // Eligible voters for quorum / early close (founders only for ADD_FOUNDER)
+      const eligibleVoters = await getEligibleVoterCountForProposal(
+        proposal.bandId,
+        proposal.type
+      )
 
       // Check if all eligible voters have voted (for early close)
-      const allVoted = proposal.votes.length >= eligibleVoters
+      const allVoted = eligibleVoters > 0 && proposal.votes.length >= eligibleVoters
 
       // Check if voting deadline has passed
       const now = new Date()

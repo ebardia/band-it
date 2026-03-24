@@ -386,8 +386,28 @@ export default function ProposalDetailPage() {
   const hasVoted = proposal.votes.some((v: any) => v.user.id === userId)
   const isOpen = proposal.status === 'OPEN'
   const votingEnded = proposal.votingEndsAt ? new Date() > new Date(proposal.votingEndsAt) : false
-  const allVoted = voteSummary.total >= voteSummary.eligibleVoters
+  const allVoted =
+    voteSummary.eligibleVoters > 0 && voteSummary.total >= voteSummary.eligibleVoters
   const canEarlyClose = proposal.allowEarlyClose && allVoted && !votingEnded
+
+  const founderUserIdsForPreview =
+    proposal.type === 'ADD_FOUNDER' && bandData?.band?.members
+      ? new Set(
+          bandData.band.members
+            .filter((m: any) => m.role === 'FOUNDER')
+            .map((m: any) => m.user.id)
+        )
+      : null
+
+  const votesFromFounders =
+    proposal.type === 'ADD_FOUNDER' && founderUserIdsForPreview
+      ? proposal.votes.filter((v: any) => founderUserIdsForPreview.has(v.user.id))
+      : []
+
+  const addFounderWouldApprove =
+    proposal.type === 'ADD_FOUNDER' &&
+    votesFromFounders.length > 0 &&
+    !votesFromFounders.some((v: any) => v.vote === 'NO')
 
   const handleVote = (vote: string) => {
     if (!userId) return
@@ -487,7 +507,9 @@ export default function ProposalDetailPage() {
                   </span>
                   <span className="text-gray-400">|</span>
                   <span className="text-sm text-gray-600">
-                    {voteSummary.total}/{voteSummary.eligibleVoters} voted
+                    {proposal.type === 'ADD_FOUNDER'
+                      ? `${voteSummary.total}/${voteSummary.eligibleVoters} founders voted`
+                      : `${voteSummary.total}/${voteSummary.eligibleVoters} voted`}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -505,7 +527,11 @@ export default function ProposalDetailPage() {
               </div>
               {/* Voting method */}
               <div className="text-xs text-gray-500">
-                Method: {band.votingMethod?.replace(/_/g, ' ')}
+                {proposal.type === 'ADD_FOUNDER' ? (
+                  <>Rule: unanimous YES among founders who voted (no founder may vote NO)</>
+                ) : (
+                  <>Method: {band.votingMethod?.replace(/_/g, ' ')}</>
+                )}
               </div>
             </div>
           )}
@@ -604,30 +630,61 @@ export default function ProposalDetailPage() {
             <div className="border border-gray-200 rounded-lg bg-white p-3 space-y-2">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <span className={`text-sm font-medium ${voteSummary.quorum.met ? 'text-green-700' : 'text-amber-700'}`}>
-                    {voteSummary.quorum.met ? '✓ Quorum Met' : '⚠ Quorum Not Met'}
-                    <span className="text-gray-400 font-normal ml-1">
-                      ({voteSummary.quorum.actual}%)
-                    </span>
-                  </span>
-                  <span className="text-gray-300">|</span>
-                  {(() => {
-                    if (!voteSummary.quorum.met) {
-                      return <span className="text-sm text-red-600">Would reject (no quorum)</span>
-                    }
-                    const threshold = band.votingMethod === 'SUPERMAJORITY_75' ? 75
-                      : band.votingMethod === 'SUPERMAJORITY_66' ? 66
-                      : band.votingMethod === 'UNANIMOUS' ? 100
-                      : 50
-                    const wouldPass = band.votingMethod === 'UNANIMOUS'
-                      ? voteSummary.no === 0 && voteSummary.yes > 0
-                      : voteSummary.percentageYes > threshold
-                    return (
-                      <span className={`text-sm font-medium ${wouldPass ? 'text-green-600' : 'text-red-600'}`}>
-                        Would {wouldPass ? 'pass' : 'fail'}
+                  {proposal.type === 'ADD_FOUNDER' ? (
+                    <>
+                      <span className={`text-sm font-medium ${voteSummary.quorum.met ? 'text-green-700' : 'text-amber-700'}`}>
+                        {voteSummary.quorum.met
+                          ? '✓ Founder participation meets quorum'
+                          : '⚠ Founder participation below quorum'}
+                        <span className="text-gray-400 font-normal ml-1">
+                          ({voteSummary.quorum.actual}%)
+                        </span>
                       </span>
-                    )
-                  })()}
+                      <span className="text-gray-300">|</span>
+                      <span
+                        className={`text-sm font-medium ${
+                          votesFromFounders.length === 0
+                            ? 'text-red-600'
+                            : addFounderWouldApprove
+                              ? 'text-green-600'
+                              : 'text-red-600'
+                        }`}
+                      >
+                        {votesFromFounders.length === 0
+                          ? 'Would reject (no founder votes)'
+                          : addFounderWouldApprove
+                            ? 'Would approve if closed now'
+                            : 'Would reject (a founder voted NO)'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className={`text-sm font-medium ${voteSummary.quorum.met ? 'text-green-700' : 'text-amber-700'}`}>
+                        {voteSummary.quorum.met ? '✓ Quorum Met' : '⚠ Quorum Not Met'}
+                        <span className="text-gray-400 font-normal ml-1">
+                          ({voteSummary.quorum.actual}%)
+                        </span>
+                      </span>
+                      <span className="text-gray-300">|</span>
+                      {(() => {
+                        if (!voteSummary.quorum.met) {
+                          return <span className="text-sm text-red-600">Would reject (no quorum)</span>
+                        }
+                        const threshold = band.votingMethod === 'SUPERMAJORITY_75' ? 75
+                          : band.votingMethod === 'SUPERMAJORITY_66' ? 66
+                          : band.votingMethod === 'UNANIMOUS' ? 100
+                          : 50
+                        const wouldPass = band.votingMethod === 'UNANIMOUS'
+                          ? voteSummary.no === 0 && voteSummary.yes > 0
+                          : voteSummary.percentageYes > threshold
+                        return (
+                          <span className={`text-sm font-medium ${wouldPass ? 'text-green-600' : 'text-red-600'}`}>
+                            Would {wouldPass ? 'pass' : 'fail'}
+                          </span>
+                        )
+                      })()}
+                    </>
+                  )}
                   {canEarlyClose && (
                     <>
                       <span className="text-gray-300">|</span>

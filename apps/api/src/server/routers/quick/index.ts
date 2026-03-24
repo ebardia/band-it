@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server'
 import { checkGoodStanding } from '../../../lib/dues-enforcement'
 import { CAN_VOTE, getQuickActionsForUser } from '../../../lib/quickActions'
 import { calculateMatchScore } from '../band/band.matching'
+import { getEligibleVoterCountForProposal } from '../../../lib/proposal-eligible-voters'
 
 /**
  * Quick router - provides context for mobile-first micro landing pages
@@ -78,8 +79,10 @@ export const quickRouter = router({
         })
       }
 
-      // Check if user can vote (has voting role)
-      const canVote = CAN_VOTE.includes(membership.role)
+      // Check if user can vote (has voting role; ADD_FOUNDER: founders only)
+      const canVote =
+        CAN_VOTE.includes(membership.role) &&
+        (proposal.type !== 'ADD_FOUNDER' || membership.role === 'FOUNDER')
 
       // Check dues standing
       const duesStatus = await checkGoodStanding(proposal.bandId, userId)
@@ -95,14 +98,10 @@ export const quickRouter = router({
       const abstainVotes = allVotes.filter((v) => v.vote === 'ABSTAIN').length
       const totalVotes = allVotes.length
 
-      // Get eligible voters count
-      const eligibleVoters = await prisma.member.count({
-        where: {
-          bandId: proposal.bandId,
-          status: 'ACTIVE',
-          role: { in: CAN_VOTE as any },
-        },
-      })
+      const eligibleVoters = await getEligibleVoterCountForProposal(
+        proposal.bandId,
+        proposal.type
+      )
 
       // Calculate quorum
       const participationPercentage = eligibleVoters > 0 ? (totalVotes / eligibleVoters) * 100 : 0
