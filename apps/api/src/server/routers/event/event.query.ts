@@ -3,6 +3,21 @@ import { publicProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { TRPCError } from '@trpc/server'
 
+function parseActionItemsFromNotes(notes: string | null | undefined): string[] {
+  if (!notes) return []
+  return notes
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .flatMap((line) => {
+      const checkbox = line.match(/^[-*]\s+\[[ xX]\]\s+(.+)$/)
+      if (checkbox?.[1]) return [checkbox[1].trim()]
+      const action = line.match(/^action\s*:\s*(.+)$/i)
+      if (action?.[1]) return [action[1].trim()]
+      return []
+    })
+}
+
 export const getEventsByBand = publicProcedure
   .input(z.object({
     bandId: z.string(),
@@ -152,7 +167,21 @@ export const getEventById = publicProcedure
       maybe: event.rsvps.filter(r => r.status === 'MAYBE').length,
     }
 
-    return { event, userRSVP, rsvpCounts }
+    const meetingOutputProposal = await prisma.proposal.findFirst({
+      where: {
+        bandId: event.bandId,
+        executionSubtype: `MEETING_OUTPUT:${event.id}`,
+      },
+      select: {
+        id: true,
+        status: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    const actionItemsCount = parseActionItemsFromNotes(event.meetingNotes).length
+
+    return { event, userRSVP, rsvpCounts, meetingOutputProposal, actionItemsCount }
   })
 
 export const getMyEvents = publicProcedure

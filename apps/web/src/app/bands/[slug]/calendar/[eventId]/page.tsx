@@ -116,6 +116,18 @@ export default function EventDetailPage() {
       showToast(error.message, 'error')
     }
   })
+
+  // @ts-ignore - tRPC type instantiation too deep with large routers
+  const createMeetingProposalMutation = trpc.event.createMeetingOutputProposal.useMutation({
+    onSuccess: (data: { proposal: { id: string } }) => {
+      showToast('Meeting-output proposal created', 'success')
+      refetchEvent()
+      router.push(`/bands/${slug}/proposals/${data.proposal.id}`)
+    },
+    onError: (error: { message: string }) => {
+      showToast(error.message, 'error')
+    }
+  })
   /* eslint-enable @typescript-eslint/ban-ts-comment */
 
   if (bandLoading || eventLoading) {
@@ -156,6 +168,8 @@ export default function EventDetailPage() {
   const event = eventData.event
   const userRSVP = eventData.userRSVP
   const rsvpCounts = eventData.rsvpCounts
+  const meetingOutputProposal = (eventData as any).meetingOutputProposal
+  const actionItemsCount = (eventData as any).actionItemsCount || 0
 
   const currentMember = band.members.find((m: any) => m.user.id === userId)
   const isMember = !!currentMember
@@ -216,6 +230,7 @@ export default function EventDetailPage() {
 
   const isUpcoming = new Date(event.startTime) > new Date()
   const isPast = new Date(event.endTime) < new Date()
+  const canCreateMeetingOutputProposal = canEdit && !meetingOutputProposal && actionItemsCount > 0
 
   // Start editing notes
   const handleStartEditingNotes = () => {
@@ -725,6 +740,57 @@ export default function EventDetailPage() {
                         {isUpcoming
                           ? 'No agenda or materials added yet. Click "Add Notes" to share pre-meeting information.'
                           : 'No notes or recordings added yet. Click "Add Notes" to document this meeting.'}
+                      </Text>
+                    )}
+                  </Stack>
+                )}
+              </Stack>
+            </Card>
+          )}
+
+          {/* Meeting Output Proposal */}
+          {isMember && (
+            <Card>
+              <Stack spacing="md">
+                <Heading level={3}>Meeting Output Governance</Heading>
+                <Text variant="small" color="muted">
+                  Action items detected in notes: {actionItemsCount}
+                </Text>
+                {meetingOutputProposal ? (
+                  <Stack spacing="sm">
+                    <Text>
+                      A meeting-output proposal already exists for this event ({meetingOutputProposal.status}).
+                    </Text>
+                    <Button
+                      variant="secondary"
+                      onClick={() => router.push(`/bands/${slug}/proposals/${meetingOutputProposal.id}`)}
+                    >
+                      View Proposal
+                    </Button>
+                  </Stack>
+                ) : (
+                  <Stack spacing="sm">
+                    <Text variant="small" color="muted">
+                      No execution is allowed directly from notes. Create one proposal for this meeting output,
+                      then proceed to projects/tasks/checklist after approval.
+                    </Text>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        if (!userId) return
+                        createMeetingProposalMutation.mutate({ eventId, userId })
+                      }}
+                      disabled={!canCreateMeetingOutputProposal || createMeetingProposalMutation.isPending}
+                    >
+                      {createMeetingProposalMutation.isPending
+                        ? 'Creating Proposal...'
+                        : 'Create Proposal from Meeting Action Items'}
+                    </Button>
+                    {!canCreateMeetingOutputProposal && (
+                      <Text variant="small" color="muted">
+                        {actionItemsCount === 0
+                          ? 'Add action items to notes using "- [ ] item" or "Action: item".'
+                          : 'Only event creator/founder/governor can create this proposal.'}
                       </Text>
                     )}
                   </Stack>

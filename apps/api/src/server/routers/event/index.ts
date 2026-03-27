@@ -3,6 +3,7 @@ import { createEvent } from './event.create'
 import { getEventsByBand, getUpcomingEvents, getEventById, getMyEvents } from './event.query'
 import { updateEvent, cancelEvent, deleteEvent, createEventException } from './event.update'
 import { updateEventNotes } from './event.notes'
+import { createProposalFromMeetingActionItems } from './event.proposal'
 import { setRSVP, removeRSVP, getRSVPs } from './event.rsvp'
 import { markAttendance, getAttendance, bulkMarkAttendance, getMemberAttendanceHistory } from './event.attendance'
 import { processEventReminders, getPendingReminders } from './event.cron'
@@ -37,6 +38,7 @@ export const eventRouter = router({
   delete: deleteEvent,
   createException: createEventException,
   updateNotes: updateEventNotes,
+  createMeetingOutputProposal: createProposalFromMeetingActionItems,
 
   // RSVP (nested router)
   rsvp: rsvpRouter,
