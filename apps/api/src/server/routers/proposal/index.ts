@@ -39,6 +39,7 @@ export const proposalRouter = router({
   approveProposal: proposalReviewRouter.approveProposal,
   rejectProposal: proposalReviewRouter.rejectProposal,
   withdraw: proposalReviewRouter.withdraw,
+  deleteProposal: proposalReviewRouter.deleteProposal,
   resubmit: proposalReviewRouter.resubmit,
   getPendingReview: proposalReviewRouter.getPendingReview,
   getReviewHistory: proposalReviewRouter.getReviewHistory,

@@ -177,6 +177,16 @@ export default function ProposalDetailPage() {
     },
   })
 
+  const deleteProposalMutation = trpc.proposal.deleteProposal.useMutation({
+    onSuccess: () => {
+      showToast('Proposal deleted', 'success')
+      router.push(`/bands/${slug}/proposals`)
+    },
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
   const submitForReviewMutation = trpc.proposal.submitForReview.useMutation({
     onSuccess: (data) => {
       if (data.reviewRequired) {
@@ -378,6 +388,9 @@ export default function ProposalDetailPage() {
   // Can submit if author and proposal is draft
   const canSubmit = isCreator && proposal.status === 'DRAFT'
 
+  // Author can delete any own proposal unless approved
+  const canDeleteProposal = isCreator && proposal.status !== 'APPROVED'
+
   // Can resubmit if author and proposal is rejected or withdrawn (and under limit)
   const canResubmit = isCreator &&
     ['REJECTED', 'WITHDRAWN'].includes(proposal.status) &&
@@ -501,6 +514,31 @@ export default function ProposalDetailPage() {
               isApproving={approveMutation.isPending}
             />
           </Card>
+
+          {canDeleteProposal && (
+            <div className="border border-red-200 rounded-lg bg-red-50 p-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Text className="text-sm text-red-700">
+                  This proposal can be deleted by its author because it is not approved.
+                </Text>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => {
+                    if (!userId) return
+                    const ok = window.confirm(
+                      'Delete this proposal permanently? This cannot be undone.'
+                    )
+                    if (!ok) return
+                    deleteProposalMutation.mutate({ proposalId, userId })
+                  }}
+                  disabled={deleteProposalMutation.isPending}
+                >
+                  {deleteProposalMutation.isPending ? 'Deleting...' : 'Delete Proposal'}
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Compact Voting Results */}
           {['OPEN', 'APPROVED', 'REJECTED', 'CLOSED'].includes(proposal.status) && (

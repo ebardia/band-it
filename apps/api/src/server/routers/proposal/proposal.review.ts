@@ -510,6 +510,60 @@ export const proposalReviewRouter = router({
     }),
 
   /**
+   * Delete a proposal.
+   * Rule: author can delete their own proposal unless it has been approved.
+   */
+  deleteProposal: publicProcedure
+    .input(
+      z.object({
+        proposalId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const proposal = await prisma.proposal.findUnique({
+        where: { id: input.proposalId },
+      })
+
+      if (!proposal) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' })
+      }
+
+      if (proposal.createdById !== input.userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only the author can delete this proposal',
+        })
+      }
+
+      if (proposal.status === 'APPROVED') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Approved proposals cannot be deleted',
+        })
+      }
+
+      const membership = await prisma.member.findUnique({
+        where: {
+          userId_bandId: { userId: input.userId, bandId: proposal.bandId },
+        },
+      })
+
+      if (!membership || membership.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You must be an active member of this band to delete proposals',
+        })
+      }
+
+      await prisma.proposal.delete({
+        where: { id: input.proposalId },
+      })
+
+      return { success: true }
+    }),
+
+  /**
    * Resubmit a rejected/withdrawn proposal.
    */
   resubmit: publicProcedure
