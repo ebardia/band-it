@@ -35,10 +35,11 @@ export const createProposalFromMeetingActionItems = publicProcedure
     z.object({
       eventId: z.string(),
       userId: z.string(),
+      allowEarlyClose: z.boolean().optional().default(false),
     })
   )
   .mutation(async ({ input }) => {
-    const { eventId, userId } = input
+    const { eventId, userId, allowEarlyClose } = input
 
     const event = await prisma.event.findUnique({
       where: { id: eventId },
@@ -148,7 +149,7 @@ export const createProposalFromMeetingActionItems = publicProcedure
         votingEndsAt,
         submittedAt: now,
         submissionCount: 1,
-        allowEarlyClose: false,
+        allowEarlyClose,
       },
       include: {
         band: { select: { slug: true } },
