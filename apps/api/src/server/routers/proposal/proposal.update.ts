@@ -5,6 +5,55 @@ import { TRPCError } from '@trpc/server'
 import { notificationService } from '../../../services/notification.service'
 import { requireGoodStanding } from '../../../lib/dues-enforcement'
 
+/** Detect real content changes (avoids false "unchanged" from \\r\\n vs \\n, Decimal, Date, etc.) */
+function proposalFieldValueChanged(field: string, oldValue: unknown, newValue: unknown): boolean {
+  const textFields = new Set([
+    'title',
+    'description',
+    'problemStatement',
+    'expectedOutcome',
+    'risksAndConcerns',
+    'budgetBreakdown',
+    'fundingSource',
+    'milestones',
+    'executionSubtype',
+  ])
+  if (textFields.has(field)) {
+    const norm = (v: unknown): string | null => {
+      if (v == null) return null
+      if (typeof v !== 'string') return String(v)
+      const t = v.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+      return t.length === 0 ? null : t
+    }
+    return norm(oldValue) !== norm(newValue)
+  }
+
+  if (field === 'budgetRequested') {
+    const num = (v: unknown): number | null => {
+      if (v == null || v === '') return null
+      const n = Number(v)
+      return Number.isFinite(n) ? n : null
+    }
+    return num(oldValue) !== num(newValue)
+  }
+
+  if (field === 'proposedStartDate' || field === 'proposedEndDate') {
+    const toMs = (v: unknown): number | null => {
+      if (v == null || v === '') return null
+      if (v instanceof Date) return v.getTime()
+      const d = new Date(v as string)
+      return Number.isNaN(d.getTime()) ? null : d.getTime()
+    }
+    return toMs(oldValue) !== toMs(newValue)
+  }
+
+  try {
+    return JSON.stringify(oldValue) !== JSON.stringify(newValue)
+  } catch {
+    return String(oldValue) !== String(newValue)
+  }
+}
+
 export const proposalUpdateRouter = router({
   /**
    * Edit a proposal
@@ -133,8 +182,7 @@ export const proposalUpdateRouter = router({
             newValue = new Date(newValue as string)
           }
 
-          // Only record if actually changed
-          if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+          if (proposalFieldValueChanged(field, oldValue, newValue)) {
             updateData[field] = newValue
             changedFields[field] = { old: oldValue, new: newValue }
           }

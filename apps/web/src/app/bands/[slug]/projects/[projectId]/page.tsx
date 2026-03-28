@@ -112,6 +112,12 @@ export default function ProjectDetailPage() {
     }
   })
 
+  const deleteProjectMutation = trpc.project.delete.useMutation({
+    onError: (error) => {
+      showToast(error.message, 'error')
+    },
+  })
+
   const validateProjectMutation = trpc.ai.validateProject.useMutation({
     onSuccess: () => {
       showToast('Project validated!', 'success')
@@ -495,6 +501,30 @@ export default function ProjectDetailPage() {
   const currentMember = band.members.find((m: any) => m.user.id === userId)
   const canUpdateProject = currentMember && CAN_UPDATE_PROJECT.includes(currentMember.role)
   const canVerifyTasks = currentMember && CAN_VERIFY_TASK.includes(currentMember.role)
+  const canDeleteProject =
+    canUpdateProject && project.status === 'PLANNING' && tasks.length === 0
+  const planningButHasTasks =
+    canUpdateProject && project.status === 'PLANNING' && tasks.length > 0
+
+  const handleDeleteProject = () => {
+    if (!userId) return
+    const ok = window.confirm(
+      'Delete this project permanently? This cannot be undone.'
+    )
+    if (!ok) return
+    deleteProjectMutation.mutate(
+      { projectId, userId },
+      {
+        onSuccess: async () => {
+          showToast('Project deleted', 'success')
+          await utils.project.getByProposal.invalidate({ proposalId: proposal.id })
+          await utils.project.getProjectsList.invalidate({ bandId: band.id })
+          await utils.project.getById.invalidate({ projectId })
+          router.push(`/bands/${slug}/projects`)
+        },
+      }
+    )
+  }
 
   return (
     <>
@@ -530,6 +560,32 @@ export default function ProjectDetailPage() {
           >
             ← Projects
           </button>
+
+          {planningButHasTasks && (
+            <div className="border border-amber-200 rounded-lg bg-amber-50 p-3">
+              <Text className="text-sm text-amber-900">
+                This project is in Planning but still has tasks. Delete those tasks first; then you can delete the project.
+              </Text>
+            </div>
+          )}
+
+          {canDeleteProject && (
+            <div className="border border-red-200 rounded-lg bg-red-50 p-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Text className="text-sm text-red-700">
+                  This project is in Planning with no tasks. You can delete it permanently (cannot be undone).
+                </Text>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={handleDeleteProject}
+                  disabled={deleteProjectMutation.isPending}
+                >
+                  {deleteProjectMutation.isPending ? 'Deleting...' : 'Delete Project'}
+                </Button>
+              </div>
+            </div>
+          )}
 
           {isEditing ? (
             <Card>

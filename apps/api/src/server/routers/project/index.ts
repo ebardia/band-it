@@ -2,6 +2,7 @@ import { router } from '../../trpc'
 import { createProject } from './project.create'
 import { getProjectsByProposal, getProjectById, getProjectsByBand, getMyProjects, getProjectDeliverables } from './project.query'
 import { updateProject } from './project.update'
+import { deleteProject } from './project.delete'
 import { suggestProjects } from './project.ai'
 import { projectHierarchyRouter } from './project.hierarchy'
 
@@ -23,6 +24,7 @@ export const projectRouter = router({
 
   // Update
   update: updateProject,
+  delete: deleteProject,
 
   // AI
   aiSuggest: suggestProjects,

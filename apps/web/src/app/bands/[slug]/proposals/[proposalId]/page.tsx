@@ -77,7 +77,6 @@ export default function ProposalDetailPage() {
   const [validationIssues, setValidationIssues] = useState<any[]>([])
   const [showBlockModal, setShowBlockModal] = useState(false)
   const [showWarningModal, setShowWarningModal] = useState(false)
-  const [pendingEditData, setPendingEditData] = useState<any>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -104,6 +103,8 @@ export default function ProposalDetailPage() {
     { enabled: !!proposalId }
   )
 
+  const utils = trpc.useUtils()
+
   const voteMutation = trpc.proposal.vote.useMutation({
     onSuccess: (data) => {
       showToast(data.message, 'success')
@@ -125,12 +126,16 @@ export default function ProposalDetailPage() {
   })
 
   const editMutation = trpc.proposal.edit.useMutation({
-    onSuccess: (data) => {
-      showToast(data.message, 'success')
+    onSuccess: async (data) => {
+      if (data.message === 'No changes detected') {
+        showToast(data.message, 'info')
+      } else {
+        showToast(data.message, 'success')
+      }
       setShowEditModal(false)
       setShowVoteResetWarning(false)
       setEditReason('')
-      refetch()
+      await utils.proposal.getById.invalidate({ proposalId })
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -224,6 +229,22 @@ export default function ProposalDetailPage() {
     setShowEditModal(true)
   }
 
+  const buildEditPayload = () => {
+    const p = proposalData?.proposal
+    return {
+      proposalId,
+      userId: userId!,
+      title: editTitle,
+      description: editDescription,
+      type: editType,
+      priority: editPriority,
+      problemStatement: editProblemStatement || null,
+      expectedOutcome: editExpectedOutcome || null,
+      risksAndConcerns: editRisksAndConcerns || null,
+      editReason: p?.status === 'OPEN' ? editReason.trim() : undefined,
+    }
+  }
+
   const handleSaveEdit = async () => {
     if (!userId || !editTitle.trim() || !editDescription.trim()) return
 
@@ -242,21 +263,7 @@ export default function ProposalDetailPage() {
       return
     }
 
-    const editData = {
-      proposalId,
-      userId,
-      title: editTitle,
-      description: editDescription,
-      type: editType,
-      priority: editPriority,
-      problemStatement: editProblemStatement || null,
-      expectedOutcome: editExpectedOutcome || null,
-      risksAndConcerns: editRisksAndConcerns || null,
-      editReason: proposal.status === 'OPEN' ? editReason.trim() : undefined,
-    }
-
-    // Store data for potential later use
-    setPendingEditData(editData)
+    const editData = buildEditPayload()
 
     // Run integrity validation
     try {
@@ -296,30 +303,24 @@ export default function ProposalDetailPage() {
     }
   }
 
-  // Handle proceeding with warnings
+  // Handle proceeding with warnings (use current form state — not a snapshot from validation time)
   const handleProceedWithWarnings = () => {
-    if (!pendingEditData) return
-
-    editMutation.mutate(pendingEditData)
-
-    // Close modal and clear state
+    if (!userId) return
+    editMutation.mutate(buildEditPayload())
     setShowWarningModal(false)
     setValidationIssues([])
-    setPendingEditData(null)
   }
 
   // Handle canceling warning
   const handleCancelWarning = () => {
     setShowWarningModal(false)
     setValidationIssues([])
-    setPendingEditData(null)
   }
 
   // Handle closing block modal - keep edit modal open so user can edit and retry
   const handleCloseBlock = () => {
     setShowBlockModal(false)
     setValidationIssues([])
-    setPendingEditData(null)
   }
 
   if (isLoading) {
