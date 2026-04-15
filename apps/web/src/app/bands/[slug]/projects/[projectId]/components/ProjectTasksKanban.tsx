@@ -151,18 +151,21 @@ function KanbanColumn({
     <div
       ref={setNodeRef}
       className={[
-        'flex flex-col rounded-lg border bg-gray-50/80 transition-colors',
-        'w-[min(88vw,20rem)] max-md:flex-shrink-0 max-md:snap-start md:min-w-0 md:w-auto md:flex-1',
+        'flex h-[min(calc(100dvh-10.5rem),52rem)] min-h-[min(50dvh,24rem)] flex-col rounded-lg border bg-gray-50/80 transition-colors',
+        'w-[min(88vw,20rem)] flex-shrink-0 snap-start',
+        'md:h-[min(calc(100dvh-9rem),56rem)] md:min-h-[min(55dvh,28rem)] md:w-[min(22rem,calc(100vw-4rem))] md:max-w-[26rem]',
         isOver ? 'border-blue-400 bg-blue-50/50 ring-2 ring-blue-200' : 'border-gray-200',
       ].join(' ')}
     >
-      <div className="sticky top-0 z-[1] flex items-center justify-between gap-2 border-b border-gray-200 bg-gray-50/95 px-3 py-2 backdrop-blur-sm">
+      <div className="z-[1] flex flex-shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-gray-50/95 px-3 py-2 backdrop-blur-sm">
         <Text weight="semibold" className="text-sm">
           {COLUMN_LABEL[status]}
         </Text>
         <Badge variant="neutral">{count}</Badge>
       </div>
-      <div className="flex max-h-[min(70vh,520px)] flex-col gap-2 overflow-y-auto p-2">{children}</div>
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overflow-x-hidden overscroll-y-contain p-2 [scrollbar-gutter:stable]">
+        {children}
+      </div>
     </div>
   )
 }
@@ -225,7 +228,7 @@ function KanbanTaskCard({
           <Text
             variant="small"
             weight="semibold"
-            className={`line-clamp-2 hover:text-blue-600 ${task.status === 'COMPLETED' ? 'text-gray-400 line-through' : ''}`}
+            className={`line-clamp-3 break-words hover:text-blue-600 md:line-clamp-4 ${task.status === 'COMPLETED' ? 'text-gray-400 line-through' : ''}`}
           >
             {task.name}
           </Text>
@@ -372,8 +375,8 @@ export function ProjectTasksKanban({
         Swipe sideways to see all columns. Long-press the grip on the left, then drag the card to another column.
       </Text>
       <Text variant="small" color="muted" className="hidden md:block">
-        Drag the grip on the left to change columns. Moves follow the same rules as the list view (for example,
-        tasks that require verification use Submit and Review).
+        Scroll sideways if the board is wider than your screen. Drag the grip to move cards. Each column scrolls
+        vertically to show all tasks. Moves follow the same rules as the list view (Submit and Review where needed).
       </Text>
 
       <DndContext
@@ -382,7 +385,7 @@ export function ProjectTasksKanban({
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="flex flex-row gap-3 max-md:-mx-1 max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain max-md:px-1 max-md:pb-3 max-md:pt-1 max-md:[scrollbar-width:thin] max-md:touch-pan-x md:overflow-visible">
+        <div className="flex flex-row gap-3 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:thin] max-md:-mx-1 max-md:snap-x max-md:snap-mandatory max-md:px-1 max-md:pb-3 max-md:pt-1 max-md:touch-pan-x md:snap-none md:px-0.5">
           {COLUMN_ORDER.map((status) => (
             <KanbanColumn key={status} status={status} count={grouped[status].length}>
               {grouped[status].map((task) => (
