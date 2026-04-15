@@ -615,6 +615,7 @@ export default function ProjectDetailPage() {
 
           <Card>
             <ProjectTasksHierarchy
+              projectId={projectId}
               tasks={tasks}
               bandSlug={slug}
               bandId={band.id}

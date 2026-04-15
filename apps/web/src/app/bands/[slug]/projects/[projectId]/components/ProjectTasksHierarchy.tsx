@@ -2,9 +2,10 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heading, Text, Stack, Flex, Badge, Button, Alert } from '@/components/ui'
+import { Heading, Text, Stack, Flex, Badge, Button, Alert, useToast } from '@/components/ui'
 import { TaskCreateForm } from './TaskCreateForm'
 import { TaskSuggestions } from './TaskSuggestions'
+import { ProjectTasksKanban } from './ProjectTasksKanban'
 import { trpc } from '@/lib/trpc'
 
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'COMPLETED' | 'BLOCKED'
@@ -26,6 +27,7 @@ interface ChecklistData {
 }
 
 interface ProjectTasksHierarchyProps {
+  projectId: string
   tasks: any[]
   bandSlug: string
   bandId: string
@@ -55,8 +57,9 @@ interface ProjectTasksHierarchyProps {
   onAiRequiresDeliverableChange: (value: boolean) => void
 }
 
-// LocalStorage key for expansion state
+// LocalStorage keys
 const EXPANSION_STATE_KEY = 'project-tasks-expansion-state'
+const TASK_VIEW_KEY = 'bandit-project-tasks-view'
 
 function getStoredExpansionState(projectId: string): string[] | null {
   if (typeof window === 'undefined') return null
@@ -81,6 +84,7 @@ function saveExpansionState(projectId: string, tasks: Set<string>) {
 }
 
 export function ProjectTasksHierarchy({
+  projectId,
   tasks,
   bandSlug,
   bandId,
@@ -111,9 +115,35 @@ export function ProjectTasksHierarchy({
 }: ProjectTasksHierarchyProps) {
   const router = useRouter()
   const utils = trpc.useUtils()
+  const { showToast } = useToast()
 
-  // Get projectId from first task or empty string
-  const projectId = tasks[0]?.projectId || ''
+  const [taskView, setTaskView] = useState<'list' | 'board'>('list')
+  const [taskViewReady, setTaskViewReady] = useState(false)
+
+  useEffect(() => {
+    if (!projectId) {
+      setTaskViewReady(true)
+      return
+    }
+    try {
+      const stored = localStorage.getItem(`${TASK_VIEW_KEY}-${projectId}`)
+      if (stored === 'board' || stored === 'list') {
+        setTaskView(stored)
+      }
+    } catch {
+      /* ignore */
+    }
+    setTaskViewReady(true)
+  }, [projectId])
+
+  useEffect(() => {
+    if (!projectId || !taskViewReady) return
+    try {
+      localStorage.setItem(`${TASK_VIEW_KEY}-${projectId}`, taskView)
+    } catch {
+      /* ignore */
+    }
+  }, [projectId, taskView, taskViewReady])
 
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
   const [checklistCache, setChecklistCache] = useState<Record<string, ChecklistData[]>>({})
@@ -441,28 +471,58 @@ export function ProjectTasksHierarchy({
 
   return (
     <Stack spacing="lg">
-      <Flex justify="between" align="center">
+      <Flex justify="between" align="center" className="flex-wrap gap-3">
         <Heading level={2}>Tasks ({tasks.length})</Heading>
-        {canUpdate && (
-          <Flex gap="sm">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onSuggestTasks}
-              disabled={isSuggesting || showCreateForm || !!suggestions}
+        <Flex gap="sm" align="center" className="flex-wrap">
+          <div
+            className="flex rounded-lg border border-gray-200 bg-gray-50 p-0.5"
+            role="group"
+            aria-label="Task layout"
+          >
+            <button
+              type="button"
+              onClick={() => setTaskView('list')}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                taskView === 'list'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              {isSuggesting ? 'Thinking...' : '✨ Suggest Tasks'}
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => onShowCreateForm(true)}
-              disabled={showCreateForm}
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setTaskView('board')}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                taskView === 'board'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              + Add Task
-            </Button>
-          </Flex>
-        )}
+              Board
+            </button>
+          </div>
+          {canUpdate && (
+            <Flex gap="sm">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onSuggestTasks}
+                disabled={isSuggesting || showCreateForm || !!suggestions}
+              >
+                {isSuggesting ? 'Thinking...' : '✨ Suggest tasks'}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => onShowCreateForm(true)}
+                disabled={showCreateForm}
+              >
+                + Add Task
+              </Button>
+            </Flex>
+          )}
+        </Flex>
       </Flex>
 
       {suggestions && suggestions.length > 0 && (
@@ -491,9 +551,27 @@ export function ProjectTasksHierarchy({
       )}
 
       {tasks.length > 0 ? (
-        <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-          {tasks.map((task: any, index: number) => renderTaskRow(task, index, tasks.length))}
-        </div>
+        taskView === 'board' ? (
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white p-2 md:p-4">
+            <ProjectTasksKanban
+              tasks={tasks}
+              bandSlug={bandSlug}
+              userId={userId}
+              canUpdateProject={canUpdate}
+              canVerify={canVerify}
+              highlightedTaskId={highlightedTaskId}
+              onStatusChange={onStatusChange}
+              onSubmitForVerification={onSubmitForVerification}
+              onReview={onReview}
+              isUpdating={isUpdating}
+              onInvalidMove={(message) => showToast(message, 'error')}
+            />
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            {tasks.map((task: any, index: number) => renderTaskRow(task, index, tasks.length))}
+          </div>
+        )
       ) : (
         <Alert variant="info">
           <Text>No tasks yet. {canUpdate ? 'Click "Add Task" to create one or "Suggest Tasks" for AI recommendations.' : ''}</Text>
