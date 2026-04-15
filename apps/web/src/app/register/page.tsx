@@ -26,11 +26,34 @@ const COMMUNITY_GUIDELINES_VERSION = 1
 // Current version of Terms of Service & Privacy Policy - increment when they change
 const TOS_VERSION = 1
 
+/** Survives full page navigations so register still sends token after verify-email prep */
+const PENDING_INVITE_TOKEN_KEY = 'bandIt_pendingInviteToken'
+
 function RegisterContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { showToast } = useToast()
-  const inviteToken = searchParams.get('invite')
+  const inviteFromUrl = searchParams.get('invite')
+
+  const [showInviteBanner, setShowInviteBanner] = useState(false)
+
+  useEffect(() => {
+    if (inviteFromUrl) {
+      try {
+        localStorage.setItem(PENDING_INVITE_TOKEN_KEY, inviteFromUrl)
+      } catch {
+        /* ignore quota / private mode */
+      }
+    }
+    try {
+      setShowInviteBanner(
+        Boolean(inviteFromUrl || localStorage.getItem(PENDING_INVITE_TOKEN_KEY)),
+      )
+    } catch {
+      setShowInviteBanner(Boolean(inviteFromUrl))
+    }
+  }, [inviteFromUrl])
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -45,6 +68,11 @@ function RegisterContent() {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
       localStorage.setItem('userEmail', formData.email)
+      try {
+        localStorage.removeItem(PENDING_INVITE_TOKEN_KEY)
+      } catch {
+        /* ignore */
+      }
 
       const hasInvites = data.bandsInvited && data.bandsInvited.length > 0
 
@@ -85,9 +113,15 @@ function RegisterContent() {
       showToast('Please accept the Terms of Service and Privacy Policy to continue', 'error')
       return
     }
+    let storedToken: string | undefined
+    try {
+      storedToken = localStorage.getItem(PENDING_INVITE_TOKEN_KEY) || undefined
+    } catch {
+      storedToken = undefined
+    }
     registerMutation.mutate({
       ...formData,
-      inviteToken: inviteToken || undefined,
+      inviteToken: inviteFromUrl || storedToken || undefined,
       guidelinesVersion: COMMUNITY_GUIDELINES_VERSION,
       tosVersion: TOS_VERSION,
     })
@@ -103,7 +137,7 @@ function RegisterContent() {
               <Text variant="muted">Join BAND IT to start managing your band</Text>
             </Center>
 
-            {inviteToken && (
+            {showInviteBanner && (
               <Alert variant="info">
                 <Text variant="small">
                   You've been invited to join a band! Create your account to review and accept the invitation.

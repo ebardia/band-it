@@ -123,6 +123,7 @@ export const authRouter = router({
         user: result.user,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
+        bandsInvited: result.bandsInvited,
       }
     }),
 

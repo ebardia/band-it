@@ -14,6 +14,22 @@ const REFRESH_TOKEN_EXPIRES_IN = 30 * 24 * 60 * 60 * 1000 // 30 days in millisec
 const SKIP_EMAIL_VERIFICATION = process.env.SKIP_EMAIL_VERIFICATION === 'true'
 const SKIP_PAYMENT_CHECK = process.env.SKIP_PAYMENT_CHECK === 'true'
 
+/** Pending invites expired after this many days are not auto-attached (register/login). Default 30. */
+const PENDING_INVITE_GRACE_DAYS = Number(process.env.PENDING_INVITE_GRACE_DAYS) || 30
+
+function pendingInviteExpiresAfterCutoff(): Date {
+  return new Date(Date.now() - PENDING_INVITE_GRACE_DAYS * 24 * 60 * 60 * 1000)
+}
+
+function isPendingInviteAttachable(
+  invite: { expiresAt: Date; invalidatedAt: Date | null },
+): boolean {
+  if (invite.invalidatedAt) {
+    return false
+  }
+  return invite.expiresAt > pendingInviteExpiresAfterCutoff()
+}
+
 export const authService = {
   /**
    * Register a new user
@@ -107,11 +123,14 @@ export const authService = {
   async processPendingInvites(userId: string, email: string, inviteToken?: string) {
     const bandsInvited: Array<{ id: string; name: string; slug: string; description: string | null }> = []
 
-    // Find all pending invites for this email
+    const cutoff = pendingInviteExpiresAfterCutoff()
+
+    // Find pending invites for this email: not invalidated, and not older than grace window
     const pendingInvites = await prisma.pendingInvite.findMany({
       where: {
         email,
-        expiresAt: { gt: new Date() }, // Only non-expired
+        invalidatedAt: null,
+        expiresAt: { gt: cutoff },
       },
       include: {
         band: {
@@ -120,7 +139,7 @@ export const authService = {
       },
     })
 
-    // If inviteToken provided, prioritize that specific invite
+    // If inviteToken provided, merge that invite (e.g. URL token survives longer than strict expiry)
     if (inviteToken) {
       const tokenInvite = await prisma.pendingInvite.findUnique({
         where: { token: inviteToken },
@@ -131,8 +150,11 @@ export const authService = {
         },
       })
 
-      // Add to list if valid and not already in pendingInvites
-      if (tokenInvite && tokenInvite.expiresAt > new Date()) {
+      if (
+        tokenInvite &&
+        isPendingInviteAttachable(tokenInvite) &&
+        tokenInvite.email === email
+      ) {
         const alreadyIncluded = pendingInvites.some(pi => pi.id === tokenInvite.id)
         if (!alreadyIncluded) {
           pendingInvites.push(tokenInvite)
@@ -191,9 +213,11 @@ export const authService = {
    * Login user
    */
   async login(email: string, password: string) {
+    const normalizedEmail = email.toLowerCase().trim()
+
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     })
 
     if (!user) {
@@ -241,6 +265,9 @@ export const authService = {
     // Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user.id)
 
+    // Attach any pending invites (same email + grace window) — fixes users who registered without token
+    const bandsInvited = await this.processPendingInvites(user.id, user.email)
+
     // Track sign-in event
     await analyticsService.trackEvent('user_signed_in', {
       userId: user.id,
@@ -256,6 +283,7 @@ export const authService = {
       },
       accessToken,
       refreshToken,
+      bandsInvited,
     }
   },
 

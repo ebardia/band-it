@@ -631,9 +631,9 @@ export const bandInviteRouter = router({
         // Generate secure token
         const token = crypto.randomBytes(32).toString('hex')
 
-        // Set expiration to 7 days from now
+        // Set expiration to 14 days from now (longer window for email → register lag)
         const expiresAt = new Date()
-        expiresAt.setDate(expiresAt.getDate() + 7)
+        expiresAt.setDate(expiresAt.getDate() + 14)
 
         // Create pending invite
         const pendingInvite = await prisma.pendingInvite.create({

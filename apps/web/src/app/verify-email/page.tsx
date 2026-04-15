@@ -65,7 +65,7 @@ function VerifyEmailContent() {
       hasVerified.current = true
       showToast('Email verified! Redirecting...', 'success')
       setTimeout(() => {
-        router.push('/profile')
+        router.push('/welcome')
       }, 1500)
     }
   }, [profileData, router, showToast])
@@ -77,7 +77,7 @@ function VerifyEmailContent() {
         hasVerified.current = true
         showToast('Email verified successfully!', 'success')
         setTimeout(() => {
-          router.push('/profile')
+          router.push('/welcome')
         }, 2000)
       }
     },
@@ -123,7 +123,7 @@ function VerifyEmailContent() {
                     <CheckIcon />
                   </IconCircle>
                   <Heading level={1}>Email Verified! ✅</Heading>
-                  <Text variant="muted">Redirecting to profile completion...</Text>
+                  <Text variant="muted">Redirecting to your home screen...</Text>
                 </Stack>
               </Center>
             ) : null}
@@ -151,7 +151,7 @@ function VerifyEmailContent() {
               steps={[
                 { label: 'Register', status: 'complete' },
                 { label: 'Verify', status: 'active' },
-                { label: 'Profile', status: 'inactive' },
+                { label: 'Get started', status: 'inactive' },
               ]}
             />
 
@@ -160,7 +160,7 @@ function VerifyEmailContent() {
               <List ordered>
                 <ListItem>Open your email inbox</ListItem>
                 <ListItem>Click the verification link</ListItem>
-                <ListItem>Complete your profile</ListItem>
+                <ListItem>Continue to invitations or your dashboard</ListItem>
               </List>
             </Alert>
 
@@ -176,7 +176,7 @@ function VerifyEmailContent() {
                     if (result.data?.user?.emailVerified) {
                       hasVerified.current = true
                       showToast('Email verified! Redirecting...', 'success')
-                      setTimeout(() => router.push('/profile'), 1500)
+                      setTimeout(() => router.push('/welcome'), 1500)
                     } else {
                       showToast('Email not verified yet', 'info')
                     }

@@ -52,6 +52,17 @@ function LoginForm() {
         return
       }
 
+      const invitedBands = data.bandsInvited ?? []
+      if (invitedBands.length > 0) {
+        const bandNames = invitedBands.map((b) => b.name).join(', ')
+        showToast(
+          `You've been invited to: ${bandNames}. Review and accept on the next page.`,
+          'info',
+        )
+        router.replace('/welcome')
+        return
+      }
+
       showToast(`Welcome back, ${data.user.name}!`, 'success')
 
       // Check if user needs welcome flow (no bands and hasn't completed welcome)
