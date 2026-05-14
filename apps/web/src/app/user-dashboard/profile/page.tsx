@@ -6,6 +6,7 @@ import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import { Loading, useToast } from '@/components/ui'
 import { buildProfileSummaryText, toChips } from '@/lib/profileSummary'
+import { buildEditionPreviewLines, buildNextMoves, countProfileSignals } from '@/lib/profileSignals'
 
 function uniqueChips(...groups: string[]): string[] {
   const seen = new Set<string>()
@@ -89,6 +90,13 @@ export default function ProfilePage() {
   const chips = useMemo(
     () => uniqueChips(formData.strengths, formData.passions, formData.developmentPath),
     [formData.strengths, formData.passions, formData.developmentPath]
+  )
+
+  const signalStats = useMemo(() => countProfileSignals(formData), [formData])
+  const nextMovesList = useMemo(() => buildNextMoves(formData), [formData])
+  const editionPreviewLines = useMemo(
+    () => buildEditionPreviewLines(formData, chips),
+    [formData, chips]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -180,6 +188,68 @@ export default function ProfilePage() {
             </div>
           ) : null}
         </section>
+
+        <section className="np-profile-section np-profile-signals" aria-labelledby="signals-heading">
+          <h2 id="signals-heading" className="np-picks-header">
+            Signal strength
+          </h2>
+          <p className="np-signals-meta">
+            PROFILE SIGNALS {signalStats.filled}/{signalStats.total} · {signalStats.percent}% COMPLETE
+          </p>
+          <div
+            className="np-signals-track"
+            role="progressbar"
+            aria-valuenow={signalStats.percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Profile completeness"
+          >
+            <div className="np-signals-fill" style={{ width: `${signalStats.percent}%` }} />
+          </div>
+          <p className="np-field-hint">
+            This is not a game score. It is how much we can responsibly infer for matching, mentors, and
+            your Daily—without guessing beyond what you have shared.
+          </p>
+        </section>
+
+        <section className="np-profile-section" aria-labelledby="preview-heading">
+          <h2 id="preview-heading" className="np-picks-header">
+            Your Daily (preview)
+          </h2>
+          <div className="np-preview-panel">
+            {editionPreviewLines.map((line, i) => (
+              <p key={i} className="np-preview-line">
+                {line}
+              </p>
+            ))}
+          </div>
+        </section>
+
+        {nextMovesList.length > 0 ? (
+          <section className="np-profile-section" aria-labelledby="next-heading">
+            <h2 id="next-heading" className="np-picks-header">
+              Next moves
+            </h2>
+            <ul className="np-next-list">
+              {nextMovesList.map((m) => (
+                <li key={m.id} className="np-next-item">
+                  <p className="np-next-title">{m.title}</p>
+                  <p className="np-next-detail">{m.detail}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : (
+          <section className="np-profile-section" aria-labelledby="next-heading">
+            <h2 id="next-heading" className="np-picks-header">
+              Next moves
+            </h2>
+            <p className="np-preview-line" style={{ marginTop: '0.5rem' }}>
+              Your core fields are in. From here, fit gets sharper through what you actually do on Band
+              It—projects, votes, and your Daily—with controls so nothing runs ahead of your consent.
+            </p>
+          </section>
+        )}
 
         <p className="np-profile-manifesto">
           No one builds something meaningful alone. Groups thrive when people bring different gifts to
