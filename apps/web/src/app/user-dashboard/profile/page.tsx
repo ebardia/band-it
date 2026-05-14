@@ -27,6 +27,7 @@ export default function ProfilePage() {
   const { showToast } = useToast()
   const [userId, setUserId] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
+  const [fieldsOpen, setFieldsOpen] = useState(false)
   const [formData, setFormData] = useState({
     zipcode: '',
     strengths: '',
@@ -73,6 +74,12 @@ export default function ProfilePage() {
       })
     }
   }, [profileData])
+
+  useEffect(() => {
+    if (isEditing) {
+      setFieldsOpen(true)
+    }
+  }, [isEditing])
 
   const summaryText = useMemo(() => {
     if (!profileData?.user) return ''
@@ -122,6 +129,11 @@ export default function ProfilePage() {
     setIsEditing(false)
   }
 
+  const startEdit = () => {
+    setFieldsOpen(true)
+    setIsEditing(true)
+  }
+
   if (isLoading || !userId) {
     return (
       <UserDashboardLayout pageTitle="My Profile" editorial>
@@ -156,266 +168,278 @@ export default function ProfilePage() {
   return (
     <UserDashboardLayout pageTitle="My Profile" editorial>
       <div className="np-profile-shell">
-        <p className="np-cat">YOUR EDITION</p>
-        <p className="np-profile-dek-lead">
-          This is the home for who you are on Band It—not only your bands and projects. What you save
-          here shapes your Daily edition: work that might fit you, causes and hobbies, and the occasional
-          cultural signal we think you&apos;ll like.
-        </p>
+        <div className="np-profile-spread">
+          <main className="np-profile-main">
+            <p className="np-cat np-cat-left">YOUR EDITION</p>
+            <p className="np-profile-dek-lead" style={{ textAlign: 'left', marginLeft: 0, marginRight: 0 }}>
+              This is the home for who you are on Band It—not only your bands and projects. What you save
+              here shapes your Daily edition: work that might fit you, causes and hobbies, and the occasional
+              cultural signal we think you&apos;ll like.
+            </p>
 
-        <hr className="np-rule" />
+            <hr className="np-rule" />
 
-        <p className="np-profile-meta-row">
-          {user.name?.toUpperCase() || 'MEMBER'}
-          <br />
-          {user.email?.toUpperCase()}
-          <br />
-          MEMBER SINCE {memberSince.toUpperCase()}
-        </p>
+            <section className="np-profile-section" aria-labelledby="summary-heading">
+              <h2 id="summary-heading" className="np-picks-header">
+                Your summary
+              </h2>
+              <p className="np-profile-manifesto np-profile-summary-lead">{summaryText}</p>
+              {chips.length > 0 ? (
+                <div className="np-chip-row np-chip-row-left" aria-label="Profile tags">
+                  {chips.map((c) => (
+                    <span key={c} className="np-chip">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </section>
 
-        <section className="np-profile-section" aria-labelledby="summary-heading">
-          <h2 id="summary-heading" className="np-picks-header">
-            Your summary
-          </h2>
-          <p className="np-profile-manifesto np-profile-summary-lead">{summaryText}</p>
-          {chips.length > 0 ? (
-            <div className="np-chip-row np-chip-row-left" aria-label="Profile tags">
-              {chips.map((c) => (
-                <span key={c} className="np-chip">
-                  {c}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </section>
+            <p className="np-profile-pullquote">
+              No one builds something meaningful alone—groups thrive when different gifts meet the same table.
+            </p>
 
-        <section className="np-profile-section np-profile-signals" aria-labelledby="signals-heading">
-          <h2 id="signals-heading" className="np-picks-header">
-            Signal strength
-          </h2>
-          <p className="np-signals-meta">
-            PROFILE SIGNALS {signalStats.filled}/{signalStats.total} · {signalStats.percent}% COMPLETE
-          </p>
-          <div
-            className="np-signals-track"
-            role="progressbar"
-            aria-valuenow={signalStats.percent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Profile completeness"
-          >
-            <div className="np-signals-fill" style={{ width: `${signalStats.percent}%` }} />
-          </div>
-          <p className="np-field-hint">
-            This is not a game score. It is how much we can responsibly infer for matching, mentors, and
-            your Daily—without guessing beyond what you have shared.
-          </p>
-        </section>
+            <details className="np-profile-details">
+              <summary className="np-profile-details-summary">Why depth on this page matters</summary>
+              <div className="np-profile-details-body">
+                <p className="np-profile-manifesto" style={{ margin: 0, padding: 0, border: 'none' }}>
+                  Groups thrive when people bring different gifts to the table. By understanding what
+                  you&apos;re good at, what moves you, and where you want to grow—our systems try to help you
+                  find where you belong, and over time, become more effective there.
+                </p>
+              </div>
+            </details>
 
-        <section className="np-profile-section" aria-labelledby="preview-heading">
-          <h2 id="preview-heading" className="np-picks-header">
-            Your Daily (preview)
-          </h2>
-          <div className="np-preview-panel">
-            {editionPreviewLines.map((line, i) => (
-              <p key={i} className="np-preview-line">
-                {line}
+            <details
+              className="np-profile-details"
+              open={fieldsOpen || isEditing}
+              onToggle={(e) => {
+                if (!isEditing) {
+                  setFieldsOpen(e.currentTarget.open)
+                }
+              }}
+            >
+              <summary className="np-profile-details-summary">Profile facts — place, skills, growth, interests, learning</summary>
+              <div className="np-profile-details-body">
+                <form onSubmit={handleSubmit}>
+                  <section className="np-profile-section" aria-labelledby="place-heading">
+                    <p className="np-cat np-cat-left">Place</p>
+                    <h3 id="place-heading" className="np-headline-serif">
+                      Where you&apos;re based
+                    </h3>
+                    {isEditing ? (
+                      <>
+                        <label className="np-label" htmlFor="zip">
+                          Postal code
+                        </label>
+                        <input
+                          id="zip"
+                          className="np-field"
+                          type="text"
+                          required
+                          value={formData.zipcode}
+                          onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
+                          maxLength={10}
+                        />
+                        <p className="np-field-hint">Used for local signals in your edition.</p>
+                      </>
+                    ) : (
+                      readBlock(formData.zipcode || 'Add a postal code when you edit your profile.')
+                    )}
+                  </section>
+
+                  <section className="np-profile-section" aria-labelledby="skills-heading">
+                    <p className="np-cat np-cat-left">Skills</p>
+                    <h3 id="skills-heading" className="np-headline-serif">
+                      What you&apos;re good at
+                    </h3>
+                    {isEditing ? (
+                      <>
+                        <label className="np-label" htmlFor="strengths">
+                          Strengths
+                        </label>
+                        <textarea
+                          id="strengths"
+                          className="np-field"
+                          required
+                          rows={4}
+                          value={formData.strengths}
+                          onChange={(e) => setFormData({ ...formData, strengths: e.target.value })}
+                        />
+                        <p className="np-field-hint">Separate with commas.</p>
+                      </>
+                    ) : (
+                      readBlock(formData.strengths)
+                    )}
+                  </section>
+
+                  <section className="np-profile-section" aria-labelledby="growth-heading">
+                    <p className="np-cat np-cat-left">Growth</p>
+                    <h3 id="growth-heading" className="np-headline-serif">
+                      Where you&apos;re stretching
+                    </h3>
+                    {isEditing ? (
+                      <>
+                        <label className="np-label" htmlFor="weaknesses">
+                          Areas for improvement
+                        </label>
+                        <textarea
+                          id="weaknesses"
+                          className="np-field"
+                          required
+                          rows={4}
+                          value={formData.weaknesses}
+                          onChange={(e) => setFormData({ ...formData, weaknesses: e.target.value })}
+                        />
+                        <p className="np-field-hint">Separate with commas.</p>
+                      </>
+                    ) : (
+                      readBlock(formData.weaknesses)
+                    )}
+                  </section>
+
+                  <section className="np-profile-section" aria-labelledby="passions-heading">
+                    <p className="np-cat np-cat-left">Interests</p>
+                    <h3 id="passions-heading" className="np-headline-serif">
+                      What moves you
+                    </h3>
+                    {isEditing ? (
+                      <>
+                        <label className="np-label" htmlFor="passions">
+                          Passions
+                        </label>
+                        <textarea
+                          id="passions"
+                          className="np-field"
+                          required
+                          rows={4}
+                          value={formData.passions}
+                          onChange={(e) => setFormData({ ...formData, passions: e.target.value })}
+                        />
+                        <p className="np-field-hint">Separate with commas.</p>
+                      </>
+                    ) : (
+                      readBlock(formData.passions)
+                    )}
+                  </section>
+
+                  <section className="np-profile-section" aria-labelledby="learn-heading">
+                    <p className="np-cat np-cat-left">Learning</p>
+                    <h3 id="learn-heading" className="np-headline-serif">
+                      What you want to learn next
+                    </h3>
+                    {isEditing ? (
+                      <>
+                        <label className="np-label" htmlFor="developmentPath">
+                          Development path
+                        </label>
+                        <textarea
+                          id="developmentPath"
+                          className="np-field"
+                          required
+                          rows={4}
+                          value={formData.developmentPath}
+                          onChange={(e) => setFormData({ ...formData, developmentPath: e.target.value })}
+                        />
+                        <p className="np-field-hint">Separate with commas.</p>
+                      </>
+                    ) : (
+                      readBlock(formData.developmentPath)
+                    )}
+                  </section>
+
+                  <div className="np-profile-actions">
+                    {isEditing ? (
+                      <>
+                        <button
+                          type="submit"
+                          className="np-profile-btn np-profile-btn-primary"
+                          disabled={updateProfileMutation.isPending}
+                        >
+                          {updateProfileMutation.isPending ? 'Saving…' : 'Save changes'}
+                        </button>
+                        <button type="button" className="np-profile-btn" onClick={handleCancel}>
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <button type="button" className="np-profile-btn np-profile-btn-primary" onClick={startEdit}>
+                        Edit profile
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
+            </details>
+          </main>
+
+          <aside className="np-profile-rail" aria-label="Edition signals">
+            <div className="np-rail-block">
+              <p className="np-profile-meta-rail">
+                {user.name?.toUpperCase() || 'MEMBER'}
+                <br />
+                {user.email?.toUpperCase()}
+                <br />
+                MEMBER SINCE {memberSince.toUpperCase()}
               </p>
-            ))}
-          </div>
-        </section>
+            </div>
 
-        {nextMovesList.length > 0 ? (
-          <section className="np-profile-section" aria-labelledby="next-heading">
-            <h2 id="next-heading" className="np-picks-header">
-              Next moves
-            </h2>
-            <ul className="np-next-list">
-              {nextMovesList.map((m) => (
-                <li key={m.id} className="np-next-item">
-                  <p className="np-next-title">{m.title}</p>
-                  <p className="np-next-detail">{m.detail}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : (
-          <section className="np-profile-section" aria-labelledby="next-heading">
-            <h2 id="next-heading" className="np-picks-header">
-              Next moves
-            </h2>
-            <p className="np-preview-line" style={{ marginTop: '0.5rem' }}>
-              Your core fields are in. From here, fit gets sharper through what you actually do on Band
-              It—projects, votes, and your Daily—with controls so nothing runs ahead of your consent.
-            </p>
-          </section>
-        )}
+            <div className="np-rail-block np-profile-signals">
+              <h2 id="rail-signals-heading" className="np-picks-header">
+                Signal strength
+              </h2>
+              <p className="np-signals-meta">
+                PROFILE SIGNALS {signalStats.filled}/{signalStats.total} · {signalStats.percent}% COMPLETE
+              </p>
+              <div
+                className="np-signals-track"
+                role="progressbar"
+                aria-valuenow={signalStats.percent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-labelledby="rail-signals-heading"
+              >
+                <div className="np-signals-fill" style={{ width: `${signalStats.percent}%` }} />
+              </div>
+              <p className="np-field-hint">
+                Not a score—how much we can infer responsibly for your Daily and matching.
+              </p>
+            </div>
 
-        <p className="np-profile-manifesto">
-          No one builds something meaningful alone. Groups thrive when people bring different gifts to
-          the table. By understanding what you&apos;re good at, what moves you, and where you want to
-          grow—our systems try to help you find where you belong, and over time, become more effective
-          there.
-        </p>
+            <div className="np-rail-block">
+              <h2 id="rail-preview-heading" className="np-picks-header">
+                Your Daily (preview)
+              </h2>
+              <div className="np-preview-panel">
+                {editionPreviewLines.map((line, i) => (
+                  <p key={i} className="np-preview-line">
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </div>
 
-        <form onSubmit={handleSubmit}>
-          <section className="np-profile-section" aria-labelledby="place-heading">
-            <p className="np-cat np-cat-left">
-              Place
-            </p>
-            <h3 id="place-heading" className="np-headline-serif">
-              Where you&apos;re based
-            </h3>
-            {isEditing ? (
-              <>
-                <label className="np-label" htmlFor="zip">
-                  Postal code
-                </label>
-                <input
-                  id="zip"
-                  className="np-field"
-                  type="text"
-                  required
-                  value={formData.zipcode}
-                  onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
-                  maxLength={10}
-                />
-                <p className="np-field-hint">Used for local signals in your edition.</p>
-              </>
-            ) : (
-              readBlock(formData.zipcode || 'Add a postal code when you edit your profile.')
-            )}
-          </section>
-
-          <section className="np-profile-section" aria-labelledby="skills-heading">
-            <p className="np-cat np-cat-left">
-              Skills
-            </p>
-            <h3 id="skills-heading" className="np-headline-serif">
-              What you&apos;re good at
-            </h3>
-            {isEditing ? (
-              <>
-                <label className="np-label" htmlFor="strengths">
-                  Strengths
-                </label>
-                <textarea
-                  id="strengths"
-                  className="np-field"
-                  required
-                  rows={4}
-                  value={formData.strengths}
-                  onChange={(e) => setFormData({ ...formData, strengths: e.target.value })}
-                />
-                <p className="np-field-hint">Separate with commas.</p>
-              </>
-            ) : (
-              readBlock(formData.strengths)
-            )}
-          </section>
-
-          <section className="np-profile-section" aria-labelledby="growth-heading">
-            <p className="np-cat np-cat-left">
-              Growth
-            </p>
-            <h3 id="growth-heading" className="np-headline-serif">
-              Where you&apos;re stretching
-            </h3>
-            {isEditing ? (
-              <>
-                <label className="np-label" htmlFor="weaknesses">
-                  Areas for improvement
-                </label>
-                <textarea
-                  id="weaknesses"
-                  className="np-field"
-                  required
-                  rows={4}
-                  value={formData.weaknesses}
-                  onChange={(e) => setFormData({ ...formData, weaknesses: e.target.value })}
-                />
-                <p className="np-field-hint">Separate with commas.</p>
-              </>
-            ) : (
-              readBlock(formData.weaknesses)
-            )}
-          </section>
-
-          <section className="np-profile-section" aria-labelledby="passions-heading">
-            <p className="np-cat np-cat-left">
-              Interests
-            </p>
-            <h3 id="passions-heading" className="np-headline-serif">
-              What moves you
-            </h3>
-            {isEditing ? (
-              <>
-                <label className="np-label" htmlFor="passions">
-                  Passions
-                </label>
-                <textarea
-                  id="passions"
-                  className="np-field"
-                  required
-                  rows={4}
-                  value={formData.passions}
-                  onChange={(e) => setFormData({ ...formData, passions: e.target.value })}
-                />
-                <p className="np-field-hint">Separate with commas.</p>
-              </>
-            ) : (
-              readBlock(formData.passions)
-            )}
-          </section>
-
-          <section className="np-profile-section" aria-labelledby="learn-heading">
-            <p className="np-cat np-cat-left">
-              Learning
-            </p>
-            <h3 id="learn-heading" className="np-headline-serif">
-              What you want to learn next
-            </h3>
-            {isEditing ? (
-              <>
-                <label className="np-label" htmlFor="developmentPath">
-                  Development path
-                </label>
-                <textarea
-                  id="developmentPath"
-                  className="np-field"
-                  required
-                  rows={4}
-                  value={formData.developmentPath}
-                  onChange={(e) => setFormData({ ...formData, developmentPath: e.target.value })}
-                />
-                <p className="np-field-hint">Separate with commas.</p>
-              </>
-            ) : (
-              readBlock(formData.developmentPath)
-            )}
-          </section>
-
-          <div className="np-profile-actions">
-            {isEditing ? (
-              <>
-                <button
-                  type="submit"
-                  className="np-profile-btn np-profile-btn-primary"
-                  disabled={updateProfileMutation.isPending}
-                >
-                  {updateProfileMutation.isPending ? 'Saving…' : 'Save changes'}
-                </button>
-                <button type="button" className="np-profile-btn" onClick={handleCancel}>
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <button type="button" className="np-profile-btn np-profile-btn-primary" onClick={() => setIsEditing(true)}>
-                Edit profile
-              </button>
-            )}
-          </div>
-        </form>
+            <div className="np-rail-block">
+              <h2 id="rail-next-heading" className="np-picks-header">
+                Next moves
+              </h2>
+              {nextMovesList.length > 0 ? (
+                <ul className="np-next-list">
+                  {nextMovesList.map((m) => (
+                    <li key={m.id} className="np-next-item">
+                      <p className="np-next-title">{m.title}</p>
+                      <p className="np-next-detail">{m.detail}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="np-preview-line" style={{ marginTop: '0.35rem' }}>
+                  Your core fields are in. Fit sharpens from what you do on Band It—with clear controls.
+                </p>
+              )}
+            </div>
+          </aside>
+        </div>
       </div>
     </UserDashboardLayout>
   )
