@@ -62,7 +62,7 @@ export function AppNav() {
       <nav className={theme.components.nav.container}>
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4">
         {/* Logo */}
-        <button onClick={() => handleNavClick('/user-dashboard')} className="flex-shrink-0">
+        <button onClick={() => handleNavClick('/daily')} className="flex-shrink-0">
           <Image
             src="/logo.png"
             alt="BAND IT Logo"

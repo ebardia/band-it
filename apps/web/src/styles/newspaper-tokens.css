@@ -1,0 +1,178 @@
+/* Band It — Newspaper (Wired-inspired). Scoped under .newspaper-root */
+.newspaper-root {
+  /* Surfaces */
+  --np-paper: #f8f5f0;
+  --np-paper-subtle: #f0ede7;
+  --np-ink: #1a1a1a;
+  --np-muted: #6b6b6b;
+  --np-accent: #0033cc;
+  --np-rule: #d4d0ca;
+
+  /* Typography stacks (next/font injects --font-*) */
+  --np-display: var(--font-display), "Georgia", serif;
+  --np-kicker: var(--font-kicker), "Arial Narrow", sans-serif;
+  --np-body: var(--font-body), "Georgia", serif;
+  --np-ui: var(--font-ui), system-ui, sans-serif;
+  --np-mono: var(--font-mono), ui-monospace, monospace;
+
+  /* Spacing scale */
+  --np-pad-x: 1.25rem;
+  --np-pad-y: 1.5rem;
+  --np-max: 720px;
+
+  background-color: var(--np-paper);
+  color: var(--np-ink);
+  min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+  .newspaper-root {
+    --np-pad-x: 2rem;
+    --np-pad-y: 2rem;
+  }
+}
+
+.np-rule {
+  border: none;
+  border-top: 1px solid var(--np-rule);
+  margin: 0;
+}
+
+.np-masthead-title {
+  font-family: var(--np-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.08;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--np-ink);
+}
+
+.np-masthead-meta {
+  font-family: var(--np-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.np-kicker {
+  font-family: var(--np-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--np-accent);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.np-headline-lead {
+  font-family: var(--np-display);
+  font-weight: 700;
+  font-size: clamp(1.65rem, 5vw, 2.35rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+}
+
+.np-headline-section {
+  font-family: var(--np-display);
+  font-weight: 700;
+  font-size: clamp(1.2rem, 3.5vw, 1.55rem);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.65rem;
+}
+
+.np-dek {
+  font-family: var(--np-body);
+  font-size: 1.05rem;
+  line-height: 1.55;
+  font-style: italic;
+  color: var(--np-muted);
+  margin: 0 0 1rem;
+}
+
+.np-byline {
+  font-family: var(--np-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  margin: 0 0 1rem;
+}
+
+.np-excerpt {
+  font-family: var(--np-body);
+  font-size: 1rem;
+  line-height: 1.58;
+  color: var(--np-ink);
+  margin: 0 0 1rem;
+}
+
+.np-section-label {
+  font-family: var(--np-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-accent);
+  font-weight: 600;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--np-rule);
+  margin-bottom: 1.25rem;
+}
+
+.np-action {
+  font-family: var(--np-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--np-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.np-action:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.np-action:active {
+  opacity: 0.85;
+}
+
+.np-quiet {
+  font-family: var(--np-body);
+  font-size: 1.1rem;
+  line-height: 1.55;
+  font-style: italic;
+  color: var(--np-muted);
+  margin: 0;
+}
+
+.np-shell {
+  max-width: var(--np-max);
+  margin: 0 auto;
+  padding: var(--np-pad-y) var(--np-pad-x) 3rem;
+}
+
+.np-nav-escape {
+  font-family: var(--np-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 1.25rem;
+}
+
+.np-nav-escape:hover {
+  color: var(--np-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

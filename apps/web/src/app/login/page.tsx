@@ -35,7 +35,7 @@ function LoginForm() {
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
-      router.replace(returnTo && returnTo.startsWith('/') ? returnTo : '/user-dashboard')
+      router.replace(returnTo && returnTo.startsWith('/') ? returnTo : '/daily')
     }
   }, [router, returnTo])
 
@@ -85,7 +85,7 @@ function LoginForm() {
       if (returnTo && returnTo.startsWith('/')) {
         router.replace(returnTo)
       } else {
-        router.replace('/user-dashboard')
+        router.replace('/daily')
       }
     },
     onError: (error) => {

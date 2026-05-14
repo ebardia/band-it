@@ -57,12 +57,12 @@ export function BandSidebar({ bandSlug, bandName = '', canApprove = false, isMem
       <Stack spacing="lg" className="flex-1">
         {/* User Dashboard Link */}
         <NavButton
-          href="/user-dashboard"
+          href="/daily"
           active={false}
           data-guide="back-to-dashboard"
           className="border-b border-gray-200 pb-3 mb-1"
         >
-          ← User Dashboard
+          ← Home / Daily
         </NavButton>
 
         {/* Main Navigation */}
