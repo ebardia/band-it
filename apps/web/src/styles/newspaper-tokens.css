@@ -273,6 +273,21 @@
   margin-bottom: 2.5rem;
 }
 
+.np-qa-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--np-line);
+}
+
+.np-qa-headline {
+  text-align: left;
+  max-width: none;
+}
+
+.np-qa-section .np-byline {
+  margin-bottom: 0.65rem;
+}
+
 .np-rt-section {
   margin-top: 2rem;
 }

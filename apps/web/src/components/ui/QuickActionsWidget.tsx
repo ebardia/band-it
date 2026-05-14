@@ -2,8 +2,14 @@
 
 import { trpc } from '@/lib/trpc'
 import { useRouter } from 'next/navigation'
-import { Card } from './Card'
 import { Text } from './Typography'
+import {
+  formatQuickActionSubtitle,
+  formatQuickActionTitle,
+  getQuickActionIcon,
+  getQuickActionTypeLabel,
+  type QuickActionShape,
+} from '@/lib/quickActionPresentation'
 
 interface QuickActionsWidgetProps {
   userId: string
@@ -93,7 +99,7 @@ export function QuickActionsWidget({ userId }: QuickActionsWidgetProps) {
         {data.actions.map((action) => (
           <ActionCard
             key={`${action.type}-${action.id}`}
-            action={action}
+            action={action as QuickActionShape}
             onClick={() => router.push(action.url)}
           />
         ))}
@@ -103,79 +109,17 @@ export function QuickActionsWidget({ userId }: QuickActionsWidgetProps) {
 }
 
 interface ActionCardProps {
-  action: {
-    type: string
-    id: string
-    title: string
-    bandName: string
-    url: string
-    urgency: 'high' | 'medium' | 'low'
-    meta: Record<string, any>
-  }
+  action: QuickActionShape
   onClick: () => void
 }
 
 function ActionCard({ action, onClick }: ActionCardProps) {
-  const getIcon = () => {
-    switch (action.type) {
-      case 'VOTE':
-        return '🗳️'
-      case 'CONFIRM_PAYMENT':
-        return '💳'
-      case 'EVENT_RSVP':
-        return '📅'
-      case 'BAND_INVITE':
-        return '✉️'
-      case 'MENTION':
-        return '💬'
-      case 'TASK':
-        return '✋'
-      case 'CHECKLIST':
-        return '☑️'
-      case 'REVIEW_APPLICATION':
-        return '👋'
-      case 'REIMBURSE':
-        return '💸'
-      case 'CONFIRM_REIMBURSEMENT':
-        return '✅'
-      default:
-        return '📌'
-    }
-  }
-
-  const getTypeLabel = () => {
-    switch (action.type) {
-      case 'VOTE':
-        return 'Vote'
-      case 'CONFIRM_PAYMENT':
-        return 'Confirm Payment'
-      case 'EVENT_RSVP':
-        return 'RSVP'
-      case 'BAND_INVITE':
-        return 'Invitation'
-      case 'MENTION':
-        return 'Mention'
-      case 'TASK':
-        return 'Claim Task'
-      case 'CHECKLIST':
-        return 'Claim/Dismiss'
-      case 'REVIEW_APPLICATION':
-        return 'Application'
-      case 'REIMBURSE':
-        return 'Reimburse'
-      case 'CONFIRM_REIMBURSEMENT':
-        return 'Confirm Receipt'
-      default:
-        return action.type
-    }
-  }
-
   const getUrgencyIndicator = () => {
     if (action.urgency === 'high' && action.meta.timeRemaining) {
       return (
         <span className="flex items-center gap-1 text-xs text-red-600 font-medium">
           <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-          {action.meta.timeRemaining} left
+          {String(action.meta.timeRemaining)} left
         </span>
       )
     }
@@ -183,7 +127,7 @@ function ActionCard({ action, onClick }: ActionCardProps) {
       return (
         <span className="flex items-center gap-1 text-xs text-yellow-600 font-medium">
           <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-          {action.meta.timeRemaining} left
+          {String(action.meta.timeRemaining)} left
         </span>
       )
     }
@@ -197,42 +141,14 @@ function ActionCard({ action, onClick }: ActionCardProps) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <span className="text-2xl flex-shrink-0">{getIcon()}</span>
+          <span className="text-2xl flex-shrink-0">{getQuickActionIcon(action)}</span>
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-medium text-gray-600">{getTypeLabel()}</span>
+              <span className="text-sm font-medium text-gray-600">{getQuickActionTypeLabel(action)}</span>
               {getUrgencyIndicator()}
             </div>
-            <p className="text-gray-900 font-medium truncate">
-              {action.type === 'CONFIRM_PAYMENT' && action.meta.from
-                ? `${action.title} from ${action.meta.from}`
-                : action.type === 'MENTION' && action.meta.channelName
-                ? `in #${action.meta.channelName}`
-                : action.type === 'BAND_INVITE'
-                ? action.title
-                : action.type === 'TASK'
-                ? action.title
-                : action.type === 'CHECKLIST'
-                ? action.title
-                : action.type === 'REVIEW_APPLICATION'
-                ? action.title
-                : action.type === 'REIMBURSE'
-                ? action.title
-                : action.type === 'CONFIRM_REIMBURSEMENT'
-                ? action.title
-                : `"${action.title}"`}
-            </p>
-            <p className="text-sm text-gray-500 truncate">
-              {action.type === 'TASK' && action.meta.projectName
-                ? `${action.meta.projectName} • ${action.bandName}`
-                : action.type === 'CHECKLIST' && action.meta.taskName
-                ? `${action.meta.taskName} • ${action.bandName}`
-                : action.type === 'REIMBURSE' && action.meta.taskName
-                ? `${action.meta.taskName} • ${action.bandName}`
-                : action.type === 'CONFIRM_REIMBURSEMENT' && action.meta.reimbursedByName
-                ? `From ${action.meta.reimbursedByName} • ${action.bandName}`
-                : action.bandName}
-            </p>
+            <p className="text-gray-900 font-medium truncate">{formatQuickActionTitle(action)}</p>
+            <p className="text-sm text-gray-500 truncate">{formatQuickActionSubtitle(action)}</p>
           </div>
         </div>
         <svg

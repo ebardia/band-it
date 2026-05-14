@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { jwtDecode } from 'jwt-decode'
 import { trpc } from '@/lib/trpc'
 import { NewspaperMasthead } from '@/components/newspaper/NewspaperMasthead'
+import { NewspaperFirstQuickAction } from '@/components/newspaper/NewspaperFirstQuickAction'
 import { NewspaperLead } from '@/components/newspaper/NewspaperLead'
 import { NewspaperRoundtable } from '@/components/newspaper/NewspaperRoundtable'
 
@@ -63,6 +64,8 @@ export default function DailyPage() {
       </Link>
 
       <NewspaperMasthead editionLine={data.editionLine} />
+
+      <NewspaperFirstQuickAction userId={userId} />
 
       <NewspaperLead
         lead={data.review}
