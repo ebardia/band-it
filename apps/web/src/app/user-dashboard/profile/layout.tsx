@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 
-export default function DailyLayout({ children }: { children: ReactNode }) {
+export default function ProfileLayout({ children }: { children: ReactNode }) {
   return <EditorialSurface>{children}</EditorialSurface>
 }
