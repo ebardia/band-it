@@ -1,22 +1,18 @@
 import type { ReactNode } from 'react'
-import {
-  Playfair_Display,
-  Oswald,
-  Source_Serif_4,
-  Inter,
-  JetBrains_Mono,
-} from 'next/font/google'
+import { Archivo_Black, Oswald, Source_Serif_4, Inter, JetBrains_Mono } from 'next/font/google'
 import '@/styles/newspaper-tokens.css'
 
-const playfair = Playfair_Display({
+const archivoBlack = Archivo_Black({
+  weight: '400',
   subsets: ['latin'],
-  variable: '--font-display',
+  variable: '--font-lead-black',
   display: 'swap',
 })
 
 const oswald = Oswald({
   subsets: ['latin'],
-  variable: '--font-kicker',
+  weight: ['500', '700'],
+  variable: '--font-condensed',
   display: 'swap',
 })
 
@@ -41,7 +37,7 @@ const jetbrains = JetBrains_Mono({
 export default function DailyLayout({ children }: { children: ReactNode }) {
   return (
     <div
-      className={`${playfair.variable} ${oswald.variable} ${sourceSerif.variable} ${inter.variable} ${jetbrains.variable} newspaper-root`}
+      className={`${archivoBlack.variable} ${oswald.variable} ${sourceSerif.variable} ${inter.variable} ${jetbrains.variable} newspaper-root`}
     >
       {children}
     </div>

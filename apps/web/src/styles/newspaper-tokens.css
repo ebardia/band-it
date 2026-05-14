@@ -1,24 +1,22 @@
-/* Band It — Newspaper (Wired-inspired). Scoped under .newspaper-root */
+/* Band It — Daily (WIRED.com-inspired: high contrast, image-led lead, picks-style cards) */
 .newspaper-root {
-  /* Surfaces */
-  --np-paper: #f8f5f0;
-  --np-paper-subtle: #f0ede7;
-  --np-ink: #1a1a1a;
-  --np-muted: #6b6b6b;
-  --np-accent: #0033cc;
-  --np-rule: #d4d0ca;
+  --np-paper: #ffffff;
+  --np-paper-warm: #fafafa;
+  --np-ink: #0a0a0a;
+  --np-muted: #5c5c5c;
+  --np-line: #0a0a0a;
+  --np-line-soft: #e0e0e0;
+  --np-accent: #0014ff;
 
-  /* Typography stacks (next/font injects --font-*) */
-  --np-display: var(--font-display), "Georgia", serif;
-  --np-kicker: var(--font-kicker), "Arial Narrow", sans-serif;
-  --np-body: var(--font-body), "Georgia", serif;
+  --np-lead-head: var(--font-lead-black), "Arial Black", sans-serif;
+  --np-condensed: var(--font-condensed), "Arial Narrow", sans-serif;
+  --np-body: var(--font-body), Georgia, serif;
   --np-ui: var(--font-ui), system-ui, sans-serif;
   --np-mono: var(--font-mono), ui-monospace, monospace;
 
-  /* Spacing scale */
-  --np-pad-x: 1.25rem;
-  --np-pad-y: 1.5rem;
-  --np-max: 720px;
+  --np-pad-x: 1rem;
+  --np-pad-y: 1.25rem;
+  --np-max: min(1200px, 100%);
 
   background-color: var(--np-paper);
   color: var(--np-ink);
@@ -27,22 +25,29 @@
 
 @media (min-width: 768px) {
   .newspaper-root {
-    --np-pad-x: 2rem;
-    --np-pad-y: 2rem;
+    --np-pad-x: 1.75rem;
+    --np-pad-y: 1.75rem;
   }
 }
 
 .np-rule {
   border: none;
-  border-top: 1px solid var(--np-rule);
+  border-top: 1px solid var(--np-line);
   margin: 0;
 }
 
+.np-rule-soft {
+  border: none;
+  border-top: 1px solid var(--np-line-soft);
+  margin: 0;
+}
+
+/* Masthead — bold, minimal */
 .np-masthead-title {
-  font-family: var(--np-display);
+  font-family: var(--np-condensed);
   font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.08;
+  letter-spacing: 0.04em;
+  line-height: 1;
   text-align: center;
   text-transform: uppercase;
   color: var(--np-ink);
@@ -50,8 +55,8 @@
 
 .np-masthead-meta {
   font-family: var(--np-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--np-muted);
   display: flex;
@@ -60,80 +65,156 @@
   gap: 1rem;
 }
 
-.np-kicker {
-  font-family: var(--np-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
+/* Category rail (WIRED: small caps above story, black not link-colored) */
+.np-cat {
+  font-family: var(--np-ui);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--np-accent);
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.np-headline-lead {
-  font-family: var(--np-display);
-  font-weight: 700;
-  font-size: clamp(1.65rem, 5vw, 2.35rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.75rem;
-}
-
-.np-headline-section {
-  font-family: var(--np-display);
-  font-weight: 700;
-  font-size: clamp(1.2rem, 3.5vw, 1.55rem);
-  line-height: 1.12;
-  letter-spacing: -0.015em;
+  color: var(--np-ink);
   margin: 0 0 0.65rem;
+  text-align: center;
+}
+
+.np-cat-left {
+  text-align: left;
+}
+
+/* Lead headline — heavy condensed / black sans */
+.np-headline-lead {
+  font-family: var(--np-lead-head);
+  font-weight: 400;
+  font-size: clamp(2rem, 5.5vw, 3.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  margin: 0 0 1rem;
+  text-align: center;
+  color: var(--np-ink);
+}
+
+/* Secondary headline in serif (WIRED “Today’s picks” story titles) */
+.np-headline-serif {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.5rem;
+  color: var(--np-ink);
 }
 
 .np-dek {
   font-family: var(--np-body);
-  font-size: 1.05rem;
-  line-height: 1.55;
-  font-style: italic;
-  color: var(--np-muted);
-  margin: 0 0 1rem;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.65;
+  font-style: normal;
+  color: var(--np-ink);
+  margin: 0 auto 1rem;
+  max-width: 38rem;
+  text-align: center;
 }
 
 .np-byline {
-  font-family: var(--np-mono);
+  font-family: var(--np-ui);
   font-size: 0.65rem;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--np-muted);
-  margin: 0 0 1rem;
+  margin: 0 auto 1.25rem;
+  text-align: center;
+}
+
+.np-byline-left {
+  margin: 0 0 0.75rem;
+  text-align: left;
 }
 
 .np-excerpt {
   font-family: var(--np-body);
-  font-size: 1rem;
-  line-height: 1.58;
+  font-size: 0.95rem;
+  line-height: 1.55;
   color: var(--np-ink);
-  margin: 0 0 1rem;
+  margin: 0 0 0.75rem;
 }
 
-.np-section-label {
-  font-family: var(--np-mono);
+/* Section strip like WIRED “Today’s Picks” */
+.np-picks-header {
+  display: inline-block;
+  background: var(--np-ink);
+  color: var(--np-paper);
+  font-family: var(--np-ui);
   font-size: 0.7rem;
+  font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--np-accent);
-  font-weight: 600;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--np-rule);
+  padding: 0.45rem 0.75rem;
   margin-bottom: 1.25rem;
 }
 
+.np-pick-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-pick-row:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.np-pick-thumb {
+  flex: 0 0 96px;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  background: var(--np-paper-warm);
+}
+
+@media (min-width: 768px) {
+  .np-pick-thumb {
+    flex: 0 0 112px;
+    width: 112px;
+    height: 112px;
+  }
+}
+
+.np-lead-stack {
+  max-width: 52rem;
+  margin: 0 auto 2rem;
+}
+
+.np-hero {
+  margin-top: 1.75rem;
+  width: 100%;
+  border-top: 1px solid var(--np-line);
+}
+
+.np-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--np-paper-warm);
+}
+
 .np-action {
-  font-family: var(--np-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  font-family: var(--np-ui);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--np-accent);
   text-decoration: none;
-  font-weight: 600;
+  display: inline-block;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .np-action:hover {
@@ -141,8 +222,14 @@
   text-underline-offset: 3px;
 }
 
-.np-action:active {
-  opacity: 0.85;
+.np-action-wrap {
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+.np-action-left {
+  margin: 0;
+  text-align: left;
 }
 
 .np-quiet {
@@ -152,6 +239,11 @@
   font-style: italic;
   color: var(--np-muted);
   margin: 0;
+  text-align: center;
+}
+
+.np-quiet-left {
+  text-align: left;
 }
 
 .np-shell {
@@ -162,7 +254,7 @@
 
 .np-nav-escape {
   font-family: var(--np-mono);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--np-muted);
@@ -175,4 +267,22 @@
   color: var(--np-accent);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.np-lead-section {
+  margin-bottom: 2.5rem;
+}
+
+.np-rt-section {
+  margin-top: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .np-lead-section {
+    margin-bottom: 3rem;
+  }
+
+  .np-hero {
+    margin-top: 2.25rem;
+  }
 }

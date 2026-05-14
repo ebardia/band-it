@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { NEWSPAPER_ROUNDTABLE_IMAGE } from './newspaperPlaceholders'
 
 export type RoundtablePayload = {
   href: string
@@ -8,6 +9,10 @@ export type RoundtablePayload = {
   headline: string
   excerpt: string
   byline: string
+}
+
+function roundtableCategoryLabel(): string {
+  return 'DISCUSSION'
 }
 
 type Props = {
@@ -18,24 +23,35 @@ type Props = {
 
 export function NewspaperRoundtable({ item, roundtableQuietCopy }: Props) {
   return (
-    <section aria-label="The Roundtable">
+    <section className="np-rt-section" aria-label="The Roundtable">
       <hr className="np-rule mb-8 md:mb-10" />
-      <h3 className="np-section-label">The Roundtable</h3>
+      <h3 className="np-picks-header">The Roundtable</h3>
 
       {!item ? (
-        <p className="np-quiet">
+        <p className="np-quiet np-quiet-left">
           {roundtableQuietCopy ?? "You're caught up. No new replies or mentions."}
         </p>
       ) : (
-        <>
-          <p className="np-kicker">{item.kicker}</p>
-          <h2 className="np-headline-section">{item.headline}</h2>
-          <p className="np-excerpt">{item.excerpt}</p>
-          <p className="np-byline">{item.byline}</p>
-          <Link href={item.href} className="np-action">
-            Read and reply
-          </Link>
-        </>
+        <article className="np-pick-row">
+          <img
+            className="np-pick-thumb"
+            src={NEWSPAPER_ROUNDTABLE_IMAGE}
+            alt=""
+            width={112}
+            height={112}
+            loading="lazy"
+            decoding="async"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="np-cat np-cat-left">{roundtableCategoryLabel()}</p>
+            <h3 className="np-headline-serif">{item.headline}</h3>
+            <p className="np-excerpt">{item.excerpt}</p>
+            <p className="np-byline np-byline-left">{item.byline}</p>
+            <Link href={item.href} className="np-action np-action-left">
+              Read and reply
+            </Link>
+          </div>
+        </article>
       )}
     </section>
   )

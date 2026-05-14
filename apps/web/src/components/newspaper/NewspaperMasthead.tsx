@@ -15,8 +15,8 @@ function formatPaperDate(d: Date) {
 
 export function NewspaperMasthead({ editionLine }: Props) {
   return (
-    <header className="mb-8 md:mb-10">
-      <h1 className="np-masthead-title text-[clamp(2.5rem,8vw,3.75rem)] mb-4 md:mb-5">
+    <header className="mb-6 md:mb-8">
+      <h1 className="np-masthead-title text-[clamp(2.75rem,9vw,4.25rem)] mb-4 md:mb-5">
         The Daily
       </h1>
       <hr className="np-rule" />
