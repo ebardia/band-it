@@ -1,13 +1,11 @@
 'use client'
 
-import { EditorialPrimaryNav } from './EditorialPrimaryNav'
-import { EditorialSecondaryNav } from './EditorialSecondaryNav'
+import { EditorialHamburgerNav } from './EditorialHamburgerNav'
 
 export function EditorialChrome() {
   return (
     <header className="np-ed-chrome">
-      <EditorialPrimaryNav />
-      <EditorialSecondaryNav />
+      <EditorialHamburgerNav />
     </header>
   )
 }
