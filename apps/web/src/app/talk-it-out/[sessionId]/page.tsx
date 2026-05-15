@@ -8,6 +8,7 @@ import { trpc } from '@/lib/trpc'
 import { useToast } from '@/components/ui'
 import { EditorialMenuRow } from '@/components/editorial/EditorialMenuRow'
 import { TalkItOutDiscussion } from '@/components/talk-it-out/TalkItOutDiscussion'
+import { TalkItOutTopicBriefCard } from '@/components/talk-it-out/TalkItOutTopicBriefCard'
 import { talkItOutGoalLabel, talkItOutStatusLabel } from '@/lib/talkItOutGoals'
 
 export default function TalkItOutSessionPage() {
@@ -33,8 +34,20 @@ export default function TalkItOutSessionPage() {
 
   const { data: session, isLoading, refetch } = trpc.talkItOut.getSession.useQuery(
     { sessionId, userId: userId! },
-    { enabled: !!userId }
+    {
+      enabled: !!userId,
+      refetchInterval: (q) =>
+        q.state.data?.topicBriefStatus === 'PENDING' ? 4000 : false,
+    }
   )
+
+  const refreshBriefMutation = trpc.talkItOut.refreshTopicBrief.useMutation({
+    onSuccess: () => {
+      showToast('Refreshing background…', 'success')
+      refetch()
+    },
+    onError: (e) => showToast(e.message, 'error'),
+  })
 
   useEffect(() => {
     if (session?.summaryDraft) setSummaryEdit(session.summaryDraft)
@@ -168,6 +181,15 @@ export default function TalkItOutSessionPage() {
         </aside>
 
         <div className="np-tio-main">
+          <TalkItOutTopicBriefCard
+            status={session.topicBriefStatus}
+            summary={session.topicBriefSummary}
+            topicBriefJson={session.topicBriefJson}
+            showRetry={isCreator && session.status !== 'CLOSED'}
+            onRetry={() => refreshBriefMutation.mutate({ sessionId, userId })}
+            retryPending={refreshBriefMutation.isPending}
+          />
+
           {session.status === 'SETUP' ? (
             <p className="np-profile-read">
               Waiting for the creator to start.{' '}

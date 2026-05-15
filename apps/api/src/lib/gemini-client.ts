@@ -13,6 +13,8 @@ export type GeminiOperationType =
   | 'talk_it_out_opening'
   | 'talk_it_out_intervention'
   | 'talk_it_out_closing'
+  | 'talk_it_out_topic_brief_web'
+  | 'talk_it_out_topic_brief_synthesis'
 
 export interface GeminiCallContext {
   operation: GeminiOperationType
@@ -111,6 +113,152 @@ export function getGeminiGateModel() {
 
 export function getGeminiFacilitatorModel() {
   return DEFAULT_FACILITATOR_MODEL
+}
+
+const DEFAULT_BRIEF_MODEL = process.env.GEMINI_MODEL_BRIEF || 'gemini-2.5-flash'
+
+export function getGeminiBriefModel() {
+  return DEFAULT_BRIEF_MODEL
+}
+
+export interface GeminiWebSearchResult {
+  content: string
+  webSources: { title: string; uri: string }[]
+  usage: { inputTokens: number; outputTokens: number; totalTokens: number }
+  durationMs: number
+  model: string
+}
+
+function getApiKey() {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not configured')
+  return apiKey
+}
+
+/** Gemini generateContent with Google Search grounding (general/public topics). */
+export async function callGeminiWithGoogleSearch(
+  prompt: string,
+  context: GeminiCallContext,
+  options: { model?: string; maxOutputTokens?: number; temperature?: number; system?: string } = {}
+): Promise<GeminiWebSearchResult> {
+  const preferredModel = options.model || getGeminiBriefModel()
+  const modelChain = buildGeminiModelChain(preferredModel)
+  const maxOutputTokens = options.maxOutputTokens ?? 2048
+  const temperature = options.temperature ?? 0.4
+  const apiKey = getApiKey()
+
+  const overallStart = Date.now()
+  let lastError: unknown
+
+  for (let i = 0; i < modelChain.length; i++) {
+    const modelName = modelChain[i]
+    const hasNext = i < modelChain.length - 1
+    const startTime = Date.now()
+
+    try {
+      const body: Record<string, unknown> = {
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        tools: [{ google_search: {} }],
+        generationConfig: { maxOutputTokens, temperature },
+      }
+      if (options.system) {
+        body.systemInstruction = { parts: [{ text: options.system }] }
+      }
+
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }
+      )
+
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(
+          `[${res.status}] GoogleGenerativeAI Error: ${errText.slice(0, 500)}`
+        )
+      }
+
+      const data = (await res.json()) as {
+        candidates?: Array<{
+          content?: { parts?: Array<{ text?: string }> }
+          groundingMetadata?: {
+            groundingChunks?: Array<{ web?: { uri?: string; title?: string } }>
+          }
+        }>
+        usageMetadata?: {
+          promptTokenCount?: number
+          candidatesTokenCount?: number
+          totalTokenCount?: number
+        }
+      }
+
+      const candidate = data.candidates?.[0]
+      const content =
+        candidate?.content?.parts?.map((p) => p.text || '').join('') || ''
+
+      const webSources: { title: string; uri: string }[] = []
+      const seen = new Set<string>()
+      for (const chunk of candidate?.groundingMetadata?.groundingChunks || []) {
+        const web = chunk.web
+        if (!web?.uri || seen.has(web.uri)) continue
+        seen.add(web.uri)
+        webSources.push({
+          title: web.title || web.uri,
+          uri: web.uri,
+        })
+      }
+
+      const usageMeta = data.usageMetadata
+      const inputTokens = usageMeta?.promptTokenCount ?? Math.ceil(prompt.length / 4)
+      const outputTokens = usageMeta?.candidatesTokenCount ?? Math.ceil(content.length / 4)
+      const totalTokens = usageMeta?.totalTokenCount ?? inputTokens + outputTokens
+      const durationMs = Date.now() - overallStart
+
+      saveUsageRecord({
+        context,
+        model: modelName,
+        inputTokens,
+        outputTokens,
+        totalTokens,
+        durationMs,
+        success: true,
+      }).catch((err) => console.error('Failed to save Gemini usage:', err))
+
+      return {
+        content,
+        webSources,
+        usage: { inputTokens, outputTokens, totalTokens },
+        durationMs,
+        model: modelName,
+      }
+    } catch (err) {
+      lastError = err
+      if (hasNext && shouldTryNextGeminiModel(err)) {
+        console.warn(
+          `[Gemini] ${modelName} web search failed (${getErrorMessage(err)}); trying ${modelChain[i + 1]}`
+        )
+        continue
+      }
+      break
+    }
+  }
+
+  const durationMs = Date.now() - overallStart
+  saveUsageRecord({
+    context,
+    model: modelChain[modelChain.length - 1],
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0,
+    durationMs,
+    success: false,
+    error: getErrorMessage(lastError),
+  }).catch(() => {})
+
+  throw lastError
 }
 
 async function saveUsageRecord(data: {

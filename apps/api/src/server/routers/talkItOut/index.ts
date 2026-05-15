@@ -30,6 +30,30 @@ export const talkItOutRouter = router({
       )
     ),
 
+  previewTopicBrief: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        topic: z.string().min(8).max(500),
+        goal: goalSchema,
+        bandId: z.string().nullable().optional(),
+      })
+    )
+    .mutation(async ({ input }) =>
+      talkItOutService.previewTopicBrief({
+        userId: input.userId,
+        topic: input.topic,
+        goal: input.goal,
+        bandId: input.bandId ?? null,
+      })
+    ),
+
+  refreshTopicBrief: publicProcedure
+    .input(z.object({ sessionId: z.string(), userId: z.string() }))
+    .mutation(async ({ input }) =>
+      talkItOutService.refreshSessionTopicBrief(input.sessionId, input.userId)
+    ),
+
   createSession: publicProcedure
     .input(
       z.object({

@@ -1037,6 +1037,95 @@
   border-top: 1px solid var(--np-line-soft);
 }
 
+.np-tio-brief {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--np-line-soft);
+  background: var(--np-paper-alt, #faf9f6);
+}
+
+.np-tio-brief-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.np-tio-brief-title {
+  font-family: var(--np-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.np-tio-brief-badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--np-ink-muted);
+  border: 1px solid var(--np-line-soft);
+  padding: 0.15rem 0.45rem;
+}
+
+.np-tio-brief-summary {
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0 0 1rem;
+}
+
+.np-tio-brief-loading,
+.np-tio-brief-error {
+  color: var(--np-ink-muted);
+  margin: 0;
+}
+
+.np-tio-brief-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.np-tio-brief-block-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.35rem;
+  color: var(--np-ink-muted);
+}
+
+.np-tio-brief-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.np-tio-brief-list li {
+  margin-bottom: 0.25rem;
+  line-height: 1.45;
+}
+
+.np-tio-brief-prose {
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.np-tio-brief-sources {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.np-tio-brief-sources a {
+  color: var(--np-link, #1a4d7a);
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+.np-tio-brief-retry {
+  margin-top: 0.75rem;
+}
+
 .np-tio-summary {
   margin-top: 1.5rem;
   padding-top: 1rem;

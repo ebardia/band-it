@@ -11,6 +11,11 @@ import {
   generateOpeningMessage,
   shouldFacilitatorIntervene,
 } from './talk-it-out-facilitator.service'
+import {
+  ensureSessionTopicBriefFresh,
+  generateAndStoreSessionTopicBrief,
+  previewTopicBrief,
+} from './talk-it-out-topic-brief.service'
 
 const sessionInclude = {
   creator: { select: { id: true, name: true, email: true } },
@@ -188,8 +193,26 @@ export async function createSession(input: {
     })
   }
 
+  void generateAndStoreSessionTopicBrief(session.id)
+
   return session
 }
+
+export async function refreshSessionTopicBrief(sessionId: string, userId: string) {
+  const session = await prisma.talkItOutSession.findUnique({
+    where: { id: sessionId },
+    select: { createdByUserId: true },
+  })
+  if (!session) throw new Error('Session not found')
+  if (session.createdByUserId !== userId) {
+    throw new Error('Only the creator can refresh the background brief')
+  }
+  await generateAndStoreSessionTopicBrief(sessionId)
+  return getSessionForUser(sessionId, userId)
+}
+
+
+export { previewTopicBrief }
 
 export async function joinSession(sessionId: string, userId: string) {
   const participant = await prisma.talkItOutParticipant.findUnique({
@@ -233,10 +256,18 @@ export async function startSession(sessionId: string, userId: string) {
     throw new Error('At least two participants must be joined before starting')
   }
 
-  const opening = await generateOpeningMessage(session, {
+  await ensureSessionTopicBriefFresh(sessionId)
+
+  const sessionForOpening = await prisma.talkItOutSession.findUnique({
+    where: { id: sessionId },
+    include: sessionInclude,
+  })
+  if (!sessionForOpening) throw new Error('Session not found')
+
+  const opening = await generateOpeningMessage(sessionForOpening, {
     sessionId,
     userId,
-    bandId: session.bandId,
+    bandId: sessionForOpening.bandId,
   })
 
   await prisma.$transaction([
@@ -255,7 +286,7 @@ export async function startSession(sessionId: string, userId: string) {
   ])
 
   const actionUrl = `/talk-it-out/${sessionId}`
-  for (const p of session.participants) {
+  for (const p of sessionForOpening.participants) {
     if (p.userId === userId) continue
     if (p.status === 'JOINED' || p.status === 'INVITED') {
       await notificationService.create({
@@ -319,11 +350,16 @@ export async function sendUserMessage(
 
   let facilitatorMessage = null
   if (shouldIntervene) {
-    const intervention = await generateFacilitatorIntervention(session, allMessages, {
-      sessionId,
-      userId,
-      bandId: session.bandId,
-    })
+    const intervention = await generateFacilitatorIntervention(
+      session,
+      allMessages,
+      {
+        sessionId,
+        userId,
+        bandId: session.bandId,
+      },
+      { forced: forceFacilitator }
+    )
     if (intervention) {
       const proposesClose =
         /should i summarize|ready to (close|wrap)|reach(ed)? a conclusion/i.test(intervention)

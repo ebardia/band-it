@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { jwtDecode } from 'jwt-decode'
@@ -8,6 +8,8 @@ import { trpc } from '@/lib/trpc'
 import { useToast } from '@/components/ui'
 import { EditorialMenuRow } from '@/components/editorial/EditorialMenuRow'
 import { TALK_IT_OUT_GOALS, type TalkItOutGoalValue } from '@/lib/talkItOutGoals'
+import { TalkItOutTopicBriefCard } from '@/components/talk-it-out/TalkItOutTopicBriefCard'
+import type { TalkItOutTopicBrief } from '@/lib/talkItOutTopicBrief'
 
 type Invitee = { id: string; name: string; email: string }
 
@@ -21,6 +23,9 @@ export default function TalkItOutNewPage() {
   const [bandId, setBandId] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
   const [invitees, setInvitees] = useState<Invitee[]>([])
+  const [previewBrief, setPreviewBrief] = useState<TalkItOutTopicBrief | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const previewRequestId = useRef(0)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -48,6 +53,42 @@ export default function TalkItOutNewPage() {
     },
     { enabled: !!userId && searchQuery.trim().length >= 2 }
   )
+
+  const previewMutation = trpc.talkItOut.previewTopicBrief.useMutation()
+
+  useEffect(() => {
+    if (!userId || topic.trim().length < 8) {
+      setPreviewBrief(null)
+      setPreviewLoading(false)
+      return
+    }
+
+    const requestId = ++previewRequestId.current
+    setPreviewLoading(true)
+
+    const timer = setTimeout(() => {
+      previewMutation
+        .mutateAsync({
+          userId,
+          topic: topic.trim(),
+          goal,
+          bandId: bandId || null,
+        })
+        .then((brief) => {
+          if (requestId !== previewRequestId.current) return
+          setPreviewBrief(brief as TalkItOutTopicBrief)
+          setPreviewLoading(false)
+        })
+        .catch(() => {
+          if (requestId !== previewRequestId.current) return
+          setPreviewBrief(null)
+          setPreviewLoading(false)
+        })
+    }, 1000)
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, topic, goal, bandId])
 
   const createMutation = trpc.talkItOut.createSession.useMutation({
     onSuccess: (session) => {
@@ -109,6 +150,15 @@ export default function TalkItOutNewPage() {
           onChange={(e) => setTopic(e.target.value)}
           placeholder="What is this discussion about?"
         />
+
+        {topic.trim().length >= 8 && (previewLoading || previewBrief) ? (
+          <TalkItOutTopicBriefCard
+            status={previewLoading ? 'PENDING' : 'READY'}
+            summary={previewBrief?.summary}
+            topicBriefJson={previewBrief ? JSON.stringify(previewBrief) : null}
+            loading={previewLoading}
+          />
+        ) : null}
 
         <label className="np-label" htmlFor="goal">
           Goal

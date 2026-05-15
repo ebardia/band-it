@@ -2941,6 +2941,12 @@ enum TalkItOutMessageType {
   CLOSING_SUMMARY
 }
 
+enum TalkItOutTopicBriefStatus {
+  PENDING
+  READY
+  FAILED
+}
+
 model TalkItOutSession {
   id                String                 @id @default(cuid())
   createdByUserId   String
@@ -2950,6 +2956,10 @@ model TalkItOutSession {
   status            TalkItOutSessionStatus @default(SETUP)
   maxParticipants   Int                    @default(8)
   facilitatorPrompt String?                @db.Text
+  topicBriefStatus  TalkItOutTopicBriefStatus @default(PENDING)
+  topicBriefSummary String?                @db.Text
+  topicBriefJson    String?                @db.Text
+  topicBriefGeneratedAt DateTime?
   summary           String?                @db.Text
   summaryDraft      String?                @db.Text
   createdAt         DateTime               @default(now())
