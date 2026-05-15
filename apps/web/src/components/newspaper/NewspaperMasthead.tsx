@@ -1,5 +1,7 @@
 'use client'
 
+import { EditorialMenuRow } from '@/components/editorial/EditorialMenuRow'
+
 type Props = {
   editionLine: string
 }
@@ -16,9 +18,10 @@ function formatPaperDate(d: Date) {
 export function NewspaperMasthead({ editionLine }: Props) {
   return (
     <header className="mb-6 md:mb-8">
-      <h1 className="np-masthead-title text-[clamp(2.75rem,9vw,4.25rem)] mb-4 md:mb-5">
+      <h1 className="np-masthead-title text-[clamp(2.75rem,9vw,4.25rem)] mb-3 md:mb-4">
         The Daily
       </h1>
+      <EditorialMenuRow />
       <hr className="np-rule" />
       <div className="np-masthead-meta py-3 md:py-3.5">
         <span>{formatPaperDate(new Date())}</span>

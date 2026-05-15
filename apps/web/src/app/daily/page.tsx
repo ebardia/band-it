@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { jwtDecode } from 'jwt-decode'
 import { trpc } from '@/lib/trpc'
+import { DailyMastheadSkeleton } from '@/components/newspaper/DailyMastheadSkeleton'
 import { NewspaperMasthead } from '@/components/newspaper/NewspaperMasthead'
 import { NewspaperFirstQuickAction } from '@/components/newspaper/NewspaperFirstQuickAction'
 import { NewspaperLead } from '@/components/newspaper/NewspaperLead'
@@ -35,6 +36,7 @@ export default function DailyPage() {
   if (!userId || isLoading) {
     return (
       <div className="np-shell">
+        <DailyMastheadSkeleton />
         <p className="np-quiet">Loading your edition…</p>
       </div>
     )
@@ -43,6 +45,7 @@ export default function DailyPage() {
   if (isError || !data) {
     return (
       <div className="np-shell">
+        <DailyMastheadSkeleton />
         <p className="np-quiet">We couldn&apos;t load the paper. Try again shortly.</p>
       </div>
     )

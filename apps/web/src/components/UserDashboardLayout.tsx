@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { AppNav } from '@/components/AppNav'
+import { EditorialMenuRow } from '@/components/editorial/EditorialMenuRow'
 import {
   PageWrapper,
   DashboardContainer,
@@ -42,18 +43,28 @@ export function UserDashboardLayout({
       <PageWrapper variant={wrapVariant}>
         {!editorial && <AppNav />}
         <div className="mx-auto px-0 md:px-4 max-w-[1600px] w-full py-2 md:py-6">
-          <div className={`flex items-center gap-2 mb-4 px-3 md:px-0 ${editorial ? 'border-b border-neutral-200 pb-3' : ''}`}>
-            <button
-              type="button"
-              onClick={() => router.push(editorial ? '/daily' : '/user-dashboard')}
-              className={`w-9 h-9 flex items-center justify-center rounded-lg ${backHover} flex-shrink-0`}
-              aria-label={editorial ? 'Back to Daily' : 'Back to dashboard'}
+          <div className={`mb-4 px-3 md:px-0 ${editorial ? '' : ''}`}>
+            <div
+              className={`flex items-center gap-2 ${editorial ? '' : 'border-b border-neutral-200 pb-3'}`}
             >
-              <svg className={`w-5 h-5 ${iconClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h1 className={titleClass}>{pageTitle}</h1>
+              <button
+                type="button"
+                onClick={() => router.push(editorial ? '/daily' : '/user-dashboard')}
+                className={`w-9 h-9 flex items-center justify-center rounded-lg ${backHover} flex-shrink-0`}
+                aria-label={editorial ? 'Back to Daily' : 'Back to dashboard'}
+              >
+                <svg className={`w-5 h-5 ${iconClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h1 className={`${titleClass} flex-1 min-w-0`}>{pageTitle}</h1>
+            </div>
+            {editorial ? (
+              <>
+                <EditorialMenuRow />
+                <hr className="np-rule" />
+              </>
+            ) : null}
           </div>
           <div className="px-3 md:px-0">
             {children}

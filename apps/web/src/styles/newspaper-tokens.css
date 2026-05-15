@@ -684,20 +684,18 @@
   margin: 0;
 }
 
-/* Editorial chrome — hamburger menu */
-.np-ed-chrome {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: var(--np-paper);
-  border-bottom: 1px solid var(--np-line-soft);
+/* Editorial — hamburger menu (in masthead / page header) */
+.np-ed-menu-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 0.35rem;
 }
 
 .np-ed-menu-bar {
   position: relative;
   display: flex;
   justify-content: flex-end;
-  padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+  padding: 0;
 }
 
 .np-ed-menu-toggle {
