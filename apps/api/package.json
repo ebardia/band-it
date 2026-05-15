@@ -15,6 +15,7 @@
   "dependencies": {
     "prisma": "^5.22.0",
     "@anthropic-ai/sdk": "^0.71.2",
+    "@google/generative-ai": "^0.24.0",
     "@aws-sdk/client-s3": "^3.981.0",
     "@band-it/shared": "workspace:*",
     "@prisma/client": "^5.22.0",

@@ -129,6 +129,11 @@ model User {
   manualPaymentsDisputed      ManualPayment[] @relation("ManualPaymentDisputer")
   manualPaymentsResolved      ManualPayment[] @relation("ManualPaymentResolver")
 
+  // Talk It Out
+  talkItOutSessionsCreated    TalkItOutSession[] @relation("TalkItOutCreator")
+  talkItOutParticipations     TalkItOutParticipant[]
+  talkItOutMessages           TalkItOutMessage[] @relation("TalkItOutMessageAuthor")
+
   // Help
   helpInteractions            HelpInteraction[]
 
@@ -494,6 +499,12 @@ enum NotificationType {
   DONATION_MISSED                 // Recurring donation marked as missed (for donor)
   RECURRING_DONATION_CANCELLED    // Donor cancelled recurring donation (for treasurer)
   RECURRING_DONATION_AUTO_CANCELLED // Auto-cancelled after 3 missed (for donor + treasurer)
+
+  // Talk It Out
+  TALK_IT_OUT_INVITED
+  TALK_IT_OUT_STARTED
+  TALK_IT_OUT_FACILITATOR_PROMPT
+  TALK_IT_OUT_CLOSED
 }
 
 enum NotificationPriority {
@@ -648,6 +659,7 @@ model Band {
   onboardingEvents OnboardingEvent[]
   donations       Donation[]
   recurringDonations RecurringDonation[]
+  talkItOutSessions  TalkItOutSession[]
 
   @@index([createdById])
   @@index([status])
@@ -2883,4 +2895,108 @@ model DailyStats {
   tasksCompleted   Int      @default(0)
 
   @@index([date])
+}
+
+// ============================================
+// TALK IT OUT (Facilitated discussion)
+// ============================================
+
+enum TalkItOutGoal {
+  DECISION
+  EXPLORE
+  RESOLVE
+  IDEATE
+  ALIGN
+  UNDERSTAND
+}
+
+enum TalkItOutSessionStatus {
+  SETUP
+  ACTIVE
+  CLOSED
+}
+
+enum TalkItOutParticipantRole {
+  CREATOR
+  PARTICIPANT
+}
+
+enum TalkItOutParticipantStatus {
+  INVITED
+  JOINED
+  LEFT
+}
+
+enum TalkItOutAuthorType {
+  USER
+  FACILITATOR
+}
+
+enum TalkItOutMessageType {
+  USER_MESSAGE
+  FACILITATOR_OPENING
+  FACILITATOR_PROMPT
+  FACILITATOR_SUMMARY
+  FACILITATOR_INTERVENTION
+  CLOSING_SUMMARY
+}
+
+model TalkItOutSession {
+  id                String                 @id @default(cuid())
+  createdByUserId   String
+  bandId            String?
+  topic             String
+  goal              TalkItOutGoal
+  status            TalkItOutSessionStatus @default(SETUP)
+  maxParticipants   Int                    @default(8)
+  facilitatorPrompt String?                @db.Text
+  summary           String?                @db.Text
+  summaryDraft      String?                @db.Text
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  startedAt         DateTime?
+  closedAt          DateTime?
+
+  creator      User                     @relation("TalkItOutCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  band         Band?                    @relation(fields: [bandId], references: [id], onDelete: SetNull)
+  participants TalkItOutParticipant[]
+  messages     TalkItOutMessage[]
+
+  @@index([createdByUserId])
+  @@index([status])
+  @@index([bandId])
+  @@index([createdAt])
+}
+
+model TalkItOutParticipant {
+  id        String                     @id @default(cuid())
+  sessionId String
+  userId    String
+  role      TalkItOutParticipantRole   @default(PARTICIPANT)
+  status    TalkItOutParticipantStatus @default(INVITED)
+  joinedAt  DateTime?
+  leftAt    DateTime?
+  createdAt DateTime                   @default(now())
+
+  session TalkItOutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model TalkItOutMessage {
+  id           String               @id @default(cuid())
+  sessionId    String
+  authorType   TalkItOutAuthorType
+  authorUserId String?
+  content      String               @db.Text
+  messageType  TalkItOutMessageType
+  createdAt    DateTime             @default(now())
+
+  session    TalkItOutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  authorUser User?            @relation("TalkItOutMessageAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId, createdAt])
 }
