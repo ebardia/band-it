@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Archivo_Black, Oswald, Source_Serif_4, Inter, JetBrains_Mono } from 'next/font/google'
 import '@/styles/newspaper-tokens.css'
+import { EditorialChrome } from './EditorialChrome'
 
 const archivoBlack = Archivo_Black({
   weight: '400',
@@ -44,5 +45,10 @@ type Props = {
  * Shared typography + design tokens for editorial surfaces (/daily, profile, etc.).
  */
 export function EditorialSurface({ children }: Props) {
-  return <div className={fontClassName}>{children}</div>
+  return (
+    <div className={fontClassName}>
+      <EditorialChrome />
+      {children}
+    </div>
+  )
 }

@@ -40,7 +40,7 @@ export function UserDashboardLayout({
 
     return (
       <PageWrapper variant={wrapVariant}>
-        <AppNav />
+        {!editorial && <AppNav />}
         <div className="mx-auto px-0 md:px-4 max-w-[1600px] w-full py-2 md:py-6">
           <div className={`flex items-center gap-2 mb-4 px-3 md:px-0 ${editorial ? 'border-b border-neutral-200 pb-3' : ''}`}>
             <button

@@ -684,9 +684,207 @@
   margin: 0;
 }
 
+/* Editorial chrome — primary strip + secondary bar */
+.np-ed-chrome {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--np-paper);
+}
+
+.np-ed-primary {
+  width: 100%;
+  border-bottom: 1px solid var(--np-line);
+}
+
+.np-ed-primary-track {
+  display: flex;
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+.np-ed-primary-segment {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--np-ui);
+  font-size: clamp(0.58rem, 2.2vw, 0.72rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.85rem 0.35rem;
+  text-align: center;
+  line-height: 1.2;
+  transition: box-shadow 0.2s ease, text-shadow 0.2s ease;
+}
+
+.np-ed-primary-segment--dark {
+  background: var(--np-ink);
+  color: var(--np-paper);
+}
+
+.np-ed-primary-segment--light {
+  background: var(--np-paper);
+  color: var(--np-ink);
+}
+
+.np-ed-primary-segment--btn {
+  width: 100%;
+}
+
+.np-ed-primary-segment--neon.np-ed-primary-segment--dark {
+  box-shadow:
+    inset 0 -3px 0 #00f0ff,
+    0 0 12px rgba(0, 240, 255, 0.55),
+    0 0 22px rgba(0, 240, 255, 0.35);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.9),
+    0 0 16px rgba(0, 240, 255, 0.85);
+  animation: np-neon-pulse-dark 2.4s ease-in-out infinite;
+}
+
+.np-ed-primary-segment--neon.np-ed-primary-segment--light {
+  box-shadow:
+    inset 0 -3px 0 var(--np-accent),
+    0 0 12px rgba(0, 20, 255, 0.45),
+    0 0 20px rgba(0, 240, 255, 0.35);
+  text-shadow:
+    0 0 6px rgba(0, 20, 255, 0.55),
+    0 0 14px rgba(0, 240, 255, 0.65);
+  animation: np-neon-pulse-light 2.4s ease-in-out infinite;
+}
+
+@keyframes np-neon-pulse-dark {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 -3px 0 #00f0ff,
+      0 0 10px rgba(0, 240, 255, 0.45),
+      0 0 18px rgba(0, 240, 255, 0.28);
+  }
+  50% {
+    box-shadow:
+      inset 0 -3px 0 #00f0ff,
+      0 0 16px rgba(0, 240, 255, 0.7),
+      0 0 28px rgba(0, 240, 255, 0.45);
+  }
+}
+
+@keyframes np-neon-pulse-light {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 -3px 0 var(--np-accent),
+      0 0 8px rgba(0, 20, 255, 0.35),
+      0 0 14px rgba(0, 240, 255, 0.25);
+  }
+  50% {
+    box-shadow:
+      inset 0 -3px 0 var(--np-accent),
+      0 0 14px rgba(0, 20, 255, 0.55),
+      0 0 24px rgba(0, 240, 255, 0.4);
+  }
+}
+
+.np-ed-primary-account {
+  position: relative;
+}
+
+.np-ed-primary-account button {
+  width: 100%;
+  height: 100%;
+  min-height: 2.75rem;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.np-ed-account-trigger {
+  font-family: var(--np-ui);
+  font-size: clamp(0.58rem, 2.2vw, 0.72rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+.np-ed-secondary {
+  border-bottom: 1px solid var(--np-line-soft);
+  background: var(--np-paper);
+}
+
+.np-ed-secondary-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.75rem 0.5rem;
+  max-width: var(--np-max);
+  margin: 0 auto;
+}
+
+.np-ed-logo-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  line-height: 0;
+}
+
+.np-ed-logo {
+  width: 5.5rem;
+  height: auto;
+}
+
+@media (min-width: 768px) {
+  .np-ed-logo {
+    width: 7rem;
+  }
+}
+
+.np-ed-secondary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.np-ed-placeholder {
+  max-width: var(--np-max);
+  margin: 0 auto;
+  padding: var(--np-pad-y) var(--np-pad-x) 3rem;
+}
+
+.np-ed-placeholder-title {
+  font-family: var(--np-lead-head);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: 0 0 1rem;
+}
+
+.np-ed-placeholder-dek {
+  font-family: var(--np-body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--np-muted);
+  margin: 0;
+  max-width: 32rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .newspaper-root .np-signals-fill {
     transition: none;
+  }
+
+  .newspaper-root .np-ed-primary-segment--neon {
+    animation: none;
   }
 }
 
