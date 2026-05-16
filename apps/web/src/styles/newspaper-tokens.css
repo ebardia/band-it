@@ -65,54 +65,62 @@
   gap: 1rem;
 }
 
-/* Daily masthead — gentle arc + neon */
+/* Daily masthead — deep arc + neon tube */
 .np-daily-masthead-brand {
-  --np-neon-yellow: #ffe566;
-  --np-neon-yellow-core: #fff4a8;
+  --np-neon-tube: #fffef2;
+  --np-neon-hot: #fff44f;
+  --np-neon-mid: #ffea00;
+  --np-neon-outer: #ffb300;
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0 auto 1rem;
-  max-width: min(100%, 28rem);
-  padding: 0.25rem 0 0;
+  max-width: min(100%, 40rem);
+  padding: 0.15rem 0 0;
 }
 
 .np-daily-masthead-arc {
   width: 100%;
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 0 1px var(--np-neon-yellow-core))
-    drop-shadow(0 0 6px rgba(255, 229, 102, 0.95))
-    drop-shadow(0 0 14px rgba(255, 200, 40, 0.75))
-    drop-shadow(0 0 28px rgba(255, 180, 0, 0.45));
 }
 
 .np-daily-masthead-arc-text {
   font-family: var(--np-condensed);
-  font-size: clamp(2.25rem, 8.5vw, 3.65rem);
+  font-size: clamp(2.65rem, 10.5vw, 4.35rem);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  fill: var(--np-ink);
+}
+
+.np-daily-masthead-arc-text.np-daily-masthead-neon-tube {
+  fill: var(--np-neon-tube);
+  stroke: var(--np-neon-hot);
+  stroke-width: 0.45px;
+  paint-order: stroke fill;
 }
 
 .np-daily-masthead-action {
   font-family: var(--np-condensed);
-  font-size: clamp(2rem, 7.5vw, 3.25rem);
+  font-size: clamp(2.15rem, 8.5vw, 3.6rem);
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   text-align: center;
   line-height: 1;
-  margin: -0.15rem 0 0;
-  padding: 0;
-  color: var(--np-ink);
+  margin: 0.1rem 0 0;
+  padding: 0 0 0.35rem;
+  color: var(--np-neon-tube);
+  -webkit-text-stroke: 0.45px rgba(255, 244, 120, 0.95);
   text-shadow:
-    0 0 2px var(--np-neon-yellow-core),
-    0 0 8px rgba(255, 229, 102, 0.95),
-    0 0 16px rgba(255, 200, 40, 0.8),
-    0 0 32px rgba(255, 180, 0, 0.5),
-    0 0 48px rgba(255, 160, 0, 0.35);
+    0 0 1px #fff,
+    0 0 2px #fff,
+    0 0 4px var(--np-neon-hot),
+    0 0 8px var(--np-neon-mid),
+    0 0 16px var(--np-neon-mid),
+    0 0 28px var(--np-neon-outer),
+    0 0 48px rgba(255, 152, 0, 0.85),
+    0 0 72px rgba(255, 120, 0, 0.55);
 }
 
 /* Category rail (WIRED: small caps above story, black not link-colored) */
