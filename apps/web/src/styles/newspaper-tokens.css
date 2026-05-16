@@ -85,12 +85,12 @@
   height: auto;
   overflow: visible;
   display: block;
-  margin-bottom: -0.55rem;
+  margin-bottom: -0.65rem;
 }
 
 .np-daily-masthead-arc-text {
   font-family: var(--np-condensed);
-  font-size: clamp(2.75rem, 11vw, 4.5rem);
+  font-size: clamp(2rem, 7.25vw, 3.2rem);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -99,7 +99,7 @@
 
 .np-daily-masthead-action {
   font-family: var(--np-condensed);
-  font-size: clamp(2.2rem, 8.75vw, 3.65rem);
+  font-size: clamp(2.85rem, 11.5vw, 4.85rem);
   font-weight: 700;
   letter-spacing: 0.24em;
   text-transform: uppercase;

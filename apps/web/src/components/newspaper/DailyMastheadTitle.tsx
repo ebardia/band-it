@@ -2,8 +2,8 @@
 
 import { useId } from 'react'
 
-/** Deeper arc — endpoints low in viewBox so “Action” can sit close underneath. */
-const ARC_PATH = 'M 8 78 Q 260 -12 512 78'
+/** Arc sits lower in viewBox (peak in-frame) so glow is not clipped off-page. */
+const ARC_PATH = 'M 8 68 Q 260 34 512 68'
 
 /** Curved “The Daily” + “Action”: black type with yellow neon hugging the strokes. */
 export function DailyMastheadTitle() {
@@ -15,7 +15,7 @@ export function DailyMastheadTitle() {
     <div className="np-daily-masthead-brand" aria-label="The Daily Action">
       <svg
         className="np-daily-masthead-arc"
-        viewBox="0 0 520 86"
+        viewBox="0 0 520 88"
         role="img"
         aria-hidden
       >
