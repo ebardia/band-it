@@ -2,49 +2,55 @@
 
 import { useId } from 'react'
 
-const ARC_PATH = 'M 12 92 Q 240 4 468 92'
+/** Deeper arc — endpoints low in viewBox so “Action” can sit close underneath. */
+const ARC_PATH = 'M 8 78 Q 260 -12 512 78'
 
-/** Curved "The Daily" + horizontal "Action" with yellow neon tube styling. */
+/** Curved “The Daily” + “Action”: black type with yellow neon hugging the strokes. */
 export function DailyMastheadTitle() {
   const uid = useId().replace(/:/g, '')
   const arcId = `np-daily-arc-${uid}`
-  const glowId = `np-daily-glow-${uid}`
+  const neonId = `np-daily-neon-${uid}`
 
   return (
     <div className="np-daily-masthead-brand" aria-label="The Daily Action">
       <svg
         className="np-daily-masthead-arc"
-        viewBox="0 0 480 108"
+        viewBox="0 0 520 86"
         role="img"
         aria-hidden
       >
         <defs>
           <path id={arcId} d={ARC_PATH} fill="none" />
           <filter
-            id={glowId}
-            x="-15%"
-            y="-120%"
-            width="130%"
-            height="340%"
+            id={neonId}
+            x="-25%"
+            y="-80%"
+            width="150%"
+            height="260%"
             filterUnits="objectBoundingBox"
+            colorInterpolationFilters="sRGB"
           >
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b1" />
-            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b2" />
-            <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="b3" />
-            <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="b4" />
+            <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blurTight" />
+            <feFlood floodColor="#ffe566" floodOpacity="1" result="floodTight" />
+            <feComposite in="floodTight" in2="blurTight" operator="in" result="glowTight" />
+
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="blurMid" />
+            <feFlood floodColor="#ffdd00" floodOpacity="0.95" result="floodMid" />
+            <feComposite in="floodMid" in2="blurMid" operator="in" result="glowMid" />
+
+            <feGaussianBlur in="SourceAlpha" stdDeviation="7" result="blurWide" />
+            <feFlood floodColor="#ffc400" floodOpacity="0.75" result="floodWide" />
+            <feComposite in="floodWide" in2="blurWide" operator="in" result="glowWide" />
+
             <feMerge>
-              <feMergeNode in="b4" />
-              <feMergeNode in="b3" />
-              <feMergeNode in="b2" />
-              <feMergeNode in="b1" />
+              <feMergeNode in="glowWide" />
+              <feMergeNode in="glowMid" />
+              <feMergeNode in="glowTight" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
-        <text
-          className="np-daily-masthead-arc-text np-daily-masthead-neon-tube"
-          filter={`url(#${glowId})`}
-        >
+        <text className="np-daily-masthead-arc-text" filter={`url(#${neonId})`}>
           <textPath href={`#${arcId}`} startOffset="50%" textAnchor="middle">
             The Daily
           </textPath>

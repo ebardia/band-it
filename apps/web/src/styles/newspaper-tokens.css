@@ -65,62 +65,57 @@
   gap: 1rem;
 }
 
-/* Daily masthead — deep arc + neon tube */
+/* Daily masthead — deep arc, black type, yellow edge glow */
 .np-daily-masthead-brand {
-  --np-neon-tube: #fffef2;
-  --np-neon-hot: #fff44f;
-  --np-neon-mid: #ffea00;
-  --np-neon-outer: #ffb300;
+  --np-daily-neon-tight: #ffe566;
+  --np-daily-neon-mid: #ffdd00;
+  --np-daily-neon-wide: #ffc400;
+  --np-daily-neon-halo: rgba(255, 170, 0, 0.55);
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0 auto 1rem;
-  max-width: min(100%, 40rem);
-  padding: 0.15rem 0 0;
+  max-width: min(100%, 44rem);
+  padding: 0;
+  gap: 0;
 }
 
 .np-daily-masthead-arc {
   width: 100%;
   height: auto;
   overflow: visible;
+  display: block;
+  margin-bottom: -0.55rem;
 }
 
 .np-daily-masthead-arc-text {
   font-family: var(--np-condensed);
-  font-size: clamp(2.65rem, 10.5vw, 4.35rem);
+  font-size: clamp(2.75rem, 11vw, 4.5rem);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.np-daily-masthead-arc-text.np-daily-masthead-neon-tube {
-  fill: var(--np-neon-tube);
-  stroke: var(--np-neon-hot);
-  stroke-width: 0.45px;
-  paint-order: stroke fill;
+  fill: var(--np-ink);
 }
 
 .np-daily-masthead-action {
   font-family: var(--np-condensed);
-  font-size: clamp(2.15rem, 8.5vw, 3.6rem);
+  font-size: clamp(2.2rem, 8.75vw, 3.65rem);
   font-weight: 700;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   text-align: center;
   line-height: 1;
-  margin: 0.1rem 0 0;
-  padding: 0 0 0.35rem;
-  color: var(--np-neon-tube);
-  -webkit-text-stroke: 0.45px rgba(255, 244, 120, 0.95);
+  margin: 0;
+  padding: 0 0 0.2rem;
+  color: var(--np-ink);
+  -webkit-text-stroke: 0.35px var(--np-daily-neon-tight);
+  paint-order: stroke fill;
   text-shadow:
-    0 0 1px #fff,
-    0 0 2px #fff,
-    0 0 4px var(--np-neon-hot),
-    0 0 8px var(--np-neon-mid),
-    0 0 16px var(--np-neon-mid),
-    0 0 28px var(--np-neon-outer),
-    0 0 48px rgba(255, 152, 0, 0.85),
-    0 0 72px rgba(255, 120, 0, 0.55);
+    0 0 1px var(--np-daily-neon-tight),
+    0 0 3px var(--np-daily-neon-mid),
+    0 0 6px var(--np-daily-neon-mid),
+    0 0 10px var(--np-daily-neon-wide),
+    0 0 16px var(--np-daily-neon-halo);
 }
 
 /* Category rail (WIRED: small caps above story, black not link-colored) */
