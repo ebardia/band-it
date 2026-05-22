@@ -28,6 +28,10 @@ const BODY = [
 
 const CLOSER = `This is work, organized around people instead of the other way around. Companies get teams that deliver with full visibility. People get meaningful, paid work — plus the tools, transparency, and community to do it well. That's Band It.`
 
+const RAIL_COMPANIES = `Bring a project. We assemble the team, run the work on-platform, and keep every deliverable and dollar visible — no black boxes.`
+
+const RAIL_WORKERS = `Paid projects matched to your skills, teammates you can trust, a track record that travels with you — plus purpose and play beyond the paycheck.`
+
 export function LandingNewspaperPage() {
   const router = useRouter()
   const trackPageView = trpc.analytics.trackPageView.useMutation()
@@ -61,42 +65,105 @@ export function LandingNewspaperPage() {
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
             <span>{formatPaperDate(new Date())}</span>
-            <span className="text-right">Front page</span>
+            <span className="text-right">Front page · Vol. I</span>
           </div>
           <hr className="np-rule" />
         </header>
 
-        <section className="np-lead-section" aria-labelledby="landing-headline">
-          <div className="np-lead-stack">
-            <p className="np-cat">The edition</p>
-            <h1 id="landing-headline" className="np-headline-lead">
-              {HEADLINE}
-            </h1>
-            <p className="np-dek">{DEK}</p>
+        <div className="np-profile-shell np-landing-shell">
+          <div className="np-profile-spread np-landing-spread">
+            <main className="np-profile-main">
+              <p className="np-cat np-cat-left">The edition</p>
+              <h1 id="landing-headline" className="np-headline-lead np-headline-lead-left">
+                {HEADLINE}
+              </h1>
+              <p className="np-profile-dek-lead np-landing-dek">{DEK}</p>
+
+              <hr className="np-rule" />
+
+              <section className="np-landing-story" aria-labelledby="landing-story-heading">
+                <h2 id="landing-story-heading" className="np-picks-header np-picks-header-left">
+                  The story
+                </h2>
+                <div className="np-landing-columns">
+                  <p className="np-landing-paragraph np-landing-dropcap">{BODY[0]}</p>
+                  <p className="np-landing-paragraph">{BODY[1]}</p>
+                </div>
+              </section>
+
+              <p className="np-profile-pullquote">
+                Whatever you open it for on a given morning, the goal is the same: to help you take
+                action and move your life forward.
+              </p>
+
+              <section className="np-landing-editorial" aria-labelledby="landing-editorial-heading">
+                <h2 id="landing-editorial-heading" className="np-picks-header np-picks-header-left">
+                  Editorial
+                </h2>
+                <p className="np-profile-manifesto np-landing-closer">{CLOSER}</p>
+              </section>
+            </main>
+
+            <aside className="np-profile-rail" aria-label="Front page briefs">
+              <div className="np-rail-block">
+                <p className="np-profile-meta-rail">
+                  BAND IT
+                  <br />
+                  WORK · PLAY · TALK IT OUT
+                  <br />
+                  {formatPaperDate(new Date()).toUpperCase()}
+                </p>
+              </div>
+
+              <div className="np-rail-block">
+                <h2 className="np-picks-header">For companies</h2>
+                <p className="np-preview-line">{RAIL_COMPANIES}</p>
+              </div>
+
+              <div className="np-rail-block">
+                <h2 className="np-picks-header">For people doing the work</h2>
+                <p className="np-preview-line">{RAIL_WORKERS}</p>
+              </div>
+
+              <div className="np-rail-block">
+                <h2 className="np-picks-header">Also in this edition</h2>
+                <ul className="np-next-list">
+                  <li className="np-next-item">
+                    <p className="np-next-title">The Daily</p>
+                    <p className="np-next-detail">
+                      Your morning edition — paid work, causes, and play matched to you.
+                    </p>
+                  </li>
+                  <li className="np-next-item">
+                    <p className="np-next-title">Talk It Out</p>
+                    <p className="np-next-detail">
+                      Facilitated conversations when your band needs to decide or resolve.
+                    </p>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="np-rail-block np-landing-rail-cta">
+                <h2 className="np-picks-header">Get started</h2>
+                <div className="np-landing-rail-actions">
+                  <Link
+                    href="/register"
+                    className="np-profile-btn np-profile-btn-primary np-landing-rail-btn"
+                  >
+                    Register
+                  </Link>
+                  <button
+                    type="button"
+                    className="np-profile-btn np-landing-rail-btn"
+                    onClick={() => router.push('/login')}
+                  >
+                    Sign In
+                  </button>
+                </div>
+              </div>
+            </aside>
           </div>
-        </section>
-
-        <article className="np-landing-body">
-          {BODY.map((paragraph) => (
-            <p key={paragraph.slice(0, 48)} className="np-landing-paragraph">
-              {paragraph}
-            </p>
-          ))}
-          <p className="np-landing-paragraph np-landing-closer">{CLOSER}</p>
-        </article>
-
-        <footer className="np-landing-footer">
-          <Link href="/register" className="np-landing-auth-btn np-landing-auth-btn-primary">
-            Register
-          </Link>
-          <button
-            type="button"
-            className="np-landing-auth-link np-landing-footer-signin"
-            onClick={() => router.push('/login')}
-          >
-            Sign In
-          </button>
-        </footer>
+        </div>
       </div>
     </EditorialSurface>
   )
