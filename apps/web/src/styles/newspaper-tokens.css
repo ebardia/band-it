@@ -118,6 +118,112 @@
     0 0 16px var(--np-daily-neon-halo);
 }
 
+.np-landing-page {
+  position: relative;
+  padding-top: 0.5rem;
+}
+
+.np-landing-auth {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.np-landing-auth-link {
+  font-family: var(--np-ui);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+}
+
+.np-landing-auth-link:hover {
+  color: var(--np-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.np-landing-auth-btn {
+  font-family: var(--np-ui);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--np-ink);
+  text-decoration: none;
+  background: var(--np-paper);
+  border: 1px solid var(--np-ink);
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.np-landing-auth-btn:hover {
+  background: var(--np-ink);
+  color: var(--np-paper);
+}
+
+.np-landing-auth-btn-primary {
+  background: var(--np-ink);
+  color: var(--np-paper);
+}
+
+.np-landing-auth-btn-primary:hover {
+  background: var(--np-paper);
+  color: var(--np-ink);
+}
+
+.np-landing-masthead {
+  margin-bottom: 0.5rem;
+}
+
+.np-landing-body {
+  max-width: 40rem;
+  margin: 0 auto 2.5rem;
+}
+
+.np-landing-paragraph {
+  font-family: var(--np-body);
+  font-size: clamp(1rem, 2vw, 1.08rem);
+  line-height: 1.65;
+  color: var(--np-ink);
+  margin: 0 0 1.35rem;
+  text-align: left;
+}
+
+.np-landing-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.np-landing-closer {
+  font-weight: 600;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--np-line-soft);
+}
+
+.np-landing-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem 1.25rem;
+  padding: 2rem 0 1rem;
+  border-top: 1px solid var(--np-line);
+}
+
+.np-landing-footer-signin {
+  font-size: 0.72rem;
+}
+
 /* Category rail (WIRED: small caps above story, black not link-colored) */
 .np-cat {
   font-family: var(--np-ui);
