@@ -28,6 +28,14 @@ const BODY = [
 
 const CLOSER = `This is work, organized around people instead of the other way around. Companies get teams that deliver with full visibility. People get meaningful, paid work — plus the tools, transparency, and community to do it well. That's Band It.`
 
+const BRIEFING_QUESTION =
+  'How is Band It different from project tools, freelance platforms, and staffing agencies?'
+
+const BRIEFING_BODY = [
+  `Project management tools like Asana or Monday organize work you already have — but they don't find you the work or the people. Freelance marketplaces like Upwork connect you to individuals in a race to the lowest bid, then leave you to manage them alone. Staffing agencies place people but take a heavy cut and disappear once the contract starts.`,
+  `Band It does the whole thing. We bring in real paid projects, assemble a qualified team (not a lone freelancer), and manage the work inside one platform built for transparency and accountability — so funders see exactly what's happening with their money and workers get a fair deal and a track record that follows them. It's the project, the people, and the management in one place, organized around the humans doing the work instead of the company extracting from them.`,
+]
+
 const RAIL_COMPANIES = `Bring a project. We assemble the team, run the work on-platform, and keep every deliverable and dollar visible — no black boxes.`
 
 const RAIL_WORKERS = `Paid projects matched to your skills, teammates you can trust, a track record that travels with you — plus purpose and play beyond the paycheck.`
@@ -95,6 +103,22 @@ export function LandingNewspaperPage() {
                 Whatever you open it for on a given morning, the goal is the same: to help you take
                 action and move your life forward.
               </p>
+
+              <section className="np-landing-briefing" aria-labelledby="landing-briefing-heading">
+                <div className="np-landing-briefing-inner">
+                  <h2 id="landing-briefing-heading" className="np-picks-header np-picks-header-left">
+                    Briefing
+                  </h2>
+                  <p className="np-landing-briefing-tags" aria-hidden>
+                    Project tools · Freelance platforms · Staffing agencies
+                  </p>
+                  <h3 className="np-headline-serif np-landing-briefing-question">{BRIEFING_QUESTION}</h3>
+                  <div className="np-landing-briefing-columns">
+                    <p className="np-landing-paragraph">{BRIEFING_BODY[0]}</p>
+                    <p className="np-landing-paragraph np-landing-briefing-lead">{BRIEFING_BODY[1]}</p>
+                  </div>
+                </div>
+              </section>
 
               <section className="np-landing-editorial" aria-labelledby="landing-editorial-heading">
                 <h2 id="landing-editorial-heading" className="np-picks-header np-picks-header-left">

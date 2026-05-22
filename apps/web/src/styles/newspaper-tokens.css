@@ -255,6 +255,61 @@
   margin-top: 0.5rem;
 }
 
+/* Highlighted analysis box — newspaper “Briefing” breakout */
+.np-landing-briefing {
+  margin: 1.75rem 0 2rem;
+}
+
+.np-landing-briefing-inner {
+  border: 2px solid var(--np-ink);
+  border-left: 4px solid var(--np-daily-neon-mid, #ffdd00);
+  background: var(--np-paper-warm);
+  padding: 1.15rem 1.25rem 1.35rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 221, 0, 0.15);
+}
+
+.np-landing-briefing-tags {
+  font-family: var(--np-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-landing-briefing-question {
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  line-height: 1.25;
+  margin: 0 0 1rem;
+  max-width: 36rem;
+}
+
+.np-landing-briefing-columns {
+  column-gap: 1.75rem;
+  column-rule: 1px solid var(--np-line-soft);
+}
+
+@media (min-width: 768px) {
+  .np-landing-briefing-columns {
+    column-count: 2;
+  }
+}
+
+.np-landing-briefing-lead {
+  font-weight: 600;
+}
+
+.np-landing-briefing .np-landing-paragraph {
+  font-size: 0.98rem;
+  margin-bottom: 0.85rem;
+}
+
+.np-landing-briefing .np-landing-paragraph:last-child {
+  margin-bottom: 0;
+}
+
 .np-landing-closer {
   border-bottom: none;
   padding-bottom: 0;
