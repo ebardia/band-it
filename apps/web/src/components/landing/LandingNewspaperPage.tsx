@@ -86,10 +86,16 @@ export function LandingNewspaperPage() {
               <p className="np-cat np-cat-left">The edition</p>
               <div className="np-landing-lead-row">
                 <div className="np-landing-lead-text">
-                  <h1 id="landing-headline" className="np-headline-lead np-headline-lead-left">
-                    <span className="np-landing-headline-line">{HEADLINE_LINE_1}</span>
-                    <span className="np-landing-headline-line">{HEADLINE_LINE_2}</span>
-                  </h1>
+                  <div className="np-landing-headline-frame">
+                    <h1 id="landing-headline" className="np-headline-lead np-headline-lead-left np-landing-headline">
+                      <span className="np-landing-headline-line np-landing-headline-line--setup">
+                        {HEADLINE_LINE_1}
+                      </span>
+                      <span className="np-landing-headline-line np-landing-headline-line--punch">
+                        {HEADLINE_LINE_2}
+                      </span>
+                    </h1>
+                  </div>
                 </div>
                 <figure className="np-landing-lead-photo">
                   <Image
