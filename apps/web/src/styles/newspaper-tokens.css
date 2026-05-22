@@ -215,8 +215,6 @@
 
 .np-landing-headline {
   margin: 0;
-  line-height: 1;
-  font-size: clamp(1.2rem, 2.35vw, 1.65rem);
   letter-spacing: -0.025em;
   width: 100%;
 }
@@ -231,10 +229,6 @@
 }
 
 @media (min-width: 768px) {
-  .np-landing-headline {
-    font-size: clamp(1.05rem, 1.85vw, 1.55rem);
-  }
-
   .np-landing-headline-line--setup,
   .np-landing-headline-line--punch {
     white-space: nowrap;
@@ -267,10 +261,6 @@
 }
 
 @media (max-width: 767px) {
-  .np-landing-headline {
-    font-size: clamp(1.15rem, 4.8vw, 1.45rem);
-  }
-
   .np-landing-headline-line--setup {
     margin-bottom: 0.45rem;
   }
@@ -471,6 +461,27 @@
   margin: 0 0 1rem;
   text-align: center;
   color: var(--np-ink);
+}
+
+/* Landing hero — smaller type beside photo; must follow .np-headline-lead */
+.np-landing-headline.np-headline-lead {
+  line-height: 1;
+  font-size: clamp(1.15rem, 2.35vw, 1.65rem);
+  letter-spacing: -0.025em;
+  margin: 0;
+  text-align: left;
+}
+
+@media (min-width: 768px) {
+  .np-landing-headline.np-headline-lead {
+    font-size: clamp(1.05rem, 1.85vw, 1.55rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .np-landing-headline.np-headline-lead {
+    font-size: clamp(1.15rem, 4.8vw, 1.45rem);
+  }
 }
 
 /* Secondary headline in serif (WIRED “Today’s picks” story titles) */
