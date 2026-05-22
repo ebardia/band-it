@@ -17,7 +17,8 @@ function formatPaperDate(d: Date) {
   }).format(d)
 }
 
-const HEADLINE = 'AI is taking the jobs. Time to step in the ring.'
+const HEADLINE_LINE_1 = 'AI is taking the jobs.'
+const HEADLINE_LINE_2 = 'Time to step in the ring.'
 
 const DEK =
   'Band It matches skilled people to real paid projects — assembling teams, managing the work, and putting income, purpose, and play back in people\u2019s hands.'
@@ -86,7 +87,8 @@ export function LandingNewspaperPage() {
               <div className="np-landing-lead-row">
                 <div className="np-landing-lead-text">
                   <h1 id="landing-headline" className="np-headline-lead np-headline-lead-left">
-                    {HEADLINE}
+                    <span className="np-landing-headline-line">{HEADLINE_LINE_1}</span>
+                    <span className="np-landing-headline-line">{HEADLINE_LINE_2}</span>
                   </h1>
                 </div>
                 <figure className="np-landing-lead-photo">

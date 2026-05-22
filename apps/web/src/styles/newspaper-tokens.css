@@ -213,6 +213,10 @@
   min-width: 0;
 }
 
+.np-landing-headline-line {
+  display: block;
+}
+
 .np-landing-lead-photo {
   margin: 0;
   border: 1px solid var(--np-ink);
