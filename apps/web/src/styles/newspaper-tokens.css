@@ -204,7 +204,7 @@
 
 @media (min-width: 768px) {
   .np-landing-lead-row {
-    grid-template-columns: minmax(0, 1fr) minmax(160px, 36%);
+    grid-template-columns: minmax(0, 1fr) minmax(160px, 34%);
     gap: 1.25rem 1.5rem;
   }
 }
@@ -221,11 +221,11 @@
 
 .np-landing-headline-line {
   display: block;
-  line-height: 1.12;
+  line-height: 1.08;
 }
 
 .np-landing-headline-line--setup {
-  margin-bottom: 0.55rem;
+  margin-bottom: 1.65rem;
 }
 
 @media (min-width: 768px) {
@@ -235,12 +235,17 @@
   }
 
   .np-landing-headline-line--setup {
-    margin-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-right: clamp(0.75rem, 5%, 1.5rem);
+  }
+
+  .np-landing-headline-line--punch {
+    padding-left: clamp(1.35rem, 8%, 2.85rem);
   }
 }
 
 .np-landing-headline-line--punch {
-  padding-left: 0;
+  padding-left: 1rem;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -262,7 +267,7 @@
 
 @media (max-width: 767px) {
   .np-landing-headline-line--setup {
-    margin-bottom: 0.45rem;
+    margin-bottom: 1.35rem;
   }
 }
 
@@ -463,24 +468,24 @@
   color: var(--np-ink);
 }
 
-/* Landing hero — smaller type beside photo; must follow .np-headline-lead */
+/* Landing hero — sized beside photo; must follow .np-headline-lead */
 .np-landing-headline.np-headline-lead {
   line-height: 1;
-  font-size: clamp(1.15rem, 2.35vw, 1.65rem);
-  letter-spacing: -0.025em;
+  font-size: clamp(1.25rem, 3vw, 1.85rem);
+  letter-spacing: -0.028em;
   margin: 0;
   text-align: left;
 }
 
 @media (min-width: 768px) {
   .np-landing-headline.np-headline-lead {
-    font-size: clamp(1.05rem, 1.85vw, 1.55rem);
+    font-size: clamp(1.35rem, 2.45vw, 2.05rem);
   }
 }
 
 @media (max-width: 767px) {
   .np-landing-headline.np-headline-lead {
-    font-size: clamp(1.15rem, 4.8vw, 1.45rem);
+    font-size: clamp(1.2rem, 5.2vw, 1.65rem);
   }
 }
 
