@@ -204,7 +204,7 @@
 
 @media (min-width: 768px) {
   .np-landing-lead-row {
-    grid-template-columns: minmax(0, 1fr) minmax(160px, 34%);
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 32%);
     gap: 1.25rem 1.5rem;
   }
 }
@@ -225,7 +225,7 @@
 }
 
 .np-landing-headline-line--setup {
-  margin-bottom: 1.65rem;
+  margin-bottom: 2.25rem;
 }
 
 @media (min-width: 768px) {
@@ -235,17 +235,17 @@
   }
 
   .np-landing-headline-line--setup {
-    margin-bottom: 1.5rem;
-    padding-right: clamp(0.75rem, 5%, 1.5rem);
+    margin-bottom: 2.5rem;
+    padding-right: clamp(1rem, 6%, 2rem);
   }
 
   .np-landing-headline-line--punch {
-    padding-left: clamp(1.35rem, 8%, 2.85rem);
+    padding-left: clamp(2.25rem, 12%, 4.5rem);
   }
 }
 
 .np-landing-headline-line--punch {
-  padding-left: 1rem;
+  padding-left: 1.5rem;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -267,7 +267,7 @@
 
 @media (max-width: 767px) {
   .np-landing-headline-line--setup {
-    margin-bottom: 1.35rem;
+    margin-bottom: 2rem;
   }
 }
 
@@ -471,7 +471,7 @@
 /* Landing hero — sized beside photo; must follow .np-headline-lead */
 .np-landing-headline.np-headline-lead {
   line-height: 1;
-  font-size: clamp(1.25rem, 3vw, 1.85rem);
+  font-size: clamp(1.35rem, 3.4vw, 2.05rem);
   letter-spacing: -0.028em;
   margin: 0;
   text-align: left;
@@ -479,13 +479,13 @@
 
 @media (min-width: 768px) {
   .np-landing-headline.np-headline-lead {
-    font-size: clamp(1.35rem, 2.45vw, 2.05rem);
+    font-size: clamp(1.55rem, 2.85vw, 2.4rem);
   }
 }
 
 @media (max-width: 767px) {
   .np-landing-headline.np-headline-lead {
-    font-size: clamp(1.2rem, 5.2vw, 1.65rem);
+    font-size: clamp(1.3rem, 5.8vw, 1.85rem);
   }
 }
 
