@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
@@ -16,7 +17,7 @@ function formatPaperDate(d: Date) {
   }).format(d)
 }
 
-const HEADLINE = 'AI is taking the jobs. Band It helps you take the work.'
+const HEADLINE = 'AI is taking the jobs. Time to step in the ring.'
 
 const DEK =
   'Band It matches skilled people to real paid projects — assembling teams, managing the work, and putting income, purpose, and play back in people\u2019s hands.'
@@ -82,9 +83,26 @@ export function LandingNewspaperPage() {
           <div className="np-profile-spread np-landing-spread">
             <main className="np-profile-main">
               <p className="np-cat np-cat-left">The edition</p>
-              <h1 id="landing-headline" className="np-headline-lead np-headline-lead-left">
-                {HEADLINE}
-              </h1>
+              <div className="np-landing-lead-row">
+                <div className="np-landing-lead-text">
+                  <h1 id="landing-headline" className="np-headline-lead np-headline-lead-left">
+                    {HEADLINE}
+                  </h1>
+                </div>
+                <figure className="np-landing-lead-photo">
+                  <Image
+                    src="/landing-boxing-ring.jpg"
+                    alt="Vintage boxing ring under arena lights"
+                    width={640}
+                    height={480}
+                    className="np-landing-lead-photo-img"
+                    priority
+                  />
+                  <figcaption className="np-landing-photo-caption">
+                    Step in — the work is waiting
+                  </figcaption>
+                </figure>
+              </div>
               <p className="np-profile-dek-lead np-landing-dek">{DEK}</p>
 
               <hr className="np-rule" />
