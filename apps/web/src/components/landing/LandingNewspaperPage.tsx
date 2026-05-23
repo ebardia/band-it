@@ -120,43 +120,45 @@ export function LandingNewspaperPage() {
           <div className="np-profile-spread np-landing-spread">
             <main className="np-profile-main">
               <p className="np-cat np-cat-left">The edition</p>
-              <section className="np-landing-lead" aria-labelledby="landing-headline">
-                <h1 id="landing-headline" className="np-headline-lead np-headline-lead-left np-landing-headline">
-                  <span className="np-landing-headline-line np-landing-headline-line--setup">
-                    {HEADLINE_LINE_1}
-                  </span>
-                  <span className="np-landing-headline-line np-landing-headline-line--punch">
-                    {HEADLINE_LINE_2}
-                  </span>
-                </h1>
+              <section className="np-landing-arena" aria-labelledby="landing-headline">
+                <div className="np-landing-arena-row">
+                  <div className="np-landing-placards">
+                    <h1 id="landing-headline" className="np-landing-placards-heading">
+                      <span className="np-landing-placard np-landing-placard--one">
+                        {HEADLINE_LINE_1}
+                      </span>
+                      <span className="np-landing-placard np-landing-placard--two">
+                        {HEADLINE_LINE_2}
+                      </span>
+                    </h1>
+                  </div>
+                  <figure className="np-landing-lead-photo">
+                    <Image
+                      src="/landing-boxing-ring.jpg"
+                      alt="Vintage boxing ring under arena lights"
+                      width={640}
+                      height={480}
+                      className="np-landing-lead-photo-img"
+                      priority
+                    />
+                    <figcaption className="np-landing-photo-caption">
+                      Step in — the work is waiting
+                    </figcaption>
+                  </figure>
+                </div>
               </section>
 
-              <div className="np-landing-intro-band">
-                <figure className="np-landing-lead-photo">
-                  <Image
-                    src="/landing-boxing-ring.jpg"
-                    alt="Vintage boxing ring under arena lights"
-                    width={640}
-                    height={480}
-                    className="np-landing-lead-photo-img"
-                    priority
-                  />
-                  <figcaption className="np-landing-photo-caption">
-                    Step in — the work is waiting
-                  </figcaption>
-                </figure>
-                <section className="np-landing-intro" aria-label="Opening">
-                  <p className="np-landing-intro-text np-landing-dropcap">{INTRO_OPENING}</p>
-                  <div className="np-landing-intro-scenes">
-                    {INTRO_SCENES.map((scene) => (
-                      <p key={scene} className="np-landing-intro-scene">
-                        {scene}
-                      </p>
-                    ))}
-                  </div>
-                  <p className="np-landing-intro-text np-landing-intro-close">{INTRO_CLOSER}</p>
-                </section>
-              </div>
+              <section className="np-landing-intro" aria-label="Opening">
+                <p className="np-landing-intro-text np-landing-dropcap">{INTRO_OPENING}</p>
+                <div className="np-landing-intro-scenes">
+                  {INTRO_SCENES.map((scene) => (
+                    <p key={scene} className="np-landing-intro-scene">
+                      {scene}
+                    </p>
+                  ))}
+                </div>
+                <p className="np-landing-intro-text np-landing-intro-close">{INTRO_CLOSER}</p>
+              </section>
 
               <hr className="np-rule" />
 
