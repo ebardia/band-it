@@ -32,9 +32,14 @@ const INTRO_SCENES = [
 const INTRO_CLOSER =
   'No one knows exactly what the future of work will look like in the age of AI. But together, we can position ourselves to be first in line when new paths begin to open.'
 
-const BODY = [
-  `Work is changing fast, and not gently. AI is absorbing functions that used to be full-time jobs, companies are running leaner, and more people are piecing together a living from contracts, fractional roles, and project work rather than a single paycheck. Band It is built for this new reality. Bring us a project — a marketing campaign, a research effort, a design sprint, a software build — and we assemble a qualified team to take it on, then run it through a platform built for transparency and accountability from day one. You see who's doing what, what's been delivered, and where every dollar goes. No black boxes, no chasing updates, no wondering whether the work is on track.`,
-  `For the people doing the work, Band It is something different than a job board or a race-to-the-bottom freelance marketplace. It's a daily companion that helps you make a living on your own terms — find paid projects matched to your skills, team up with other talented people, and build a track record that follows you from project to project. And because life isn't only about earning, Band It also surfaces ways to contribute to causes you care about and do things simply for the joy of it. Whatever you open it for on a given morning, the goal is the same: to help you take action and move your life forward.`,
+const STORY_PARAGRAPHS = [
+  'Something fundamental is changing in the way humans work, create, collaborate, and survive.',
+  'The old model \u2014 one company, one title, one long-term path \u2014 is beginning to dissolve. AI is accelerating that shift. Some jobs are disappearing, others are transforming, and entirely new forms of work are starting to emerge in their place. Small teams form quickly, solve problems, create things, then reshape and move on to the next opportunity.',
+  'Band It is designed for that world.',
+  'A world where your skills, interests, relationships, curiosity, and reputation move with you from project to project. Where contributing to a research effort, helping organize a local event, joining a creative collaboration, solving a neighborhood problem, or participating in a paid global project all become part of the same living ecosystem.',
+  'Underneath it is a transparent coordination layer where people can assemble around ideas, opportunities, and real-world needs \u2014 quickly, fluidly, and with accountability built in from the start.',
+  'Maybe this is where work is headed. Maybe it becomes something else entirely.',
+  'Either way, the future is unlikely to arrive in neat corporate boxes. It will probably look more human, more networked, more unpredictable \u2014 and more collaborative than the systems we built before.',
 ]
 
 const CLOSER = `This is work, organized around people instead of the other way around. Companies get teams that deliver with full visibility. People get meaningful, paid work — plus the tools, transparency, and community to do it well. That's Band It.`
@@ -134,11 +139,17 @@ export function LandingNewspaperPage() {
 
               <section className="np-landing-story" aria-labelledby="landing-story-heading">
                 <h2 id="landing-story-heading" className="np-picks-header np-picks-header-left">
-                  The story
+                  The Story
                 </h2>
                 <div className="np-landing-columns">
-                  <p className="np-landing-paragraph np-landing-dropcap">{BODY[0]}</p>
-                  <p className="np-landing-paragraph">{BODY[1]}</p>
+                  {STORY_PARAGRAPHS.map((paragraph, index) => (
+                    <p
+                      key={paragraph}
+                      className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
                 </div>
               </section>
 
