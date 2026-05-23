@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Archivo_Black, Oswald, Source_Serif_4, Inter, JetBrains_Mono } from 'next/font/google'
+import { Archivo_Black, Oswald, Source_Serif_4, Inter, JetBrains_Mono, Permanent_Marker } from 'next/font/google'
 import '@/styles/newspaper-tokens.css'
 
 const archivoBlack = Archivo_Black({
@@ -34,7 +34,14 @@ const jetbrains = JetBrains_Mono({
   display: 'swap',
 })
 
-const fontClassName = `${archivoBlack.variable} ${oswald.variable} ${sourceSerif.variable} ${inter.variable} ${jetbrains.variable} newspaper-root`
+const permanentMarker = Permanent_Marker({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-protest',
+  display: 'swap',
+})
+
+const fontClassName = `${archivoBlack.variable} ${oswald.variable} ${sourceSerif.variable} ${inter.variable} ${jetbrains.variable} ${permanentMarker.variable} newspaper-root`
 
 type Props = {
   children: ReactNode
