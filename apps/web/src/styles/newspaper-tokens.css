@@ -396,6 +396,100 @@
   color: var(--np-ink);
 }
 
+/* Process pipeline — double-rule band + numbered step grid */
+.np-landing-pipeline {
+  margin: 2rem 0 1.75rem;
+  padding: 1.35rem 0 1.5rem;
+  border-top: 3px double var(--np-ink);
+  border-bottom: 3px double var(--np-ink);
+}
+
+.np-landing-pipeline-kicker {
+  font-family: var(--np-ui);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  text-align: center;
+  margin: 0 0 0.85rem;
+}
+
+.np-landing-pipeline-thesis {
+  font-family: var(--np-condensed);
+  font-size: clamp(1.3rem, 2.6vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  text-align: center;
+  max-width: 40rem;
+  margin: 0 auto 1.75rem;
+  color: var(--np-ink);
+}
+
+.np-landing-pipeline-flow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .np-landing-pipeline-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.15rem 1.5rem;
+  }
+
+  .np-landing-pipeline-step:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.np-landing-pipeline-step {
+  background: var(--np-paper-warm);
+  border: 1px solid var(--np-line-soft);
+  padding: 1rem 1.05rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.np-landing-pipeline-step-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-landing-pipeline-index {
+  font-family: var(--np-lead-head);
+  font-size: 1.35rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--np-ink);
+  flex-shrink: 0;
+}
+
+.np-landing-pipeline-label {
+  font-family: var(--np-ui);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+}
+
+.np-landing-pipeline-text {
+  font-family: var(--np-body);
+  font-size: clamp(0.94rem, 1.75vw, 1rem);
+  line-height: 1.58;
+  color: var(--np-ink);
+  margin: 0;
+  text-align: left;
+}
+
 .np-landing-editorial {
   margin-top: 0.5rem;
 }

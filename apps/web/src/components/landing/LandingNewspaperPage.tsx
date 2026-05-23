@@ -42,6 +42,28 @@ const STORY_PARAGRAPHS = [
   'Either way, the future is unlikely to arrive in neat corporate boxes. It will probably look more human, more networked, more unpredictable \u2014 and more collaborative than the systems we built before.',
 ]
 
+const PIPELINE_THESIS =
+  'At its core, Band It is a system for assembling and coordinating human talent in a world where work is becoming increasingly fluid.'
+
+const PIPELINE_STEPS = [
+  {
+    label: 'Opportunities',
+    text: 'Projects enter the system from companies, organizations, local communities, startups, research groups, and eventually everyday people. Some are paid. Some are volunteer-driven. Some are strange little experiments that turn into something much bigger.',
+  },
+  {
+    label: 'Assembly',
+    text: 'Band It then helps form the right combination of people around those opportunities \u2014 not just based on skills, but also interests, availability, trust, past collaborations, reputation, and shared curiosity. A designer in one city, a researcher in another, a student nearby, a retired expert somewhere else. Small temporary teams forming around real-world needs.',
+  },
+  {
+    label: 'Workspace',
+    text: 'Once a team forms, the entire life of the project lives in one transparent space: discussions, tasks, decisions, files, timelines, contributions, payments, and outcomes. Everyone involved can see what is happening, where things stand, and how the work is moving forward.',
+  },
+  {
+    label: 'Histories',
+    text: 'Over time, people don\u2019t simply build resumes inside Band It. They build living histories of contribution, collaboration, reliability, creativity, and trust that move with them from one opportunity to the next.',
+  },
+]
+
 const CLOSER = `This is work, organized around people instead of the other way around. Companies get teams that deliver with full visibility. People get meaningful, paid work — plus the tools, transparency, and community to do it well. That's Band It.`
 
 const BRIEFING_QUESTION =
@@ -151,6 +173,26 @@ export function LandingNewspaperPage() {
                     </p>
                   ))}
                 </div>
+              </section>
+
+              <section className="np-landing-pipeline" aria-labelledby="landing-pipeline-heading">
+                <p className="np-landing-pipeline-kicker" id="landing-pipeline-heading">
+                  How it works
+                </p>
+                <p className="np-landing-pipeline-thesis">{PIPELINE_THESIS}</p>
+                <ol className="np-landing-pipeline-flow">
+                  {PIPELINE_STEPS.map((step, index) => (
+                    <li key={step.label} className="np-landing-pipeline-step">
+                      <div className="np-landing-pipeline-step-head">
+                        <span className="np-landing-pipeline-index" aria-hidden>
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <span className="np-landing-pipeline-label">{step.label}</span>
+                      </div>
+                      <p className="np-landing-pipeline-text">{step.text}</p>
+                    </li>
+                  ))}
+                </ol>
               </section>
 
               <p className="np-profile-pullquote">
