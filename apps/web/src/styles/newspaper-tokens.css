@@ -240,12 +240,12 @@
   }
 
   .np-landing-headline-line--punch {
-    padding-left: clamp(2.25rem, 12%, 4.5rem);
+    padding-left: clamp(1.85rem, 9%, 3.75rem);
   }
 }
 
 .np-landing-headline-line--punch {
-  padding-left: 1.5rem;
+  padding-left: 1.25rem;
 }
 
 @media (prefers-reduced-motion: no-preference) {
