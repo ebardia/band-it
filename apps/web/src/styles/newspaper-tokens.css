@@ -236,16 +236,7 @@
 
   .np-landing-headline-line--setup {
     margin-bottom: 3.5rem;
-    padding-right: clamp(1rem, 6%, 2rem);
   }
-
-  .np-landing-headline-line--punch {
-    padding-left: clamp(1.85rem, 9%, 3.75rem);
-  }
-}
-
-.np-landing-headline-line--punch {
-  padding-left: 1.25rem;
 }
 
 @media (prefers-reduced-motion: no-preference) {
