@@ -195,47 +195,49 @@
   margin-bottom: 0;
 }
 
-.np-landing-lead-row {
-  display: grid;
-  gap: 1rem 1.25rem;
-  align-items: center;
-  margin-bottom: 1rem;
+.np-landing-lead {
+  margin-bottom: 1.25rem;
 }
 
 @media (min-width: 768px) {
-  .np-landing-lead-row {
-    grid-template-columns: minmax(0, 1fr) minmax(180px, 38%);
-    gap: 1.25rem 1.5rem;
+  .np-landing-lead {
+    margin-bottom: 1.5rem;
   }
 }
 
-.np-landing-lead-text {
-  min-width: 0;
+.np-landing-intro-band {
+  margin-bottom: 0.25rem;
+}
+
+.np-landing-intro-band::after {
+  content: '';
+  display: table;
+  clear: both;
 }
 
 .np-landing-headline {
   margin: 0;
   letter-spacing: -0.025em;
   width: 100%;
+  max-width: 22em;
 }
 
 .np-landing-headline-line {
   display: block;
-  line-height: 1.08;
+  line-height: 1.06;
 }
 
 .np-landing-headline-line--setup {
-  margin-bottom: 2.75rem;
+  margin-bottom: 0.35em;
 }
 
 @media (min-width: 768px) {
-  .np-landing-headline-line--setup,
-  .np-landing-headline-line--punch {
-    white-space: nowrap;
+  .np-landing-headline {
+    max-width: none;
   }
 
   .np-landing-headline-line--setup {
-    margin-bottom: 3.5rem;
+    margin-bottom: 0.28em;
   }
 }
 
@@ -256,20 +258,25 @@
   }
 }
 
-@media (max-width: 767px) {
-  .np-landing-headline-line--setup {
-    margin-bottom: 2.75rem;
-  }
-}
-
 .np-landing-lead-photo {
-  margin: 0;
+  margin: 0 0 1.15rem;
   border: 1px solid var(--np-ink);
   padding: 0.35rem;
   background: var(--np-paper);
   box-shadow: 3px 3px 0 var(--np-line-soft);
   display: flex;
   flex-direction: column;
+  width: min(100%, 15.5rem);
+  margin-left: auto;
+  margin-right: 0;
+}
+
+@media (min-width: 768px) {
+  .np-landing-lead-photo {
+    float: right;
+    width: min(36%, 17.5rem);
+    margin: 0.15rem 0 1.25rem 2rem;
+  }
 }
 
 .np-landing-lead-photo-img {
@@ -338,10 +345,6 @@
 }
 
 @media (min-width: 768px) {
-  .np-landing-intro {
-    margin-top: 0.5rem;
-  }
-
   .np-landing-intro-scenes {
     padding-left: 1.5rem;
     margin-bottom: 1.15rem;
@@ -601,10 +604,10 @@
   color: var(--np-ink);
 }
 
-/* Landing hero — sized beside photo; must follow .np-headline-lead */
+/* Landing hero — full-width headline; must follow .np-headline-lead */
 .np-landing-headline.np-headline-lead {
   line-height: 1;
-  font-size: clamp(1.35rem, 3.4vw, 2.05rem);
+  font-size: clamp(1.5rem, 4vw, 2.15rem);
   letter-spacing: -0.028em;
   margin: 0;
   text-align: left;
@@ -612,13 +615,13 @@
 
 @media (min-width: 768px) {
   .np-landing-headline.np-headline-lead {
-    font-size: clamp(1.6rem, 2.85vw, 2.45rem);
+    font-size: clamp(1.85rem, 3.2vw, 2.75rem);
   }
 }
 
 @media (max-width: 767px) {
   .np-landing-headline.np-headline-lead {
-    font-size: clamp(1.3rem, 5.8vw, 1.85rem);
+    font-size: clamp(1.4rem, 6vw, 1.95rem);
   }
 }
 
