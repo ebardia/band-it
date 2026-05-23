@@ -20,8 +20,17 @@ function formatPaperDate(d: Date) {
 const HEADLINE_LINE_1 = 'AI is taking the jobs.'
 const HEADLINE_LINE_2 = 'Time to step in the ring.'
 
-const DEK =
-  'Band It matches skilled people to real paid projects — assembling teams, managing the work, and putting income, purpose, and play back in people\u2019s hands.'
+const INTRO_OPENING =
+  'Imagine waking up, grabbing your coffee, and opening a personalized action-packed \u201cnewspaper\u201d built just for you \u2014'
+
+const INTRO_SCENES = [
+  'A paid project in a field you care about that fits your skills.',
+  'A local concert looking for backup singers.',
+  'A neighbor who needs help building a garden.',
+]
+
+const INTRO_CLOSER =
+  'No one knows exactly what the future of work will look like in the age of AI. But together, we can position ourselves to be first in line when new paths begin to open.'
 
 const BODY = [
   `Work is changing fast, and not gently. AI is absorbing functions that used to be full-time jobs, companies are running leaner, and more people are piecing together a living from contracts, fractional roles, and project work rather than a single paycheck. Band It is built for this new reality. Bring us a project — a marketing campaign, a research effort, a design sprint, a software build — and we assemble a qualified team to take it on, then run it through a platform built for transparency and accountability from day one. You see who's doing what, what's been delivered, and where every dollar goes. No black boxes, no chasing updates, no wondering whether the work is on track.`,
@@ -109,7 +118,17 @@ export function LandingNewspaperPage() {
                   </figcaption>
                 </figure>
               </div>
-              <p className="np-profile-dek-lead np-landing-dek">{DEK}</p>
+              <section className="np-landing-intro" aria-label="Opening">
+                <p className="np-landing-intro-text np-landing-dropcap">{INTRO_OPENING}</p>
+                <div className="np-landing-intro-scenes">
+                  {INTRO_SCENES.map((scene) => (
+                    <p key={scene} className="np-landing-intro-scene">
+                      {scene}
+                    </p>
+                  ))}
+                </div>
+                <p className="np-landing-intro-text np-landing-intro-close">{INTRO_CLOSER}</p>
+              </section>
 
               <hr className="np-rule" />
 
