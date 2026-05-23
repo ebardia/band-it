@@ -124,11 +124,17 @@ export function LandingNewspaperPage() {
                 <div className="np-landing-arena-row">
                   <div className="np-landing-placards">
                     <h1 id="landing-headline" className="np-landing-placards-heading">
-                      <span className="np-landing-placard np-landing-placard--one">
-                        {HEADLINE_LINE_1}
+                      <span className="np-landing-placard-unit np-landing-placard-unit--one">
+                        <span className="np-landing-placard np-landing-placard--one">
+                          {HEADLINE_LINE_1}
+                        </span>
+                        <span className="np-landing-placard-pole" aria-hidden="true" />
                       </span>
-                      <span className="np-landing-placard np-landing-placard--two">
-                        {HEADLINE_LINE_2}
+                      <span className="np-landing-placard-unit np-landing-placard-unit--two">
+                        <span className="np-landing-placard np-landing-placard--two">
+                          {HEADLINE_LINE_2}
+                        </span>
+                        <span className="np-landing-placard-pole" aria-hidden="true" />
                       </span>
                     </h1>
                   </div>
