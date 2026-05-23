@@ -20,6 +20,11 @@ function formatPaperDate(d: Date) {
 const HEADLINE_LINE_1 = 'AI is taking the jobs.'
 const HEADLINE_LINE_2 = 'Time to step in the ring.'
 
+const PHOTO_CAPTION = 'step in - claim your corner'
+
+const PULL_QUOTE =
+  '\u201cWhatever brings you here on a given morning, the goal is the same: to help you make your next move\u201d'
+
 const INTRO_OPENING =
   'Imagine waking up, grabbing your coffee, and opening a personalized action-packed \u201cnewspaper\u201d built just for you \u2014'
 
@@ -147,9 +152,9 @@ export function LandingNewspaperPage() {
                       className="np-landing-lead-photo-img"
                       priority
                     />
-                    <figcaption className="np-landing-photo-caption">
-                      Step in — the work is waiting
-                    </figcaption>
+                  <figcaption className="np-landing-photo-caption">
+                    {PHOTO_CAPTION}
+                  </figcaption>
                   </figure>
                 </div>
               </section>
@@ -204,10 +209,7 @@ export function LandingNewspaperPage() {
                 </ol>
               </section>
 
-              <p className="np-profile-pullquote">
-                Whatever you open it for on a given morning, the goal is the same: to help you take
-                action and move your life forward.
-              </p>
+              <p className="np-profile-pullquote">{PULL_QUOTE}</p>
 
               <section className="np-landing-briefing" aria-labelledby="landing-briefing-heading">
                 <div className="np-landing-briefing-inner">
