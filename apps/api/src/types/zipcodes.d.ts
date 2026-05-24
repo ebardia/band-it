@@ -9,7 +9,7 @@ declare module 'zipcodes' {
   }
 
   const zipcodes: {
-    zipcodes: Record<string, string>
+    codes: Record<string, ZipInfo>
     lookup(zip: string | number): ZipInfo | undefined
     lookupByName(city: string, state: string): ZipInfo[]
     distance(zipA: string | number, zipB: string | number): number | null

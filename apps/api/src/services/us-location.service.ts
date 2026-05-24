@@ -9,56 +9,86 @@ export type UsLocationResult = {
   label: string
 }
 
+type ZipInfo = {
+  zip: string
+  city: string
+  state: string
+}
+
+const zipCodes = zipcodes.codes as Record<string, ZipInfo>
+const allZipKeys = Object.keys(zipCodes)
+
 function formatLabel(city: string, state: string, zip: string): string {
   return `${city}, ${state} ${zip}`
 }
 
-/** Search all US ZIP codes (via zipcodes package) — not limited to seeded cities. */
+function toResult(info: ZipInfo): UsLocationResult {
+  return {
+    id: `zip:${info.zip}:${info.city}:${info.state}`,
+    city: info.city,
+    state: info.state,
+    zip: info.zip,
+    label: formatLabel(info.city, info.state, info.zip),
+  }
+}
+
+function pushUnique(
+  seen: Set<string>,
+  candidates: { result: UsLocationResult; score: number }[],
+  info: ZipInfo,
+  score: number
+) {
+  if (!info?.city || !info?.state || !info?.zip) return
+  const dedupeKey = `${info.city}|${info.state}|${info.zip}`
+  if (seen.has(dedupeKey)) return
+  seen.add(dedupeKey)
+  candidates.push({ score, result: toResult(info) })
+}
+
+/** Search all US ZIP codes — not limited to seeded major cities. */
 export function searchUsLocations(query: string, limit = 12): UsLocationResult[] {
   const q = query.trim()
   if (!q) return []
 
   const qLower = q.toLowerCase()
-  const isZipQuery = /^\d{3,5}$/.test(q)
   const seen = new Set<string>()
   const candidates: { result: UsLocationResult; score: number }[] = []
 
-  for (const zip of Object.keys(zipcodes.zipcodes)) {
-    const info = zipcodes.lookup(zip)
-    if (!info?.city || !info?.state) continue
+  // Fast path: exact 5-digit ZIP
+  if (/^\d{5}$/.test(q)) {
+    const exact = zipCodes[q] ?? zipcodes.lookup(q)
+    if (exact?.city && exact?.state) {
+      return [toResult(exact)]
+    }
+    return []
+  }
 
-    const label = formatLabel(info.city, info.state, zip)
-    let score = 0
+  // ZIP prefix (1–4 digits): scan keys only
+  if (/^\d{1,4}$/.test(q)) {
+    for (const zip of allZipKeys) {
+      if (!zip.startsWith(q)) continue
+      pushUnique(seen, candidates, zipCodes[zip], zip === q ? 100 : 90)
+    }
+  } else {
+    // City / state / label text search
+    for (const zip of allZipKeys) {
+      const info = zipCodes[zip]
+      if (!info) continue
 
-    if (info.zip === q) score = 100
-    else if (isZipQuery && info.zip.startsWith(q)) score = 90
-    else if (info.city.toLowerCase() === qLower) score = 85
-    else if (info.city.toLowerCase().startsWith(qLower)) score = 75
-    else if (info.state.toLowerCase() === qLower) score = 70
-    else if (info.city.toLowerCase().includes(qLower)) score = 60
-    else if (label.toLowerCase().includes(qLower)) score = 50
-    else continue
+      let score = 0
+      if (info.city.toLowerCase() === qLower) score = 85
+      else if (info.city.toLowerCase().startsWith(qLower)) score = 75
+      else if (info.state.toLowerCase() === qLower) score = 70
+      else if (info.city.toLowerCase().includes(qLower)) score = 60
+      else if (formatLabel(info.city, info.state, info.zip).toLowerCase().includes(qLower)) score = 50
+      else continue
 
-    const dedupeKey = `${info.city}|${info.state}|${zip}`
-    if (seen.has(dedupeKey)) continue
-    seen.add(dedupeKey)
-
-    candidates.push({
-      score,
-      result: {
-        id: `zip:${zip}:${info.city}:${info.state}`,
-        city: info.city,
-        state: info.state,
-        zip,
-        label,
-      },
-    })
+      pushUnique(seen, candidates, info, score)
+    }
   }
 
   return candidates
-    .sort(
-      (a, b) => b.score - a.score || a.result.label.localeCompare(b.result.label)
-    )
+    .sort((a, b) => b.score - a.score || a.result.label.localeCompare(b.result.label))
     .slice(0, limit)
     .map((c) => c.result)
 }
@@ -98,9 +128,8 @@ export async function resolveProfileLocation(
   }
 
   if (locationId?.startsWith('zip:')) {
-    const parts = locationId.split(':')
-    const zip = parts[1]
-    const info = zipcodes.lookup(zip)
+    const zip = locationId.split(':')[1]
+    const info = zipCodes[zip] ?? zipcodes.lookup(zip)
     if (info) {
       return ensureUsLocation(info.city, info.state, zip)
     }
