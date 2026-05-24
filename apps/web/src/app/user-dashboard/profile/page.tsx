@@ -25,9 +25,9 @@ function uniqueChips(...groups: string[]): string[] {
 
 export default function ProfilePage() {
   const { showToast } = useToast()
+  const utils = trpc.useUtils()
   const [userId, setUserId] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [fieldsOpen, setFieldsOpen] = useState(false)
   const [formData, setFormData] = useState({
     zipcode: '',
     strengths: '',
@@ -54,9 +54,12 @@ export default function ProfilePage() {
   )
 
   const updateProfileMutation = trpc.auth.updateProfile.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       showToast('Profile updated successfully!', 'success')
       setIsEditing(false)
+      if (userId) {
+        await utils.auth.getProfile.invalidate({ userId })
+      }
     },
     onError: (error) => {
       showToast(error.message, 'error')
@@ -64,7 +67,7 @@ export default function ProfilePage() {
   })
 
   useEffect(() => {
-    if (profileData?.user) {
+    if (profileData?.user && !isEditing) {
       setFormData({
         zipcode: profileData.user.zipcode || '',
         strengths: profileData.user.strengths?.join(', ') || '',
@@ -73,13 +76,7 @@ export default function ProfilePage() {
         developmentPath: profileData.user.developmentPath?.join(', ') || '',
       })
     }
-  }, [profileData])
-
-  useEffect(() => {
-    if (isEditing) {
-      setFieldsOpen(true)
-    }
-  }, [isEditing])
+  }, [profileData, isEditing])
 
   const summaryText = useMemo(() => {
     if (!profileData?.user) return ''
@@ -130,12 +127,35 @@ export default function ProfilePage() {
   }
 
   const startEdit = () => {
-    setFieldsOpen(true)
     setIsEditing(true)
     requestAnimationFrame(() => {
-      document.getElementById('profile-facts-details')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document.getElementById('profile-facts-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
   }
+
+  const profileActions = (
+    <>
+      {isEditing ? (
+        <>
+          <button
+            type="submit"
+            form="profile-facts-form"
+            className="np-profile-btn np-profile-btn-primary"
+            disabled={updateProfileMutation.isPending}
+          >
+            {updateProfileMutation.isPending ? 'Saving…' : 'Save changes'}
+          </button>
+          <button type="button" className="np-profile-btn" onClick={handleCancel}>
+            Cancel
+          </button>
+        </>
+      ) : (
+        <button type="button" className="np-profile-btn np-profile-btn-primary" onClick={startEdit}>
+          Edit profile
+        </button>
+      )}
+    </>
+  )
 
   if (isLoading || !userId) {
     return (
@@ -202,27 +222,7 @@ export default function ProfilePage() {
               No one builds something meaningful alone—groups thrive when different gifts meet the same table.
             </p>
 
-            <div className="np-profile-actions np-profile-actions--toolbar">
-              {isEditing ? (
-                <>
-                  <button
-                    type="submit"
-                    form="profile-facts-form"
-                    className="np-profile-btn np-profile-btn-primary"
-                    disabled={updateProfileMutation.isPending}
-                  >
-                    {updateProfileMutation.isPending ? 'Saving…' : 'Save changes'}
-                  </button>
-                  <button type="button" className="np-profile-btn" onClick={handleCancel}>
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <button type="button" className="np-profile-btn np-profile-btn-primary" onClick={startEdit}>
-                  Edit profile
-                </button>
-              )}
-            </div>
+            <div className="np-profile-actions np-profile-actions--toolbar">{profileActions}</div>
 
             <details className="np-profile-details">
               <summary className="np-profile-details-summary">Why depth on this page matters</summary>
@@ -235,24 +235,18 @@ export default function ProfilePage() {
               </div>
             </details>
 
-            <details
-              id="profile-facts-details"
-              className="np-profile-details"
-              open={fieldsOpen || isEditing}
-              onToggle={(e) => {
-                const nextOpen = e.currentTarget.open
-                if (isEditing && !nextOpen) {
-                  e.preventDefault()
-                  return
-                }
-                if (!isEditing) {
-                  setFieldsOpen(nextOpen)
-                }
-              }}
+            <section
+              id="profile-facts-section"
+              className={`np-profile-section np-profile-facts${isEditing ? ' np-profile-facts--editing' : ''}`}
+              aria-labelledby="profile-facts-heading"
             >
-              <summary className="np-profile-details-summary">Profile facts — place, skills, growth, interests, learning</summary>
-              <div className="np-profile-details-body">
-                <form id="profile-facts-form" onSubmit={handleSubmit}>
+              <h2 id="profile-facts-heading" className="np-picks-header np-picks-header-left">
+                Profile facts
+              </h2>
+              <p className="np-field-hint np-profile-facts-intro">
+                Place, skills, growth, interests, and learning — used for your Daily and matching.
+              </p>
+              <form id="profile-facts-form" onSubmit={handleSubmit}>
                   <section className="np-profile-section" aria-labelledby="place-heading">
                     <p className="np-cat np-cat-left">Place</p>
                     <h3 id="place-heading" className="np-headline-serif">
@@ -378,9 +372,10 @@ export default function ProfilePage() {
                       readBlock(formData.developmentPath)
                     )}
                   </section>
-                </form>
-              </div>
-            </details>
+
+                <div className="np-profile-actions">{profileActions}</div>
+              </form>
+            </section>
           </main>
 
           <aside className="np-profile-rail" aria-label="Edition signals">

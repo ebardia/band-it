@@ -1098,6 +1098,21 @@
   border-bottom: 1px solid var(--np-line-soft);
 }
 
+.np-profile-facts {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.np-profile-facts-intro {
+  margin: -0.35rem 0 1.25rem;
+}
+
+.np-profile-facts--editing {
+  border: 1px solid var(--np-line);
+  padding: 1rem 0.85rem 0.25rem;
+  background: var(--np-paper-warm);
+}
+
 .np-profile-section:last-of-type {
   border-bottom: none;
 }
