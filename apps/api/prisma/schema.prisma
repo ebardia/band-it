@@ -17,14 +17,25 @@ model User {
   password  String
   name      String
   
-  // Location
+  // Location (legacy zipcode kept for backward compatibility)
   zipcode   String?
-  
-  // Profile - Development & Skills
+  locationId String?
+  location   UsLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  // Profile - Development & Skills (legacy free-text fields)
   strengths        String[]
   weaknesses       String[]
   passions         String[]
   developmentPath  String[]
+
+  // Resume-style end-user profile
+  resumeText       String?  @db.Text
+  resumeFileId     String?  @unique
+  resumeFile       File?    @relation("UserResumeFile", fields: [resumeFileId], references: [id], onDelete: SetNull)
+  workExperience   Json     @default("[]")
+  education        Json     @default("[]")
+  certifications   Json     @default("[]")
+  profileTaxonomySelections UserProfileTaxonomySelection[]
   
   // Email Verification
   emailVerified    Boolean  @default(false)
@@ -2134,6 +2145,7 @@ model File {
   checklistDeliverable ChecklistItemDeliverable? @relation(fields: [checklistDeliverableId], references: [id], onDelete: Cascade)
   donation      Donation? @relation(fields: [donationId], references: [id], onDelete: Cascade)
   document      Document?
+  resumeForUser User?    @relation("UserResumeFile")
 
   @@index([uploadedById])
   @@index([bandId])
@@ -3009,4 +3021,72 @@ model TalkItOutMessage {
   authorUser User?            @relation("TalkItOutMessageAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
 
   @@index([sessionId, createdAt])
+}
+
+// ============================================
+// END-USER PROFILE (resume-style)
+// ============================================
+
+enum ProfileTaxonomyKind {
+  SKILL
+  CAUSE
+  PLAY
+}
+
+model UsLocation {
+  id     String @id @default(cuid())
+  city   String
+  state  String
+  zip    String
+  label  String
+
+  users User[]
+
+  @@unique([city, state, zip])
+  @@index([label])
+  @@index([zip])
+  @@index([city])
+}
+
+model ProfileTaxonomyCategory {
+  id        String              @id @default(cuid())
+  kind      ProfileTaxonomyKind
+  slug      String
+  label     String
+  sortOrder Int                 @default(0)
+
+  items       ProfileTaxonomyItem[]
+  selections  UserProfileTaxonomySelection[]
+
+  @@unique([kind, slug])
+  @@index([kind, sortOrder])
+}
+
+model ProfileTaxonomyItem {
+  id         String @id @default(cuid())
+  categoryId String
+  slug       String
+  label      String
+  sortOrder  Int    @default(0)
+
+  category   ProfileTaxonomyCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  selections UserProfileTaxonomySelection[]
+
+  @@unique([categoryId, slug])
+  @@index([categoryId, sortOrder])
+}
+
+model UserProfileTaxonomySelection {
+  id         String  @id @default(cuid())
+  userId     String
+  categoryId String?
+  itemId     String?
+
+  user     User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category ProfileTaxonomyCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  item     ProfileTaxonomyItem?     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, categoryId])
+  @@unique([userId, itemId])
+  @@index([userId])
 }

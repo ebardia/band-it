@@ -1,100 +1,99 @@
-/** Profile “signals” depth + copy for preview / next moves (no AI; rule-based only). */
+/** Profile signal depth + preview / next moves (rule-based). */
 
-export type ProfileFormShape = {
-  zipcode: string
-  strengths: string
-  weaknesses: string
-  passions: string
-  developmentPath: string
-}
+import type { EndUserProfileForm } from './endUserProfile'
 
-const SIGNAL_FIELDS: (keyof ProfileFormShape)[] = [
-  'zipcode',
-  'strengths',
-  'weaknesses',
-  'passions',
-  'developmentPath',
-]
-
-export function countProfileSignals(fd: ProfileFormShape): { filled: number; total: number; percent: number } {
-  const filled = SIGNAL_FIELDS.filter((k) => fd[k].trim().length > 0).length
-  const total = SIGNAL_FIELDS.length
-  return { filled, total, percent: Math.round((filled / total) * 100) }
+export function countProfileSignals(form: EndUserProfileForm): {
+  filled: number
+  total: number
+  percent: number
+} {
+  const checks = [
+    !!form.locationId,
+    !!(form.resumeText.trim() || form.resumeFileId || form.resumeFileName),
+    form.workExperience.length > 0 || form.skills.itemIds.length > 0 || form.skills.categoryIds.length > 0,
+    form.causes.itemIds.length > 0 || form.causes.categoryIds.length > 0,
+    form.playInterests.itemIds.length > 0 || form.playInterests.categoryIds.length > 0,
+  ]
+  const filled = checks.filter(Boolean).length
+  return { filled, total: checks.length, percent: Math.round((filled / checks.length) * 100) }
 }
 
 export type NextMove = { id: string; title: string; detail: string }
 
-export function buildNextMoves(fd: ProfileFormShape, max = 3): NextMove[] {
+export function buildNextMoves(form: EndUserProfileForm, max = 3): NextMove[] {
   const moves: NextMove[] = []
 
-  if (!fd.strengths.trim()) {
+  if (!form.locationId) {
     moves.push({
-      id: 'strengths',
-      title: 'Name a few strengths',
-      detail: 'Even three skills sharpen what we can match you to—paid work, volunteer roles, and band tasks.',
+      id: 'place',
+      title: 'Add your place',
+      detail: 'Required for local gigs, volunteer shifts, and regional play.',
     })
   }
-  if (!fd.passions.trim()) {
+  if (!form.resumeText.trim() && !form.resumeFileId && !form.resumeFileName) {
     moves.push({
-      id: 'passions',
-      title: 'Add what moves you',
-      detail: 'Passions steer culture, hobbies, and slower “human world” items in your Daily—not only jobs.',
+      id: 'resume',
+      title: 'Add your resume',
+      detail: 'Paste or upload PDF, DOCX, or TXT — we parse it into editable sections.',
     })
   }
-  if (!fd.zipcode.trim()) {
+  if (
+    form.skills.itemIds.length === 0 &&
+    form.skills.categoryIds.length === 0 &&
+    moves.length < max
+  ) {
     moves.push({
-      id: 'zip',
-      title: 'Optional: add a postal code',
-      detail: 'When we have local items, this keeps them relevant without guessing.',
+      id: 'skills',
+      title: 'Select skills',
+      detail: 'No updated resume? Pick from the skills taxonomy so paid gigs can find you.',
     })
   }
-  if (!fd.developmentPath.trim() && moves.length < max) {
+  if (
+    form.causes.itemIds.length === 0 &&
+    form.causes.categoryIds.length === 0 &&
+    moves.length < max
+  ) {
     moves.push({
-      id: 'learn',
-      title: 'Say what you want to learn next',
-      detail: 'Growth edges help mentors, trainings, and stretch projects find you.',
+      id: 'causes',
+      title: 'Choose volunteer causes',
+      detail: 'Optional — steers mutual-aid and nonprofit opportunities.',
     })
   }
-  if (!fd.weaknesses.trim() && moves.length < max) {
+  if (
+    form.playInterests.itemIds.length === 0 &&
+    form.playInterests.categoryIds.length === 0 &&
+    moves.length < max
+  ) {
     moves.push({
-      id: 'growth',
-      title: 'Note where you are stretching',
-      detail: 'Honest growth areas build trust with collaborators and improve fit—not a performance review.',
+      id: 'play',
+      title: 'Add play interests',
+      detail: 'Optional — hobbies, events, and fun activities in your edition.',
     })
   }
 
   return moves.slice(0, max)
 }
 
-/**
- * Honest, static-ish preview lines derived only from current fields (until a real edition engine exists).
- */
-export function buildEditionPreviewLines(fd: ProfileFormShape, chips: string[]): string[] {
+export function buildEditionPreviewLines(form: EndUserProfileForm, skillLabels: string[]): string[] {
   const lines: string[] = []
 
-  if (chips.length >= 3) {
+  if (skillLabels.length >= 2) {
     lines.push(
-      `From your tags, we will bias opportunity and project surfaces toward themes like “${chips[0]}”, “${chips[1]}”, and “${chips[2]}”—always alongside your bands and permissions.`
+      `Paid gig matching will lean on skills like “${skillLabels[0]}” and “${skillLabels[1]}” once your profile is saved.`
     )
-  } else if (chips.length > 0) {
-    lines.push(
-      `Early signals: ${chips.slice(0, 8).join(', ')}. As this list grows, matching gets steadier and less generic.`
-    )
+  } else if (skillLabels.length === 1) {
+    lines.push(`Early work signal: ${skillLabels[0]}. More selections sharpen fit.`)
   } else {
-    lines.push(
-      'Once strengths, passions, or learning goals are on the page, your Daily can move from “generic” toward “specific to you.”'
-    )
+    lines.push('Work matching stays broad until skills or parsed resume experience are on file.')
   }
 
-  if (fd.zipcode.trim()) {
-    lines.push(`Local and regional items—when we run them—will anchor to ${fd.zipcode.trim()}.`)
+  if (form.locationLabel) {
+    lines.push(`Local opportunities anchor to ${form.locationLabel}.`)
   } else {
-    lines.push('Without a postal code, local flavor stays minimal on purpose—we do not want to guess your place.')
+    lines.push('Place is required — we do not guess your location.')
   }
 
-  lines.push(
-    'Culture, books, galleries, and hobby-adjacent items stay conservative until passions are richer; agents will respect that ceiling.'
-  )
+  lines.push('Volunteer and play surfaces stay conservative until those sections have selections.')
 
   return lines
 }

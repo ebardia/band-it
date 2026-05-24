@@ -1,62 +1,69 @@
-/** Build read-only summary copy + chips from profile fields (no extra schema). */
+/** Build read-only summary copy from resume-style profile fields. */
 
-export type ProfileFields = {
+import type { EndUserProfileForm, ProfileTaxonomyCategory } from './endUserProfile'
+
+export type ProfileSummaryInput = {
   name: string
-  zipcode: string | null
-  strengths: string[]
-  weaknesses: string[]
-  passions: string[]
-  developmentPath: string[]
+  locationLabel: string
+  form: EndUserProfileForm
+  skillCategories: ProfileTaxonomyCategory[]
 }
 
-function cleanList(items: string[]): string[] {
-  return items
-    .map((s) => s.trim())
-    .filter(Boolean)
+function selectedSkillLabels(form: EndUserProfileForm, categories: ProfileTaxonomyCategory[]): string[] {
+  const labels: string[] = []
+  for (const cat of categories) {
+    if (form.skills.categoryIds.includes(cat.id)) labels.push(cat.label)
+    for (const item of cat.items) {
+      if (form.skills.itemIds.includes(item.id)) labels.push(item.label)
+    }
+  }
+  return labels.slice(0, 6)
 }
 
-function joinReadable(items: string[], max = 4): string {
-  const t = cleanList(items)
-  if (t.length === 0) return ''
-  const shown = t.slice(0, max)
-  const tail = t.length > max ? ` and ${t.length - max} more` : ''
-  if (shown.length === 1) return shown[0] + tail
-  if (shown.length === 2) return `${shown[0]} and ${shown[1]}${tail}`
-  return `${shown.slice(0, -1).join(', ')}, and ${shown[shown.length - 1]}${tail}`
-}
-
-export function buildProfileSummaryText(p: ProfileFields): string {
-  const strengths = joinReadable(p.strengths, 5)
-  const passions = joinReadable(p.passions, 5)
-  const learning = joinReadable(p.developmentPath, 4)
-  const zip = (p.zipcode || '').trim()
-
+export function buildProfileSummaryText(input: ProfileSummaryInput): string {
+  const { name, locationLabel, form, skillCategories } = input
+  const skills = selectedSkillLabels(form, skillCategories)
   const parts: string[] = []
-  if (strengths) {
-    parts.push(`You bring ${strengths}${passions ? `, with energy around ${passions}` : ''}.`)
-  } else if (passions) {
-    parts.push(`You're drawn to ${passions}.`)
+
+  if (form.workExperience.length > 0) {
+    const latest = form.workExperience[0]
+    const role = [latest.title, latest.org].filter(Boolean).join(' at ')
+    if (role) parts.push(`${name} most recently worked as ${role}.`)
   }
-  if (learning) {
-    parts.push(`You're building toward ${learning}.`)
+
+  if (skills.length > 0) {
+    const list =
+      skills.length === 1
+        ? skills[0]
+        : skills.length === 2
+          ? `${skills[0]} and ${skills[1]}`
+          : `${skills.slice(0, -1).join(', ')}, and ${skills[skills.length - 1]}`
+    parts.push(`Skills in the mix include ${list}.`)
   }
-  const growth = joinReadable(p.weaknesses, 4)
-  if (growth) {
-    parts.push(`You're working on ${growth}.`)
+
+  if (locationLabel) {
+    parts.push(`Based in ${locationLabel}.`)
   }
-  if (zip) {
-    parts.push(`You're based near ${zip}.`)
-  }
+
   if (parts.length === 0) {
-    return 'Add a few details below so we can shape your edition around what matters to you.'
+    return 'Add your place and resume below so we can shape paid gigs, volunteer roles, and play around what fits you.'
   }
+
   return parts.join(' ')
 }
 
-export function toChips(csv: string, max = 12): string[] {
-  return csv
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .slice(0, max)
+export function taxonomyChipLabels(
+  form: EndUserProfileForm,
+  kind: 'skills' | 'causes' | 'playInterests',
+  categories: ProfileTaxonomyCategory[]
+): string[] {
+  const sel = form[kind]
+  const labels: string[] = []
+  for (const cat of categories) {
+    if (sel.categoryIds.includes(cat.id)) labels.push(cat.label)
+    for (const item of cat.items) {
+      if (sel.itemIds.includes(item.id)) labels.push(item.label)
+    }
+  }
+  return labels
 }

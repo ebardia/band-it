@@ -20,6 +20,7 @@ const OPERATION_TYPES = [
   'task_suggestions',
   'checklist_suggestions',
   'help_question',
+  'resume_parse',
 ] as const
 
 // Valid category types
