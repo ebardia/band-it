@@ -65,7 +65,7 @@ export function ResumeSection({
   const handleFile = (file: File) => {
     setUploadError(null)
     if (!RESUME_MIMES.has(file.type)) {
-      setUploadError('Only PDF, DOCX, and TXT files are accepted.')
+      setUploadError('PDF, DOCX, or TXT only—the desk is picky about formats.')
       return
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -91,8 +91,8 @@ export function ResumeSection({
           {resumeText.trim()
             ? `${resumeText.trim().slice(0, 280)}${resumeText.length > 280 ? '…' : ''}`
             : resumeFileName
-              ? `Uploaded: ${resumeFileName}`
-              : '—'}
+              ? `On file: ${resumeFileName}`
+              : 'Nothing filed yet.'}
         </p>
         {workExperience.length > 0 ? (
           <div className="np-resume-block">
@@ -139,18 +139,18 @@ export function ResumeSection({
   return (
     <>
       <label className="np-label" htmlFor="resume-paste">
-        Paste resume (required if no file)
+        Paste résumé (required if no file)
       </label>
       <textarea
         id="resume-paste"
         className="np-field"
         rows={8}
         value={resumeText}
-        placeholder="Paste your resume text here…"
+        placeholder="Drop your résumé text here—the messy version is fine…"
         onChange={(e) => onResumeTextChange(e.target.value)}
       />
 
-      <p className="np-label">Or upload</p>
+      <p className="np-label">Or send a file</p>
       <div
         className="np-resume-upload"
         role="button"
@@ -172,7 +172,7 @@ export function ResumeSection({
           }}
         />
         <p className="np-profile-read" style={{ margin: 0 }}>
-          {resumeFileName ? `Selected: ${resumeFileName}` : 'PDF, DOCX, or TXT — drop or click'}
+          {resumeFileName ? `On deck: ${resumeFileName}` : 'PDF, DOCX, or TXT — drop or click'}
         </p>
       </div>
       {uploadError ? <p className="np-field-hint" style={{ color: 'var(--np-accent)' }}>{uploadError}</p> : null}
@@ -184,22 +184,22 @@ export function ResumeSection({
           disabled={isParsing || (!resumeText.trim() && !resumeFileName)}
           onClick={onParse}
         >
-          {isParsing ? 'Parsing…' : 'Parse resume with AI'}
+          {isParsing ? 'Reading…' : 'Decode résumé with AI'}
         </button>
       </div>
       <p className="np-field-hint">
-        Parsing fills work, education, certifications, and suggests skills. You can edit everything after.
+        We pull out jobs, school, certs, and skill hints—you keep the red pen.
       </p>
 
       <div className="np-resume-block">
         <div className="np-resume-block-head">
-          <p className="np-cat np-cat-left">Work experience</p>
+          <p className="np-cat np-cat-left">On the record</p>
           <button
             type="button"
             className="np-profile-btn"
             onClick={() => onWorkChange([...workExperience, emptyWork()])}
           >
-            Add role
+            Add another role
           </button>
         </div>
         {workExperience.map((w, i) => (

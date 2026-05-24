@@ -1,4 +1,4 @@
-/** Profile signal depth + preview / next moves (rule-based). */
+/** Profile signal depth + Daily preview / next moves — newspaper voice, rule-based. */
 
 import type { EndUserProfileForm } from './endUserProfile'
 
@@ -26,15 +26,15 @@ export function buildNextMoves(form: EndUserProfileForm, max = 3): NextMove[] {
   if (!form.locationId) {
     moves.push({
       id: 'place',
-      title: 'Add your place',
-      detail: 'Required for local gigs, volunteer shifts, and regional play.',
+      title: 'Pin your place on the map',
+      detail: 'Required—so local gigs, volunteer shifts, and weirdly perfect events know where to find you.',
     })
   }
   if (!form.resumeText.trim() && !form.resumeFileId && !form.resumeFileName) {
     moves.push({
       id: 'resume',
-      title: 'Add your resume',
-      detail: 'Paste or upload PDF, DOCX, or TXT — we parse it into editable sections.',
+      title: 'File your résumé with the desk',
+      detail: 'Paste or upload PDF, DOCX, or TXT. We’ll decode it into editable sections—no fax machine required.',
     })
   }
   if (
@@ -44,8 +44,8 @@ export function buildNextMoves(form: EndUserProfileForm, max = 3): NextMove[] {
   ) {
     moves.push({
       id: 'skills',
-      title: 'Select skills',
-      detail: 'No updated resume? Pick from the skills taxonomy so paid gigs can find you.',
+      title: 'Check off what you can do',
+      detail: 'No fresh résumé? Pick skills from the list anyway—paid work doesn’t always read your PDF.',
     })
   }
   if (
@@ -55,8 +55,8 @@ export function buildNextMoves(form: EndUserProfileForm, max = 3): NextMove[] {
   ) {
     moves.push({
       id: 'causes',
-      title: 'Choose volunteer causes',
-      detail: 'Optional — steers mutual-aid and nonprofit opportunities.',
+      title: 'Name the causes you’d show up for',
+      detail: 'Optional—but it’s how mutual aid and volunteer listings find their way into your Daily.',
     })
   }
   if (
@@ -66,34 +66,40 @@ export function buildNextMoves(form: EndUserProfileForm, max = 3): NextMove[] {
   ) {
     moves.push({
       id: 'play',
-      title: 'Add play interests',
-      detail: 'Optional — hobbies, events, and fun activities in your edition.',
+      title: 'Add what you do for fun',
+      detail: 'Optional—hobbies, scenes, and offbeat events stay quiet until you give us a hint.',
     })
   }
 
   return moves.slice(0, max)
 }
 
-export function buildEditionPreviewLines(form: EndUserProfileForm, skillLabels: string[]): string[] {
+export function buildEditionPreviewLines(form: EndUserProfileForm, chips: string[]): string[] {
   const lines: string[] = []
 
-  if (skillLabels.length >= 2) {
+  if (chips.length >= 3) {
     lines.push(
-      `Paid gig matching will lean on skills like “${skillLabels[0]}” and “${skillLabels[1]}” once your profile is saved.`
+      `From your tags, tomorrow’s edition will lean toward “${chips[0]}”, “${chips[1]}”, and “${chips[2]}”—always filtered through your bands and what you’ve actually signed up for.`
     )
-  } else if (skillLabels.length === 1) {
-    lines.push(`Early work signal: ${skillLabels[0]}. More selections sharpen fit.`)
+  } else if (chips.length > 0) {
+    lines.push(
+      `Early signals: ${chips.slice(0, 8).join(', ')}. The more tags on the page, the less generic your Daily feels.`
+    )
   } else {
-    lines.push('Work matching stays broad until skills or parsed resume experience are on file.')
+    lines.push(
+      'Right now your Daily reads like everyone else’s morning paper. Fill in a few sections and it starts sounding like yours.'
+    )
   }
 
   if (form.locationLabel) {
-    lines.push(`Local opportunities anchor to ${form.locationLabel}.`)
+    lines.push(`Local and regional items—when we run them—anchor to ${form.locationLabel}.`)
   } else {
-    lines.push('Place is required — we do not guess your location.')
+    lines.push('Without a place on the map, local flavor stays thin on purpose—we’re not guessing your ZIP code.')
   }
 
-  lines.push('Volunteer and play surfaces stay conservative until those sections have selections.')
+  lines.push(
+    'Culture, galleries, and hobby-adjacent listings stay conservative until Play and Volunteer have something to work with.'
+  )
 
   return lines
 }

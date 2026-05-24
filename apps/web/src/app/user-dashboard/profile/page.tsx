@@ -88,7 +88,7 @@ export default function ProfilePage() {
 
   const updateMutation = trpc.profile.update.useMutation({
     onSuccess: async () => {
-      showToast('Profile saved!', 'success')
+      showToast('Edition filed — your Daily just got sharper.', 'success')
       setIsEditing(false)
       setPendingUpload(null)
       if (userId) await utils.profile.get.invalidate({ userId })
@@ -109,7 +109,7 @@ export default function ProfilePage() {
           itemIds: [...new Set([...prev.skills.itemIds, ...result.parsed.suggestedSkillItemIds])],
         },
       }))
-      showToast('Resume parsed — review and edit the fields below.', 'success')
+      showToast('Résumé decoded — tweak anything that looks wrong.', 'success')
     },
     onError: (error) => showToast(error.message, 'error'),
   })
@@ -134,8 +134,10 @@ export default function ProfilePage() {
       locationLabel: formData.locationLabel,
       form: formData,
       skillCategories,
+      causeCategories,
+      playCategories,
     })
-  }, [profileData, formData, skillCategories])
+  }, [profileData, formData, skillCategories, causeCategories, playCategories])
 
   const skillChips = useMemo(
     () => taxonomyChipLabels(formData, 'skills', skillCategories),
@@ -153,8 +155,8 @@ export default function ProfilePage() {
   const signalStats = useMemo(() => countProfileSignals(formData), [formData])
   const nextMovesList = useMemo(() => buildNextMoves(formData), [formData])
   const editionPreviewLines = useMemo(
-    () => buildEditionPreviewLines(formData, skillChips),
-    [formData, skillChips]
+    () => buildEditionPreviewLines(formData, allChips),
+    [formData, allChips]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -162,11 +164,11 @@ export default function ProfilePage() {
     if (!userId) return
 
     if (!formData.locationId) {
-      showToast('Place is required — select a city from the list.', 'error')
+      showToast('Place is required — pick a city from the list.', 'error')
       return
     }
     if (!formData.resumeText.trim() && !formData.resumeFileId && !pendingUpload) {
-      showToast('Resume is required — paste text or upload a file.', 'error')
+      showToast('Résumé required — paste text or upload a file.', 'error')
       return
     }
 
@@ -219,7 +221,7 @@ export default function ProfilePage() {
             className="np-profile-btn np-profile-btn-primary"
             disabled={updateMutation.isPending}
           >
-            {updateMutation.isPending ? 'Saving…' : 'Save profile'}
+            {updateMutation.isPending ? 'Saving…' : 'Save changes'}
           </button>
           <button type="button" className="np-profile-btn" onClick={handleCancel}>
             Cancel
@@ -237,7 +239,7 @@ export default function ProfilePage() {
     return (
       <UserDashboardLayout pageTitle="My Profile" editorial>
         <div className="np-profile-shell">
-          <Loading message="Loading profile…" />
+          <Loading message="Composing your edition…" />
         </div>
       </UserDashboardLayout>
     )
@@ -248,7 +250,7 @@ export default function ProfilePage() {
     return (
       <UserDashboardLayout pageTitle="My Profile" editorial>
         <div className="np-profile-shell">
-          <p className="np-quiet">We couldn&apos;t load your profile.</p>
+          <p className="np-quiet">The desk couldn&apos;t load your edition—try a refresh.</p>
         </div>
       </UserDashboardLayout>
     )
@@ -267,8 +269,9 @@ export default function ProfilePage() {
           <main className="np-profile-main">
             <p className="np-cat np-cat-left">YOUR EDITION</p>
             <p className="np-profile-dek-lead" style={{ textAlign: 'left', marginLeft: 0, marginRight: 0 }}>
-              A resume-style profile for paid gigs, volunteer opportunities, and play. Place and resume
-              are required; everything else sharpens matching.
+              This is the home for who you are on Band It—not only your bands and projects. What you save
+              here shapes your Daily edition: paid gigs that might fit, causes worth showing up for, play
+              that actually sounds fun, and the occasional cultural signal we think you&apos;ll like.
             </p>
 
             <hr className="np-rule" />
@@ -290,16 +293,33 @@ export default function ProfilePage() {
             </section>
 
             <p className="np-profile-pullquote">
-              Whatever brings you here, the goal is the same: help you make your next move.
+              Whatever brings you here on a given morning, the goal is the same: to help you make your next
+              move.
             </p>
 
             <div className="np-profile-actions np-profile-actions--toolbar">{profileActions}</div>
+
+            <details className="np-profile-details">
+              <summary className="np-profile-details-summary">Why this page matters to your Daily</summary>
+              <div className="np-profile-details-body">
+                <p className="np-profile-manifesto" style={{ margin: 0, padding: 0, border: 'none' }}>
+                  Your edition is only as specific as the facts behind it. Place and résumé get you on the
+                  map and the payroll; skills, causes, and play tell us what to put in front of you—and what
+                  to leave out. Nothing here is a performance review. It&apos;s world-building for a newspaper
+                  that&apos;s actually about your week.
+                </p>
+              </div>
+            </details>
 
             <form
               id="end-user-profile-form"
               onSubmit={handleSubmit}
               className={isEditing ? 'np-profile-facts np-profile-facts--editing' : ''}
             >
+              <p className="np-field-hint np-profile-facts-intro">
+                Four desks below—Basics, Work, Volunteer, Play. Place and résumé are required; the rest
+                sharpens what lands in your Daily.
+              </p>
               {/* SECTION 1: BASICS */}
               <section
                 id="profile-section-basics"
@@ -309,8 +329,8 @@ export default function ProfilePage() {
                 <h2 id="basics-heading" className="np-picks-header np-picks-header-left">
                   Basics
                 </h2>
-                <p className="np-cat np-cat-left">Section 1</p>
-                <h3 className="np-headline-serif">Where you&apos;re based</h3>
+                <p className="np-cat np-cat-left">Dateline</p>
+                <h3 className="np-headline-serif">Your corner of the map</h3>
                 {isEditing ? (
                   <LocationAutocomplete
                     valueId={formData.locationId}
@@ -326,7 +346,7 @@ export default function ProfilePage() {
                   />
                 ) : (
                   <p className="np-profile-read">
-                    {formData.locationLabel || 'Add your place when you edit.'}
+                    {formData.locationLabel || 'No dateline yet—add your place when you edit.'}
                   </p>
                 )}
               </section>
@@ -336,8 +356,8 @@ export default function ProfilePage() {
                 <h2 id="work-heading" className="np-picks-header np-picks-header-left">
                   Work
                 </h2>
-                <p className="np-cat np-cat-left">Section 2 · Paid gigs</p>
-                <h3 className="np-headline-serif">Resume &amp; skills</h3>
+                <p className="np-cat np-cat-left">For hire</p>
+                <h3 className="np-headline-serif">The résumé desk</h3>
                 <ResumeSection
                   resumeText={formData.resumeText}
                   resumeFileName={pendingUpload?.fileName ?? formData.resumeFileName}
@@ -360,11 +380,12 @@ export default function ProfilePage() {
                 />
 
                 <p className="np-cat np-cat-left" style={{ marginTop: '1.5rem' }}>
-                  Skills
+                  Toolkit
                 </p>
-                <h3 className="np-headline-serif">What you can do</h3>
+                <h3 className="np-headline-serif">What you can actually do</h3>
                 <p className="np-field-hint">
-                  Fixed taxonomy — select categories and sub-skills. Pre-filled from parsed resume when possible.
+                  Check categories and skills—we&apos;ll pre-fill from your résumé when we can. No résumé?
+                  Still pick; the payroll desk doesn&apos;t always wait for PDFs.
                 </p>
                 <TaxonomySelect
                   idPrefix="skills"
@@ -380,8 +401,8 @@ export default function ProfilePage() {
                 <h2 id="volunteer-heading" className="np-picks-header np-picks-header-left">
                   Volunteer
                 </h2>
-                <p className="np-cat np-cat-left">Section 3 · Causes</p>
-                <h3 className="np-headline-serif">Where you want to help</h3>
+                <p className="np-cat np-cat-left">Good trouble</p>
+                <h3 className="np-headline-serif">Causes you&apos;d show up for</h3>
                 <TaxonomySelect
                   idPrefix="causes"
                   categories={causeCategories}
@@ -396,8 +417,8 @@ export default function ProfilePage() {
                 <h2 id="play-heading" className="np-picks-header np-picks-header-left">
                   Play
                 </h2>
-                <p className="np-cat np-cat-left">Section 4 · Fun</p>
-                <h3 className="np-headline-serif">What you do for fun</h3>
+                <p className="np-cat np-cat-left">Off the clock</p>
+                <h3 className="np-headline-serif">What you do when nobody&apos;s billing you</h3>
                 <TaxonomySelect
                   idPrefix="play"
                   categories={playCategories}
@@ -436,7 +457,10 @@ export default function ProfilePage() {
               >
                 <div className="np-signals-fill" style={{ width: `${signalStats.percent}%` }} />
               </div>
-              <p className="np-field-hint">Place + resume required; taxonomy optional.</p>
+              <p className="np-field-hint">
+                Not a score—a read on how much we can responsibly infer for your Daily. Place and résumé
+                required; the rest is seasoning.
+              </p>
             </div>
 
             <div className="np-rail-block">
@@ -463,7 +487,8 @@ export default function ProfilePage() {
                 </ul>
               ) : (
                 <p className="np-preview-line" style={{ marginTop: '0.35rem' }}>
-                  Core requirements met. Optional sections still sharpen fit.
+                  The essentials are filed. Optional sections still fine-tune what shows up—and what
+                  doesn&apos;t.
                 </p>
               )}
             </div>
