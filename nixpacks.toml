@@ -8,9 +8,10 @@ cmds = ["pnpm install --frozen-lockfile"]
 
 [phases.build]
 cmds = [
+  "pnpm --filter @band-it/shared build",
   "cd apps/api && npx prisma generate",
-  "pnpm run build"
+  "pnpm --filter api build",
 ]
 
 [start]
-cmd = "cd apps/api && node dist/index.js"
+cmd = "cd apps/api && npx prisma db push --skip-generate --accept-data-loss && node dist/index.js"
