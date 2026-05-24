@@ -1,5 +1,5 @@
 import { callAI, parseAIJson } from '../lib/ai-client'
-import { prisma } from '../lib/prisma'
+import { inferSkillsFromProfile } from './skill-infer.service'
 
 export type WorkExperienceEntry = {
   title: string
@@ -26,6 +26,7 @@ export type ParsedResumeResult = {
   workExperience: WorkExperienceEntry[]
   education: EducationEntry[]
   certifications: CertificationEntry[]
+  suggestedSkillCategoryIds: string[]
   suggestedSkillItemIds: string[]
 }
 
@@ -34,32 +35,8 @@ type AiResumeParse = {
   education?: EducationEntry[]
   certifications?: CertificationEntry[]
   suggestedSkills?: string[]
-}
-
-async function mapSuggestedSkillsToIds(labels: string[]): Promise<string[]> {
-  if (labels.length === 0) return []
-
-  const items = await prisma.profileTaxonomyItem.findMany({
-    where: {
-      category: { kind: 'SKILL' },
-    },
-    select: { id: true, label: true, slug: true },
-  })
-
-  const ids = new Set<string>()
-  for (const label of labels) {
-    const normalized = label.trim().toLowerCase()
-    if (!normalized) continue
-    const match = items.find(
-      (item) =>
-        item.label.toLowerCase() === normalized ||
-        item.slug.replace(/-/g, ' ') === normalized ||
-        item.label.toLowerCase().includes(normalized) ||
-        normalized.includes(item.label.toLowerCase())
-    )
-    if (match) ids.add(match.id)
-  }
-  return [...ids]
+  suggestedSkillSlugs?: string[]
+  suggestedCategorySlugs?: string[]
 }
 
 export async function parseResumeWithAI(
@@ -67,8 +44,8 @@ export async function parseResumeWithAI(
   userId: string
 ): Promise<ParsedResumeResult> {
   const trimmed = resumeText.trim()
-  if (trimmed.length < 40) {
-    throw new Error('Resume text is too short to parse. Paste or upload a fuller resume.')
+  if (trimmed.length < 8) {
+    throw new Error('Résumé text is too short to parse. Add a bit more detail or fill in work experience manually.')
   }
 
   const systemPrompt = `You extract structured resume data for a job-matching profile.
@@ -77,31 +54,61 @@ Return ONLY valid JSON with this shape:
   "workExperience": [{ "title": "", "org": "", "startDate": "", "endDate": "", "description": "" }],
   "education": [{ "degree": "", "institution": "", "startDate": "", "endDate": "" }],
   "certifications": [{ "name": "", "issuer": "", "date": "" }],
-  "suggestedSkills": ["copywriting", "project management"]
+  "suggestedSkills": ["Software developer"],
+  "suggestedSkillSlugs": ["software-dev"],
+  "suggestedCategorySlugs": ["technology"]
 }
-Use empty arrays when a section is missing. suggestedSkills should use short skill labels that might match a standard skills taxonomy. Dates as free text (e.g. "2019", "Jan 2020 – Present").`
+Use empty arrays when a section is missing.
+For suggestedSkillSlugs use ONLY these item slugs when applicable:
+software-dev, web-dev, data-analysis, ai-ml, it-support, qa, copywriting, technical-writing, teaching, curriculum-design, coaching, project-management, ux-ui, graphic-design, social-media, etc.
+For suggestedCategorySlugs use ONLY: writing-content, design-creative, marketing, technology, business-ops, research-analysis, communications, education-training, trades-hands-on.
+Map job titles to slugs (e.g. "Software developer" -> software-dev + technology).
+Dates as free text (e.g. "2019", "Jan 2020 – Present").`
 
-  const response = await callAI(
-    `Parse this resume into structured JSON:\n\n${trimmed.slice(0, 12000)}`,
-    {
-      operation: 'resume_parse',
-      entityType: 'profile',
-      userId,
-    },
-    { system: systemPrompt, maxTokens: 4000 }
-  )
+  let parsed: AiResumeParse | null = null
 
-  const parsed = parseAIJson<AiResumeParse>(response.content)
-  if (!parsed) {
-    throw new Error('Could not parse resume. Try again or edit fields manually.')
+  if (trimmed.length >= 40) {
+    const response = await callAI(
+      `Parse this resume into structured JSON:\n\n${trimmed.slice(0, 12000)}`,
+      {
+        operation: 'resume_parse',
+        entityType: 'profile',
+        userId,
+      },
+      { system: systemPrompt, maxTokens: 4000 }
+    )
+    parsed = parseAIJson<AiResumeParse>(response.content)
   }
 
-  const suggestedSkillItemIds = await mapSuggestedSkillsToIds(parsed.suggestedSkills ?? [])
+  const workExperience = (parsed?.workExperience ?? []).filter((e) => e.title?.trim() || e.org?.trim())
+  const education = (parsed?.education ?? []).filter((e) => e.degree?.trim() || e.institution?.trim())
+  const certifications = (parsed?.certifications ?? []).filter((e) => e.name?.trim())
+
+  // Short paste or failed AI: still infer a single role line from raw text
+  if (workExperience.length === 0 && trimmed.length < 200 && !trimmed.includes('\n')) {
+    workExperience.push({ title: trimmed, org: '', description: '' })
+  }
+
+  const skillMatch = await inferSkillsFromProfile({
+    workExperience,
+    education,
+    resumeText: trimmed,
+    suggestedLabels: parsed?.suggestedSkills ?? [],
+    suggestedCategorySlugs: parsed?.suggestedCategorySlugs ?? [],
+    suggestedItemSlugs: parsed?.suggestedSkillSlugs ?? [],
+  })
+
+  if (!parsed && workExperience.length === 0 && skillMatch.itemIds.length === 0) {
+    throw new Error('Could not parse résumé. Try again or edit fields manually.')
+  }
 
   return {
-    workExperience: (parsed.workExperience ?? []).filter((e) => e.title?.trim() || e.org?.trim()),
-    education: (parsed.education ?? []).filter((e) => e.degree?.trim() || e.institution?.trim()),
-    certifications: (parsed.certifications ?? []).filter((e) => e.name?.trim()),
-    suggestedSkillItemIds,
+    workExperience,
+    education,
+    certifications,
+    suggestedSkillCategoryIds: skillMatch.categoryIds,
+    suggestedSkillItemIds: skillMatch.itemIds,
   }
 }
+
+export { inferSkillsFromProfile } from './skill-infer.service'

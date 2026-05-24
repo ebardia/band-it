@@ -6,6 +6,8 @@ import { parseResumeWithAI } from '../../../services/resume-parse.service'
 import { extractResumeText, isResumeMimeType, resumeMimeErrorMessage } from '../../../services/resume-text.service'
 import { storageService, getFileSizeLimit } from '../../../services/storage.service'
 import { ensureProfileSeedData } from '../../../services/ensure-profile-seed.service'
+import { searchUsLocations, resolveProfileLocation } from '../../../services/us-location.service'
+import { inferSkillsFromProfile } from '../../../services/skill-infer.service'
 
 const workExperienceSchema = z.object({
   title: z.string(),
@@ -142,10 +144,15 @@ export const profileRouter = router({
       })
     )
     .query(async ({ input }) => {
-      await ensureProfileSeedData()
       const q = input.query.trim()
       if (q.length < 1) return { locations: [] }
 
+      const fromZip = searchUsLocations(q, input.limit)
+      if (fromZip.length > 0) {
+        return { locations: fromZip }
+      }
+
+      await ensureProfileSeedData()
       const locations = await prisma.usLocation.findMany({
         where: {
           OR: [
@@ -159,7 +166,15 @@ export const profileRouter = router({
         orderBy: { label: 'asc' },
       })
 
-      return { locations }
+      return {
+        locations: locations.map((loc) => ({
+          id: loc.id,
+          city: loc.city,
+          state: loc.state,
+          zip: loc.zip,
+          label: loc.label,
+        })),
+      }
     }),
 
   get: publicProcedure
@@ -202,11 +217,32 @@ export const profileRouter = router({
       return { success: true, resumeText: text, parsed }
     }),
 
+  suggestSkills: publicProcedure
+    .input(
+      z.object({
+        workExperience: z.array(workExperienceSchema).default([]),
+        education: z.array(educationSchema).default([]),
+        resumeText: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      await ensureProfileSeedData()
+      const match = await inferSkillsFromProfile({
+        workExperience: input.workExperience,
+        education: input.education,
+        resumeText: input.resumeText ?? '',
+      })
+      return { success: true, skills: match }
+    }),
+
   update: publicProcedure
     .input(
       z.object({
         userId: z.string(),
         locationId: z.string().min(1, 'Place is required'),
+        locationCity: z.string().optional(),
+        locationState: z.string().optional(),
+        locationZip: z.string().optional(),
         resumeText: z.string().optional(),
         resumeFileId: z.string().optional().nullable(),
         resumeUpload: z
@@ -225,9 +261,13 @@ export const profileRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const location = await prisma.usLocation.findUnique({ where: { id: input.locationId } })
+      const location = await resolveProfileLocation(input.locationId, {
+        city: input.locationCity ?? '',
+        state: input.locationState ?? '',
+        zip: input.locationZip ?? '',
+      })
       if (!location) {
-        throw new Error('Invalid location selected.')
+        throw new Error('Invalid location selected — pick a city or ZIP from the list.')
       }
 
       let resumeText = input.resumeText?.trim() ?? ''
@@ -302,7 +342,7 @@ export const profileRouter = router({
         return tx.user.update({
           where: { id: input.userId },
           data: {
-            locationId: input.locationId,
+            locationId: location.id,
             zipcode: location.zip,
             resumeText: resumeText || null,
             resumeFileId,
@@ -310,7 +350,7 @@ export const profileRouter = router({
             education: input.education,
             certifications: input.certifications,
             profileCompleted: profileIsComplete({
-              locationId: input.locationId,
+              locationId: location.id,
               resumeText: resumeText || null,
               resumeFileId,
             }),

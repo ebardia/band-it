@@ -66,7 +66,7 @@ export function LocationAutocomplete({
         disabled={disabled}
         required={required}
         value={query}
-        placeholder="City or ZIP — where your edition lands…"
+        placeholder="City, town, or ZIP — we cover the whole US…"
         onFocus={() => setOpen(true)}
         onChange={(e) => {
           setQuery(e.target.value)
@@ -101,7 +101,7 @@ export function LocationAutocomplete({
           )}
         </ul>
       ) : null}
-      <p className="np-field-hint">Pick from the list—we don&apos;t invent coordinates from thin air.</p>
+      <p className="np-field-hint">Any US city or ZIP — pick from the list, don&apos;t free-type.</p>
     </div>
   )
 }

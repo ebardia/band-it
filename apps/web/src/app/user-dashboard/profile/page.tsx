@@ -27,7 +27,7 @@ type PendingUpload = {
 
 function profileToForm(profile: {
   locationId: string | null
-  location: { label: string } | null
+  location: { label: string; city?: string; state?: string; zip?: string } | null
   resumeText: string | null
   resumeFileId: string | null
   resumeFile: { originalName: string } | null
@@ -41,6 +41,9 @@ function profileToForm(profile: {
   return {
     locationId: profile.locationId ?? '',
     locationLabel: profile.location?.label ?? '',
+    locationCity: profile.location?.city ?? '',
+    locationState: profile.location?.state ?? '',
+    locationZip: profile.location?.zip ?? '',
     resumeText: profile.resumeText ?? '',
     resumeFileId: profile.resumeFileId,
     resumeFileName: profile.resumeFile?.originalName ?? null,
@@ -105,14 +108,44 @@ export default function ProfilePage() {
         education: result.parsed.education,
         certifications: result.parsed.certifications,
         skills: {
-          categoryIds: prev.skills.categoryIds,
-          itemIds: [...new Set([...prev.skills.itemIds, ...result.parsed.suggestedSkillItemIds])],
+          categoryIds: [
+            ...new Set([
+              ...prev.skills.categoryIds,
+              ...result.parsed.suggestedSkillCategoryIds,
+            ]),
+          ],
+          itemIds: [
+            ...new Set([...prev.skills.itemIds, ...result.parsed.suggestedSkillItemIds]),
+          ],
         },
       }))
-      showToast('Résumé decoded — tweak anything that looks wrong.', 'success')
+      showToast('Résumé decoded — skills updated from your experience.', 'success')
     },
     onError: (error) => showToast(error.message, 'error'),
   })
+
+  const suggestSkillsQuery = trpc.profile.suggestSkills.useQuery(
+    {
+      workExperience: formData.workExperience,
+      education: formData.education,
+      resumeText: formData.resumeText,
+    },
+    { enabled: false }
+  )
+
+  const applySuggestedSkills = async () => {
+    const result = await suggestSkillsQuery.refetch()
+    const skills = result.data?.skills
+    if (!skills) return
+    setFormData((prev) => ({
+      ...prev,
+      skills: {
+        categoryIds: [...new Set([...prev.skills.categoryIds, ...skills.categoryIds])],
+        itemIds: [...new Set([...prev.skills.itemIds, ...skills.itemIds])],
+      },
+    }))
+    showToast('Skills matched from your résumé — adjust anything we missed.', 'success')
+  }
 
   useEffect(() => {
     if (profileData?.profile && !isEditing) {
@@ -175,6 +208,9 @@ export default function ProfilePage() {
     updateMutation.mutate({
       userId,
       locationId: formData.locationId,
+      locationCity: formData.locationCity,
+      locationState: formData.locationState,
+      locationZip: formData.locationZip,
       resumeText: formData.resumeText,
       resumeFileId: formData.resumeFileId,
       resumeUpload: pendingUpload ?? undefined,
@@ -341,6 +377,9 @@ export default function ProfilePage() {
                         ...prev,
                         locationId: loc?.id ?? '',
                         locationLabel: loc?.label ?? '',
+                        locationCity: loc?.city ?? '',
+                        locationState: loc?.state ?? '',
+                        locationZip: loc?.zip ?? '',
                       }))
                     }
                   />
@@ -387,6 +426,18 @@ export default function ProfilePage() {
                   Check categories and skills—we&apos;ll pre-fill from your résumé when we can. No résumé?
                   Still pick; the payroll desk doesn&apos;t always wait for PDFs.
                 </p>
+                {isEditing ? (
+                  <div className="np-profile-actions np-profile-actions--inline">
+                    <button
+                      type="button"
+                      className="np-profile-btn"
+                      disabled={suggestSkillsQuery.isFetching}
+                      onClick={() => void applySuggestedSkills()}
+                    >
+                      {suggestSkillsQuery.isFetching ? 'Matching…' : 'Match skills from résumé'}
+                    </button>
+                  </div>
+                ) : null}
                 <TaxonomySelect
                   idPrefix="skills"
                   categories={skillCategories}

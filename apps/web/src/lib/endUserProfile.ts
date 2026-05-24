@@ -43,6 +43,9 @@ export type UsLocationOption = {
 export type EndUserProfileForm = {
   locationId: string
   locationLabel: string
+  locationCity: string
+  locationState: string
+  locationZip: string
   resumeText: string
   resumeFileId: string | null
   resumeFileName: string | null
@@ -57,6 +60,9 @@ export type EndUserProfileForm = {
 export const EMPTY_PROFILE_FORM: EndUserProfileForm = {
   locationId: '',
   locationLabel: '',
+  locationCity: '',
+  locationState: '',
+  locationZip: '',
   resumeText: '',
   resumeFileId: null,
   resumeFileName: null,
