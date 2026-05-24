@@ -132,6 +132,9 @@ export default function ProfilePage() {
   const startEdit = () => {
     setFieldsOpen(true)
     setIsEditing(true)
+    requestAnimationFrame(() => {
+      document.getElementById('profile-facts-details')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   if (isLoading || !userId) {
@@ -199,6 +202,28 @@ export default function ProfilePage() {
               No one builds something meaningful alone—groups thrive when different gifts meet the same table.
             </p>
 
+            <div className="np-profile-actions np-profile-actions--toolbar">
+              {isEditing ? (
+                <>
+                  <button
+                    type="submit"
+                    form="profile-facts-form"
+                    className="np-profile-btn np-profile-btn-primary"
+                    disabled={updateProfileMutation.isPending}
+                  >
+                    {updateProfileMutation.isPending ? 'Saving…' : 'Save changes'}
+                  </button>
+                  <button type="button" className="np-profile-btn" onClick={handleCancel}>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button type="button" className="np-profile-btn np-profile-btn-primary" onClick={startEdit}>
+                  Edit profile
+                </button>
+              )}
+            </div>
+
             <details className="np-profile-details">
               <summary className="np-profile-details-summary">Why depth on this page matters</summary>
               <div className="np-profile-details-body">
@@ -211,17 +236,23 @@ export default function ProfilePage() {
             </details>
 
             <details
+              id="profile-facts-details"
               className="np-profile-details"
               open={fieldsOpen || isEditing}
               onToggle={(e) => {
+                const nextOpen = e.currentTarget.open
+                if (isEditing && !nextOpen) {
+                  e.preventDefault()
+                  return
+                }
                 if (!isEditing) {
-                  setFieldsOpen(e.currentTarget.open)
+                  setFieldsOpen(nextOpen)
                 }
               }}
             >
               <summary className="np-profile-details-summary">Profile facts — place, skills, growth, interests, learning</summary>
               <div className="np-profile-details-body">
-                <form onSubmit={handleSubmit}>
+                <form id="profile-facts-form" onSubmit={handleSubmit}>
                   <section className="np-profile-section" aria-labelledby="place-heading">
                     <p className="np-cat np-cat-left">Place</p>
                     <h3 id="place-heading" className="np-headline-serif">
@@ -347,27 +378,6 @@ export default function ProfilePage() {
                       readBlock(formData.developmentPath)
                     )}
                   </section>
-
-                  <div className="np-profile-actions">
-                    {isEditing ? (
-                      <>
-                        <button
-                          type="submit"
-                          className="np-profile-btn np-profile-btn-primary"
-                          disabled={updateProfileMutation.isPending}
-                        >
-                          {updateProfileMutation.isPending ? 'Saving…' : 'Save changes'}
-                        </button>
-                        <button type="button" className="np-profile-btn" onClick={handleCancel}>
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <button type="button" className="np-profile-btn np-profile-btn-primary" onClick={startEdit}>
-                        Edit profile
-                      </button>
-                    )}
-                  </div>
                 </form>
               </div>
             </details>
