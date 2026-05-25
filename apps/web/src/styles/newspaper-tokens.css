@@ -1092,6 +1092,21 @@
   margin-bottom: 1rem;
 }
 
+.np-profile-section-summary {
+  font-family: var(--np-body);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--np-ink);
+  margin: 0.35rem 0 0;
+  max-width: 42rem;
+}
+
+.np-profile-section-summary-preview {
+  margin-top: 1rem;
+  font-style: italic;
+  max-width: 42rem;
+}
+
 .np-profile-section {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;

@@ -15,6 +15,9 @@ import {
 } from '@/lib/endUserProfile'
 import {
   buildProfileSummaryText,
+  buildWorkSectionSummary,
+  buildVolunteerSectionSummary,
+  buildPlaySectionSummary,
   taxonomyChipLabels,
 } from '@/lib/profileSummary'
 import { buildEditionPreviewLines, buildNextMoves, countProfileSignals } from '@/lib/profileSignals'
@@ -172,6 +175,21 @@ export default function ProfilePage() {
     })
   }, [profileData, formData, skillCategories, causeCategories, playCategories])
 
+  const workSectionSummary = useMemo(
+    () => buildWorkSectionSummary(profileData?.profile?.name || 'Member', formData, skillCategories),
+    [profileData?.profile?.name, formData, skillCategories]
+  )
+
+  const volunteerSectionSummary = useMemo(
+    () => buildVolunteerSectionSummary(profileData?.profile?.name || 'Member', formData, causeCategories),
+    [profileData?.profile?.name, formData, causeCategories]
+  )
+
+  const playSectionSummary = useMemo(
+    () => buildPlaySectionSummary(profileData?.profile?.name || 'Member', formData, playCategories),
+    [profileData?.profile?.name, formData, playCategories]
+  )
+
   const skillChips = useMemo(
     () => taxonomyChipLabels(formData, 'skills', skillCategories),
     [formData, skillCategories]
@@ -317,15 +335,6 @@ export default function ProfilePage() {
                 Your summary
               </h2>
               <p className="np-profile-manifesto np-profile-summary-lead">{summaryText}</p>
-              {allChips.length > 0 ? (
-                <div className="np-chip-row np-chip-row-left" aria-label="Profile tags">
-                  {allChips.map((c) => (
-                    <span key={c} className="np-chip">
-                      {c}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
             </section>
 
             <p className="np-profile-pullquote">
@@ -395,56 +404,68 @@ export default function ProfilePage() {
                 <h2 id="work-heading" className="np-picks-header np-picks-header-left">
                   Work
                 </h2>
-                <p className="np-cat np-cat-left">For hire</p>
-                <h3 className="np-headline-serif">The résumé desk</h3>
-                <ResumeSection
-                  resumeText={formData.resumeText}
-                  resumeFileName={pendingUpload?.fileName ?? formData.resumeFileName}
-                  workExperience={formData.workExperience}
-                  education={formData.education}
-                  certifications={formData.certifications}
-                  readOnly={!isEditing}
-                  isParsing={parseMutation.isPending}
-                  onResumeTextChange={(text) => setFormData((p) => ({ ...p, resumeText: text }))}
-                  onFileSelect={(file) => {
-                    setPendingUpload(file)
-                    setFormData((p) => ({ ...p, resumeFileName: file.fileName }))
-                  }}
-                  onParse={handleParse}
-                  onWorkChange={(workExperience) => setFormData((p) => ({ ...p, workExperience }))}
-                  onEducationChange={(education) => setFormData((p) => ({ ...p, education }))}
-                  onCertificationsChange={(certifications) =>
-                    setFormData((p) => ({ ...p, certifications }))
-                  }
-                />
+                {!isEditing ? (
+                  <>
+                    <p className="np-cat np-cat-left">Origin file</p>
+                    <p className="np-profile-section-summary">{workSectionSummary}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="np-cat np-cat-left">For hire</p>
+                    <h3 className="np-headline-serif">The résumé desk</h3>
+                    <ResumeSection
+                      resumeText={formData.resumeText}
+                      resumeFileName={pendingUpload?.fileName ?? formData.resumeFileName}
+                      workExperience={formData.workExperience}
+                      education={formData.education}
+                      certifications={formData.certifications}
+                      readOnly={false}
+                      isParsing={parseMutation.isPending}
+                      onResumeTextChange={(text) => setFormData((p) => ({ ...p, resumeText: text }))}
+                      onFileSelect={(file) => {
+                        setPendingUpload(file)
+                        setFormData((p) => ({ ...p, resumeFileName: file.fileName }))
+                      }}
+                      onParse={handleParse}
+                      onWorkChange={(workExperience) => setFormData((p) => ({ ...p, workExperience }))}
+                      onEducationChange={(education) => setFormData((p) => ({ ...p, education }))}
+                      onCertificationsChange={(certifications) =>
+                        setFormData((p) => ({ ...p, certifications }))
+                      }
+                    />
 
-                <p className="np-cat np-cat-left" style={{ marginTop: '1.5rem' }}>
-                  Toolkit
-                </p>
-                <h3 className="np-headline-serif">What you can actually do</h3>
-                <p className="np-field-hint">
-                  Check categories and skills—we&apos;ll pre-fill from your résumé when we can. No résumé?
-                  Still pick; the payroll desk doesn&apos;t always wait for PDFs.
-                </p>
-                {isEditing ? (
-                  <div className="np-profile-actions np-profile-actions--inline">
-                    <button
-                      type="button"
-                      className="np-profile-btn"
-                      disabled={suggestSkillsQuery.isFetching}
-                      onClick={() => void applySuggestedSkills()}
-                    >
-                      {suggestSkillsQuery.isFetching ? 'Matching…' : 'Match skills from résumé'}
-                    </button>
-                  </div>
-                ) : null}
-                <TaxonomySelect
-                  idPrefix="skills"
-                  categories={skillCategories}
-                  value={formData.skills}
-                  readOnly={!isEditing}
-                  onChange={(skills) => setFormData((p) => ({ ...p, skills }))}
-                />
+                    <p className="np-cat np-cat-left" style={{ marginTop: '1.5rem' }}>
+                      Toolkit
+                    </p>
+                    <h3 className="np-headline-serif">What you can actually do</h3>
+                    <p className="np-field-hint">
+                      Check categories and skills—we&apos;ll pre-fill from your résumé when we can. No résumé?
+                      Still pick; the payroll desk doesn&apos;t always wait for PDFs.
+                    </p>
+                    <div className="np-profile-actions np-profile-actions--inline">
+                      <button
+                        type="button"
+                        className="np-profile-btn"
+                        disabled={suggestSkillsQuery.isFetching}
+                        onClick={() => void applySuggestedSkills()}
+                      >
+                        {suggestSkillsQuery.isFetching ? 'Matching…' : 'Match skills from résumé'}
+                      </button>
+                    </div>
+                    <TaxonomySelect
+                      idPrefix="skills"
+                      categories={skillCategories}
+                      value={formData.skills}
+                      readOnly={false}
+                      onChange={(skills) => setFormData((p) => ({ ...p, skills }))}
+                    />
+                    {workSectionSummary ? (
+                      <p className="np-field-hint np-profile-section-summary-preview">
+                        Hero summary preview: {workSectionSummary}
+                      </p>
+                    ) : null}
+                  </>
+                )}
               </section>
 
               {/* SECTION 3: VOLUNTEER */}
@@ -452,15 +473,29 @@ export default function ProfilePage() {
                 <h2 id="volunteer-heading" className="np-picks-header np-picks-header-left">
                   Volunteer
                 </h2>
-                <p className="np-cat np-cat-left">Good trouble</p>
-                <h3 className="np-headline-serif">Causes you&apos;d show up for</h3>
-                <TaxonomySelect
-                  idPrefix="causes"
-                  categories={causeCategories}
-                  value={formData.causes}
-                  readOnly={!isEditing}
-                  onChange={(causes) => setFormData((p) => ({ ...p, causes }))}
-                />
+                {!isEditing ? (
+                  <>
+                    <p className="np-cat np-cat-left">Good trouble</p>
+                    <p className="np-profile-section-summary">{volunteerSectionSummary}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="np-cat np-cat-left">Good trouble</p>
+                    <h3 className="np-headline-serif">Causes you&apos;d show up for</h3>
+                    <TaxonomySelect
+                      idPrefix="causes"
+                      categories={causeCategories}
+                      value={formData.causes}
+                      readOnly={false}
+                      onChange={(causes) => setFormData((p) => ({ ...p, causes }))}
+                    />
+                    {volunteerSectionSummary ? (
+                      <p className="np-field-hint np-profile-section-summary-preview">
+                        Hero summary preview: {volunteerSectionSummary}
+                      </p>
+                    ) : null}
+                  </>
+                )}
               </section>
 
               {/* SECTION 4: PLAY */}
@@ -468,15 +503,29 @@ export default function ProfilePage() {
                 <h2 id="play-heading" className="np-picks-header np-picks-header-left">
                   Play
                 </h2>
-                <p className="np-cat np-cat-left">Off the clock</p>
-                <h3 className="np-headline-serif">What you do when nobody&apos;s billing you</h3>
-                <TaxonomySelect
-                  idPrefix="play"
-                  categories={playCategories}
-                  value={formData.playInterests}
-                  readOnly={!isEditing}
-                  onChange={(playInterests) => setFormData((p) => ({ ...p, playInterests }))}
-                />
+                {!isEditing ? (
+                  <>
+                    <p className="np-cat np-cat-left">Off the clock</p>
+                    <p className="np-profile-section-summary">{playSectionSummary}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="np-cat np-cat-left">Off the clock</p>
+                    <h3 className="np-headline-serif">What you do when nobody&apos;s billing you</h3>
+                    <TaxonomySelect
+                      idPrefix="play"
+                      categories={playCategories}
+                      value={formData.playInterests}
+                      readOnly={false}
+                      onChange={(playInterests) => setFormData((p) => ({ ...p, playInterests }))}
+                    />
+                    {playSectionSummary ? (
+                      <p className="np-field-hint np-profile-section-summary-preview">
+                        Hero summary preview: {playSectionSummary}
+                      </p>
+                    ) : null}
+                  </>
+                )}
               </section>
 
               <div className="np-profile-actions">{profileActions}</div>
