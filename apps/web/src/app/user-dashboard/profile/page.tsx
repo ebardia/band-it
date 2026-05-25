@@ -87,8 +87,11 @@ export default function ProfilePage() {
   const playCategories = (playTaxonomy?.categories ?? []) as ProfileTaxonomyCategory[]
 
   const updateMutation = trpc.profile.update.useMutation({
-    onSuccess: async () => {
-      showToast('Edition filed — your Daily just got sharper.', 'success')
+    onSuccess: async (data) => {
+      if (data.profile) {
+        setFormData(profileToForm(data.profile))
+      }
+      showToast('Profile saved — your summary is updated.', 'success')
       setIsEditing(false)
       setPendingUpload(null)
       if (userId) await utils.profile.get.invalidate({ userId })

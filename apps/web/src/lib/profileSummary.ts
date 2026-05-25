@@ -107,13 +107,28 @@ function formatPhrase(value: string): string {
   return trimmed
 }
 
-function resumeLead(form: EndUserProfileForm): string {
-  const firstRole = form.workExperience.find((entry) => entry.title.trim())
-  if (firstRole) {
-    const title = formatPhrase(firstRole.title)
-    const org = formatPhrase(firstRole.org)
-    return [title, org].filter(Boolean).join(' at ')
-  }
+/** Strip first-person intros so "I am a software developer" → "software developer". */
+function cleanJobTitle(value: string): string {
+  let title = formatPhrase(value.trim())
+  title = title.replace(/^I am (a|an|the) /i, '')
+  title = title.replace(/^I'm (a|an|the) /i, '')
+  title = title.replace(/^I work as (a|an|the)? ?/i, '')
+  return title.trim()
+}
+
+function jobLine(entry: { title: string; org: string }): string {
+  const title = cleanJobTitle(entry.title)
+  const org = formatPhrase(entry.org)
+  if (title && org) return `${title} at ${org}`
+  return title || org
+}
+
+function jobsFromForm(form: EndUserProfileForm): string[] {
+  const fromStructured = form.workExperience
+    .map((entry) => jobLine(entry))
+    .filter(Boolean)
+
+  if (fromStructured.length > 0) return dedupeConcepts(fromStructured)
 
   const lead = form.resumeText
     .trim()
@@ -121,16 +136,16 @@ function resumeLead(form: EndUserProfileForm): string {
     .map((line) => line.trim())
     .find(Boolean)
 
-  return lead ? formatPhrase(lead) : ''
+  return lead ? [cleanJobTitle(lead)] : []
 }
 
 function resumeConcepts(form: EndUserProfileForm): string[] {
   const concepts: string[] = []
 
   for (const role of form.workExperience) {
-    if (role.title.trim()) concepts.push(formatPhrase(role.title.trim()))
-    const line = [formatPhrase(role.title), formatPhrase(role.org)].filter(Boolean).join(' at ')
+    const line = jobLine(role)
     if (line) concepts.push(line)
+    if (role.title.trim()) concepts.push(cleanJobTitle(role.title.trim()))
   }
 
   for (const school of form.education) {
@@ -144,8 +159,7 @@ function resumeConcepts(form: EndUserProfileForm): string[] {
     if (cert.name.trim()) concepts.push(formatPhrase(cert.name.trim()))
   }
 
-  const lead = resumeLead(form)
-  if (lead) concepts.push(lead)
+  concepts.push(...jobsFromForm(form))
 
   return dedupeConcepts(concepts)
 }
@@ -156,6 +170,12 @@ function educationLine(form: EndUserProfileForm): string {
   return [formatPhrase(school.degree), formatPhrase(school.institution)].filter(Boolean).join(' from ')
 }
 
+function certificationLine(form: EndUserProfileForm): string {
+  const names = dedupeConcepts(form.certifications.map((cert) => cert.name.trim()).filter(Boolean))
+  if (names.length === 0) return ''
+  return joinReadable(names, 3)
+}
+
 function withArticle(role: string): string {
   const lower = role.toLowerCase()
   if (/^(a|an|the)\s/.test(lower)) return role
@@ -163,24 +183,38 @@ function withArticle(role: string): string {
   return `a ${role}`
 }
 
+function formatPrimaryRole(role: string): string {
+  const cleaned = cleanJobTitle(role)
+  if (!cleaned) return ''
+  const wordCount = cleaned.split(/\s+/).length
+  if (wordCount <= 8 && !/[.!?]/.test(cleaned)) {
+    return withArticle(cleaned)
+  }
+  return cleaned.charAt(0).toLowerCase() + cleaned.slice(1)
+}
+
 /** One paragraph: place, work, volunteer, play — relaxed voice, no repeats. */
 export function buildProfileSummaryText(input: ProfileSummaryInput): string {
   const { name, locationLabel, form, skillCategories, causeCategories, playCategories } = input
   const firstName = firstNameFrom(name)
-  const role = resumeLead(form)
+  const jobs = jobsFromForm(form)
+  const primaryRole = jobs[0] ?? ''
+  const otherRoles = filterNotSimilarTo(jobs.slice(1), primaryRole ? [primaryRole] : [])
   const resumeFacts = resumeConcepts(form)
   const skills = filterNotSimilarTo(labelsForSelection(form.skills, skillCategories), resumeFacts)
   const causes = labelsForSelection(form.causes, causeCategories)
   const play = labelsForSelection(form.playInterests, playCategories)
   const education = educationLine(form)
-  const training = filterNotSimilarTo(dedupeConcepts([education].filter(Boolean)), [
+  const certifications = certificationLine(form)
+  const training = filterNotSimilarTo(dedupeConcepts([education, certifications].filter(Boolean)), [
     ...resumeFacts,
     ...skills,
+    ...jobs,
   ])
 
   const hasAnyContent =
     Boolean(locationLabel) ||
-    Boolean(role) ||
+    jobs.length > 0 ||
     Boolean(form.resumeText.trim()) ||
     skills.length > 0 ||
     causes.length > 0 ||
@@ -193,17 +227,21 @@ export function buildProfileSummaryText(input: ProfileSummaryInput): string {
 
   const sentences: string[] = []
 
-  if (locationLabel && role) {
-    sentences.push(`${firstName} is based in ${locationLabel} and works as ${withArticle(role)}.`)
+  if (locationLabel && primaryRole) {
+    sentences.push(`${firstName} is based in ${locationLabel} and works as ${formatPrimaryRole(primaryRole)}.`)
   } else if (locationLabel) {
     sentences.push(`${firstName} is based in ${locationLabel}.`)
-  } else if (role) {
-    sentences.push(`${firstName} works as ${withArticle(role)}.`)
+  } else if (primaryRole) {
+    sentences.push(`${firstName} works as ${formatPrimaryRole(primaryRole)}.`)
   } else if (form.resumeText.trim()) {
-    sentences.push(`${firstName} has work experience on file—we’re still lining up the headline.`)
+    sentences.push(`${firstName} has a résumé on file with more detail than we’ve pulled into this line yet.`)
   }
 
-  const workExtras = filterNotSimilarTo([...skills, ...training], role ? [role] : [])
+  if (otherRoles.length > 0) {
+    sentences.push(`Their background also includes ${joinReadable(otherRoles, 3)}.`)
+  }
+
+  const workExtras = filterNotSimilarTo([...skills, ...training], [...jobs, primaryRole].filter(Boolean))
   if (workExtras.length > 0) {
     sentences.push(`Day-to-day, that also means ${joinReadable(workExtras, 5)}.`)
   }
@@ -213,7 +251,7 @@ export function buildProfileSummaryText(input: ProfileSummaryInput): string {
   }
 
   if (play.length > 0) {
-    sentences.push(`For fun, you'll usually find ${firstName} into ${joinReadable(play, 5)}.`)
+    sentences.push(`For fun, you'll usually find ${firstName} enjoying ${joinReadable(play, 5)}.`)
   }
 
   if (sentences.length === 0) {

@@ -261,6 +261,11 @@ export const profileRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      const existingUser = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { resumeText: true },
+      })
+
       const location = await resolveProfileLocation(input.locationId, {
         city: input.locationCity ?? '',
         state: input.locationState ?? '',
@@ -313,13 +318,37 @@ export const profileRouter = router({
         throw new Error('Resume is required — paste text or upload a PDF, DOCX, or TXT file.')
       }
 
+      let workExperience = input.workExperience
+      let education = input.education
+      let certifications = input.certifications
+      let skillCategoryIds = [...input.skills.categoryIds]
+      let skillItemIds = [...input.skills.itemIds]
+
+      const previousResume = existingUser?.resumeText?.trim() ?? ''
+      const resumeChanged = resumeText.trim() !== previousResume
+
+      if (resumeText.length >= 20 && resumeChanged) {
+        try {
+          const parsed = await parseResumeWithAI(resumeText, input.userId)
+          if (parsed.workExperience.length > 0) workExperience = parsed.workExperience
+          if (parsed.education.length > 0) education = parsed.education
+          if (parsed.certifications.length > 0) certifications = parsed.certifications
+          skillCategoryIds = [
+            ...new Set([...skillCategoryIds, ...parsed.suggestedSkillCategoryIds]),
+          ]
+          skillItemIds = [...new Set([...skillItemIds, ...parsed.suggestedSkillItemIds])]
+        } catch (error) {
+          console.warn('[profile.update] Resume parse on save failed:', error)
+        }
+      }
+
       const allCategoryIds = [
-        ...input.skills.categoryIds,
+        ...skillCategoryIds,
         ...input.causes.categoryIds,
         ...input.playInterests.categoryIds,
       ]
       const allItemIds = [
-        ...input.skills.itemIds,
+        ...skillItemIds,
         ...input.causes.itemIds,
         ...input.playInterests.itemIds,
       ]
@@ -346,9 +375,9 @@ export const profileRouter = router({
             zipcode: location.zip,
             resumeText: resumeText || null,
             resumeFileId,
-            workExperience: input.workExperience,
-            education: input.education,
-            certifications: input.certifications,
+            workExperience,
+            education,
+            certifications,
             profileCompleted: profileIsComplete({
               locationId: location.id,
               resumeText: resumeText || null,
