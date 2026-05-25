@@ -1,4 +1,4 @@
-/** Build read-only summary copy — superhero voice, rule-based, deduped per section. */
+/** Build read-only summary — one relaxed paragraph, deduped facts. */
 
 import type { EndUserProfileForm, ProfileTaxonomyCategory } from './endUserProfile'
 
@@ -90,13 +90,29 @@ function joinReadable(items: string[], max = 4): string {
 }
 
 function firstNameFrom(name: string): string {
-  return name.split(/\s+/)[0] || 'This hero'
+  return name.split(/\s+/)[0] || 'You'
+}
+
+/** Turn SHOUTY résumé paste into normal phrasing. */
+function formatPhrase(value: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (trimmed === trimmed.toUpperCase() && /[A-Z]/.test(trimmed)) {
+    return trimmed
+      .toLowerCase()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+  return trimmed
 }
 
 function resumeLead(form: EndUserProfileForm): string {
   const firstRole = form.workExperience.find((entry) => entry.title.trim())
   if (firstRole) {
-    return [firstRole.title, firstRole.org].filter(Boolean).join(' at ')
+    const title = formatPhrase(firstRole.title)
+    const org = formatPhrase(firstRole.org)
+    return [title, org].filter(Boolean).join(' at ')
   }
 
   const lead = form.resumeText
@@ -105,25 +121,27 @@ function resumeLead(form: EndUserProfileForm): string {
     .map((line) => line.trim())
     .find(Boolean)
 
-  return lead ?? ''
+  return lead ? formatPhrase(lead) : ''
 }
 
 function resumeConcepts(form: EndUserProfileForm): string[] {
   const concepts: string[] = []
 
   for (const role of form.workExperience) {
-    if (role.title.trim()) concepts.push(role.title.trim())
-    const line = [role.title, role.org].filter(Boolean).join(' at ')
+    if (role.title.trim()) concepts.push(formatPhrase(role.title.trim()))
+    const line = [formatPhrase(role.title), formatPhrase(role.org)].filter(Boolean).join(' at ')
     if (line) concepts.push(line)
   }
 
   for (const school of form.education) {
-    const line = [school.degree, school.institution].filter(Boolean).join(' from ')
+    const line = [formatPhrase(school.degree), formatPhrase(school.institution)]
+      .filter(Boolean)
+      .join(' from ')
     if (line) concepts.push(line)
   }
 
   for (const cert of form.certifications) {
-    if (cert.name.trim()) concepts.push(cert.name.trim())
+    if (cert.name.trim()) concepts.push(formatPhrase(cert.name.trim()))
   }
 
   const lead = resumeLead(form)
@@ -135,125 +153,74 @@ function resumeConcepts(form: EndUserProfileForm): string[] {
 function educationLine(form: EndUserProfileForm): string {
   const school = form.education.find((entry) => entry.degree.trim() || entry.institution.trim())
   if (!school) return ''
-  return [school.degree, school.institution].filter(Boolean).join(' from ')
+  return [formatPhrase(school.degree), formatPhrase(school.institution)].filter(Boolean).join(' from ')
 }
 
-function certificationLine(form: EndUserProfileForm): string {
-  const names = dedupeConcepts(form.certifications.map((cert) => cert.name.trim()).filter(Boolean))
-  if (names.length === 0) return ''
-  return joinReadable(names, 3)
+function withArticle(role: string): string {
+  const lower = role.toLowerCase()
+  if (/^(a|an|the)\s/.test(lower)) return role
+  if (/^[aeiou]/i.test(role)) return `an ${role}`
+  return `a ${role}`
 }
 
-export function buildWorkSectionSummary(
-  name: string,
-  form: EndUserProfileForm,
-  skillCategories: ProfileTaxonomyCategory[]
-): string {
-  const hero = firstNameFrom(name)
+/** One paragraph: place, work, volunteer, play — relaxed voice, no repeats. */
+export function buildProfileSummaryText(input: ProfileSummaryInput): string {
+  const { name, locationLabel, form, skillCategories, causeCategories, playCategories } = input
+  const firstName = firstNameFrom(name)
   const role = resumeLead(form)
   const resumeFacts = resumeConcepts(form)
-  const toolkit = filterNotSimilarTo(labelsForSelection(form.skills, skillCategories), resumeFacts)
+  const skills = filterNotSimilarTo(labelsForSelection(form.skills, skillCategories), resumeFacts)
+  const causes = labelsForSelection(form.causes, causeCategories)
+  const play = labelsForSelection(form.playInterests, playCategories)
   const education = educationLine(form)
-  const certifications = certificationLine(form)
+  const training = filterNotSimilarTo(dedupeConcepts([education].filter(Boolean)), [
+    ...resumeFacts,
+    ...skills,
+  ])
 
-  const hasResume =
+  const hasAnyContent =
+    Boolean(locationLabel) ||
     Boolean(role) ||
     Boolean(form.resumeText.trim()) ||
-    form.workExperience.length > 0 ||
-    form.education.length > 0 ||
-    form.certifications.length > 0
+    skills.length > 0 ||
+    causes.length > 0 ||
+    play.length > 0 ||
+    training.length > 0
 
-  if (!hasResume && toolkit.length === 0) {
-    return `${hero}'s professional origin story is still classified—file a résumé and pick your toolkit when you edit.`
+  if (!hasAnyContent) {
+    return 'Tell us where you are, what you do for work, and what you care about—we’ll turn it into a short summary here.'
   }
 
   const sentences: string[] = []
 
-  if (role) {
-    sentences.push(`By day, ${hero} answers to the call sign ${role}.`)
+  if (locationLabel && role) {
+    sentences.push(`${firstName} is based in ${locationLabel} and works as ${withArticle(role)}.`)
+  } else if (locationLabel) {
+    sentences.push(`${firstName} is based in ${locationLabel}.`)
+  } else if (role) {
+    sentences.push(`${firstName} works as ${withArticle(role)}.`)
   } else if (form.resumeText.trim()) {
-    sentences.push(`By day, ${hero} operates on the strength of a résumé that opens with real field experience.`)
+    sentences.push(`${firstName} has work experience on file—we’re still lining up the headline.`)
   }
 
-  if (toolkit.length > 0) {
-    sentences.push(`The utility belt runs on ${joinReadable(toolkit, 6)}—no duplicate gear, just the powers that count.`)
+  const workExtras = filterNotSimilarTo([...skills, ...training], role ? [role] : [])
+  if (workExtras.length > 0) {
+    sentences.push(`Day-to-day, that also means ${joinReadable(workExtras, 5)}.`)
   }
 
-  const trainingBits = filterNotSimilarTo(
-    dedupeConcepts([education, certifications].filter(Boolean)),
-    [...resumeFacts, ...toolkit]
-  )
+  if (causes.length > 0) {
+    sentences.push(`Outside of work, ${firstName} cares about ${joinReadable(causes, 5)}.`)
+  }
 
-  if (trainingBits.length > 0) {
-    sentences.push(`Training logs cite ${joinReadable(trainingBits, 3)}.`)
+  if (play.length > 0) {
+    sentences.push(`For fun, you'll usually find ${firstName} into ${joinReadable(play, 5)}.`)
   }
 
   if (sentences.length === 0) {
-    return `${hero} has professional intel on file—the desk is still translating it into hero copy.`
+    return `${firstName} is on the map—add a little more detail when you edit and this summary will fill in.`
   }
 
   return sentences.join(' ')
-}
-
-export function buildVolunteerSectionSummary(
-  name: string,
-  form: EndUserProfileForm,
-  causeCategories: ProfileTaxonomyCategory[]
-): string {
-  const hero = firstNameFrom(name)
-  const causes = labelsForSelection(form.causes, causeCategories)
-
-  if (causes.length === 0) {
-    return `${hero} hasn't declared a community mission yet—pick the causes you'd suit up for when you edit.`
-  }
-
-  return `When the city needs backup without a paycheck, ${hero} deploys for ${joinReadable(causes, 6)}—good trouble, zero secret identity required.`
-}
-
-export function buildPlaySectionSummary(
-  name: string,
-  form: EndUserProfileForm,
-  playCategories: ProfileTaxonomyCategory[]
-): string {
-  const hero = firstNameFrom(name)
-  const play = labelsForSelection(form.playInterests, playCategories)
-
-  if (play.length === 0) {
-    return `${hero}'s off-duty lair is still a mystery—add what you do for fun when you edit.`
-  }
-
-  return `Off the clock, ${hero} recharges through ${joinReadable(play, 6)}—because every hero needs a hobby, a hideout, and something that isn't a deadline.`
-}
-
-/** Edition-level summary — basics only; work / volunteer / play live in their sections. */
-export function buildProfileSummaryText(input: ProfileSummaryInput): string {
-  const { name, locationLabel, form } = input
-  const hero = firstNameFrom(name)
-  const hasWork =
-    Boolean(resumeLead(form)) ||
-    Boolean(form.resumeText.trim()) ||
-    form.skills.categoryIds.length > 0 ||
-    form.skills.itemIds.length > 0
-  const hasVolunteer = form.causes.categoryIds.length > 0 || form.causes.itemIds.length > 0
-  const hasPlay = form.playInterests.categoryIds.length > 0 || form.playInterests.itemIds.length > 0
-
-  if (locationLabel) {
-    const desks: string[] = []
-    if (hasWork) desks.push('work')
-    if (hasVolunteer) desks.push('volunteer')
-    if (hasPlay) desks.push('play')
-    const deskLine =
-      desks.length > 0
-        ? `The ${desks.join(', ')} desks below spell out the rest in one voice each.`
-        : 'Fill in the desks below and this edition gets sharper fast.'
-    return `${hero}'s edition files from ${locationLabel}. ${deskLine}`
-  }
-
-  if (hasWork || hasVolunteer || hasPlay) {
-    return `${hero} is on the roster. Anchor your place below, then read each desk's hero summary for work, community, and downtime.`
-  }
-
-  return 'Your Daily is still the generic morning edition. Drop your place and résumé below—we’ll start writing you into the story: gigs, causes, and the occasional perfect Saturday.'
 }
 
 export function taxonomyChipLabels(

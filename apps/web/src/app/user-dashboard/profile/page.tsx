@@ -13,13 +13,7 @@ import {
   type EndUserProfileForm,
   type ProfileTaxonomyCategory,
 } from '@/lib/endUserProfile'
-import {
-  buildProfileSummaryText,
-  buildWorkSectionSummary,
-  buildVolunteerSectionSummary,
-  buildPlaySectionSummary,
-  taxonomyChipLabels,
-} from '@/lib/profileSummary'
+import { buildProfileSummaryText, taxonomyChipLabels } from '@/lib/profileSummary'
 import { buildEditionPreviewLines, buildNextMoves, countProfileSignals } from '@/lib/profileSignals'
 
 type PendingUpload = {
@@ -175,21 +169,6 @@ export default function ProfilePage() {
     })
   }, [profileData, formData, skillCategories, causeCategories, playCategories])
 
-  const workSectionSummary = useMemo(
-    () => buildWorkSectionSummary(profileData?.profile?.name || 'Member', formData, skillCategories),
-    [profileData?.profile?.name, formData, skillCategories]
-  )
-
-  const volunteerSectionSummary = useMemo(
-    () => buildVolunteerSectionSummary(profileData?.profile?.name || 'Member', formData, causeCategories),
-    [profileData?.profile?.name, formData, causeCategories]
-  )
-
-  const playSectionSummary = useMemo(
-    () => buildPlaySectionSummary(profileData?.profile?.name || 'Member', formData, playCategories),
-    [profileData?.profile?.name, formData, playCategories]
-  )
-
   const skillChips = useMemo(
     () => taxonomyChipLabels(formData, 'skills', skillCategories),
     [formData, skillCategories]
@@ -252,7 +231,7 @@ export default function ProfilePage() {
   const startEdit = () => {
     setIsEditing(true)
     requestAnimationFrame(() => {
-      document.getElementById('profile-section-basics')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document.getElementById('profile-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
   }
 
@@ -321,62 +300,28 @@ export default function ProfilePage() {
       <div className="np-profile-shell">
         <div className="np-profile-spread">
           <main className="np-profile-main">
-            <p className="np-cat np-cat-left">YOUR EDITION</p>
-            <p className="np-profile-dek-lead" style={{ textAlign: 'left', marginLeft: 0, marginRight: 0 }}>
-              This is the home for who you are on Band It—not only your bands and projects. What you save
-              here shapes your Daily edition: paid gigs that might fit, causes worth showing up for, play
-              that actually sounds fun, and the occasional cultural signal we think you&apos;ll like.
-            </p>
-
-            <hr className="np-rule" />
-
-            <section className="np-profile-section" aria-labelledby="summary-heading">
+            <section className="np-profile-section np-profile-section--summary" aria-labelledby="summary-heading">
               <h2 id="summary-heading" className="np-picks-header">
                 Your summary
               </h2>
               <p className="np-profile-manifesto np-profile-summary-lead">{summaryText}</p>
+              <div className="np-profile-actions np-profile-actions--toolbar">{profileActions}</div>
             </section>
 
-            <p className="np-profile-pullquote">
-              Whatever brings you here on a given morning, the goal is the same: to help you make your next
-              move.
-            </p>
-
-            <div className="np-profile-actions np-profile-actions--toolbar">{profileActions}</div>
-
-            <details className="np-profile-details">
-              <summary className="np-profile-details-summary">Why this page matters to your Daily</summary>
-              <div className="np-profile-details-body">
-                <p className="np-profile-manifesto" style={{ margin: 0, padding: 0, border: 'none' }}>
-                  Your edition is only as specific as the facts behind it. Place and résumé get you on the
-                  map and the payroll; skills, causes, and play tell us what to put in front of you—and what
-                  to leave out. Nothing here is a performance review. It&apos;s world-building for a newspaper
-                  that&apos;s actually about your week.
-                </p>
-              </div>
-            </details>
-
-            <form
-              id="end-user-profile-form"
-              onSubmit={handleSubmit}
-              className={isEditing ? 'np-profile-facts np-profile-facts--editing' : ''}
-            >
-              <p className="np-field-hint np-profile-facts-intro">
-                Four desks below—Basics, Work, Volunteer, Play. Place and résumé are required; the rest
-                sharpens what lands in your Daily.
-              </p>
-              {/* SECTION 1: BASICS */}
-              <section
-                id="profile-section-basics"
-                className="np-profile-section"
-                aria-labelledby="basics-heading"
+            {isEditing ? (
+              <form
+                id="end-user-profile-form"
+                onSubmit={handleSubmit}
+                className="np-profile-facts np-profile-facts--editing"
               >
-                <h2 id="basics-heading" className="np-picks-header np-picks-header-left">
-                  Basics
-                </h2>
-                <p className="np-cat np-cat-left">Dateline</p>
-                <h3 className="np-headline-serif">Your corner of the map</h3>
-                {isEditing ? (
+                <p className="np-field-hint np-profile-facts-intro">
+                  Place and résumé are required. Everything else helps your Daily feel like you.
+                </p>
+
+                <section id="profile-edit-form" className="np-profile-section" aria-labelledby="basics-heading">
+                  <h2 id="basics-heading" className="np-picks-header np-picks-header-left">
+                    Place
+                  </h2>
                   <LocationAutocomplete
                     valueId={formData.locationId}
                     valueLabel={formData.locationLabel}
@@ -392,144 +337,84 @@ export default function ProfilePage() {
                       }))
                     }
                   />
-                ) : (
-                  <p className="np-profile-read">
-                    {formData.locationLabel || 'No dateline yet—add your place when you edit.'}
+                </section>
+
+                <section className="np-profile-section" aria-labelledby="work-heading">
+                  <h2 id="work-heading" className="np-picks-header np-picks-header-left">
+                    Work
+                  </h2>
+                  <ResumeSection
+                    resumeText={formData.resumeText}
+                    resumeFileName={pendingUpload?.fileName ?? formData.resumeFileName}
+                    workExperience={formData.workExperience}
+                    education={formData.education}
+                    certifications={formData.certifications}
+                    readOnly={false}
+                    isParsing={parseMutation.isPending}
+                    onResumeTextChange={(text) => setFormData((p) => ({ ...p, resumeText: text }))}
+                    onFileSelect={(file) => {
+                      setPendingUpload(file)
+                      setFormData((p) => ({ ...p, resumeFileName: file.fileName }))
+                    }}
+                    onParse={handleParse}
+                    onWorkChange={(workExperience) => setFormData((p) => ({ ...p, workExperience }))}
+                    onEducationChange={(education) => setFormData((p) => ({ ...p, education }))}
+                    onCertificationsChange={(certifications) =>
+                      setFormData((p) => ({ ...p, certifications }))
+                    }
+                  />
+
+                  <p className="np-label" style={{ marginTop: '1.25rem' }}>
+                    Skills &amp; strengths
                   </p>
-                )}
-              </section>
+                  <div className="np-profile-actions np-profile-actions--inline">
+                    <button
+                      type="button"
+                      className="np-profile-btn"
+                      disabled={suggestSkillsQuery.isFetching}
+                      onClick={() => void applySuggestedSkills()}
+                    >
+                      {suggestSkillsQuery.isFetching ? 'Matching…' : 'Match skills from résumé'}
+                    </button>
+                  </div>
+                  <TaxonomySelect
+                    idPrefix="skills"
+                    categories={skillCategories}
+                    value={formData.skills}
+                    readOnly={false}
+                    onChange={(skills) => setFormData((p) => ({ ...p, skills }))}
+                  />
+                </section>
 
-              {/* SECTION 2: WORK */}
-              <section className="np-profile-section" aria-labelledby="work-heading">
-                <h2 id="work-heading" className="np-picks-header np-picks-header-left">
-                  Work
-                </h2>
-                {!isEditing ? (
-                  <>
-                    <p className="np-cat np-cat-left">Origin file</p>
-                    <p className="np-profile-section-summary">{workSectionSummary}</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="np-cat np-cat-left">For hire</p>
-                    <h3 className="np-headline-serif">The résumé desk</h3>
-                    <ResumeSection
-                      resumeText={formData.resumeText}
-                      resumeFileName={pendingUpload?.fileName ?? formData.resumeFileName}
-                      workExperience={formData.workExperience}
-                      education={formData.education}
-                      certifications={formData.certifications}
-                      readOnly={false}
-                      isParsing={parseMutation.isPending}
-                      onResumeTextChange={(text) => setFormData((p) => ({ ...p, resumeText: text }))}
-                      onFileSelect={(file) => {
-                        setPendingUpload(file)
-                        setFormData((p) => ({ ...p, resumeFileName: file.fileName }))
-                      }}
-                      onParse={handleParse}
-                      onWorkChange={(workExperience) => setFormData((p) => ({ ...p, workExperience }))}
-                      onEducationChange={(education) => setFormData((p) => ({ ...p, education }))}
-                      onCertificationsChange={(certifications) =>
-                        setFormData((p) => ({ ...p, certifications }))
-                      }
-                    />
+                <section className="np-profile-section" aria-labelledby="volunteer-heading">
+                  <h2 id="volunteer-heading" className="np-picks-header np-picks-header-left">
+                    Volunteer
+                  </h2>
+                  <TaxonomySelect
+                    idPrefix="causes"
+                    categories={causeCategories}
+                    value={formData.causes}
+                    readOnly={false}
+                    onChange={(causes) => setFormData((p) => ({ ...p, causes }))}
+                  />
+                </section>
 
-                    <p className="np-cat np-cat-left" style={{ marginTop: '1.5rem' }}>
-                      Toolkit
-                    </p>
-                    <h3 className="np-headline-serif">What you can actually do</h3>
-                    <p className="np-field-hint">
-                      Check categories and skills—we&apos;ll pre-fill from your résumé when we can. No résumé?
-                      Still pick; the payroll desk doesn&apos;t always wait for PDFs.
-                    </p>
-                    <div className="np-profile-actions np-profile-actions--inline">
-                      <button
-                        type="button"
-                        className="np-profile-btn"
-                        disabled={suggestSkillsQuery.isFetching}
-                        onClick={() => void applySuggestedSkills()}
-                      >
-                        {suggestSkillsQuery.isFetching ? 'Matching…' : 'Match skills from résumé'}
-                      </button>
-                    </div>
-                    <TaxonomySelect
-                      idPrefix="skills"
-                      categories={skillCategories}
-                      value={formData.skills}
-                      readOnly={false}
-                      onChange={(skills) => setFormData((p) => ({ ...p, skills }))}
-                    />
-                    {workSectionSummary ? (
-                      <p className="np-field-hint np-profile-section-summary-preview">
-                        Hero summary preview: {workSectionSummary}
-                      </p>
-                    ) : null}
-                  </>
-                )}
-              </section>
+                <section className="np-profile-section" aria-labelledby="play-heading">
+                  <h2 id="play-heading" className="np-picks-header np-picks-header-left">
+                    Play
+                  </h2>
+                  <TaxonomySelect
+                    idPrefix="play"
+                    categories={playCategories}
+                    value={formData.playInterests}
+                    readOnly={false}
+                    onChange={(playInterests) => setFormData((p) => ({ ...p, playInterests }))}
+                  />
+                </section>
 
-              {/* SECTION 3: VOLUNTEER */}
-              <section className="np-profile-section" aria-labelledby="volunteer-heading">
-                <h2 id="volunteer-heading" className="np-picks-header np-picks-header-left">
-                  Volunteer
-                </h2>
-                {!isEditing ? (
-                  <>
-                    <p className="np-cat np-cat-left">Good trouble</p>
-                    <p className="np-profile-section-summary">{volunteerSectionSummary}</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="np-cat np-cat-left">Good trouble</p>
-                    <h3 className="np-headline-serif">Causes you&apos;d show up for</h3>
-                    <TaxonomySelect
-                      idPrefix="causes"
-                      categories={causeCategories}
-                      value={formData.causes}
-                      readOnly={false}
-                      onChange={(causes) => setFormData((p) => ({ ...p, causes }))}
-                    />
-                    {volunteerSectionSummary ? (
-                      <p className="np-field-hint np-profile-section-summary-preview">
-                        Hero summary preview: {volunteerSectionSummary}
-                      </p>
-                    ) : null}
-                  </>
-                )}
-              </section>
-
-              {/* SECTION 4: PLAY */}
-              <section className="np-profile-section" aria-labelledby="play-heading">
-                <h2 id="play-heading" className="np-picks-header np-picks-header-left">
-                  Play
-                </h2>
-                {!isEditing ? (
-                  <>
-                    <p className="np-cat np-cat-left">Off the clock</p>
-                    <p className="np-profile-section-summary">{playSectionSummary}</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="np-cat np-cat-left">Off the clock</p>
-                    <h3 className="np-headline-serif">What you do when nobody&apos;s billing you</h3>
-                    <TaxonomySelect
-                      idPrefix="play"
-                      categories={playCategories}
-                      value={formData.playInterests}
-                      readOnly={false}
-                      onChange={(playInterests) => setFormData((p) => ({ ...p, playInterests }))}
-                    />
-                    {playSectionSummary ? (
-                      <p className="np-field-hint np-profile-section-summary-preview">
-                        Hero summary preview: {playSectionSummary}
-                      </p>
-                    ) : null}
-                  </>
-                )}
-              </section>
-
-              <div className="np-profile-actions">{profileActions}</div>
-            </form>
+                <div className="np-profile-actions">{profileActions}</div>
+              </form>
+            ) : null}
           </main>
 
           <aside className="np-profile-rail" aria-label="Edition signals">
