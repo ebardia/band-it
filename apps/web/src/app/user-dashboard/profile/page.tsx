@@ -305,7 +305,7 @@ export default function ProfilePage() {
           <main className="np-profile-main">
             <section className="np-profile-section np-profile-section--summary" aria-labelledby="summary-heading">
               <h2 id="summary-heading" className="np-picks-header">
-                Your summary
+                My summary
               </h2>
               <p className="np-profile-manifesto np-profile-summary-lead">{summaryText}</p>
               <div className="np-profile-actions np-profile-actions--toolbar">{profileActions}</div>

@@ -89,9 +89,6 @@ function joinReadable(items: string[], max = 4): string {
   return `${shown.slice(0, -1).join(', ')}, and ${shown[shown.length - 1]}${tail}`
 }
 
-function firstNameFrom(name: string): string {
-  return name.split(/\s+/)[0] || 'You'
-}
 
 /** Turn SHOUTY résumé paste into normal phrasing. */
 function formatPhrase(value: string): string {
@@ -193,10 +190,17 @@ function formatPrimaryRole(role: string): string {
   return cleaned.charAt(0).toLowerCase() + cleaned.slice(1)
 }
 
-/** One paragraph: place, work, volunteer, play — relaxed voice, no repeats. */
+function summaryLocation(form: EndUserProfileForm, locationLabel: string): string {
+  if (form.locationCity.trim() && form.locationState.trim()) {
+    return `${form.locationCity.trim()}, ${form.locationState.trim().toUpperCase()}`
+  }
+  return locationLabel.replace(/\s+\d{5}(-\d{4})?$/, '').trim()
+}
+
+/** One paragraph: place, work, volunteer, play — first person, relaxed, no repeats. */
 export function buildProfileSummaryText(input: ProfileSummaryInput): string {
-  const { name, locationLabel, form, skillCategories, causeCategories, playCategories } = input
-  const firstName = firstNameFrom(name)
+  const { locationLabel, form, skillCategories, causeCategories, playCategories } = input
+  const place = summaryLocation(form, locationLabel)
   const jobs = jobsFromForm(form)
   const primaryRole = jobs[0] ?? ''
   const otherRoles = filterNotSimilarTo(jobs.slice(1), primaryRole ? [primaryRole] : [])
@@ -213,7 +217,7 @@ export function buildProfileSummaryText(input: ProfileSummaryInput): string {
   ])
 
   const hasAnyContent =
-    Boolean(locationLabel) ||
+    Boolean(place) ||
     jobs.length > 0 ||
     Boolean(form.resumeText.trim()) ||
     skills.length > 0 ||
@@ -227,18 +231,18 @@ export function buildProfileSummaryText(input: ProfileSummaryInput): string {
 
   const sentences: string[] = []
 
-  if (locationLabel && primaryRole) {
-    sentences.push(`${firstName} is based in ${locationLabel} and works as ${formatPrimaryRole(primaryRole)}.`)
-  } else if (locationLabel) {
-    sentences.push(`${firstName} is based in ${locationLabel}.`)
+  if (place && primaryRole) {
+    sentences.push(`I'm based in ${place} and work as ${formatPrimaryRole(primaryRole)}.`)
+  } else if (place) {
+    sentences.push(`I'm based in ${place}.`)
   } else if (primaryRole) {
-    sentences.push(`${firstName} works as ${formatPrimaryRole(primaryRole)}.`)
+    sentences.push(`I work as ${formatPrimaryRole(primaryRole)}.`)
   } else if (form.resumeText.trim()) {
-    sentences.push(`${firstName} has a résumé on file with more detail than we’ve pulled into this line yet.`)
+    sentences.push(`I have a résumé on file with more detail than we’ve pulled into this line yet.`)
   }
 
   if (otherRoles.length > 0) {
-    sentences.push(`Their background also includes ${joinReadable(otherRoles, 3)}.`)
+    sentences.push(`My background also includes ${joinReadable(otherRoles, 3)}.`)
   }
 
   const workExtras = filterNotSimilarTo([...skills, ...training], [...jobs, primaryRole].filter(Boolean))
@@ -247,15 +251,15 @@ export function buildProfileSummaryText(input: ProfileSummaryInput): string {
   }
 
   if (causes.length > 0) {
-    sentences.push(`Outside of work, ${firstName} cares about ${joinReadable(causes, 5)}.`)
+    sentences.push(`Outside of work, I care about ${joinReadable(causes, 5)}.`)
   }
 
   if (play.length > 0) {
-    sentences.push(`For fun, you'll usually find ${firstName} enjoying ${joinReadable(play, 5)}.`)
+    sentences.push(`For fun, I'm usually into ${joinReadable(play, 5)}.`)
   }
 
   if (sentences.length === 0) {
-    return `${firstName} is on the map—add a little more detail when you edit and this summary will fill in.`
+    return `I'm on the map—add a little more detail when you edit and this summary will fill in.`
   }
 
   return sentences.join(' ')
