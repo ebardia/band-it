@@ -4,37 +4,22 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
-import {
-  Heading,
-  Text,
-  Stack,
-  Button,
-  useToast,
-  PageWrapper,
-  DashboardContainer,
-  Flex,
-  Card,
-  Alert,
-  Loading,
-  Badge,
-  Box
-} from '@/components/ui'
-import Image from 'next/image'
+import { Loading, useToast } from '@/components/ui'
+import { WELCOME_INTERESTS, type WelcomeInterest } from '@/lib/welcomeInterests'
 
 export default function WelcomePage() {
   const router = useRouter()
   const { showToast } = useToast()
   const [userId, setUserId] = useState<string | null>(null)
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
+  const [selectedInterestId, setSelectedInterestId] = useState<string | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
       try {
-        const decoded: any = jwtDecode(token)
+        const decoded: { userId: string } = jwtDecode(token)
         setUserId(decoded.userId)
-      } catch (error) {
-        console.error('Invalid token:', error)
+      } catch {
         router.push('/login')
       }
     } else {
@@ -42,205 +27,175 @@ export default function WelcomePage() {
     }
   }, [router])
 
-  // Get user welcome state
   const { data: welcomeState, isLoading: stateLoading } = trpc.onboarding.getUserWelcomeState.useQuery(
     { userId: userId! },
     { enabled: !!userId }
   )
 
-  // Get available templates
-  const { data: templatesData, isLoading: templatesLoading } = trpc.onboarding.getTemplates.useQuery()
-
-  // Get pending invitations
-  const { data: invitationsData, isLoading: invitationsLoading, refetch: refetchInvitations } = trpc.band.getMyInvitations.useQuery(
+  const { data: invitationsData, isLoading: invitationsLoading } = trpc.band.getMyInvitations.useQuery(
     { userId: userId! },
     { enabled: !!userId }
   )
 
-  // Mark welcome as complete
-  const completeWelcomeMutation = trpc.onboarding.completeWelcome.useMutation({
-    onSuccess: () => {
-      router.push('/bands/my-bands')
-    },
-  })
+  const completeWelcomeMutation = trpc.onboarding.completeWelcome.useMutation()
 
-  // Accept invitation
   const acceptMutation = trpc.band.acceptInvitation.useMutation({
     onSuccess: () => {
-      showToast('Invitation accepted! Redirecting...', 'success')
-      // Mark welcome complete and redirect
+      showToast('Invitation accepted — welcome aboard.', 'success')
       if (userId) {
-        completeWelcomeMutation.mutate({ userId })
+        completeWelcomeMutation.mutate(
+          { userId },
+          { onSuccess: () => router.push('/bands/my-bands') }
+        )
       }
     },
-    onError: (error) => {
-      showToast(error.message, 'error')
-    },
+    onError: (error) => showToast(error.message, 'error'),
   })
 
-  const handleAcceptInvitation = (membershipId: string) => {
-    if (!userId) return
-    acceptMutation.mutate({ membershipId, userId })
-  }
-
-  const handleCreateBand = () => {
-    if (!selectedTemplate) {
-      showToast('Please select a template', 'error')
-      return
-    }
-    // Navigate to create band with selected template
-    router.push(`/bands/create?template=${selectedTemplate}`)
-  }
-
-  const handleSkipToDiscover = () => {
-    if (userId) {
-      completeWelcomeMutation.mutate({ userId })
-    }
-    router.push('/discover')
-  }
-
-  // Redirect if already completed welcome and has bands
   useEffect(() => {
-    if (welcomeState && welcomeState.hasCompletedWelcome && welcomeState.hasBands) {
+    if (welcomeState?.hasCompletedWelcome && welcomeState.hasBands) {
       router.push('/bands/my-bands')
     }
   }, [welcomeState, router])
 
-  const isLoading = stateLoading || templatesLoading || invitationsLoading
+  const selectedInterest = WELCOME_INTERESTS.find((item) => item.id === selectedInterestId)
 
-  if (isLoading) {
-    return (
-      <PageWrapper variant="dashboard">
-        <DashboardContainer>
-          <Loading message="Loading..." />
-        </DashboardContainer>
-      </PageWrapper>
+  const finishWelcome = (path: string) => {
+    if (!userId) return
+    completeWelcomeMutation.mutate(
+      { userId },
+      { onSuccess: () => router.push(path) }
     )
   }
 
-  const templates = templatesData?.templates || []
-  const invitations = invitationsData?.invitations || []
+  const handleContinue = () => {
+    if (!selectedInterest) {
+      showToast('Pick what brings you here first.', 'error')
+      return
+    }
+
+    if (selectedInterest.action === 'profile') {
+      finishWelcome('/user-dashboard/profile')
+      return
+    }
+
+    if (selectedInterest.action === 'discover') {
+      finishWelcome('/discover')
+      return
+    }
+
+    if (selectedInterest.action === 'band' && selectedInterest.templateId) {
+      router.push(`/bands/create?template=${selectedInterest.templateId}`)
+    }
+  }
+
+  if (stateLoading || invitationsLoading || !userId) {
+    return (
+      <div className="np-shell">
+        <Loading message="Opening your edition…" />
+      </div>
+    )
+  }
+
+  const invitations = invitationsData?.invitations ?? []
 
   return (
-    <PageWrapper variant="dashboard">
-      <DashboardContainer>
-        <div className="max-w-3xl mx-auto py-8">
-          <Stack spacing="xl">
-            {/* Header */}
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <Image
-                  src="/logo.png"
-                  alt="BAND IT Logo"
-                  width={150}
-                  height={150}
-                  priority
-                />
-              </div>
-              <Heading level={1}>Welcome to BAND IT</Heading>
-              <Text variant="muted" className="mt-2">
-                Let's get you started with collective decision-making
-              </Text>
-            </div>
+    <div className="np-shell np-welcome-shell">
+      <header className="np-welcome-masthead">
+        <p className="np-cat np-cat-left">First edition</p>
+        <h1 className="np-welcome-headline">What brings you to Band It?</h1>
+        <p className="np-welcome-dek">
+          Pick what you&apos;re here for. We&apos;ll point you in the right direction — profile, a new band, or
+          a look around.
+        </p>
+      </header>
 
-            {/* Pending Invitations Section */}
-            {invitations.length > 0 && (
-              <Card className="border-2 border-blue-200 bg-blue-50">
-                <Stack spacing="md">
-                  <Flex justify="between" align="center">
-                    <Heading level={3}>You've Been Invited!</Heading>
-                    <Badge variant="info">{invitations.length} pending</Badge>
-                  </Flex>
-                  <Text variant="muted">
-                    Someone wants you to join their band. Accept to get started right away.
-                  </Text>
-                  <Stack spacing="sm">
-                    {invitations.map((invitation: any) => (
-                      <Card key={invitation.id} className="bg-white">
-                        <Flex justify="between" align="center" gap="md">
-                          <div className="flex-1">
-                            <Text weight="semibold">{invitation.band.name}</Text>
-                            <Text variant="small" color="muted">{invitation.band.description}</Text>
-                          </div>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleAcceptInvitation(invitation.id)}
-                            disabled={acceptMutation.isPending}
-                          >
-                            {acceptMutation.isPending ? 'Joining...' : 'Join'}
-                          </Button>
-                        </Flex>
-                      </Card>
-                    ))}
-                  </Stack>
-                </Stack>
-              </Card>
-            )}
-
-            {/* Create Band Section */}
-            <Card>
-              <Stack spacing="lg">
+      {invitations.length > 0 ? (
+        <section className="np-welcome-invites" aria-labelledby="invites-heading">
+          <p className="np-cat np-cat-left">Invitations</p>
+          <h2 id="invites-heading" className="np-headline-serif">
+            You&apos;ve been invited
+          </h2>
+          <p className="np-field-hint">Someone wants you in their band — join now or pick an interest below.</p>
+          <ul className="np-welcome-invite-list">
+            {invitations.map((invitation: { id: string; band: { name: string; description?: string } }) => (
+              <li key={invitation.id} className="np-welcome-invite-row">
                 <div>
-                  <Heading level={2}>Create Your Own Band</Heading>
-                  <Text variant="muted" className="mt-1">
-                    What kind of group are you organizing? Choose a template to get started with tailored guidance.
-                  </Text>
+                  <p className="np-welcome-invite-name">{invitation.band.name}</p>
+                  {invitation.band.description ? (
+                    <p className="np-field-hint">{invitation.band.description}</p>
+                  ) : null}
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {templates.map((template: any) => (
-                    <button
-                      key={template.id}
-                      onClick={() => setSelectedTemplate(template.id)}
-                      className={`p-4 border-2 rounded-lg text-left transition-all ${
-                        selectedTemplate === template.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">{template.emoji}</span>
-                        <div className="flex-1">
-                          <Text weight="semibold">{template.name}</Text>
-                          <Text variant="small" color="muted">{template.description}</Text>
-                        </div>
-                        {selectedTemplate === template.id && (
-                          <span className="text-blue-500 text-xl">✓</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={handleCreateBand}
-                  disabled={!selectedTemplate}
-                  className="w-full"
+                <button
+                  type="button"
+                  className="np-profile-btn np-profile-btn-primary"
+                  onClick={() => acceptMutation.mutate({ membershipId: invitation.id, userId })}
+                  disabled={acceptMutation.isPending}
                 >
-                  Continue with {selectedTemplate ? templates.find((t: any) => t.id === selectedTemplate)?.name : 'Selected Template'}
-                </Button>
-              </Stack>
-            </Card>
+                  {acceptMutation.isPending ? 'Joining…' : 'Join'}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <hr className="np-rule" />
+        </section>
+      ) : null}
 
-            {/* Alternative Options */}
-            <div className="text-center">
-              <Text variant="small" color="muted">
-                Not ready to start a band?
-              </Text>
-              <Button
-                variant="link"
-                onClick={handleSkipToDiscover}
-                className="mt-1"
-              >
-                Browse existing bands instead
-              </Button>
-            </div>
-          </Stack>
+      <section className="np-welcome-section" aria-labelledby="interests-heading">
+        <p className="np-cat np-cat-left">Your interests</p>
+        <h2 id="interests-heading" className="np-headline-serif">
+          What are you looking for?
+        </h2>
+
+        <div className="np-welcome-interest-grid">
+          {WELCOME_INTERESTS.map((interest) => (
+            <InterestCard
+              key={interest.id}
+              interest={interest}
+              selected={selectedInterestId === interest.id}
+              onSelect={() => setSelectedInterestId(interest.id)}
+            />
+          ))}
         </div>
-      </DashboardContainer>
-    </PageWrapper>
+
+        <div className="np-profile-actions np-profile-actions--toolbar np-welcome-actions">
+          <button
+            type="button"
+            className="np-profile-btn np-profile-btn-primary"
+            onClick={handleContinue}
+            disabled={!selectedInterest || completeWelcomeMutation.isPending}
+          >
+            {completeWelcomeMutation.isPending
+              ? 'One moment…'
+              : selectedInterest
+                ? `Continue — ${selectedInterest.title}`
+                : 'Continue'}
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function InterestCard({
+  interest,
+  selected,
+  onSelect,
+}: {
+  interest: WelcomeInterest
+  selected: boolean
+  onSelect: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className={`np-welcome-interest-card${selected ? ' np-welcome-interest-card--selected' : ''}`}
+      onClick={onSelect}
+      aria-pressed={selected}
+    >
+      <p className="np-welcome-interest-kicker">{interest.kicker}</p>
+      <p className="np-welcome-interest-title">{interest.title}</p>
+      <p className="np-welcome-interest-desc">{interest.description}</p>
+    </button>
   )
 }

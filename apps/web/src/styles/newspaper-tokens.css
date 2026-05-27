@@ -1092,6 +1092,131 @@
   margin-bottom: 1rem;
 }
 
+.np-welcome-shell {
+  max-width: 42rem;
+}
+
+.np-welcome-masthead {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-welcome-headline {
+  font-family: var(--np-lead-head);
+  font-weight: 400;
+  font-size: clamp(1.85rem, 4.5vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.75rem;
+  color: var(--np-ink);
+}
+
+.np-welcome-dek {
+  font-family: var(--np-body);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--np-ink);
+  margin: 0;
+  max-width: 36rem;
+}
+
+.np-welcome-section {
+  margin-bottom: 2rem;
+}
+
+.np-welcome-interest-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+  margin: 1rem 0 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .np-welcome-interest-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.np-welcome-interest-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--np-line);
+  background: var(--np-paper);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.np-welcome-interest-card:hover {
+  background: var(--np-paper-warm);
+}
+
+.np-welcome-interest-card--selected {
+  border-width: 2px;
+  border-color: var(--np-ink);
+  background: var(--np-paper-warm);
+}
+
+.np-welcome-interest-kicker {
+  font-family: var(--np-ui);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  margin: 0 0 0.35rem;
+}
+
+.np-welcome-interest-title {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  color: var(--np-ink);
+  margin: 0 0 0.35rem;
+}
+
+.np-welcome-interest-desc {
+  font-family: var(--np-body);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--np-ink);
+  margin: 0;
+}
+
+.np-welcome-actions {
+  margin-top: 0.5rem;
+}
+
+.np-welcome-invites {
+  margin-bottom: 1.5rem;
+}
+
+.np-welcome-invite-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.np-welcome-invite-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-welcome-invite-name {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0;
+  color: var(--np-ink);
+}
+
 .np-profile-section-summary {
   font-family: var(--np-body);
   font-size: 1.05rem;
