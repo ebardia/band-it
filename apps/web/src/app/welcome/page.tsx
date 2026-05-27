@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import { Loading, useToast } from '@/components/ui'
+import { EditorialPageShell } from '@/components/editorial/EditorialPageShell'
 import { WELCOME_INTERESTS, type WelcomeInterest } from '@/lib/welcomeInterests'
 
 export default function WelcomePage() {
@@ -91,32 +92,30 @@ export default function WelcomePage() {
 
   if (stateLoading || invitationsLoading || !userId) {
     return (
-      <div className="np-shell">
+      <EditorialPageShell kicker="First edition">
         <Loading message="Opening your edition…" />
-      </div>
+      </EditorialPageShell>
     )
   }
 
   const invitations = invitationsData?.invitations ?? []
 
   return (
-    <div className="np-shell np-welcome-shell">
-      <header className="np-welcome-masthead">
-        <p className="np-cat np-cat-left">First edition</p>
+    <EditorialPageShell kicker="First edition" editionLabel="Onboarding · Vol. I">
+      <section className="np-welcome-lead">
         <h1 className="np-welcome-headline">What brings you to Band It?</h1>
         <p className="np-welcome-dek">
           Pick what you&apos;re here for. We&apos;ll point you in the right direction — profile, a new band, or
           a look around.
         </p>
-      </header>
+      </section>
 
       {invitations.length > 0 ? (
-        <section className="np-welcome-invites" aria-labelledby="invites-heading">
-          <p className="np-cat np-cat-left">Invitations</p>
-          <h2 id="invites-heading" className="np-headline-serif">
-            You&apos;ve been invited
+        <section className="np-welcome-block" aria-labelledby="invites-heading">
+          <h2 id="invites-heading" className="np-picks-header">
+            Invitations
           </h2>
-          <p className="np-field-hint">Someone wants you in their band — join now or pick an interest below.</p>
+          <p className="np-excerpt">Someone wants you in their band — join now or pick an interest below.</p>
           <ul className="np-welcome-invite-list">
             {invitations.map((invitation: { id: string; band: { name: string; description?: string } }) => (
               <li key={invitation.id} className="np-welcome-invite-row">
@@ -141,11 +140,14 @@ export default function WelcomePage() {
         </section>
       ) : null}
 
-      <section className="np-welcome-section" aria-labelledby="interests-heading">
-        <p className="np-cat np-cat-left">Your interests</p>
-        <h2 id="interests-heading" className="np-headline-serif">
-          What are you looking for?
+      <section className="np-welcome-block" aria-labelledby="interests-heading">
+        <h2 id="interests-heading" className="np-picks-header">
+          Your interests
         </h2>
+        <p className="np-headline-serif">What are you looking for?</p>
+        <p className="np-field-hint np-welcome-hint">
+          Choose one — you can always explore the rest later.
+        </p>
 
         <div className="np-welcome-interest-grid">
           {WELCOME_INTERESTS.map((interest) => (
@@ -173,7 +175,7 @@ export default function WelcomePage() {
           </button>
         </div>
       </section>
-    </div>
+    </EditorialPageShell>
   )
 }
 

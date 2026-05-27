@@ -1096,10 +1096,22 @@
   max-width: 42rem;
 }
 
-.np-welcome-masthead {
+.np-welcome-lead {
   margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-welcome-block {
+  margin-bottom: 2rem;
+}
+
+.np-welcome-block .np-picks-header {
+  margin-bottom: 0.75rem;
+}
+
+.np-welcome-hint {
+  margin: 0.35rem 0 0;
 }
 
 .np-welcome-headline {
