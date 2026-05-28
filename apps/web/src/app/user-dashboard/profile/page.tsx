@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { Suspense, useState, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { UserDashboardLayout } from '@/components/UserDashboardLayout'
 import { trpc } from '@/lib/trpc'
@@ -59,6 +59,22 @@ function profileToForm(profile: {
 }
 
 export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <UserDashboardLayout pageTitle="My Profile" editorial>
+          <div className="np-profile-shell">
+            <Loading message="Composing your edition…" />
+          </div>
+        </UserDashboardLayout>
+      }
+    >
+      <ProfilePageContent />
+    </Suspense>
+  )
+}
+
+function ProfilePageContent() {
   const { showToast } = useToast()
   const searchParams = useSearchParams()
   const utils = trpc.useUtils()
