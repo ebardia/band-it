@@ -1397,6 +1397,34 @@
   color: var(--np-ink);
 }
 
+/* Whole interest block is a single link to the profile page */
+.np-daily-briefs-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.np-daily-brief--static {
+  cursor: pointer;
+}
+
+.np-daily-briefs-link:hover .np-daily-brief--static {
+  background: var(--np-paper-warm);
+}
+
+.np-daily-briefs-cta {
+  display: inline-block;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-top: 0.25rem;
+}
+
+.np-daily-briefs-link:hover .np-daily-briefs-cta {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .np-daily-spread-actions {
   display: flex;
   flex-direction: column;
