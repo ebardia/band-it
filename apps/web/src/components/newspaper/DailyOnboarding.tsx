@@ -179,7 +179,7 @@ export function DailyOnboarding({ userId }: Props) {
       <div
         className={`np-daily-onboarding-columns${showInterests ? '' : ' np-daily-onboarding-columns--single'}`}
       >
-        <section className="np-welcome-block np-daily-onboarding-col" aria-labelledby="daily-mission-heading">
+        <section className="np-welcome-block np-daily-onboarding-col np-daily-onboarding-panel" aria-labelledby="daily-mission-heading">
           <h2 id="daily-mission-heading" className="np-picks-header">
             Why Band It
           </h2>
@@ -188,18 +188,17 @@ export function DailyOnboarding({ userId }: Props) {
 
         {showInterests ? (
           <section
-            className="np-welcome-block np-daily-onboarding-col"
+            className="np-welcome-block np-daily-onboarding-col np-daily-onboarding-panel"
             aria-labelledby="daily-interests-heading"
           >
             <h2 id="daily-interests-heading" className="np-picks-header">
               What brings you here?
             </h2>
-            <p className="np-headline-serif">Pick what you&apos;re here for today</p>
-            <p className="np-field-hint np-welcome-hint">
-              Optional — you can skip this and come back anytime.
+            <p className="np-daily-col-intro">
+              Pick what you&apos;re here for today. Optional — skip and come back anytime.
             </p>
 
-            <div className="np-welcome-interest-grid np-welcome-interest-grid--stacked">
+            <div className="np-welcome-interest-grid np-welcome-interest-grid--daily-col">
               {WELCOME_INTERESTS.map((interest) => (
                 <InterestCard
                   key={interest.id}
@@ -210,7 +209,7 @@ export function DailyOnboarding({ userId }: Props) {
               ))}
             </div>
 
-            <div className="np-profile-actions np-profile-actions--toolbar np-welcome-actions">
+            <div className="np-profile-actions np-profile-actions--toolbar np-welcome-actions np-daily-onboarding-actions">
               <button
                 type="button"
                 className="np-profile-btn np-profile-btn-primary"
