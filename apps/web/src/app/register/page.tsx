@@ -1,25 +1,11 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import Link from 'next/link'
 import { trpc } from '@/lib/trpc'
 import { useRouter, useSearchParams } from 'next/navigation'
-import {
-  Button,
-  Input,
-  Card,
-  PageLayout,
-  Container,
-  Heading,
-  Text,
-  useToast,
-  Stack,
-  Center,
-  Link,
-  Progress,
-  Alert,
-  Loading,
-  Flex
-} from '@/components/ui'
+import { useToast } from '@/components/ui'
+import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 
 // Current version of community guidelines - increment when guidelines change
 const COMMUNITY_GUIDELINES_VERSION = 1
@@ -28,6 +14,24 @@ const TOS_VERSION = 1
 
 /** Survives full page navigations so register still sends token after verify-email prep */
 const PENDING_INVITE_TOKEN_KEY = 'bandIt_pendingInviteToken'
+
+const HOUSE_RULES = [
+  'No illegal activity or speech',
+  'No spam, unsolicited marketing, or scams',
+  'No violent, threatening, or harassing language',
+  'No hate speech or discrimination',
+  'Minors may take part — keep it appropriate for all ages',
+  'Keep all content fit for a general audience',
+]
+
+function formatPaperDate(d: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(d)
+}
 
 function RegisterContent() {
   const router = useRouter()
@@ -127,173 +131,180 @@ function RegisterContent() {
   }
 
   return (
-    <PageLayout>
-      <Container size="sm">
-        <Card>
-          <Stack spacing="lg">
-            <Center>
-              <Heading level={1}>Create Account</Heading>
-              <Text variant="muted">Join BAND IT to start managing your band</Text>
-            </Center>
+    <EditorialSurface>
+      <div className="np-shell np-landing-page">
+        <header className="np-landing-masthead np-register-masthead">
+          <p className="np-cat">Band It</p>
+          <p className="np-register-title">The Register</p>
+          <p className="np-register-tagline">Sign the book and claim your seat at the table.</p>
+          <hr className="np-rule" />
+          <div className="np-masthead-meta py-3 md:py-3.5">
+            <span suppressHydrationWarning>{formatPaperDate(new Date())}</span>
+            <span className="text-right">Charter Edition</span>
+          </div>
+          <p className="np-register-steps">Step 1 of 3 — Register · Verify · Daily</p>
+        </header>
 
-            {showInviteBanner && (
-              <Alert variant="info">
-                <Text variant="small">
-                  You've been invited to join a band! Create your account to review and accept the invitation.
-                </Text>
-              </Alert>
-            )}
+        <section className="np-welcome-lead" aria-labelledby="register-heading">
+          <p className="np-cat np-cat-left">Subscriptions desk</p>
+          <h1 id="register-heading" className="np-welcome-headline">
+            Put your name on the list
+          </h1>
+          <p className="np-welcome-dek">
+            A free account is your press pass to Band It. Tell us who you are, agree to keep the
+            room friendly, and we&apos;ll start your edition.
+          </p>
+        </section>
 
-            <Progress
-              steps={[
-                { label: 'Register', status: 'active' },
-                { label: 'Verify', status: 'inactive' },
-                { label: 'Daily', status: 'inactive' },
-              ]}
-            />
+        {showInviteBanner && (
+          <div className="np-register-alert" role="status">
+            You&apos;ve been invited to join a band. Create your account to review and accept the
+            invitation on the next page.
+          </div>
+        )}
 
-            <form onSubmit={handleSubmit}>
-              <Stack spacing="lg">
-                <Input
-                  label="Full Name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="John Doe"
-                />
+        <form onSubmit={handleSubmit}>
+          <div className="np-daily-spread">
+            <div className="np-daily-spread-main">
+              <p className="np-cat np-cat-left">Your details</p>
+              <h2 className="np-picks-header np-picks-header-left">For the record</h2>
 
-                <Input
-                  label="Email Address"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="john@example.com"
-                />
+              <div className="np-register-form">
+                <div>
+                  <label className="np-label" htmlFor="register-name">Full name</label>
+                  <input
+                    id="register-name"
+                    className="np-field"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Jane Q. Public"
+                  />
+                </div>
 
-                <div className="relative">
-                  <Input
-                    label="Password"
+                <div>
+                  <label className="np-label" htmlFor="register-email">Email address</label>
+                  <input
+                    id="register-email"
+                    className="np-field"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="jane@example.com"
+                  />
+                </div>
+
+                <div>
+                  <div className="np-field-labelrow">
+                    <label className="np-label" htmlFor="register-password">Password</label>
+                    <button
+                      type="button"
+                      className="np-field-toggle"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-pressed={showPassword}
+                    >
+                      {showPassword ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  <input
+                    id="register-password"
+                    className="np-field"
                     type={showPassword ? 'text' : 'password'}
                     required
+                    minLength={8}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="At least 8 characters"
-                    minLength={8}
-                    helperText="Must be at least 8 characters"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                      </svg>
-                    ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    )}
-                  </button>
+                  <p className="np-field-hint">Must be at least 8 characters.</p>
                 </div>
 
-                {/* Community Guidelines */}
-                <div className="border rounded-lg p-4 bg-gray-50">
-                  <Heading level={4} className="mb-3">Community Guidelines</Heading>
-                  <Text variant="small" color="muted" className="mb-3">
-                    BAND IT is a family-friendly platform where people of all ages collaborate. By joining, you agree to:
-                  </Text>
-                  <ul className="text-sm text-gray-700 space-y-1 mb-3 ml-4">
-                    <li>• No illegal activity or speech</li>
-                    <li>• No spam, unsolicited marketing, or scams</li>
-                    <li>• No violent, threatening, or harassing language</li>
-                    <li>• No hate speech or discrimination</li>
-                    <li>• Respect that minors may participate in band activities</li>
-                    <li>• Keep all content appropriate for a general audience</li>
-                  </ul>
-                  <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-3">
-                    <Text variant="small" className="text-yellow-800 font-medium">
-                      Violating these principles may result in account suspension or removal from BAND IT.
-                    </Text>
-                  </div>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                <div className="np-consent">
+                  <label className="np-consent-row">
                     <input
                       type="checkbox"
                       checked={guidelinesAccepted}
                       onChange={(e) => setGuidelinesAccepted(e.target.checked)}
-                      className="rounded w-4 h-4"
                     />
-                    <Text variant="small">
-                      I have read and agree to follow these{' '}
-                      <a href="/community-guidelines" target="_blank" className="text-blue-600 hover:underline">
+                    <span>
+                      I have read and agree to follow the{' '}
+                      <a href="/community-guidelines" target="_blank" className="np-consent-link">
                         community guidelines
                       </a>
-                    </Text>
+                      .
+                    </span>
                   </label>
-                </div>
 
-                {/* Terms of Service & Privacy Policy */}
-                <div className="border rounded-lg p-4 bg-gray-50">
-                  <label className="flex items-start gap-2 cursor-pointer">
+                  <label className="np-consent-row">
                     <input
                       type="checkbox"
                       checked={tosAccepted}
                       onChange={(e) => setTosAccepted(e.target.checked)}
-                      className="rounded w-4 h-4 mt-0.5"
                     />
-                    <Text variant="small">
+                    <span>
                       I agree to the{' '}
-                      <a href="/terms" target="_blank" className="text-blue-600 hover:underline">
+                      <a href="/terms" target="_blank" className="np-consent-link">
                         Terms of Service
                       </a>{' '}
                       and{' '}
-                      <a href="/privacy" target="_blank" className="text-blue-600 hover:underline">
+                      <a href="/privacy" target="_blank" className="np-consent-link">
                         Privacy Policy
                       </a>
-                    </Text>
+                      .
+                    </span>
                   </label>
                 </div>
 
-                <Button
+                <button
                   type="submit"
-                  variant="primary"
-                  size="md"
+                  className="np-profile-btn np-profile-btn-primary np-register-submit"
                   disabled={registerMutation.isPending || !guidelinesAccepted || !tosAccepted}
-                  className="w-full"
                 >
-                  {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
-                </Button>
-              </Stack>
-            </form>
+                  {registerMutation.isPending ? 'Setting the type…' : 'Sign the register'}
+                </button>
+              </div>
+            </div>
 
-            <Center>
-              <Text variant="small">
-                Already have an account? <Link href="/login">Sign in</Link>
-              </Text>
-            </Center>
-          </Stack>
-        </Card>
-      </Container>
-    </PageLayout>
+            <aside className="np-daily-spread-rail" aria-labelledby="register-rules-heading">
+              <p className="np-cat np-cat-left">House rules</p>
+              <h2 id="register-rules-heading" className="np-picks-header">Before you sign</h2>
+              <p className="np-excerpt">
+                Band It is a family-friendly room where people of all ages collaborate. Breaking
+                these may cost you your spot.
+              </p>
+              <ul className="np-fineprint-list">
+                {HOUSE_RULES.map((rule) => (
+                  <li key={rule} className="np-fineprint-item">
+                    {rule}
+                  </li>
+                ))}
+              </ul>
+
+              <p className="np-byline np-byline-left">Already a subscriber?</p>
+              <Link href="/login" className="np-action np-action-left">
+                Sign in →
+              </Link>
+            </aside>
+          </div>
+        </form>
+      </div>
+    </EditorialSurface>
   )
 }
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={
-      <PageLayout>
-        <Container size="sm">
-          <Card>
-            <Loading message="Loading..." />
-          </Card>
-        </Container>
-      </PageLayout>
-    }>
+    <Suspense
+      fallback={
+        <EditorialSurface>
+          <div className="np-shell np-landing-page">
+            <p className="np-quiet">Setting today&apos;s edition…</p>
+          </div>
+        </EditorialSurface>
+      }
+    >
       <RegisterContent />
     </Suspense>
   )
