@@ -53,9 +53,10 @@ export function DailyOnboarding({ userId }: Props) {
 
   const utils = trpc.useUtils()
 
-  const { data: welcomeState } = trpc.onboarding.getUserWelcomeState.useQuery({ userId })
+  const { data: welcomeState, isLoading: welcomeLoading } =
+    trpc.onboarding.getUserWelcomeState.useQuery({ userId })
   const { data: invitationsData } = trpc.band.getMyInvitations.useQuery({ userId })
-  const { data: profileData } = trpc.profile.get.useQuery({ userId })
+  const { data: profileData, isLoading: profileLoading } = trpc.profile.get.useQuery({ userId })
 
   const completeWelcomeMutation = trpc.onboarding.completeWelcome.useMutation({
     onSuccess: () => utils.onboarding.getUserWelcomeState.invalidate({ userId }),
@@ -73,11 +74,15 @@ export function DailyOnboarding({ userId }: Props) {
   })
 
   const invitations = invitationsData?.invitations ?? []
-  const showInterests = welcomeState && !welcomeState.hasCompletedWelcome
-  const showProfile = profileData?.profile && !profileData.profile.profileCompleted
-  const showOrientation = showInterests || showProfile
+  const hasCompletedWelcome = welcomeState?.hasCompletedWelcome ?? false
+  const profileCompleted = profileData?.profile?.profileCompleted ?? false
 
-  if (!showOrientation && invitations.length === 0) {
+  // Assume incomplete until loaded — avoids hiding guidance while queries are in flight.
+  const showInterests = welcomeLoading || !hasCompletedWelcome
+  const showProfile = profileLoading || !profileCompleted
+  const needsGuidance = showInterests || showProfile
+
+  if (!needsGuidance && invitations.length === 0) {
     return null
   }
 
@@ -129,28 +134,24 @@ export function DailyOnboarding({ userId }: Props) {
 
   return (
     <div className="np-daily-onboarding">
-      {showOrientation ? (
-        <>
-          <section className="np-welcome-lead" aria-labelledby="daily-orientation-heading">
-            <p className="np-cat np-cat-left">First edition</p>
-            <h1 id="daily-orientation-heading" className="np-welcome-headline">
-              Welcome to your Daily
-            </h1>
-            <p className="np-welcome-dek">
-              This is your personal edition — it gets sharper as you tell us who you are and what
-              you&apos;re looking for. Take your time. Explore below, or start with one of these when
-              you&apos;re ready.
-            </p>
-          </section>
+      <section className="np-welcome-lead" aria-labelledby="daily-orientation-heading">
+        <p className="np-cat np-cat-left">First edition</p>
+        <h1 id="daily-orientation-heading" className="np-welcome-headline">
+          Welcome to your Daily
+        </h1>
+        <p className="np-welcome-dek">
+          This is your home on Band It — a personal edition that gets sharper as you tell us who you
+          are and what you&apos;re looking for. Take your time. The sections below are yours to
+          fill in when you&apos;re ready.
+        </p>
+      </section>
 
-          <section className="np-welcome-block" aria-labelledby="daily-mission-heading">
-            <h2 id="daily-mission-heading" className="np-picks-header">
-              Why Band It
-            </h2>
-            <blockquote className="np-profile-pullquote">{MISSION_COPY}</blockquote>
-          </section>
-        </>
-      ) : null}
+      <section className="np-welcome-block" aria-labelledby="daily-mission-heading">
+        <h2 id="daily-mission-heading" className="np-picks-header">
+          Why Band It
+        </h2>
+        <blockquote className="np-profile-pullquote">{MISSION_COPY}</blockquote>
+      </section>
 
       {invitations.length > 0 ? (
         <section className="np-welcome-block" aria-labelledby="daily-invites-heading">
@@ -263,6 +264,18 @@ export function DailyOnboarding({ userId }: Props) {
           <hr className="np-rule" />
         </section>
       ) : null}
+
+      <section className="np-welcome-block" aria-labelledby="daily-preview-heading">
+        <h2 id="daily-preview-heading" className="np-picks-header">
+          Your edition today
+        </h2>
+        <p className="np-excerpt">
+          Below is what your Daily looks like right now — quiet because we don&apos;t know you yet.
+          Paid work, discussions, and local opportunities will show up here as your profile and
+          activity grow.
+        </p>
+        <hr className="np-rule" />
+      </section>
     </div>
   )
 }
