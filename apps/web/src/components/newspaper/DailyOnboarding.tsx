@@ -12,6 +12,9 @@ import { EMPTY_PROFILE_FORM, type EndUserProfileForm } from '@/lib/endUserProfil
 const MISSION_COPY =
   'The world is changing faster than any of us can fully predict. AI is already reshaping the way we work, create, connect, and move through daily life. No one really knows where it all leads from here. Band It is our attempt to explore that future together — not by replacing what makes us human, but by helping people discover more of what they\u2019re capable of becoming. We all shine in certain parts of life and struggle in others. Over time, Band It hopes to learn alongside you, helping amplify your strengths, support your weak spots, and open doors to opportunities, people, and experiences that help you grow into a fuller version of yourself — at work, at play, and in the world around you.'
 
+const MISSION_LEAD = MISSION_COPY.charAt(0)
+const MISSION_REST = MISSION_COPY.slice(1)
+
 function profileToForm(profile: {
   locationId: string | null
   resumeText: string | null
@@ -176,31 +179,35 @@ export function DailyOnboarding({ userId }: Props) {
         </section>
       ) : null}
 
+      <hr className="np-rule" />
+
       <div
-        className={`np-daily-onboarding-columns${showInterests ? '' : ' np-daily-onboarding-columns--single'}`}
+        className={`np-daily-spread${showInterests ? '' : ' np-daily-spread--single'}`}
       >
-        <section className="np-welcome-block np-daily-onboarding-col np-daily-onboarding-panel" aria-labelledby="daily-mission-heading">
+        <article className="np-daily-spread-main" aria-labelledby="daily-mission-heading">
+          <p className="np-cat np-cat-left">Editor&apos;s note</p>
           <h2 id="daily-mission-heading" className="np-picks-header">
             Why Band It
           </h2>
-          <p className="np-daily-mission-copy">{MISSION_COPY}</p>
-        </section>
+          <p className="np-daily-mission-body">
+            <span className="np-dropcap" aria-hidden="true">
+              {MISSION_LEAD}
+            </span>
+            {MISSION_REST}
+          </p>
+        </article>
 
         {showInterests ? (
-          <section
-            className="np-welcome-block np-daily-onboarding-col np-daily-onboarding-panel"
-            aria-labelledby="daily-interests-heading"
-          >
+          <aside className="np-daily-spread-rail" aria-labelledby="daily-interests-heading">
+            <p className="np-cat np-cat-left">Open calls</p>
             <h2 id="daily-interests-heading" className="np-picks-header">
               What brings you here?
             </h2>
-            <p className="np-daily-col-intro">
-              Pick what you&apos;re here for today. Optional — skip and come back anytime.
-            </p>
+            <p className="np-byline np-byline-left">Pick one — or skip for now</p>
 
-            <div className="np-welcome-interest-grid np-welcome-interest-grid--daily-col">
+            <div className="np-daily-briefs">
               {WELCOME_INTERESTS.map((interest) => (
-                <InterestCard
+                <InterestBrief
                   key={interest.id}
                   interest={interest}
                   selected={selectedInterestId === interest.id}
@@ -209,10 +216,10 @@ export function DailyOnboarding({ userId }: Props) {
               ))}
             </div>
 
-            <div className="np-profile-actions np-profile-actions--toolbar np-welcome-actions np-daily-onboarding-actions">
+            <div className="np-daily-spread-actions">
               <button
                 type="button"
-                className="np-profile-btn np-profile-btn-primary"
+                className="np-action np-action-left"
                 onClick={handleContinue}
                 disabled={!selectedInterest || completeWelcomeMutation.isPending}
               >
@@ -224,7 +231,7 @@ export function DailyOnboarding({ userId }: Props) {
               </button>
               <button
                 type="button"
-                className="np-profile-btn"
+                className="np-daily-skip-link"
                 onClick={() =>
                   completeWelcomeMutation.mutate(
                     { userId },
@@ -236,58 +243,70 @@ export function DailyOnboarding({ userId }: Props) {
                 Skip for now
               </button>
             </div>
-          </section>
+          </aside>
         ) : null}
       </div>
 
-      {(showInterests || showProfile) ? <hr className="np-rule" /> : null}
-
       {showProfile ? (
-        <section
-          id="daily-profile-section"
-          className="np-welcome-block"
-          aria-labelledby="daily-profile-heading"
-        >
-          <h2 id="daily-profile-heading" className="np-picks-header">
-            Your profile
-          </h2>
-          <p className="np-excerpt">
-            We don&apos;t know much about you yet — and that&apos;s fine. When you&apos;re ready, a
-            fuller profile helps us surface paid work, causes, and people that actually fit.
-          </p>
-          {nextMoves.length > 0 ? (
-            <ul className="np-daily-next-moves">
-              {nextMoves.map((move) => (
-                <li key={move.id}>
-                  <p className="np-daily-next-move-title">{move.title}</p>
-                  <p className="np-field-hint">{move.detail}</p>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          <Link href="/user-dashboard/profile" className="np-action np-action-left">
-            Open your profile
-          </Link>
-          <hr className="np-rule" />
-        </section>
+        <>
+          <hr className="np-rule np-rule--spaced" />
+          <section
+            id="daily-profile-section"
+            className="np-daily-profile-band"
+            aria-labelledby="daily-profile-heading"
+          >
+            <div className="np-daily-profile-spread">
+              <div className="np-daily-profile-main">
+                <p className="np-cat np-cat-left">Member file</p>
+                <h2 id="daily-profile-heading" className="np-headline-serif np-daily-profile-title">
+                  Your profile
+                </h2>
+                <p className="np-excerpt">
+                  We don&apos;t know much about you yet — and that&apos;s fine. When you&apos;re
+                  ready, a fuller profile helps us surface paid work, causes, and people that
+                  actually fit.
+                </p>
+                <Link href="/user-dashboard/profile" className="np-action np-action-left">
+                  Open your profile
+                </Link>
+              </div>
+
+              {nextMoves.length > 0 ? (
+                <aside className="np-daily-profile-rail" aria-label="Suggested next steps">
+                  <p className="np-cat np-cat-left">To do</p>
+                  <ol className="np-daily-index">
+                    {nextMoves.map((move, index) => (
+                      <li key={move.id} className="np-daily-index-item">
+                        <span className="np-daily-index-num">{index + 1}</span>
+                        <div>
+                          <p className="np-daily-index-title">{move.title}</p>
+                          <p className="np-field-hint">{move.detail}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </aside>
+              ) : null}
+            </div>
+          </section>
+        </>
       ) : null}
 
-      <section className="np-welcome-block" aria-labelledby="daily-preview-heading">
-        <h2 id="daily-preview-heading" className="np-picks-header">
-          Your edition today
-        </h2>
-        <p className="np-excerpt">
-          Below is what your Daily looks like right now — quiet because we don&apos;t know you yet.
-          Paid work, discussions, and local opportunities will show up here as your profile and
-          activity grow.
+      <section className="np-daily-fold" aria-labelledby="daily-preview-heading">
+        <hr className="np-rule np-rule--spaced" />
+        <p id="daily-preview-heading" className="np-cat np-cat-left">
+          Below the fold
         </p>
-        <hr className="np-rule" />
+        <p className="np-excerpt np-daily-fold-copy">
+          Your edition is quiet for now. Paid work, discussions, and local opportunities will show
+          up here as your profile and activity grow.
+        </p>
       </section>
     </div>
   )
 }
 
-function InterestCard({
+function InterestBrief({
   interest,
   selected,
   onSelect,
@@ -299,13 +318,15 @@ function InterestCard({
   return (
     <button
       type="button"
-      className={`np-welcome-interest-card${selected ? ' np-welcome-interest-card--selected' : ''}`}
+      className={`np-daily-brief${selected ? ' np-daily-brief--selected' : ''}`}
       onClick={onSelect}
       aria-pressed={selected}
     >
-      <p className="np-welcome-interest-kicker">{interest.kicker}</p>
-      <p className="np-welcome-interest-title">{interest.title}</p>
-      <p className="np-welcome-interest-desc">{interest.description}</p>
+      <span className="np-daily-brief-kicker">{interest.kicker}</span>
+      <span className="np-daily-brief-body">
+        <span className="np-daily-brief-title">{interest.title}</span>
+        <span className="np-daily-brief-desc">{interest.description}</span>
+      </span>
     </button>
   )
 }
