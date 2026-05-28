@@ -16,6 +16,7 @@ import { initStatusUpdateCron } from './cron/status-update-cron'
 import { initDonationCron } from './cron/donation-cron'
 import { initApplicationVotingCron } from './cron/application-voting-cron'
 import { initializeEffectHandlers } from './services/effects'
+import { grandfatherExistingUsers } from './services/grandfather-access.service'
 import stripeConnectRoutes from './routes/stripe-connect'
 import bandDuesRoutes from './routes/band-dues'
 import publicWebsiteRoutes from './routes/public-website'
@@ -104,6 +105,9 @@ app.use('/trpc', (req, res, next) => {
 // Initialize proposal effect handlers
 initializeEffectHandlers()
 console.log(`📋 Proposal effect handlers initialized`)
+
+// Grandfather pre-launch users past the waiting-room gate (idempotent).
+void grandfatherExistingUsers()
 
 // Start server
 app.listen(PORT, () => {
