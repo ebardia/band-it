@@ -8,6 +8,8 @@ import { useToast } from '@/components/ui'
 import { WELCOME_INTERESTS, type WelcomeInterest } from '@/lib/welcomeInterests'
 import { buildNextMoves } from '@/lib/profileSignals'
 import { EMPTY_PROFILE_FORM, type EndUserProfileForm } from '@/lib/endUserProfile'
+import { DAILY_CLASSIFIED_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
+import Image from 'next/image'
 
 const MISSION_COPY =
   'The world is changing faster than any of us can fully predict. AI is already reshaping the way we work, create, connect, and move through daily life. No one really knows where it all leads from here. Band It is our attempt to explore that future together — not by replacing what makes us human, but by helping people discover more of what they\u2019re capable of becoming. We all shine in certain parts of life and struggle in others. Over time, Band It hopes to learn alongside you, helping amplify your strengths, support your weak spots, and open doors to opportunities, people, and experiences that help you grow into a fuller version of yourself — at work, at play, and in the world around you.'
@@ -195,6 +197,23 @@ export function DailyOnboarding({ userId }: Props) {
             </span>
             {MISSION_REST}
           </p>
+
+          <figure className="np-daily-classified">
+            <p className="np-cat np-cat-left">Classified</p>
+            <div className="np-daily-classified-frame">
+              <Image
+                src={DAILY_CLASSIFIED_IMAGE}
+                alt="Vintage newspaper classified illustration: a woman with a speech bubble reading, I'm good at more than my resume says."
+                width={1200}
+                height={900}
+                className="np-daily-classified-img"
+                priority
+              />
+            </div>
+            <figcaption className="np-daily-classified-caption">
+              Your profile is your listing — tell the paper who you are when you&apos;re ready.
+            </figcaption>
+          </figure>
         </article>
 
         {showInterests ? (

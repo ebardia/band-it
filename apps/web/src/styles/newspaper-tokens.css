@@ -1292,6 +1292,36 @@
   }
 }
 
+.np-daily-classified {
+  margin: 1.75rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--np-line-soft);
+}
+
+.np-daily-classified-frame {
+  border: 1px solid var(--np-line);
+  padding: 0.35rem;
+  background: var(--np-paper-warm);
+  margin-top: 0.65rem;
+}
+
+.np-daily-classified-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.np-daily-classified-caption {
+  font-family: var(--np-ui);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  margin: 0.65rem 0 0;
+  line-height: 1.45;
+}
+
 .np-dropcap {
   float: left;
   font-family: var(--np-lead-head);
