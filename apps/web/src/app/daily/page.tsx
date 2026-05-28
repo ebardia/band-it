@@ -29,12 +29,23 @@ export default function DailyPage() {
     }
   }, [router])
 
-  const { data, isLoading, isError } = trpc.newspaper.getHomeFeed.useQuery(
+  const { data: access } = trpc.auth.getAccessStatus.useQuery(
     { userId: userId! },
     { enabled: !!userId }
   )
 
-  if (!userId) {
+  useEffect(() => {
+    if (access && !access.hasAccess) {
+      router.replace('/waiting-room')
+    }
+  }, [access, router])
+
+  const { data, isLoading, isError } = trpc.newspaper.getHomeFeed.useQuery(
+    { userId: userId! },
+    { enabled: !!userId && access?.hasAccess === true }
+  )
+
+  if (!userId || !access || !access.hasAccess) {
     return (
       <div className="np-shell">
         <DailyMastheadSkeleton />

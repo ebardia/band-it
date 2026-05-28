@@ -82,6 +82,8 @@ export const authService = {
         createdAt: true,
         emailVerified: true,
         subscriptionStatus: true,
+        accessApproved: true,
+        isAdmin: true,
       },
     })
 
@@ -280,6 +282,8 @@ export const authService = {
         name: user.name,
         createdAt: user.createdAt,
         emailVerified: user.emailVerified,
+        accessApproved: user.accessApproved,
+        isAdmin: user.isAdmin,
       },
       accessToken,
       refreshToken,

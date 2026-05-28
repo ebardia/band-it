@@ -86,10 +86,10 @@ function RegisterContent() {
       // Use replace so register page isn't in browser history
       if (data.user.emailVerified) {
         if (!hasInvites) {
-          showToast('Account created successfully!', 'success')
+          showToast('Account created — you\u2019re on the list!', 'success')
         }
-        // Redirect to /daily for new users
-        router.replace('/daily')
+        // New users land in the waiting room until they're approved.
+        router.replace(data.user.accessApproved ? '/daily' : '/waiting-room')
       } else {
         if (!hasInvites) {
           showToast('Account created! Please check your email.', 'success')

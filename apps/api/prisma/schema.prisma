@@ -55,6 +55,10 @@ model User {
   // Profile Completion
   profileCompleted Boolean @default(false)
 
+  // Waitlist gate — new users land in the waiting room until approved.
+  // Admins (isAdmin) bypass this regardless of the flag.
+  accessApproved   Boolean @default(false)
+
   // Community Guidelines Acceptance
   guidelinesAcceptedAt DateTime?
   guidelinesVersion    Int?

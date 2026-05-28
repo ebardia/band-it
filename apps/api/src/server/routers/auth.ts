@@ -128,6 +128,36 @@ export const authRouter = router({
     }),
 
   /**
+   * Get waitlist access status - drives the waiting-room gate.
+   * Admins always have access; everyone else needs accessApproved = true.
+   */
+  getAccessStatus: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const user = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: {
+          accessApproved: true,
+          isAdmin: true,
+        },
+      })
+
+      if (!user) {
+        throw new Error('User not found')
+      }
+
+      return {
+        accessApproved: user.accessApproved,
+        isAdmin: user.isAdmin,
+        hasAccess: user.accessApproved || user.isAdmin,
+      }
+    }),
+
+  /**
    * Get user profile
    */
   getProfile: publicProcedure

@@ -50,6 +50,13 @@ function LoginForm() {
         return
       }
 
+      // Waitlist gate: un-approved (non-admin) users go to the waiting room.
+      const hasAccess = data.user.accessApproved || data.user.isAdmin
+      if (!hasAccess) {
+        router.replace('/waiting-room')
+        return
+      }
+
       const invitedBands = data.bandsInvited ?? []
       if (invitedBands.length > 0) {
         const bandNames = invitedBands.map((b) => b.name).join(', ')
