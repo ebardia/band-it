@@ -1,12 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { useToast } from '@/components/ui'
-import { WELCOME_INTERESTS, type WelcomeInterest } from '@/lib/welcomeInterests'
-import { buildNextMoves } from '@/lib/profileSignals'
+import {
+  WELCOME_INTERESTS,
+  profilePathForInterestIds,
+  type WelcomeInterest,
+} from '@/lib/welcomeInterests'
+import { buildNextMoves, countProfileSignals } from '@/lib/profileSignals'
 import { EMPTY_PROFILE_FORM, type EndUserProfileForm } from '@/lib/endUserProfile'
 import { DAILY_CLASSIFIED_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 import Image from 'next/image'
@@ -54,7 +58,8 @@ type Props = {
 export function DailyOnboarding({ userId }: Props) {
   const router = useRouter()
   const { showToast } = useToast()
-  const [selectedInterestId, setSelectedInterestId] = useState<string | null>(null)
+  const [selectedInterestIds, setSelectedInterestIds] = useState<string[]>([])
+  const interestsHydratedRef = useRef(false)
 
   const utils = trpc.useUtils()
 
@@ -63,79 +68,88 @@ export function DailyOnboarding({ userId }: Props) {
   const { data: invitationsData } = trpc.band.getMyInvitations.useQuery({ userId })
   const { data: profileData, isLoading: profileLoading } = trpc.profile.get.useQuery({ userId })
 
-  const completeWelcomeMutation = trpc.onboarding.completeWelcome.useMutation({
+  const saveInterestsMutation = trpc.onboarding.saveWelcomeInterests.useMutation({
+    onSuccess: () => utils.onboarding.getUserWelcomeState.invalidate({ userId }),
+  })
+
+  const dismissOnboardingMutation = trpc.onboarding.dismissDailyOnboarding.useMutation({
     onSuccess: () => utils.onboarding.getUserWelcomeState.invalidate({ userId }),
   })
 
   const acceptMutation = trpc.band.acceptInvitation.useMutation({
     onSuccess: () => {
       showToast('Invitation accepted — welcome aboard.', 'success')
-      completeWelcomeMutation.mutate(
-        { userId },
-        { onSuccess: () => router.push('/bands/my-bands') }
-      )
+      router.push('/bands/my-bands')
     },
     onError: (error) => showToast(error.message, 'error'),
   })
 
-  const invitations = invitationsData?.invitations ?? []
-  const hasCompletedWelcome = welcomeState?.hasCompletedWelcome ?? false
-  const profileCompleted = profileData?.profile?.profileCompleted ?? false
+  useEffect(() => {
+    if (interestsHydratedRef.current || !welcomeState) return
+    interestsHydratedRef.current = true
+    if (welcomeState.welcomeInterestIds.length > 0) {
+      setSelectedInterestIds(welcomeState.welcomeInterestIds)
+    }
+  }, [welcomeState])
 
-  // Assume incomplete until loaded — avoids hiding guidance while queries are in flight.
-  const showInterests = welcomeLoading || !hasCompletedWelcome
-  const showProfile = profileLoading || !profileCompleted
+  const invitations = invitationsData?.invitations ?? []
+  const onboardingDismissed = !!welcomeState?.dailyOnboardingDismissedAt
+  const savedInterestIds = welcomeState?.welcomeInterestIds ?? []
+
+  const profileForm = profileData?.profile ? profileToForm(profileData.profile) : EMPTY_PROFILE_FORM
+  const signalStats = countProfileSignals(profileForm)
+
+  const showInterests = welcomeLoading || !onboardingDismissed
+  const showProfile = profileLoading || (signalStats.filled < signalStats.total && !onboardingDismissed)
   const needsGuidance = showInterests || showProfile
 
   if (!needsGuidance && invitations.length === 0) {
     return null
   }
 
-  const selectedInterest = WELCOME_INTERESTS.find((item) => item.id === selectedInterestId)
-  const profileForm = profileData?.profile ? profileToForm(profileData.profile) : EMPTY_PROFILE_FORM
   const nextMoves = showProfile ? buildNextMoves(profileForm, 3) : []
+  const profileHref = profilePathForInterestIds(
+    selectedInterestIds.length > 0 ? selectedInterestIds : savedInterestIds
+  )
 
-  const finishWelcome = (path: string) => {
-    completeWelcomeMutation.mutate(
-      { userId },
-      { onSuccess: () => router.push(path) }
+  const toggleInterest = (id: string) => {
+    setSelectedInterestIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     )
   }
 
   const handleContinue = () => {
-    if (!selectedInterest) {
-      showToast('Pick what brings you here first.', 'error')
+    if (selectedInterestIds.length === 0) {
+      showToast('Pick at least one area — or skip for now.', 'error')
       return
     }
 
-    if (selectedInterest.action === 'profile') {
-      completeWelcomeMutation.mutate(
-        { userId },
-        {
-          onSuccess: () => {
-            showToast('When you\u2019re ready, tell us about yourself below.', 'info')
-            document.getElementById('daily-profile-section')?.scrollIntoView({ behavior: 'smooth' })
-          },
-        }
-      )
-      return
-    }
-
-    if (selectedInterest.action === 'discover') {
-      finishWelcome('/discover')
-      return
-    }
-
-    if (selectedInterest.action === 'band' && selectedInterest.templateId) {
-      completeWelcomeMutation.mutate(
-        { userId },
-        {
-          onSuccess: () =>
-            router.push(`/bands/create?template=${selectedInterest.templateId}`),
-        }
-      )
-    }
+    const path = profilePathForInterestIds(selectedInterestIds)
+    saveInterestsMutation.mutate(
+      { userId, interestIds: selectedInterestIds },
+      {
+        onSuccess: () => router.push(path),
+        onError: (error) => showToast(error.message, 'error'),
+      }
+    )
   }
+
+  const handleDismiss = () => {
+    dismissOnboardingMutation.mutate(
+      { userId },
+      {
+        onSuccess: () => showToast('You can reopen your profile anytime from the menu.', 'info'),
+        onError: (error) => showToast(error.message, 'error'),
+      }
+    )
+  }
+
+  const continueLabel =
+    selectedInterestIds.length === 0
+      ? 'Continue to your profile'
+      : selectedInterestIds.length === 1
+        ? `Continue — ${WELCOME_INTERESTS.find((i) => i.id === selectedInterestIds[0])?.title ?? 'your profile'}`
+        : `Continue — ${selectedInterestIds.length} areas selected`
 
   return (
     <div className="np-daily-onboarding">
@@ -183,9 +197,7 @@ export function DailyOnboarding({ userId }: Props) {
 
       <hr className="np-rule" />
 
-      <div
-        className={`np-daily-spread${showInterests ? '' : ' np-daily-spread--single'}`}
-      >
+      <div className={`np-daily-spread${showInterests ? '' : ' np-daily-spread--single'}`}>
         <article className="np-daily-spread-main" aria-labelledby="daily-mission-heading">
           <p className="np-cat np-cat-left">Editor&apos;s note</p>
           <h2 id="daily-mission-heading" className="np-picks-header">
@@ -222,15 +234,15 @@ export function DailyOnboarding({ userId }: Props) {
             <h2 id="daily-interests-heading" className="np-picks-header">
               What brings you here?
             </h2>
-            <p className="np-byline np-byline-left">Pick one — or skip for now</p>
+            <p className="np-byline np-byline-left">Pick any that fit — work, causes, play, and more</p>
 
             <div className="np-daily-briefs">
               {WELCOME_INTERESTS.map((interest) => (
                 <InterestBrief
                   key={interest.id}
                   interest={interest}
-                  selected={selectedInterestId === interest.id}
-                  onSelect={() => setSelectedInterestId(interest.id)}
+                  selected={selectedInterestIds.includes(interest.id)}
+                  onSelect={() => toggleInterest(interest.id)}
                 />
               ))}
             </div>
@@ -240,26 +252,24 @@ export function DailyOnboarding({ userId }: Props) {
                 type="button"
                 className="np-action np-action-left"
                 onClick={handleContinue}
-                disabled={!selectedInterest || completeWelcomeMutation.isPending}
+                disabled={selectedInterestIds.length === 0 || saveInterestsMutation.isPending}
               >
-                {completeWelcomeMutation.isPending
-                  ? 'One moment…'
-                  : selectedInterest
-                    ? `Continue — ${selectedInterest.title}`
-                    : 'Continue'}
+                {saveInterestsMutation.isPending ? 'One moment…' : continueLabel}
               </button>
               <button
                 type="button"
                 className="np-daily-skip-link"
-                onClick={() =>
-                  completeWelcomeMutation.mutate(
-                    { userId },
-                    { onSuccess: () => showToast('You can pick this up anytime.', 'info') }
-                  )
-                }
-                disabled={completeWelcomeMutation.isPending}
+                onClick={() => showToast('No rush — your Daily will wait for you.', 'info')}
               >
                 Skip for now
+              </button>
+              <button
+                type="button"
+                className="np-daily-skip-link"
+                onClick={handleDismiss}
+                disabled={dismissOnboardingMutation.isPending}
+              >
+                Hide this section
               </button>
             </div>
           </aside>
@@ -281,11 +291,10 @@ export function DailyOnboarding({ userId }: Props) {
                   Your profile
                 </h2>
                 <p className="np-excerpt">
-                  We don&apos;t know much about you yet — and that&apos;s fine. When you&apos;re
-                  ready, a fuller profile helps us surface paid work, causes, and people that
-                  actually fit.
+                  Signal strength {signalStats.filled}/{signalStats.total} — add what fits today; you
+                  can always come back for the rest.
                 </p>
-                <Link href="/user-dashboard/profile" className="np-action np-action-left">
+                <Link href={profileHref} className="np-action np-action-left">
                   Open your profile
                 </Link>
               </div>

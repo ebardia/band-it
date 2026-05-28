@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { UserDashboardLayout } from '@/components/UserDashboardLayout'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
@@ -15,6 +16,10 @@ import {
 } from '@/lib/endUserProfile'
 import { buildProfileSummaryText, taxonomyChipLabels } from '@/lib/profileSummary'
 import { buildEditionPreviewLines, buildNextMoves, countProfileSignals } from '@/lib/profileSignals'
+import {
+  PROFILE_FOCUS_SECTION_IDS,
+  type ProfileFocusSection,
+} from '@/lib/welcomeInterests'
 
 type PendingUpload = {
   fileName: string
@@ -55,11 +60,13 @@ function profileToForm(profile: {
 
 export default function ProfilePage() {
   const { showToast } = useToast()
+  const searchParams = useSearchParams()
   const utils = trpc.useUtils()
   const [userId, setUserId] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState<EndUserProfileForm>(EMPTY_PROFILE_FORM)
   const [pendingUpload, setPendingUpload] = useState<PendingUpload | null>(null)
+  const focusAppliedRef = useRef(false)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -160,6 +167,28 @@ export default function ProfilePage() {
     }
   }, [profileData?.profile?.profileCompleted])
 
+  useEffect(() => {
+    if (!profileData?.profile || focusAppliedRef.current) return
+
+    const sectionsParam = searchParams.get('sections')
+    if (!sectionsParam) return
+
+    const sections = sectionsParam
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s): s is ProfileFocusSection => s in PROFILE_FOCUS_SECTION_IDS)
+
+    if (sections.length === 0) return
+
+    focusAppliedRef.current = true
+    setIsEditing(true)
+
+    const targetId = PROFILE_FOCUS_SECTION_IDS[sections[0]]
+    requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }, [profileData?.profile, searchParams])
+
   const summaryText = useMemo(() => {
     if (!profileData?.profile) return ''
     return buildProfileSummaryText({
@@ -234,7 +263,7 @@ export default function ProfilePage() {
   const startEdit = () => {
     setIsEditing(true)
     requestAnimationFrame(() => {
-      document.getElementById('profile-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document.getElementById('profile-section-place')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
   }
 
@@ -321,7 +350,11 @@ export default function ProfilePage() {
                   Place and résumé are required. Everything else helps your Daily feel like you.
                 </p>
 
-                <section id="profile-edit-form" className="np-profile-section" aria-labelledby="basics-heading">
+                <section
+                  id="profile-section-place"
+                  className="np-profile-section"
+                  aria-labelledby="basics-heading"
+                >
                   <h2 id="basics-heading" className="np-picks-header np-picks-header-left">
                     Place
                   </h2>
@@ -342,7 +375,11 @@ export default function ProfilePage() {
                   />
                 </section>
 
-                <section className="np-profile-section" aria-labelledby="work-heading">
+                <section
+                  id="profile-section-work"
+                  className="np-profile-section"
+                  aria-labelledby="work-heading"
+                >
                   <h2 id="work-heading" className="np-picks-header np-picks-header-left">
                     Work
                   </h2>
@@ -367,9 +404,10 @@ export default function ProfilePage() {
                     }
                   />
 
-                  <p className="np-label" style={{ marginTop: '1.25rem' }}>
-                    Skills &amp; strengths
-                  </p>
+                  <div id="profile-section-skills">
+                    <p className="np-label" style={{ marginTop: '1.25rem' }}>
+                      Skills &amp; strengths
+                    </p>
                   <div className="np-profile-actions np-profile-actions--inline">
                     <button
                       type="button"
@@ -387,9 +425,14 @@ export default function ProfilePage() {
                     readOnly={false}
                     onChange={(skills) => setFormData((p) => ({ ...p, skills }))}
                   />
+                  </div>
                 </section>
 
-                <section className="np-profile-section" aria-labelledby="volunteer-heading">
+                <section
+                  id="profile-section-causes"
+                  className="np-profile-section"
+                  aria-labelledby="volunteer-heading"
+                >
                   <h2 id="volunteer-heading" className="np-picks-header np-picks-header-left">
                     Volunteer
                   </h2>
@@ -402,7 +445,11 @@ export default function ProfilePage() {
                   />
                 </section>
 
-                <section className="np-profile-section" aria-labelledby="play-heading">
+                <section
+                  id="profile-section-play"
+                  className="np-profile-section"
+                  aria-labelledby="play-heading"
+                >
                   <h2 id="play-heading" className="np-picks-header np-picks-header-left">
                     Play
                   </h2>

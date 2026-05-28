@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { router, publicProcedure } from '../trpc'
 import { prisma } from '../../lib/prisma'
 import { TRPCError } from '@trpc/server'
+import { isWelcomeInterestId } from '@band-it/shared'
 import { getTemplate, getTemplateList, TOTAL_MILESTONES } from '../../lib/onboarding/templates'
 import {
   createOnboarding,
@@ -22,6 +23,8 @@ export const onboardingRouter = router({
         where: { id: input.userId },
         select: {
           hasCompletedWelcome: true,
+          welcomeInterestIds: true,
+          dailyOnboardingDismissedAt: true,
           memberships: {
             where: { status: 'ACTIVE' },
             select: { id: true },
@@ -50,9 +53,53 @@ export const onboardingRouter = router({
 
       return {
         hasCompletedWelcome: user.hasCompletedWelcome,
+        welcomeInterestIds: user.welcomeInterestIds,
+        dailyOnboardingDismissedAt: user.dailyOnboardingDismissedAt,
         hasBands: user.memberships.length > 0,
         pendingInvitationCount: pendingInvitations,
       }
+    }),
+
+  /**
+   * Persist interest selections from Daily onboarding (multi-select).
+   */
+  saveWelcomeInterests: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        interestIds: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const uniqueIds = [...new Set(input.interestIds)]
+      const invalid = uniqueIds.filter((id) => !isWelcomeInterestId(id))
+      if (invalid.length > 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Unknown interest ids: ${invalid.join(', ')}`,
+        })
+      }
+
+      await prisma.user.update({
+        where: { id: input.userId },
+        data: { welcomeInterestIds: uniqueIds },
+      })
+
+      return { success: true, interestIds: uniqueIds }
+    }),
+
+  /**
+   * Explicit dismiss of Daily onboarding guidance (not triggered by navigation).
+   */
+  dismissDailyOnboarding: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await prisma.user.update({
+        where: { id: input.userId },
+        data: { dailyOnboardingDismissedAt: new Date() },
+      })
+
+      return { success: true }
     }),
 
   /**

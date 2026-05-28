@@ -175,6 +175,8 @@ model User {
 
   // Onboarding
   hasCompletedWelcome         Boolean          @default(false)
+  welcomeInterestIds          String[]         @default([])
+  dailyOnboardingDismissedAt  DateTime?
 
   // Donations
   donationsConfirmed          Donation[] @relation("DonationsConfirmed")
