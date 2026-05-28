@@ -134,7 +134,9 @@ export async function resolveProfileLocation(
     }
   }
 
-  if (fallback?.city && fallback?.state && fallback?.zip) {
+  // Only use the raw fallback when no explicit selection was made; an
+  // unresolved locationId must not be overwritten by stale fallback values.
+  if (!locationId && fallback?.city && fallback?.state && fallback?.zip) {
     return ensureUsLocation(fallback.city, fallback.state, fallback.zip)
   }
 
