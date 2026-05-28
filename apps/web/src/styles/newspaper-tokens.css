@@ -1233,6 +1233,49 @@
   margin-bottom: 2rem;
 }
 
+.np-daily-onboarding-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem 2.5rem;
+  align-items: start;
+  margin-bottom: 0;
+}
+
+.np-daily-onboarding-columns--single {
+  grid-template-columns: 1fr;
+  max-width: 36rem;
+}
+
+@media (max-width: 767px) {
+  .np-daily-onboarding-columns {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .np-daily-onboarding-columns--single {
+    max-width: none;
+  }
+}
+
+.np-daily-onboarding-col.np-welcome-block {
+  margin-bottom: 0;
+}
+
+.np-daily-mission-copy {
+  font-family: var(--np-body);
+  font-weight: 400;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--np-ink);
+  margin: 0.75rem 0 0;
+  padding-left: 0.85rem;
+  border-left: 3px solid var(--np-line);
+}
+
+.np-welcome-interest-grid--stacked {
+  grid-template-columns: 1fr;
+}
+
 .np-daily-next-moves {
   list-style: none;
   margin: 1rem 0 1.25rem;
