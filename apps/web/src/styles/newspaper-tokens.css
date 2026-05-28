@@ -1229,6 +1229,34 @@
   color: var(--np-ink);
 }
 
+.np-daily-onboarding {
+  margin-bottom: 2rem;
+}
+
+.np-daily-next-moves {
+  list-style: none;
+  margin: 1rem 0 1.25rem;
+  padding: 0;
+}
+
+.np-daily-next-moves li {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-daily-next-moves li:last-child {
+  border-bottom: none;
+}
+
+.np-daily-next-move-title {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: 0.98rem;
+  line-height: 1.35;
+  color: var(--np-ink);
+  margin: 0 0 0.25rem;
+}
+
 .np-profile-section-summary {
   font-family: var(--np-body);
   font-size: 1.05rem;

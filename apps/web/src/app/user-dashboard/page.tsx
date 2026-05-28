@@ -37,18 +37,6 @@ export default function OverviewDashboard() {
     }
   }, [router])
 
-  // Check welcome state and redirect if needed
-  const { data: welcomeState } = trpc.onboarding.getUserWelcomeState.useQuery(
-    { userId: userId! },
-    { enabled: !!userId }
-  )
-
-  useEffect(() => {
-    if (welcomeState && !welcomeState.hasCompletedWelcome && !welcomeState.hasBands) {
-      router.replace('/welcome')
-    }
-  }, [welcomeState, router])
-
   // Fetch all data
   const { data: myBandsData } = trpc.band.getMyBands.useQuery(
     { userId: userId! },

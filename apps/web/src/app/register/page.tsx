@@ -88,9 +88,8 @@ function RegisterContent() {
         if (!hasInvites) {
           showToast('Account created successfully!', 'success')
         }
-        // Redirect to /welcome for new users (they have no bands yet)
-        // Welcome page will show pending invitations if any
-        router.replace('/welcome')
+        // Redirect to /daily for new users
+        router.replace('/daily')
       } else {
         if (!hasInvites) {
           showToast('Account created! Please check your email.', 'success')
@@ -149,7 +148,7 @@ function RegisterContent() {
               steps={[
                 { label: 'Register', status: 'active' },
                 { label: 'Verify', status: 'inactive' },
-                { label: 'Profile', status: 'inactive' },
+                { label: 'Daily', status: 'inactive' },
               ]}
             />
 

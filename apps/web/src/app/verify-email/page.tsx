@@ -65,7 +65,7 @@ function VerifyEmailContent() {
       hasVerified.current = true
       showToast('Email verified! Redirecting...', 'success')
       setTimeout(() => {
-        router.push('/welcome')
+        router.push('/daily')
       }, 1500)
     }
   }, [profileData, router, showToast])
@@ -77,7 +77,7 @@ function VerifyEmailContent() {
         hasVerified.current = true
         showToast('Email verified successfully!', 'success')
         setTimeout(() => {
-          router.push('/welcome')
+          router.push('/daily')
         }, 2000)
       }
     },
@@ -176,7 +176,7 @@ function VerifyEmailContent() {
                     if (result.data?.user?.emailVerified) {
                       hasVerified.current = true
                       showToast('Email verified! Redirecting...', 'success')
-                      setTimeout(() => router.push('/welcome'), 1500)
+                      setTimeout(() => router.push('/daily'), 1500)
                     } else {
                       showToast('Email not verified yet', 'info')
                     }

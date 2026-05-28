@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { jwtDecode } from 'jwt-decode'
 import { trpc } from '@/lib/trpc'
 import { DailyMastheadSkeleton } from '@/components/newspaper/DailyMastheadSkeleton'
+import { DailyOnboarding } from '@/components/newspaper/DailyOnboarding'
 import { NewspaperMasthead } from '@/components/newspaper/NewspaperMasthead'
 import { NewspaperFirstQuickAction } from '@/components/newspaper/NewspaperFirstQuickAction'
 import { NewspaperLead } from '@/components/newspaper/NewspaperLead'
@@ -33,7 +34,7 @@ export default function DailyPage() {
     { enabled: !!userId }
   )
 
-  if (!userId || isLoading) {
+  if (!userId) {
     return (
       <div className="np-shell">
         <DailyMastheadSkeleton />
@@ -42,31 +43,33 @@ export default function DailyPage() {
     )
   }
 
-  if (isError || !data) {
-    return (
-      <div className="np-shell">
-        <DailyMastheadSkeleton />
-        <p className="np-quiet">We couldn&apos;t load the paper. Try again shortly.</p>
-      </div>
-    )
-  }
-
-  const bothQuiet = !data.review && !data.roundtable
+  const editionLine = data?.editionLine ?? 'Your edition · Vol. I'
+  const bothQuiet = !data?.review && !data?.roundtable
 
   return (
     <div className="np-shell">
-      <NewspaperMasthead editionLine={data.editionLine} />
+      <NewspaperMasthead editionLine={editionLine} />
 
-      <NewspaperFirstQuickAction userId={userId} />
+      <DailyOnboarding userId={userId} />
 
-      <NewspaperLead
-        lead={data.review}
-        leadQuietCopy={bothQuiet ? 'Quiet morning. Nothing urgent.' : undefined}
-      />
-      <NewspaperRoundtable
-        item={data.roundtable}
-        roundtableQuietCopy={bothQuiet ? 'No discussion items right now.' : undefined}
-      />
+      {isLoading ? (
+        <p className="np-quiet">Loading your edition…</p>
+      ) : isError || !data ? (
+        <p className="np-quiet">We couldn&apos;t load the rest of the paper. Try again shortly.</p>
+      ) : (
+        <>
+          <NewspaperFirstQuickAction userId={userId} />
+
+          <NewspaperLead
+            lead={data.review}
+            leadQuietCopy={bothQuiet ? 'Quiet morning. Nothing urgent.' : undefined}
+          />
+          <NewspaperRoundtable
+            item={data.roundtable}
+            roundtableQuietCopy={bothQuiet ? 'No discussion items right now.' : undefined}
+          />
+        </>
+      )}
     </div>
   )
 }
