@@ -73,12 +73,23 @@ export function ResumeSection({
       return
     }
     const reader = new FileReader()
+    reader.onerror = () => {
+      setUploadError('Could not read that file. Please try another file.')
+    }
+    reader.onabort = () => {
+      setUploadError('File read was interrupted. Please try again.')
+    }
     reader.onload = () => {
-      const base64 = reader.result as string
+      const result = reader.result
+      if (typeof result !== 'string' || !result.includes(',')) {
+        setUploadError('Unexpected file encoding. Please upload again.')
+        return
+      }
+      const [, base64Data] = result.split(',', 2)
       onFileSelect({
         fileName: file.name,
         mimeType: file.type,
-        base64Data: base64.split(',')[1],
+        base64Data,
       })
     }
     reader.readAsDataURL(file)

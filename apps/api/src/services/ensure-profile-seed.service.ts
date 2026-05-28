@@ -45,12 +45,10 @@ async function seedLocations(client: PrismaClient) {
 }
 
 async function runSeed() {
-  const [taxonomyCount, locationCount] = await Promise.all([
-    prisma.profileTaxonomyCategory.count(),
-    prisma.usLocation.count(),
-  ])
-  if (taxonomyCount === 0) await seedTaxonomy(prisma)
-  if (locationCount === 0) await seedLocations(prisma)
+  // Both seeders upsert, so always run them. A count-based gate would
+  // permanently skip rows that were missing after a partial first run.
+  await seedTaxonomy(prisma)
+  await seedLocations(prisma)
 }
 
 /** Idempotent seed for taxonomy + US locations when tables are empty. */

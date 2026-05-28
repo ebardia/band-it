@@ -31,7 +31,7 @@ export function EditorialPageShell({ children, kicker, editionLabel = 'Your edit
           <DailyMastheadTitle />
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
-            <span>{formatPaperDate(new Date())}</span>
+            <span suppressHydrationWarning>{formatPaperDate(new Date())}</span>
             <span className="text-right">{editionLabel}</span>
           </div>
           {kicker ? <p className="np-cat np-cat-left">{kicker}</p> : null}

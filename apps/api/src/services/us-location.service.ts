@@ -118,10 +118,9 @@ export async function resolveProfileLocation(
   locationId: string | undefined,
   fallback: { city: string; state: string; zip: string } | undefined
 ) {
-  if (fallback?.city && fallback?.state && fallback?.zip) {
-    return ensureUsLocation(fallback.city, fallback.state, fallback.zip)
-  }
-
+  // Prefer the explicitly selected location id; only use the raw
+  // city/state/zip fallback when no id was supplied, so stale or edited
+  // fallback values can't override the user's actual pick.
   if (locationId && !locationId.startsWith('zip:')) {
     const existing = await prisma.usLocation.findUnique({ where: { id: locationId } })
     if (existing) return existing
@@ -133,6 +132,10 @@ export async function resolveProfileLocation(
     if (info) {
       return ensureUsLocation(info.city, info.state, zip)
     }
+  }
+
+  if (fallback?.city && fallback?.state && fallback?.zip) {
+    return ensureUsLocation(fallback.city, fallback.state, fallback.zip)
   }
 
   return null

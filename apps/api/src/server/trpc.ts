@@ -1,4 +1,4 @@
-import { initTRPC } from '@trpc/server'
+import { initTRPC, TRPCError } from '@trpc/server'
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express'
 import jwt from 'jsonwebtoken'
 
@@ -49,3 +49,17 @@ const t = initTRPC.context<Context>().create()
 // Export reusable router and procedure helpers
 export const router = t.router
 export const publicProcedure = t.procedure
+
+/**
+ * Requires a valid authenticated user. The JWT is verified in `createContext`,
+ * so a populated `ctx.userId` means the caller is who they claim to be. Use this
+ * for any user-scoped read/write so callers can't act on behalf of others.
+ */
+const isAuthed = t.middleware(({ ctx, next }) => {
+  if (!ctx.userId) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'You must be signed in.' })
+  }
+  return next({ ctx: { ...ctx, userId: ctx.userId } })
+})
+
+export const protectedProcedure = t.procedure.use(isAuthed)

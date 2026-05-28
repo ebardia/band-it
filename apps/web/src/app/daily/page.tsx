@@ -29,10 +29,11 @@ export default function DailyPage() {
     }
   }, [router])
 
-  const { data: access } = trpc.auth.getAccessStatus.useQuery(
-    { userId: userId! },
-    { enabled: !!userId }
-  )
+  const {
+    data: access,
+    isLoading: accessLoading,
+    isError: accessError,
+  } = trpc.auth.getAccessStatus.useQuery({ userId: userId! }, { enabled: !!userId })
 
   useEffect(() => {
     if (access && !access.hasAccess) {
@@ -45,13 +46,26 @@ export default function DailyPage() {
     { enabled: !!userId && access?.hasAccess === true }
   )
 
-  if (!userId || !access || !access.hasAccess) {
+  if (!userId || accessLoading || (!accessError && !access)) {
     return (
       <div className="np-shell">
         <DailyMastheadSkeleton />
         <p className="np-quiet">Loading your edition…</p>
       </div>
     )
+  }
+
+  if (accessError) {
+    return (
+      <div className="np-shell">
+        <DailyMastheadSkeleton />
+        <p className="np-quiet">We couldn&apos;t verify access. Please try again shortly.</p>
+      </div>
+    )
+  }
+
+  if (!access.hasAccess) {
+    return null
   }
 
   const editionLine = data?.editionLine ?? 'Your edition · Vol. I'

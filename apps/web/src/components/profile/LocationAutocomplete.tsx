@@ -25,8 +25,10 @@ export function LocationAutocomplete({
   const wrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setQuery(valueLabel)
-  }, [valueLabel])
+    // Sync external label changes into the input, but don't clobber what the
+    // user is actively typing (the dropdown is open while they edit).
+    if (!open) setQuery(valueLabel)
+  }, [valueLabel, open])
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query), 200)

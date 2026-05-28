@@ -3083,6 +3083,8 @@ model ProfileTaxonomyItem {
 }
 
 model UserProfileTaxonomySelection {
+  // Invariant: each row references exactly one target — a category XOR an item.
+  // Enforced in the profile.update mutation (empty ids are filtered before insert).
   id         String  @id @default(cuid())
   userId     String
   categoryId String?

@@ -23,7 +23,7 @@ export function NewspaperMasthead({ editionLine }: Props) {
       <EditorialMenuRow />
       <hr className="np-rule" />
       <div className="np-masthead-meta py-3 md:py-3.5">
-        <span>{formatPaperDate(new Date())}</span>
+        <span suppressHydrationWarning>{formatPaperDate(new Date())}</span>
         <span className="text-right">{editionLine}</span>
       </div>
       <hr className="np-rule" />

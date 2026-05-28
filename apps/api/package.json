@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate && npm run generate-help-context && tsc",
-    "start": "prisma db push --skip-generate --accept-data-loss && node dist/index.js",
+    "start": "prisma db push --skip-generate && node dist/index.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:push:accept-data-loss": "prisma db push --skip-generate --accept-data-loss",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed-profile": "tsx prisma/seed-profile.ts",
@@ -49,7 +50,6 @@
     "@types/node": "^20.10.6",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.14",
-    "@types/p-limit": "^2.1.0",
     "@types/pdf-parse": "^1.1.4"
   }
 }

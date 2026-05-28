@@ -4,8 +4,13 @@ const RESUME_MIME_TYPES = new Set([
   'text/plain',
 ])
 
+function normalizeMimeType(mimeType: string): string {
+  // Strip parameters like "; charset=utf-8" and normalize case.
+  return mimeType.split(';', 1)[0].trim().toLowerCase()
+}
+
 export function isResumeMimeType(mimeType: string): boolean {
-  return RESUME_MIME_TYPES.has(mimeType)
+  return RESUME_MIME_TYPES.has(normalizeMimeType(mimeType))
 }
 
 export function resumeMimeErrorMessage(): string {
@@ -13,21 +18,22 @@ export function resumeMimeErrorMessage(): string {
 }
 
 export async function extractResumeText(mimeType: string, buffer: Buffer): Promise<string> {
-  if (!isResumeMimeType(mimeType)) {
+  const normalizedMimeType = normalizeMimeType(mimeType)
+  if (!isResumeMimeType(normalizedMimeType)) {
     throw new Error(resumeMimeErrorMessage())
   }
 
-  if (mimeType === 'text/plain') {
+  if (normalizedMimeType === 'text/plain') {
     return buffer.toString('utf-8').trim()
   }
 
-  if (mimeType === 'application/pdf') {
+  if (normalizedMimeType === 'application/pdf') {
     const pdfParse = (await import('pdf-parse')).default
     const data = await pdfParse(buffer)
     return (data.text || '').trim()
   }
 
-  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+  if (normalizedMimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     const mammoth = await import('mammoth')
     const result = await mammoth.extractRawText({ buffer })
     return (result.value || '').trim()

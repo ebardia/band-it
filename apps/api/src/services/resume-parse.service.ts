@@ -68,16 +68,21 @@ Dates as free text (e.g. "2019", "Jan 2020 – Present").`
   let parsed: AiResumeParse | null = null
 
   if (trimmed.length >= 40) {
-    const response = await callAI(
-      `Parse this resume into structured JSON:\n\n${trimmed.slice(0, 12000)}`,
-      {
-        operation: 'resume_parse',
-        entityType: 'profile',
-        userId,
-      },
-      { system: systemPrompt, maxTokens: 4000 }
-    )
-    parsed = parseAIJson<AiResumeParse>(response.content)
+    try {
+      const response = await callAI(
+        `Parse this resume into structured JSON:\n\n${trimmed.slice(0, 12000)}`,
+        {
+          operation: 'resume_parse',
+          entityType: 'profile',
+          userId,
+        },
+        { system: systemPrompt, maxTokens: 4000 }
+      )
+      parsed = parseAIJson<AiResumeParse>(response.content)
+    } catch {
+      // AI call or JSON parse failed — fall back to keyword inference below.
+      parsed = null
+    }
   }
 
   const workExperience = (parsed?.workExperience ?? []).filter((e) => e.title?.trim() || e.org?.trim())

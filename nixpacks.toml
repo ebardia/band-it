@@ -13,5 +13,7 @@ cmds = [
   "pnpm --filter api build",
 ]
 
+# Auto-syncs additive schema changes on deploy. Destructive changes fail loudly
+# rather than dropping data — run a deliberate data-loss push manually if needed.
 [start]
-cmd = "cd apps/api && npx prisma db push --skip-generate --accept-data-loss && node dist/index.js"
+cmd = "cd apps/api && npx prisma db push --skip-generate && node dist/index.js"

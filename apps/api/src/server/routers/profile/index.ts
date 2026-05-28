@@ -1,6 +1,7 @@
 import { z } from 'zod'
+import { TRPCError } from '@trpc/server'
 import { ProfileTaxonomyKind, Prisma } from '@prisma/client'
-import { router, publicProcedure } from '../../trpc'
+import { router, publicProcedure, protectedProcedure } from '../../trpc'
 import { prisma } from '../../../lib/prisma'
 import { parseResumeWithAI } from '../../../services/resume-parse.service'
 import { extractResumeText, isResumeMimeType, resumeMimeErrorMessage } from '../../../services/resume-text.service'
@@ -34,6 +35,16 @@ const taxonomySelectionSchema = z.object({
   categoryIds: z.array(z.string()),
   itemIds: z.array(z.string()),
 })
+
+/**
+ * Guards user-scoped procedures against IDOR: the authenticated caller
+ * (`ctx.userId`) must match the `userId` the client claims to act on.
+ */
+function assertSelf(authedUserId: string, requestedUserId: string): void {
+  if (authedUserId !== requestedUserId) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Not allowed.' })
+  }
+}
 
 function profileIsComplete(data: {
   locationId: string | null
@@ -84,7 +95,7 @@ async function getProfilePayload(userId: string) {
   })
 
   if (!user) {
-    throw new Error('User not found')
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
   }
 
   const skillSelections = { categoryIds: [] as string[], itemIds: [] as string[] }
@@ -177,14 +188,15 @@ export const profileRouter = router({
       }
     }),
 
-  get: publicProcedure
+  get: protectedProcedure
     .input(z.object({ userId: z.string() }))
-    .query(async ({ input }) => {
-      const profile = await getProfilePayload(input.userId)
+    .query(async ({ ctx, input }) => {
+      assertSelf(ctx.userId, input.userId)
+      const profile = await getProfilePayload(ctx.userId)
       return { success: true, profile }
     }),
 
-  parseResume: publicProcedure
+  parseResume: protectedProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -194,26 +206,33 @@ export const profileRouter = router({
         base64Data: z.string().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      assertSelf(ctx.userId, input.userId)
       let text = input.resumeText?.trim() ?? ''
 
       if (input.base64Data && input.mimeType) {
         if (!isResumeMimeType(input.mimeType)) {
-          throw new Error(resumeMimeErrorMessage())
+          throw new TRPCError({ code: 'BAD_REQUEST', message: resumeMimeErrorMessage() })
         }
         const buffer = Buffer.from(input.base64Data, 'base64')
         const limit = getFileSizeLimit(input.mimeType)
         if (buffer.length > limit) {
-          throw new Error(`File too large. Maximum size: ${Math.round(limit / (1024 * 1024))}MB`)
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `File too large. Maximum size: ${Math.round(limit / (1024 * 1024))}MB`,
+          })
         }
         text = await extractResumeText(input.mimeType, buffer)
       }
 
       if (!text) {
-        throw new Error('Paste resume text or upload a PDF, DOCX, or TXT file.')
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Paste resume text or upload a PDF, DOCX, or TXT file.',
+        })
       }
 
-      const parsed = await parseResumeWithAI(text, input.userId)
+      const parsed = await parseResumeWithAI(text, ctx.userId)
       return { success: true, resumeText: text, parsed }
     }),
 
@@ -235,7 +254,7 @@ export const profileRouter = router({
       return { success: true, skills: match }
     }),
 
-  update: publicProcedure
+  update: protectedProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -260,9 +279,10 @@ export const profileRouter = router({
         playInterests: taxonomySelectionSchema.default({ categoryIds: [], itemIds: [] }),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      assertSelf(ctx.userId, input.userId)
       const existingUser = await prisma.user.findUnique({
-        where: { id: input.userId },
+        where: { id: ctx.userId },
         select: { resumeText: true },
       })
 
@@ -272,7 +292,10 @@ export const profileRouter = router({
         zip: input.locationZip ?? '',
       })
       if (!location) {
-        throw new Error('Invalid location selected — pick a city or ZIP from the list.')
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invalid location selected — pick a city or ZIP from the list.',
+        })
       }
 
       let resumeText = input.resumeText?.trim() ?? ''
@@ -280,12 +303,15 @@ export const profileRouter = router({
 
       if (input.resumeUpload) {
         if (!isResumeMimeType(input.resumeUpload.mimeType)) {
-          throw new Error(resumeMimeErrorMessage())
+          throw new TRPCError({ code: 'BAD_REQUEST', message: resumeMimeErrorMessage() })
         }
         const buffer = Buffer.from(input.resumeUpload.base64Data, 'base64')
         const limit = getFileSizeLimit(input.resumeUpload.mimeType)
         if (buffer.length > limit) {
-          throw new Error(`File too large. Maximum size: ${Math.round(limit / (1024 * 1024))}MB`)
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `File too large. Maximum size: ${Math.round(limit / (1024 * 1024))}MB`,
+          })
         }
 
         const extracted = await extractResumeText(input.resumeUpload.mimeType, buffer)
@@ -306,7 +332,7 @@ export const profileRouter = router({
             category: 'DOCUMENT',
             storageKey: upload.storageKey,
             url: upload.url,
-            uploadedById: input.userId,
+            uploadedById: ctx.userId,
             description: 'User resume',
           },
         })
@@ -315,7 +341,10 @@ export const profileRouter = router({
 
       const hasResume = !!(resumeText || resumeFileId)
       if (!hasResume) {
-        throw new Error('Resume is required — paste text or upload a PDF, DOCX, or TXT file.')
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Resume is required — paste text or upload a PDF, DOCX, or TXT file.',
+        })
       }
 
       let workExperience = input.workExperience
@@ -329,7 +358,7 @@ export const profileRouter = router({
 
       if (resumeText.length >= 20 && resumeChanged) {
         try {
-          const parsed = await parseResumeWithAI(resumeText, input.userId)
+          const parsed = await parseResumeWithAI(resumeText, ctx.userId)
           if (parsed.workExperience.length > 0) workExperience = parsed.workExperience
           if (parsed.education.length > 0) education = parsed.education
           if (parsed.certifications.length > 0) certifications = parsed.certifications
@@ -354,14 +383,16 @@ export const profileRouter = router({
       ]
 
       const user = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await tx.userProfileTaxonomySelection.deleteMany({ where: { userId: input.userId } })
+        await tx.userProfileTaxonomySelection.deleteMany({ where: { userId: ctx.userId } })
 
+        // Each row must reference exactly one target (a category XOR an item).
+        // Drop empty/whitespace ids so we never persist an all-null selection.
         const selectionRows: { userId: string; categoryId?: string; itemId?: string }[] = []
         for (const categoryId of allCategoryIds) {
-          selectionRows.push({ userId: input.userId, categoryId })
+          if (categoryId?.trim()) selectionRows.push({ userId: ctx.userId, categoryId })
         }
         for (const itemId of allItemIds) {
-          selectionRows.push({ userId: input.userId, itemId })
+          if (itemId?.trim()) selectionRows.push({ userId: ctx.userId, itemId })
         }
 
         if (selectionRows.length > 0) {
@@ -369,7 +400,7 @@ export const profileRouter = router({
         }
 
         return tx.user.update({
-          where: { id: input.userId },
+          where: { id: ctx.userId },
           data: {
             locationId: location.id,
             zipcode: location.zip,
@@ -391,7 +422,7 @@ export const profileRouter = router({
         })
       })
 
-      const profile = await getProfilePayload(input.userId)
+      const profile = await getProfilePayload(ctx.userId)
 
       return {
         success: true,

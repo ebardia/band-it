@@ -11,6 +11,7 @@ import { TaxonomySelect } from '@/components/profile/TaxonomySelect'
 import { ResumeSection } from '@/components/profile/ResumeSection'
 import {
   EMPTY_PROFILE_FORM,
+  profileToForm,
   type EndUserProfileForm,
   type ProfileTaxonomyCategory,
 } from '@/lib/endUserProfile'
@@ -25,37 +26,6 @@ type PendingUpload = {
   fileName: string
   mimeType: string
   base64Data: string
-}
-
-function profileToForm(profile: {
-  locationId: string | null
-  location: { label: string; city?: string; state?: string; zip?: string } | null
-  resumeText: string | null
-  resumeFileId: string | null
-  resumeFile: { originalName: string } | null
-  workExperience: unknown
-  education: unknown
-  certifications: unknown
-  skills: EndUserProfileForm['skills']
-  causes: EndUserProfileForm['causes']
-  playInterests: EndUserProfileForm['playInterests']
-}): EndUserProfileForm {
-  return {
-    locationId: profile.locationId ?? '',
-    locationLabel: profile.location?.label ?? '',
-    locationCity: profile.location?.city ?? '',
-    locationState: profile.location?.state ?? '',
-    locationZip: profile.location?.zip ?? '',
-    resumeText: profile.resumeText ?? '',
-    resumeFileId: profile.resumeFileId,
-    resumeFileName: profile.resumeFile?.originalName ?? null,
-    workExperience: (profile.workExperience as EndUserProfileForm['workExperience']) ?? [],
-    education: (profile.education as EndUserProfileForm['education']) ?? [],
-    certifications: (profile.certifications as EndUserProfileForm['certifications']) ?? [],
-    skills: profile.skills,
-    causes: profile.causes,
-    playInterests: profile.playInterests,
-  }
 }
 
 export default function ProfilePage() {

@@ -21,7 +21,7 @@ This shows the **entire** profile feature in one diff, not just the latest commi
 1. Push latest work to `feature/user-profile`.
 2. On the draft PR, comment:
 
-   ```
+   ```text
    @coderabbitai full review
    ```
 

@@ -7,7 +7,7 @@ import { trpc } from '@/lib/trpc'
 import { useToast } from '@/components/ui'
 import { WELCOME_INTERESTS } from '@/lib/welcomeInterests'
 import { countProfileSignals } from '@/lib/profileSignals'
-import { EMPTY_PROFILE_FORM, type EndUserProfileForm } from '@/lib/endUserProfile'
+import { profileToForm } from '@/lib/endUserProfile'
 import { DAILY_CLASSIFIED_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 
 const MISSION_COPY =
@@ -18,36 +18,6 @@ const MISSION_REST = MISSION_COPY.slice(1)
 
 const PROFILE_PATH = '/user-dashboard/profile'
 
-function profileToForm(profile: {
-  locationId: string | null
-  resumeText: string | null
-  resumeFileId: string | null
-  resumeFile: { originalName: string } | null
-  workExperience: unknown
-  education: unknown
-  certifications: unknown
-  skills: EndUserProfileForm['skills']
-  causes: EndUserProfileForm['causes']
-  playInterests: EndUserProfileForm['playInterests']
-}): EndUserProfileForm {
-  return {
-    locationId: profile.locationId ?? '',
-    locationLabel: '',
-    locationCity: '',
-    locationState: '',
-    locationZip: '',
-    resumeText: profile.resumeText ?? '',
-    resumeFileId: profile.resumeFileId,
-    resumeFileName: profile.resumeFile?.originalName ?? null,
-    workExperience: (profile.workExperience as EndUserProfileForm['workExperience']) ?? [],
-    education: (profile.education as EndUserProfileForm['education']) ?? [],
-    certifications: (profile.certifications as EndUserProfileForm['certifications']) ?? [],
-    skills: profile.skills,
-    causes: profile.causes,
-    playInterests: profile.playInterests,
-  }
-}
-
 type Props = {
   userId: string
 }
@@ -57,7 +27,11 @@ export function DailyOnboarding({ userId }: Props) {
   const { showToast } = useToast()
 
   const { data: invitationsData } = trpc.band.getMyInvitations.useQuery({ userId })
-  const { data: profileData, isLoading: profileLoading } = trpc.profile.get.useQuery({ userId })
+  const {
+    data: profileData,
+    isLoading: profileLoading,
+    isError: profileError,
+  } = trpc.profile.get.useQuery({ userId })
 
   const acceptMutation = trpc.band.acceptInvitation.useMutation({
     onSuccess: () => {
@@ -69,12 +43,13 @@ export function DailyOnboarding({ userId }: Props) {
 
   const invitations = invitationsData?.invitations ?? []
 
-  const profileForm = profileData?.profile ? profileToForm(profileData.profile) : EMPTY_PROFILE_FORM
-  const signalStats = countProfileSignals(profileForm)
+  const profileForm = profileData?.profile ? profileToForm(profileData.profile) : null
+  const signalStats = profileForm ? countProfileSignals(profileForm) : null
 
   // Onboarding shows only until the user fills out anything on their profile.
   // Once they have a signal, the regular Daily (their member file) takes over.
-  const showOnboarding = !profileLoading && signalStats.filled === 0
+  // A failed profile query must not be treated as an empty profile.
+  const showOnboarding = !profileLoading && !profileError && signalStats?.filled === 0
 
   if (!showOnboarding && invitations.length === 0) {
     return null

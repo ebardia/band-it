@@ -29,24 +29,28 @@ function selectionSummary(cat: ProfileTaxonomyCategory, value: TaxonomySelection
 }
 
 export function TaxonomySelect({ categories, value, onChange, readOnly = false, idPrefix }: Props) {
-  const selectedLabels: string[] = []
+  const selectedEntries: Array<{ key: string; label: string }> = []
 
   for (const cat of categories) {
-    if (value.categoryIds.includes(cat.id)) selectedLabels.push(cat.label)
+    if (value.categoryIds.includes(cat.id)) {
+      selectedEntries.push({ key: `cat:${cat.id}`, label: cat.label })
+    }
     for (const item of cat.items) {
-      if (value.itemIds.includes(item.id)) selectedLabels.push(item.label)
+      if (value.itemIds.includes(item.id)) {
+        selectedEntries.push({ key: `item:${item.id}`, label: item.label })
+      }
     }
   }
 
   if (readOnly) {
-    if (selectedLabels.length === 0) {
+    if (selectedEntries.length === 0) {
       return <p className="np-profile-read">—</p>
     }
     return (
       <div className="np-chip-row np-chip-row-left" aria-label="Selected">
-        {selectedLabels.map((label) => (
-          <span key={label} className="np-chip">
-            {label}
+        {selectedEntries.map((entry) => (
+          <span key={entry.key} className="np-chip">
+            {entry.label}
           </span>
         ))}
       </div>

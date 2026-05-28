@@ -73,3 +73,46 @@ export const EMPTY_PROFILE_FORM: EndUserProfileForm = {
   causes: { categoryIds: [], itemIds: [] },
   playInterests: { categoryIds: [], itemIds: [] },
 }
+
+/** Shape returned by `trpc.profile.get` for a single user's profile. */
+export type ProfilePayload = {
+  locationId: string | null
+  location: { label: string; city?: string; state?: string; zip?: string } | null
+  resumeText: string | null
+  resumeFileId: string | null
+  resumeFile: { originalName: string } | null
+  workExperience: unknown
+  education: unknown
+  certifications: unknown
+  skills: TaxonomySelection
+  causes: TaxonomySelection
+  playInterests: TaxonomySelection
+}
+
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : []
+}
+
+/**
+ * Canonical mapper from the persisted profile payload to the editable form.
+ * JSON fields are guarded with `Array.isArray` so malformed data can't crash
+ * downstream consumers. Used by the profile page and the daily onboarding.
+ */
+export function profileToForm(profile: ProfilePayload): EndUserProfileForm {
+  return {
+    locationId: profile.locationId ?? '',
+    locationLabel: profile.location?.label ?? '',
+    locationCity: profile.location?.city ?? '',
+    locationState: profile.location?.state ?? '',
+    locationZip: profile.location?.zip ?? '',
+    resumeText: profile.resumeText ?? '',
+    resumeFileId: profile.resumeFileId,
+    resumeFileName: profile.resumeFile?.originalName ?? null,
+    workExperience: asArray<WorkExperienceEntry>(profile.workExperience),
+    education: asArray<EducationEntry>(profile.education),
+    certifications: asArray<CertificationEntry>(profile.certifications),
+    skills: profile.skills,
+    causes: profile.causes,
+    playInterests: profile.playInterests,
+  }
+}

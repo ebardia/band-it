@@ -24,7 +24,7 @@ const INFER_RULES: { pattern: RegExp; categorySlugs?: string[]; itemSlugs?: stri
     itemSlugs: ['data-analysis', 'data-science', 'ai-ml'],
   },
   {
-    pattern: /ux|ui designer|user experience|product design/i,
+    pattern: /\bux\b|ui designer|user experience|product design(?:er)?/i,
     categorySlugs: ['design-creative'],
     itemSlugs: ['ux-ui'],
   },

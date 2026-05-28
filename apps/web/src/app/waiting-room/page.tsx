@@ -21,6 +21,10 @@ export default function WaitingRoomPage() {
     }
     try {
       const decoded = jwtDecode<{ userId: string }>(token)
+      if (!decoded.userId) {
+        router.replace('/login')
+        return
+      }
       setUserId(decoded.userId)
     } catch {
       router.replace('/login')
@@ -29,7 +33,7 @@ export default function WaitingRoomPage() {
     setCheckedToken(true)
   }, [router])
 
-  const { data: access } = trpc.auth.getAccessStatus.useQuery(
+  const { data: access, isError: accessError } = trpc.auth.getAccessStatus.useQuery(
     { userId: userId! },
     { enabled: !!userId }
   )
@@ -40,6 +44,13 @@ export default function WaitingRoomPage() {
       router.replace('/daily')
     }
   }, [access, router])
+
+  // A stale/invalid token makes the access check fail — treat it as logged out.
+  useEffect(() => {
+    if (accessError) {
+      router.replace('/login')
+    }
+  }, [accessError, router])
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken')
