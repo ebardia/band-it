@@ -126,9 +126,6 @@ importers:
       '@types/nodemailer':
         specifier: ^6.4.14
         version: 6.4.21
-      '@types/p-limit':
-        specifier: ^2.1.0
-        version: 2.2.0
       '@types/pdf-parse':
         specifier: ^1.1.4
         version: 1.1.5
@@ -1346,10 +1343,6 @@ packages:
 
   '@types/nodemailer@6.4.21':
     resolution: {integrity: sha512-Eix+sb/Nj28MNnWvO2X1OLrk5vuD4C9SMnb2Vf4itWnxphYeSceqkFX7IdmxTzn+dvmnNz7paMbg4Uc60wSfJg==}
-
-  '@types/p-limit@2.2.0':
-    resolution: {integrity: sha512-fGFbybl1r0oE9mqgfc2EHHUin9ZL5rbQIexWI6jYRU1ADVn4I3LHzT+g/kpPpZsfp8PB94CQ655pfAjNF8LP6A==}
-    deprecated: This is a stub types definition. p-limit provides its own type definitions, so you do not need this installed.
 
   '@types/pdf-parse@1.1.5':
     resolution: {integrity: sha512-kBfrSXsloMnUJOKi25s3+hRmkycHfLK6A09eRGqF/N8BkQoPUmaCr+q8Cli5FnfohEz/rsv82zAiPz/LXtOGhA==}
@@ -5586,10 +5579,6 @@ snapshots:
       '@types/node': 20.19.27
     transitivePeerDependencies:
       - aws-crt
-
-  '@types/p-limit@2.2.0':
-    dependencies:
-      p-limit: 7.2.0
 
   '@types/pdf-parse@1.1.5':
     dependencies:
