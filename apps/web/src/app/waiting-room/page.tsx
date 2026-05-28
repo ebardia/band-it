@@ -1,21 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { jwtDecode } from 'jwt-decode'
 import { trpc } from '@/lib/trpc'
-import {
-  Alert,
-  Button,
-  Card,
-  Center,
-  Container,
-  Heading,
-  Loading,
-  PageLayout,
-  Stack,
-  Text,
-} from '@/components/ui'
+import { EditorialPageShell } from '@/components/editorial/EditorialPageShell'
+import { WAITING_ROOM_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 
 export default function WaitingRoomPage() {
   const router = useRouter()
@@ -59,77 +50,87 @@ export default function WaitingRoomPage() {
 
   if (!checkedToken || !access) {
     return (
-      <PageLayout>
-        <Container size="sm">
-          <Card>
-            <Loading message="Checking your spot in line…" />
-          </Card>
-        </Container>
-      </PageLayout>
+      <EditorialPageShell kicker="Members' entrance" editionLabel="The List">
+        <p className="np-quiet">Checking your spot in line…</p>
+      </EditorialPageShell>
     )
   }
 
   if (access.hasAccess) {
     return (
-      <PageLayout>
-        <Container size="sm">
-          <Card>
-            <Loading message="You're in — taking you to your Daily…" />
-          </Card>
-        </Container>
-      </PageLayout>
+      <EditorialPageShell kicker="Members' entrance" editionLabel="The List">
+        <p className="np-quiet">You&apos;re in — taking you to your Daily…</p>
+      </EditorialPageShell>
     )
   }
 
   return (
-    <PageLayout>
-      <Container size="sm">
-        <Card>
-          <Stack spacing="lg">
-            <Center>
-              <Heading level={1}>You&apos;re on the list</Heading>
-              <Text variant="muted">Thanks for signing up to Band It.</Text>
-            </Center>
+    <EditorialPageShell kicker="Members' entrance" editionLabel="The List">
+      <section className="np-welcome-lead" aria-labelledby="waitroom-heading">
+        <p className="np-cat np-cat-left">Hold the press</p>
+        <h1 id="waitroom-heading" className="np-welcome-headline">
+          You&apos;re on the list
+        </h1>
+        <p className="np-welcome-dek">
+          Thanks for signing up to Band It. Your spot is saved — the doors just aren&apos;t open to
+          everyone yet.
+        </p>
+      </section>
 
-            <Stack spacing="md">
-              <Text>
-                Your spot is saved. We&apos;re still building Band It — so for now, registering puts
-                you on the waiting list. When we&apos;re ready for you, we&apos;ll email you an
-                invite and open the doors.
-              </Text>
+      <figure className="np-waitroom-hero">
+        <div className="np-daily-classified-frame">
+          <Image
+            src={WAITING_ROOM_IMAGE}
+            alt="A long, eclectic line waiting in a dim alley beneath a metal door marked Band Entrance — 1950s characters, aliens, animals, the ape-to-human evolution lineup, and a stray refrigerator, coffee machine, and beach ball."
+            width={1308}
+            height={872}
+            className="np-daily-classified-img"
+            priority
+          />
+        </div>
+        <figcaption className="np-daily-classified-caption">
+          The queue outside the Band Entrance. Everyone gets in eventually — yes, even the fridge.
+        </figcaption>
+      </figure>
 
-              <Alert variant="info">
-                <Stack spacing="sm">
-                  <Text variant="small" weight="semibold">
-                    Why the wait?
-                  </Text>
-                  <Text variant="small">
-                    Two honest reasons. First, we&apos;re actively redoing parts of the site and want
-                    your first real visit to be a good one. Second — full transparency — we&apos;re
-                    letting people in gradually. It&apos;s partly so nothing breaks under a crowd, and
-                    partly because &ldquo;limited early access&rdquo; sounds far more exciting than
-                    &ldquo;please come in, it&apos;s very empty.&rdquo;
-                  </Text>
-                  <Text variant="small">
-                    We&apos;ll be in touch soon. We know — the wait is killing you. It&apos;s a little
-                    killing us too.
-                  </Text>
-                </Stack>
-              </Alert>
+      <div className="np-daily-spread">
+        <article className="np-daily-spread-main" aria-labelledby="waitroom-why-heading">
+          <p className="np-cat np-cat-left">Editor&apos;s note</p>
+          <h2 id="waitroom-why-heading" className="np-picks-header np-picks-header-left">
+            Why the wait?
+          </h2>
+          <p className="np-daily-mission-body">
+            <span className="np-dropcap" aria-hidden="true">
+              T
+            </span>
+            wo honest reasons. First, we&apos;re actively redoing parts of the site and want your
+            first real visit to be a good one. Second — full transparency — we&apos;re letting people
+            in gradually. It&apos;s partly so nothing breaks under a crowd, and partly because
+            &ldquo;limited early access&rdquo; sounds far more exciting than &ldquo;please come in,
+            it&apos;s very empty.&rdquo; When we&apos;re ready for you, we&apos;ll email an invite and
+            open the doors. We&apos;ll be in touch soon. We know — the wait is killing you. It&apos;s
+            a little killing us too.
+          </p>
+        </article>
 
-              <Text variant="small" color="muted">
-                Nothing else to do here for now. Hang tight, and watch your inbox for your invite.
-              </Text>
-            </Stack>
+        <aside className="np-daily-spread-rail" aria-labelledby="waitroom-next-heading">
+          <p className="np-cat np-cat-left">The doorman</p>
+          <h2 id="waitroom-next-heading" className="np-picks-header">
+            What happens next
+          </h2>
+          <p className="np-byline np-byline-left">Invites go out as we open the doors</p>
+          <p className="np-excerpt">
+            Nothing else to do here for now — hang tight and watch your inbox. When your invite
+            lands, this door opens straight onto your Daily.
+          </p>
 
-            <Center>
-              <Button variant="secondary" size="md" onClick={handleLogout}>
-                Log out
-              </Button>
-            </Center>
-          </Stack>
-        </Card>
-      </Container>
-    </PageLayout>
+          <div className="np-daily-spread-actions">
+            <button type="button" className="np-action np-action-left" onClick={handleLogout}>
+              Log out
+            </button>
+          </div>
+        </aside>
+      </div>
+    </EditorialPageShell>
   )
 }

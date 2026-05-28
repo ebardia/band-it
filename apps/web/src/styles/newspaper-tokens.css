@@ -1298,6 +1298,16 @@
   border-top: 1px solid var(--np-line-soft);
 }
 
+/* Waiting room — hero illustration */
+.np-waitroom-hero {
+  margin: 1.5rem auto 0;
+  max-width: 48rem;
+}
+
+.np-waitroom-hero .np-daily-classified-caption {
+  text-align: center;
+}
+
 .np-daily-classified-frame {
   border: 1px solid var(--np-line);
   padding: 0.35rem;
