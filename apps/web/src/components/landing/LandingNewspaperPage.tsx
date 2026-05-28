@@ -115,7 +115,7 @@ export function LandingNewspaperPage() {
           <DailyMastheadTitle />
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
-            <span>{formatPaperDate(new Date())}</span>
+            <span suppressHydrationWarning>{formatPaperDate(new Date())}</span>
             <span className="text-right">Front page · Vol. I</span>
           </div>
           <hr className="np-rule" />
@@ -237,7 +237,7 @@ export function LandingNewspaperPage() {
 
             <aside className="np-profile-rail" aria-label="Front page briefs">
               <div className="np-rail-block">
-                <p className="np-profile-meta-rail">
+                <p className="np-profile-meta-rail" suppressHydrationWarning>
                   BAND IT
                   <br />
                   WORK · PLAY · TALK IT OUT

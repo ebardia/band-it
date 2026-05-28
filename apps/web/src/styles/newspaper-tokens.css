@@ -1092,10 +1092,504 @@
   margin-bottom: 1rem;
 }
 
+.np-welcome-shell {
+  max-width: 42rem;
+}
+
+.np-welcome-lead {
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-welcome-block {
+  margin-bottom: 2rem;
+}
+
+.np-welcome-block .np-picks-header {
+  margin-bottom: 0.75rem;
+}
+
+.np-welcome-hint {
+  margin: 0.35rem 0 0;
+}
+
+.np-welcome-headline {
+  font-family: var(--np-lead-head);
+  font-weight: 400;
+  font-size: clamp(1.85rem, 4.5vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.75rem;
+  color: var(--np-ink);
+}
+
+.np-welcome-dek {
+  font-family: var(--np-body);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--np-ink);
+  margin: 0;
+  max-width: 36rem;
+}
+
+.np-welcome-section {
+  margin-bottom: 2rem;
+}
+
+.np-welcome-interest-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+  margin: 1rem 0 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .np-welcome-interest-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.np-welcome-interest-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--np-line);
+  background: var(--np-paper);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.np-welcome-interest-card:hover {
+  background: var(--np-paper-warm);
+}
+
+.np-welcome-interest-card--selected {
+  border-width: 2px;
+  border-color: var(--np-ink);
+  background: var(--np-paper-warm);
+}
+
+.np-welcome-interest-kicker {
+  font-family: var(--np-ui);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  margin: 0 0 0.35rem;
+}
+
+.np-welcome-interest-title {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  color: var(--np-ink);
+  margin: 0 0 0.35rem;
+}
+
+.np-welcome-interest-desc {
+  font-family: var(--np-body);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--np-ink);
+  margin: 0;
+}
+
+.np-welcome-actions {
+  margin-top: 0.5rem;
+}
+
+.np-welcome-invites {
+  margin-bottom: 1.5rem;
+}
+
+.np-welcome-invite-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.np-welcome-invite-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-welcome-invite-name {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0;
+  color: var(--np-ink);
+}
+
+.np-daily-onboarding {
+  margin-bottom: 1.5rem;
+}
+
+.np-rule--spaced {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* --- Daily onboarding spread (feature + rail) --- */
+.np-daily-spread {
+  display: grid;
+  gap: 2rem 0;
+  align-items: start;
+  margin-top: 1.75rem;
+}
+
+@media (min-width: 900px) {
+  .np-daily-spread {
+    grid-template-columns: minmax(0, 1.22fr) minmax(260px, 0.78fr);
+    gap: 0 2.25rem;
+  }
+
+  .np-daily-spread-rail {
+    border-left: 1px solid var(--np-line);
+    padding-left: 1.75rem;
+  }
+
+  .np-daily-spread--single {
+    grid-template-columns: minmax(0, 42rem);
+  }
+}
+
+@media (max-width: 899px) {
+  .np-daily-spread-rail {
+    border-top: 1px solid var(--np-line);
+    padding-top: 1.75rem;
+  }
+}
+
+.np-daily-spread-main,
+.np-daily-spread-rail {
+  min-width: 0;
+}
+
+.np-daily-mission-body {
+  font-family: var(--np-body);
+  font-weight: 400;
+  font-size: 0.92rem;
+  line-height: 1.62;
+  color: var(--np-ink);
+  margin: 0;
+  text-align: justify;
+  hyphens: auto;
+}
+
+@media (min-width: 900px) {
+  .np-daily-mission-body {
+    column-count: 2;
+    column-gap: 1.35rem;
+  }
+}
+
+.np-daily-classified {
+  margin: 1.75rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--np-line-soft);
+}
+
+/* Waiting room — hero illustration */
+.np-waitroom-hero {
+  margin: 1.5rem auto 0;
+  max-width: 48rem;
+}
+
+.np-waitroom-hero .np-daily-classified-caption {
+  text-align: center;
+}
+
+.np-daily-classified-frame {
+  border: 1px solid var(--np-line);
+  padding: 0.35rem;
+  background: var(--np-paper-warm);
+  margin-top: 0.65rem;
+}
+
+.np-daily-classified-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.np-daily-classified-caption {
+  font-family: var(--np-ui);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  margin: 0.65rem 0 0;
+  line-height: 1.45;
+}
+
+.np-dropcap {
+  float: left;
+  font-family: var(--np-lead-head);
+  font-size: 3.15rem;
+  line-height: 0.82;
+  padding: 0.06rem 0.45rem 0 0;
+  margin-top: 0.08rem;
+  color: var(--np-ink);
+}
+
+.np-daily-briefs {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 0 1.25rem;
+}
+
+.np-daily-brief {
+  display: grid;
+  grid-template-columns: 4.75rem minmax(0, 1fr);
+  gap: 0.35rem 0.85rem;
+  align-items: start;
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0;
+  border: none;
+  border-bottom: 1px solid var(--np-line-soft);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.np-daily-brief:first-child {
+  border-top: 1px solid var(--np-line-soft);
+}
+
+.np-daily-brief:hover {
+  background: var(--np-paper-warm);
+}
+
+.np-daily-brief--selected {
+  background: var(--np-paper-warm);
+}
+
+.np-daily-brief-kicker {
+  font-family: var(--np-ui);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  padding-top: 0.15rem;
+}
+
+.np-daily-brief-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.np-daily-brief-title {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.25;
+  color: var(--np-ink);
+}
+
+.np-daily-brief-desc {
+  font-family: var(--np-body);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--np-ink);
+}
+
+/* Whole interest block is a single link to the profile page */
+.np-daily-briefs-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.np-daily-brief--static {
+  cursor: pointer;
+}
+
+.np-daily-briefs-link:hover .np-daily-brief--static {
+  background: var(--np-paper-warm);
+}
+
+.np-daily-briefs-cta {
+  display: inline-block;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-top: 0.25rem;
+}
+
+.np-daily-briefs-link:hover .np-daily-briefs-cta {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.np-daily-spread-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.np-daily-spread-actions .np-action {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.np-daily-spread-actions .np-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.np-daily-skip-link {
+  font-family: var(--np-ui);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.np-daily-skip-link:hover {
+  color: var(--np-ink);
+}
+
+.np-daily-skip-link:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Profile band — wide story + index rail */
+.np-daily-profile-band {
+  margin-bottom: 0.5rem;
+}
+
+.np-daily-profile-spread {
+  display: grid;
+  gap: 1.75rem 0;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .np-daily-profile-spread {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 0.48fr);
+    gap: 0 2rem;
+  }
+
+  .np-daily-profile-rail {
+    border-left: 1px solid var(--np-line-soft);
+    padding-left: 1.5rem;
+  }
+}
+
+@media (max-width: 899px) {
+  .np-daily-profile-rail {
+    border-top: 1px solid var(--np-line-soft);
+    padding-top: 1.5rem;
+  }
+}
+
+.np-daily-profile-title {
+  margin: 0 0 0.65rem;
+}
+
+.np-daily-index {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.np-daily-index-item {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 0.65rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-daily-index-item:last-child {
+  border-bottom: none;
+}
+
+.np-daily-index-num {
+  font-family: var(--np-lead-head);
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--np-ink);
+  padding-top: 0.1rem;
+}
+
+.np-daily-index-title {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.3;
+  color: var(--np-ink);
+  margin: 0 0 0.2rem;
+}
+
+.np-daily-fold {
+  margin-bottom: 0.5rem;
+}
+
+.np-daily-fold-copy {
+  max-width: 38rem;
+  margin-bottom: 0;
+}
+
+.np-profile-section-summary {
+  font-family: var(--np-body);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--np-ink);
+  margin: 0.35rem 0 0;
+  max-width: 42rem;
+}
+
+.np-profile-section-summary-preview {
+  margin-top: 1rem;
+  font-style: italic;
+  max-width: 42rem;
+}
+
 .np-profile-section {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-profile-facts {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.np-profile-facts-intro {
+  margin: -0.35rem 0 1.25rem;
+}
+
+.np-profile-facts--editing {
+  border: 1px solid var(--np-line);
+  padding: 1rem 0.85rem 0.25rem;
+  background: var(--np-paper-warm);
 }
 
 .np-profile-section:last-of-type {
@@ -1185,6 +1679,13 @@
   border-top: 1px solid var(--np-line);
 }
 
+.np-profile-actions--toolbar {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  margin-bottom: 1rem;
+}
+
 .np-profile-btn {
   font-family: var(--np-ui);
   font-size: 0.68rem;
@@ -1215,6 +1716,235 @@
 .np-profile-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Profile — location autocomplete */
+.np-location-wrap {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.np-location-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: 100%;
+  max-height: 14rem;
+  overflow-y: auto;
+  border: 1px solid var(--np-line);
+  background: var(--np-paper);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.np-location-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: var(--np-body);
+  font-size: 0.95rem;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--np-ink);
+  cursor: pointer;
+}
+
+.np-location-option:hover,
+.np-location-option[aria-selected='true'] {
+  background: var(--np-paper-warm);
+}
+
+.np-location-option--muted {
+  cursor: default;
+  color: var(--np-muted);
+  font-style: italic;
+}
+
+/* Profile — taxonomy multi-select (dropdown per category) */
+.np-taxonomy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.np-taxonomy-dropdown {
+  border: 1px solid var(--np-line);
+  background: var(--np-paper);
+}
+
+.np-taxonomy-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.np-taxonomy-dropdown-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.np-taxonomy-dropdown-trigger::after {
+  content: '▾';
+  font-size: 0.85rem;
+  color: var(--np-muted);
+  flex-shrink: 0;
+}
+
+.np-taxonomy-dropdown[open] .np-taxonomy-dropdown-trigger::after {
+  transform: rotate(180deg);
+}
+
+.np-taxonomy-dropdown-label {
+  font-family: var(--np-ui);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--np-ink);
+}
+
+.np-taxonomy-dropdown-value {
+  font-family: var(--np-body);
+  font-size: 0.88rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--np-muted);
+  text-align: right;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.np-taxonomy-dropdown-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.85rem 0.75rem;
+  border-top: 1px solid var(--np-line-soft);
+  background: var(--np-paper-warm);
+}
+
+.np-taxonomy-group {
+  border: 1px solid var(--np-line-soft);
+  padding: 0.75rem 0.85rem;
+  margin: 0;
+}
+
+.np-taxonomy-cat {
+  font-family: var(--np-ui);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+
+.np-taxonomy-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  padding-left: 0.25rem;
+}
+
+.np-taxonomy-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--np-body);
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.np-taxonomy-check--all {
+  font-weight: 600;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.15rem;
+  border-bottom: 1px solid var(--np-line-soft);
+}
+
+.np-taxonomy-check--item {
+  font-size: 0.88rem;
+  color: var(--np-ink);
+}
+
+.np-taxonomy-check input {
+  accent-color: var(--np-accent);
+}
+
+/* Profile — resume intake */
+.np-resume-upload {
+  border: 1px dashed var(--np-line);
+  padding: 1rem 0.85rem;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  background: var(--np-paper);
+}
+
+.np-resume-upload:hover {
+  border-color: var(--np-ink);
+}
+
+.np-resume-upload-input {
+  display: none;
+}
+
+.np-profile-actions--inline {
+  margin-top: 0.75rem;
+  padding-top: 0;
+  border-top: none;
+}
+
+.np-resume-block {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--np-line-soft);
+}
+
+.np-resume-block-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.np-resume-edit-card {
+  border: 1px solid var(--np-line-soft);
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: var(--np-paper);
+}
+
+.np-resume-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.np-resume-entry {
+  margin-bottom: 0.85rem;
+}
+
+.np-resume-entry-title {
+  font-family: var(--np-ui);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 0.25rem;
 }
 
 /* Profile — capability / Daily preview (Phase 1) */

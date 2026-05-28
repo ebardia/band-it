@@ -1,99 +1,104 @@
-/** Profile “signals” depth + copy for preview / next moves (no AI; rule-based only). */
+/** Profile signal depth + Daily preview / next moves — newspaper voice, rule-based. */
 
-export type ProfileFormShape = {
-  zipcode: string
-  strengths: string
-  weaknesses: string
-  passions: string
-  developmentPath: string
-}
+import type { EndUserProfileForm } from './endUserProfile'
 
-const SIGNAL_FIELDS: (keyof ProfileFormShape)[] = [
-  'zipcode',
-  'strengths',
-  'weaknesses',
-  'passions',
-  'developmentPath',
-]
-
-export function countProfileSignals(fd: ProfileFormShape): { filled: number; total: number; percent: number } {
-  const filled = SIGNAL_FIELDS.filter((k) => fd[k].trim().length > 0).length
-  const total = SIGNAL_FIELDS.length
-  return { filled, total, percent: Math.round((filled / total) * 100) }
+export function countProfileSignals(form: EndUserProfileForm): {
+  filled: number
+  total: number
+  percent: number
+} {
+  const checks = [
+    !!form.locationId,
+    !!(form.resumeText.trim() || form.resumeFileId || form.resumeFileName),
+    form.workExperience.length > 0 || form.skills.itemIds.length > 0 || form.skills.categoryIds.length > 0,
+    form.causes.itemIds.length > 0 || form.causes.categoryIds.length > 0,
+    form.playInterests.itemIds.length > 0 || form.playInterests.categoryIds.length > 0,
+  ]
+  const filled = checks.filter(Boolean).length
+  return { filled, total: checks.length, percent: Math.round((filled / checks.length) * 100) }
 }
 
 export type NextMove = { id: string; title: string; detail: string }
 
-export function buildNextMoves(fd: ProfileFormShape, max = 3): NextMove[] {
+export function buildNextMoves(form: EndUserProfileForm, max = 3): NextMove[] {
   const moves: NextMove[] = []
 
-  if (!fd.strengths.trim()) {
+  if (!form.locationId) {
     moves.push({
-      id: 'strengths',
-      title: 'Name a few strengths',
-      detail: 'Even three skills sharpen what we can match you to—paid work, volunteer roles, and band tasks.',
+      id: 'place',
+      title: 'Pin your place on the map',
+      detail: 'Required—so local gigs, volunteer shifts, and weirdly perfect events know where to find you.',
     })
   }
-  if (!fd.passions.trim()) {
+  if (!form.resumeText.trim() && !form.resumeFileId && !form.resumeFileName) {
     moves.push({
-      id: 'passions',
-      title: 'Add what moves you',
-      detail: 'Passions steer culture, hobbies, and slower “human world” items in your Daily—not only jobs.',
+      id: 'resume',
+      title: 'File your résumé with the desk',
+      detail: 'Paste or upload PDF, DOCX, or TXT. We’ll decode it into editable sections—no fax machine required.',
     })
   }
-  if (!fd.zipcode.trim()) {
+  if (
+    form.skills.itemIds.length === 0 &&
+    form.skills.categoryIds.length === 0 &&
+    moves.length < max
+  ) {
     moves.push({
-      id: 'zip',
-      title: 'Optional: add a postal code',
-      detail: 'When we have local items, this keeps them relevant without guessing.',
+      id: 'skills',
+      title: 'Check off what you can do',
+      detail: 'No fresh résumé? Pick skills from the list anyway—paid work doesn’t always read your PDF.',
     })
   }
-  if (!fd.developmentPath.trim() && moves.length < max) {
+  if (
+    form.causes.itemIds.length === 0 &&
+    form.causes.categoryIds.length === 0 &&
+    moves.length < max
+  ) {
     moves.push({
-      id: 'learn',
-      title: 'Say what you want to learn next',
-      detail: 'Growth edges help mentors, trainings, and stretch projects find you.',
+      id: 'causes',
+      title: 'Name the causes you’d show up for',
+      detail: 'Optional—but it’s how mutual aid and volunteer listings find their way into your Daily.',
     })
   }
-  if (!fd.weaknesses.trim() && moves.length < max) {
+  if (
+    form.playInterests.itemIds.length === 0 &&
+    form.playInterests.categoryIds.length === 0 &&
+    moves.length < max
+  ) {
     moves.push({
-      id: 'growth',
-      title: 'Note where you are stretching',
-      detail: 'Honest growth areas build trust with collaborators and improve fit—not a performance review.',
+      id: 'play',
+      title: 'Add what you do for fun',
+      detail: 'Optional—hobbies, scenes, and offbeat events stay quiet until you give us a hint.',
     })
   }
 
   return moves.slice(0, max)
 }
 
-/**
- * Honest, static-ish preview lines derived only from current fields (until a real edition engine exists).
- */
-export function buildEditionPreviewLines(fd: ProfileFormShape, chips: string[]): string[] {
+export function buildEditionPreviewLines(form: EndUserProfileForm, chips: string[]): string[] {
   const lines: string[] = []
 
   if (chips.length >= 3) {
     lines.push(
-      `From your tags, we will bias opportunity and project surfaces toward themes like “${chips[0]}”, “${chips[1]}”, and “${chips[2]}”—always alongside your bands and permissions.`
+      `From your tags, tomorrow’s edition will lean toward “${chips[0]}”, “${chips[1]}”, and “${chips[2]}”—always filtered through your bands and what you’ve actually signed up for.`
     )
   } else if (chips.length > 0) {
     lines.push(
-      `Early signals: ${chips.slice(0, 8).join(', ')}. As this list grows, matching gets steadier and less generic.`
+      `Early signals: ${chips.slice(0, 8).join(', ')}. The more tags on the page, the less generic your Daily feels.`
     )
   } else {
     lines.push(
-      'Once strengths, passions, or learning goals are on the page, your Daily can move from “generic” toward “specific to you.”'
+      'Right now your Daily reads like everyone else’s morning paper. Fill in a few sections and it starts sounding like yours.'
     )
   }
 
-  if (fd.zipcode.trim()) {
-    lines.push(`Local and regional items—when we run them—will anchor to ${fd.zipcode.trim()}.`)
+  if (form.locationLabel) {
+    lines.push(`Local and regional items—when we run them—anchor to ${form.locationLabel}.`)
   } else {
-    lines.push('Without a postal code, local flavor stays minimal on purpose—we do not want to guess your place.')
+    lines.push('Without a place on the map, local flavor stays thin on purpose—we’re not guessing your ZIP code.')
   }
 
   lines.push(
-    'Culture, books, galleries, and hobby-adjacent items stay conservative until passions are richer; agents will respect that ceiling.'
+    'Culture, galleries, and hobby-adjacent listings stay conservative until Play and Volunteer have something to work with.'
   )
 
   return lines

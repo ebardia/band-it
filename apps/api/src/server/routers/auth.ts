@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { router, publicProcedure } from '../trpc'
+import { TRPCError } from '@trpc/server'
+import { router, publicProcedure, protectedProcedure } from '../trpc'
 import { authService } from '../services/auth.service'
 import { emailService } from '../services/email.service'
 import { prisma } from '../../lib/prisma'
@@ -124,6 +125,41 @@ export const authRouter = router({
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
         bandsInvited: result.bandsInvited,
+      }
+    }),
+
+  /**
+   * Get waitlist access status - drives the waiting-room gate.
+   * Admins always have access; everyone else needs accessApproved = true.
+   */
+  getAccessStatus: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      // Only ever report on the authenticated caller — never an arbitrary id.
+      if (input.userId !== ctx.userId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Not allowed.' })
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.userId },
+        select: {
+          accessApproved: true,
+          isAdmin: true,
+        },
+      })
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
+      }
+
+      return {
+        accessApproved: user.accessApproved,
+        isAdmin: user.isAdmin,
+        hasAccess: user.accessApproved || user.isAdmin,
       }
     }),
 

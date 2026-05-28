@@ -86,11 +86,10 @@ function RegisterContent() {
       // Use replace so register page isn't in browser history
       if (data.user.emailVerified) {
         if (!hasInvites) {
-          showToast('Account created successfully!', 'success')
+          showToast('Account created — you\u2019re on the list!', 'success')
         }
-        // Redirect to /welcome for new users (they have no bands yet)
-        // Welcome page will show pending invitations if any
-        router.replace('/welcome')
+        // New users land in the waiting room until they're approved.
+        router.replace(data.user.accessApproved ? '/daily' : '/waiting-room')
       } else {
         if (!hasInvites) {
           showToast('Account created! Please check your email.', 'success')
@@ -149,7 +148,7 @@ function RegisterContent() {
               steps={[
                 { label: 'Register', status: 'active' },
                 { label: 'Verify', status: 'inactive' },
-                { label: 'Profile', status: 'inactive' },
+                { label: 'Daily', status: 'inactive' },
               ]}
             />
 

@@ -14,6 +14,7 @@ const OPERATION_CATEGORIES: Record<AIOperationType, 'generation' | 'validation' 
   task_suggestions: 'generation',
   checklist_suggestions: 'generation',
   help_question: 'help',
+  resume_parse: 'generation',
 }
 
 /**

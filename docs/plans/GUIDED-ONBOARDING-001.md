@@ -1,5 +1,7 @@
 # GUIDED-ONBOARDING-001 — User & Band Onboarding
 
+> **User welcome flow:** superseded by [`DAILY-ONBOARDING-V2-001.md`](./DAILY-ONBOARDING-V2-001.md) (`/daily` home, profile-first). This document remains authoritative for **band template selection** and **band milestone onboarding**.
+
 ## Problem Statement
 
 Users discover Band It through community posts or referrals. Two failure modes:

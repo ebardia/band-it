@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+
+reviews:
+  profile: assertive
+  high_level_summary: true
+  sequence_diagrams: true
+  review_status: true
+  collapse_walkthrough: false
+  changed_files_summary: true
+  auto_review:
+    enabled: false
+    drafts: true
+    incremental_reviews: false
+  instructions: |
+    This repository uses feature branches for scoped CodeRabbit reviews.
+    For PRs targeting `pre-profile-baseline` from `feature/user-profile`, perform a
+    HOLISTIC review of the entire end-user profile feature — frontend, API, services,
+    and Prisma schema — not just the most recent commits.
+
+    Prioritize: correctness of save/load flows, résumé parse-on-save, location/ZIP search,
+    taxonomy selections, summary generation, auth boundaries, error handling, and
+    consistency between web form state and API payloads.
+
+    Comment `@coderabbitai full review` means: re-read all profile paths below as one
+    feature, note cross-layer gaps, security issues, and missing tests — skip unrelated
+    drive-by nits outside the profile scope.
+  path_instructions:
+    - path: "apps/web/src/app/user-dashboard/profile/**"
+      instructions: |
+        Profile page shell: edit vs read modes, summary display, form submit/cancel,
+        tRPC mutations/queries, and UX for Place / Work / Volunteer / Play sections.
+    - path: "apps/web/src/app/profile/**"
+      instructions: |
+        Profile route redirects and onboarding entry points into the dashboard profile.
+    - path: "apps/web/src/components/profile/**"
+      instructions: |
+        Reusable profile UI: LocationAutocomplete, ResumeSection, TaxonomySelect.
+        Check debouncing, read-only vs edit behavior, file upload limits, and a11y.
+    - path: "apps/web/src/lib/profileSummary.ts"
+      instructions: |
+        Rule-based summary builder: deduplication logic, first-person copy, location
+        formatting (no ZIP in summary), and edge cases for sparse or noisy résumé data.
+    - path: "apps/web/src/lib/profileSignals.ts"
+      instructions: |
+        Profile completeness signals and Daily preview helpers — keep aligned with
+        actual required fields and taxonomy selections.
+    - path: "apps/web/src/lib/endUserProfile.ts"
+      instructions: |
+        Shared profile form types and defaults — must stay in sync with API Zod schemas.
+    - path: "apps/api/src/server/routers/profile/**"
+      instructions: |
+        tRPC profile router: get, update, parseResume, suggestSkills, searchLocations,
+        getTaxonomy. Review validation, transactions, file upload, parse-on-save, and
+        error messages returned to the client.
+    - path: "apps/api/src/services/resume-parse.service.ts"
+      instructions: |
+        AI résumé parsing and skill inference integration. Check token limits, JSON
+        parsing fallbacks, and mapping to taxonomy slugs.
+    - path: "apps/api/src/services/resume-text.service.ts"
+      instructions: |
+        PDF/DOCX/TXT extraction for résumé uploads — MIME validation and size limits.
+    - path: "apps/api/src/services/skill-infer.service.ts"
+      instructions: |
+        Rule-based skill/cause inference from job titles and résumé keywords.
+    - path: "apps/api/src/services/us-location.service.ts"
+      instructions: |
+        US ZIP/city search via zipcodes package (v8 `.codes` API), virtual IDs, and
+        UsLocation upsert on save.
+    - path: "apps/api/src/services/ensure-profile-seed.service.ts"
+      instructions: |
+        Lazy seeding of taxonomy and location reference data on first profile API use.
+    - path: "apps/api/src/data/profile-taxonomy.seed.ts"
+      instructions: |
+        Skills, causes, and play taxonomy seed — slugs must match skill-infer rules.
+    - path: "apps/api/prisma/schema.prisma"
+      instructions: |
+        Review only profile-related models: UsLocation, ProfileTaxonomyCategory,
+        ProfileTaxonomyItem, UserProfileTaxonomySelection, and User profile fields
+        (locationId, resumeText, workExperience JSON, profileCompleted, etc.).
+    - path: "apps/api/prisma/seed-profile.ts"
+      instructions: |
+        Profile seed entrypoint — idempotency and relation to taxonomy/location seeds.
+    - path: "apps/api/src/types/zipcodes.d.ts"
+      instructions: |
+        Type declarations for zipcodes v8 — must match runtime `.codes` and `.lookup`.
