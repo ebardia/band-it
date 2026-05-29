@@ -270,7 +270,7 @@ function RegisterContent() {
                     />
                     <span>
                       I have read and agree to follow the{' '}
-                      <a href="/community-guidelines" target="_blank" className="np-consent-link">
+                      <a href="/community-guidelines" target="_blank" rel="noopener noreferrer" className="np-consent-link">
                         community guidelines
                       </a>
                       .
@@ -285,11 +285,11 @@ function RegisterContent() {
                     />
                     <span>
                       I agree to the{' '}
-                      <a href="/terms" target="_blank" className="np-consent-link">
+                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="np-consent-link">
                         Terms of Service
                       </a>{' '}
                       and{' '}
-                      <a href="/privacy" target="_blank" className="np-consent-link">
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="np-consent-link">
                         Privacy Policy
                       </a>
                       .
