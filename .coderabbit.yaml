@@ -14,18 +14,50 @@ reviews:
     incremental_reviews: false
   instructions: |
     This repository uses feature branches for scoped CodeRabbit reviews.
+
+    For PRs targeting `main` from `pre-profile-baseline` (production release), perform a
+    HOLISTIC review of the editorial onboarding and landing work — register, verify-email,
+    landing page, shared newspaper components, and footer — not just the latest commit.
+
     For PRs targeting `pre-profile-baseline` from `feature/user-profile`, perform a
     HOLISTIC review of the entire end-user profile feature — frontend, API, services,
-    and Prisma schema — not just the most recent commits.
+    and Prisma schema.
 
-    Prioritize: correctness of save/load flows, résumé parse-on-save, location/ZIP search,
-    taxonomy selections, summary generation, auth boundaries, error handling, and
-    consistency between web form state and API payloads.
+    Prioritize: layout/responsive behavior, auth flow after register/verify, existing
+    tRPC usage, accessibility, copy/hydration, image performance, and consistency with
+    the newspaper design system.
 
-    Comment `@coderabbitai full review` means: re-read all profile paths below as one
-    feature, note cross-layer gaps, security issues, and missing tests — skip unrelated
-    drive-by nits outside the profile scope.
+    Comment `@coderabbitai full review` means: re-read all path_instructions below for
+    this PR's scope, note cross-file gaps and security issues — skip unrelated drive-by
+    nits outside scope.
   path_instructions:
+    - path: "apps/web/src/app/register/**"
+      instructions: |
+        The Register — newspaper signup: form validation, invite token handling,
+        guidelines/TOS acceptance, tRPC register mutation, redirect to verify-email or
+        waiting-room, AuthEditionBody layout (clerk art left on desktop, image on top mobile).
+    - path: "apps/web/src/app/verify-email/**"
+      instructions: |
+        The Proof Desk — email verification: token-in-URL flow, polling getProfile,
+        resend verification, error states, redirects to /daily, newspaper shell and layout.
+    - path: "apps/web/src/components/landing/LandingNewspaperPage.tsx"
+      instructions: |
+        Public landing: placard headlines, pipeline grid (factory image beside Workspace),
+        story columns, briefing, rail CTAs, analytics page view.
+    - path: "apps/web/src/components/newspaper/AuthEdition*.tsx"
+      instructions: |
+        Shared auth edition layout: AuthEditionBody variants (register/proof), illustration
+        sizing, sidebar stacking on small screens.
+    - path: "apps/web/src/components/newspaper/EditorialNeonMasthead.tsx"
+      instructions: |
+        Neon masthead SVG filters — hydration, accessibility labels, consistency with Daily.
+    - path: "apps/web/src/styles/newspaper-tokens.css"
+      instructions: |
+        Auth edition and landing pipeline layout CSS — breakpoints, sticky sidebar,
+        grid placement for pipeline factory figure.
+    - path: "apps/web/src/components/ui/Footer.tsx"
+      instructions: |
+        Site footer links — confirm AI Usage link removed for production.
     - path: "apps/web/src/app/user-dashboard/profile/**"
       instructions: |
         Profile page shell: edit vs read modes, summary display, form submit/cancel,
