@@ -14,8 +14,8 @@ export function AuthEditionIllustration({ src, alt, caption }: Props) {
         <Image
           src={src}
           alt={alt}
-          width={520}
-          height={347}
+          width={640}
+          height={427}
           className="np-daily-classified-img"
           priority
         />

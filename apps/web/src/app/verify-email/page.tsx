@@ -34,7 +34,13 @@ function formatPaperDate(d: Date) {
   }).format(d)
 }
 
-function VerifyEmailShell({ children }: { children: React.ReactNode }) {
+function VerifyEmailShell({
+  children,
+  sidebarBelowImage,
+}: {
+  children: React.ReactNode
+  sidebarBelowImage?: React.ReactNode
+}) {
   return (
     <EditorialSurface>
       <div className="np-shell np-landing-page">
@@ -56,7 +62,16 @@ function VerifyEmailShell({ children }: { children: React.ReactNode }) {
           <p className="np-register-steps">Step 2 of 3 — Register · Verify · Daily</p>
         </header>
 
-        <AuthEditionBody illustration={PROOF_ILLUSTRATION}>{children}</AuthEditionBody>
+        <AuthEditionBody
+          sidebar={
+            <>
+              {PROOF_ILLUSTRATION}
+              {sidebarBelowImage}
+            </>
+          }
+        >
+          {children}
+        </AuthEditionBody>
       </div>
     </EditorialSurface>
   )
@@ -216,49 +231,9 @@ function VerifyEmailContent() {
   }
 
   return (
-    <VerifyEmailShell>
-      <section className="np-welcome-lead np-auth-edition-lead" aria-labelledby="verify-heading">
-        <p className="np-cat np-cat-left">Mail room</p>
-        <h1 id="verify-heading" className="np-welcome-headline">
-          Your proof is in the mail
-        </h1>
-        <p className="np-welcome-dek">
-          We sent a verification link to{' '}
-          <strong>{email || 'your inbox'}</strong>. One click and you&apos;re cleared for the
-          next edition of Band It — work, play, causes, and whatever else you band together for.
-        </p>
-      </section>
-
-      <div className="np-daily-spread">
-        <article className="np-daily-spread-main" aria-labelledby="verify-steps-heading">
-          <p className="np-cat np-cat-left">Reader&apos;s guide</p>
-          <h2 id="verify-steps-heading" className="np-picks-header np-picks-header-left">
-            What to do next
-          </h2>
-          <ol className="np-fineprint-list" style={{ listStyle: 'none', counterReset: 'step' }}>
-            {MAILROOM_STEPS.map((step, i) => (
-              <li key={step} className="np-fineprint-item">
-                <span className="np-daily-index-num" style={{ marginRight: '0.5rem' }}>
-                  {i + 1}.
-                </span>
-                {step}
-              </li>
-            ))}
-          </ol>
-
-          <div className="np-daily-spread-actions" style={{ marginTop: '1.5rem' }}>
-            <button
-              type="button"
-              className="np-profile-btn np-profile-btn-primary"
-              onClick={handleCheckStatus}
-              disabled={checkingStatus || !userId}
-            >
-              {checkingStatus ? 'Checking the wire…' : 'Already verified elsewhere?'}
-            </button>
-          </div>
-        </article>
-
-        <aside className="np-daily-spread-rail" aria-labelledby="verify-rail-heading">
+    <VerifyEmailShell
+      sidebarBelowImage={
+        <aside className="np-auth-edition-rules" aria-labelledby="verify-rail-heading">
           <p className="np-cat np-cat-left">Pigeon notes</p>
           <h2 id="verify-rail-heading" className="np-picks-header">
             Nothing yet?
@@ -279,6 +254,46 @@ function VerifyEmailContent() {
             Wrong address? You&apos;ll need to register again with the correct email.
           </p>
         </aside>
+      }
+    >
+      <section className="np-welcome-lead np-auth-edition-lead" aria-labelledby="verify-heading">
+        <p className="np-cat np-cat-left">Mail room</p>
+        <h1 id="verify-heading" className="np-welcome-headline">
+          Your proof is in the mail
+        </h1>
+        <p className="np-welcome-dek">
+          We sent a verification link to{' '}
+          <strong>{email || 'your inbox'}</strong>. One click and you&apos;re cleared for the
+          next edition of Band It — work, play, causes, and whatever else you band together for.
+        </p>
+      </section>
+
+      <div aria-labelledby="verify-steps-heading">
+        <p className="np-cat np-cat-left">Reader&apos;s guide</p>
+        <h2 id="verify-steps-heading" className="np-picks-header np-picks-header-left">
+          What to do next
+        </h2>
+        <ol className="np-fineprint-list" style={{ listStyle: 'none', counterReset: 'step' }}>
+          {MAILROOM_STEPS.map((step, i) => (
+            <li key={step} className="np-fineprint-item">
+              <span className="np-daily-index-num" style={{ marginRight: '0.5rem' }}>
+                {i + 1}.
+              </span>
+              {step}
+            </li>
+          ))}
+        </ol>
+
+        <div className="np-daily-spread-actions" style={{ marginTop: '1.5rem' }}>
+          <button
+            type="button"
+            className="np-profile-btn np-profile-btn-primary"
+            onClick={handleCheckStatus}
+            disabled={checkingStatus || !userId}
+          >
+            {checkingStatus ? 'Checking the wire…' : 'Already verified elsewhere?'}
+          </button>
+        </div>
       </div>
     </VerifyEmailShell>
   )

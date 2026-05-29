@@ -154,12 +154,35 @@ function RegisterContent() {
         </header>
 
         <AuthEditionBody
-          illustration={
-            <AuthEditionIllustration
-              src={REGISTER_CLERK_IMAGE}
-              alt="A vintage robot clerk behind a wood counter with an open guest register and fountain pen."
-              caption="The subscriptions desk — sign here; the clerk has been expecting you since 1952."
-            />
+          sidebar={
+            <>
+              <AuthEditionIllustration
+                src={REGISTER_CLERK_IMAGE}
+                alt="A vintage robot clerk behind a wood counter with an open guest register and fountain pen."
+                caption="The subscriptions desk — sign here; the clerk has been expecting you since 1952."
+              />
+              <aside className="np-auth-edition-rules" aria-labelledby="register-rules-heading">
+                <p className="np-cat np-cat-left">House rules</p>
+                <h2 id="register-rules-heading" className="np-picks-header">
+                  Before you sign
+                </h2>
+                <p className="np-excerpt">
+                  Band It is a family-friendly room where people of all ages collaborate. Breaking
+                  these may cost you your spot.
+                </p>
+                <ul className="np-fineprint-list">
+                  {HOUSE_RULES.map((rule) => (
+                    <li key={rule} className="np-fineprint-item">
+                      {rule}
+                    </li>
+                  ))}
+                </ul>
+                <p className="np-byline np-byline-left">Already a subscriber?</p>
+                <Link href="/login" className="np-action np-action-left">
+                  Sign in →
+                </Link>
+              </aside>
+            </>
           }
         >
           <section className="np-welcome-lead" aria-labelledby="register-heading">
@@ -181,12 +204,10 @@ function RegisterContent() {
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="np-daily-spread">
-              <div className="np-daily-spread-main">
-              <p className="np-cat np-cat-left">Your details</p>
-              <h2 className="np-picks-header np-picks-header-left">For the record</h2>
+            <p className="np-cat np-cat-left">Your details</p>
+            <h2 className="np-picks-header np-picks-header-left">For the record</h2>
 
-              <div className="np-register-form">
+            <div className="np-register-form">
                 <div>
                   <label className="np-label" htmlFor="register-name">Full name</label>
                   <input
@@ -281,29 +302,6 @@ function RegisterContent() {
                 >
                   {registerMutation.isPending ? 'Setting the type…' : 'Sign the register'}
                 </button>
-              </div>
-              </div>
-
-              <aside className="np-daily-spread-rail" aria-labelledby="register-rules-heading">
-              <p className="np-cat np-cat-left">House rules</p>
-              <h2 id="register-rules-heading" className="np-picks-header">Before you sign</h2>
-              <p className="np-excerpt">
-                Band It is a family-friendly room where people of all ages collaborate. Breaking
-                these may cost you your spot.
-              </p>
-              <ul className="np-fineprint-list">
-                {HOUSE_RULES.map((rule) => (
-                  <li key={rule} className="np-fineprint-item">
-                    {rule}
-                  </li>
-                ))}
-              </ul>
-
-              <p className="np-byline np-byline-left">Already a subscriber?</p>
-              <Link href="/login" className="np-action np-action-left">
-                Sign in →
-              </Link>
-              </aside>
             </div>
           </form>
         </AuthEditionBody>

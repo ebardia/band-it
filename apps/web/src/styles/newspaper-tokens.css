@@ -2024,7 +2024,7 @@
 /* --- Auth edition pages (register, verify-email) --- */
 .np-auth-edition-body {
   display: grid;
-  gap: 1.5rem 2rem;
+  gap: 1.5rem 1rem;
   align-items: start;
   margin-top: 0.5rem;
 }
@@ -2038,16 +2038,24 @@
   padding-bottom: 1rem;
 }
 
+.np-auth-edition-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+  min-width: 0;
+  width: 100%;
+}
+
 .np-auth-edition-figure {
   margin: 0;
   width: 100%;
-  max-width: 16rem;
-  justify-self: end;
+  max-width: 14rem;
 }
 
 .np-auth-edition-figure .np-daily-classified-frame {
   margin-top: 0;
-  padding: 0.25rem;
+  padding: 0.3rem;
 }
 
 .np-auth-edition-figure .np-daily-classified-caption {
@@ -2057,16 +2065,40 @@
   margin-top: 0.5rem;
 }
 
+.np-auth-edition-rules {
+  width: 100%;
+  padding-top: 0.25rem;
+}
+
+.np-auth-edition-rules .np-picks-header {
+  margin-bottom: 0.65rem;
+}
+
+.np-auth-edition-rules .np-daily-spread-rail {
+  border-left: none;
+  padding-left: 0;
+  border-top: none;
+  padding-top: 0;
+}
+
 @media (min-width: 900px) {
   .np-auth-edition-body {
-    grid-template-columns: minmax(0, 1fr) minmax(180px, 16rem);
-    gap: 1.75rem 2.25rem;
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 22rem);
+    gap: 1.25rem 0.85rem;
+  }
+
+  .np-auth-edition-sidebar {
+    position: sticky;
+    top: 1.25rem;
+    max-width: 22rem;
   }
 
   .np-auth-edition-figure {
-    position: sticky;
-    top: 1.25rem;
-    max-width: 16rem;
+    max-width: 22rem;
+  }
+
+  .np-auth-edition-rules {
+    max-width: 22rem;
   }
 }
 
@@ -2075,10 +2107,12 @@
     grid-template-columns: 1fr;
   }
 
+  .np-auth-edition-sidebar {
+    max-width: 18rem;
+  }
+
   .np-auth-edition-figure {
-    max-width: 12rem;
-    margin-left: auto;
-    margin-right: 0;
+    max-width: 18rem;
   }
 }
 
