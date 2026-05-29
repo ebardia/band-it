@@ -2116,6 +2116,49 @@
   }
 }
 
+/* Register — copy left, enlarged clerk art + house rules flush right */
+@media (min-width: 900px) {
+  .np-auth-edition-body--register {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 28rem);
+    gap: 1.5rem 1.75rem;
+  }
+
+  .np-auth-edition-body--register .np-auth-edition-main {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .np-auth-edition-body--register .np-auth-edition-sidebar {
+    grid-column: 2;
+    grid-row: 1;
+    align-items: flex-end;
+    justify-self: end;
+    margin-left: auto;
+    max-width: 28rem;
+  }
+
+  .np-auth-edition-body--register .np-auth-edition-figure--large {
+    max-width: 28rem;
+  }
+
+  .np-auth-edition-body--register .np-auth-edition-rules {
+    max-width: 28rem;
+  }
+}
+
+@media (max-width: 899px) {
+  .np-auth-edition-body--register .np-auth-edition-sidebar {
+    max-width: 20rem;
+    margin-left: auto;
+    margin-right: 0;
+    align-items: flex-end;
+  }
+
+  .np-auth-edition-body--register .np-auth-edition-figure--large {
+    max-width: 20rem;
+  }
+}
+
 /* --- Registration ("The Register" edition) --- */
 .np-register-masthead {
   text-align: center;

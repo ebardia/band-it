@@ -154,12 +154,14 @@ function RegisterContent() {
         </header>
 
         <AuthEditionBody
+          variant="register"
           sidebar={
             <>
               <AuthEditionIllustration
                 src={REGISTER_CLERK_IMAGE}
                 alt="A vintage robot clerk behind a wood counter with an open guest register and fountain pen."
                 caption="The subscriptions desk — sign here; the clerk has been expecting you since 1952."
+                size="large"
               />
               <aside className="np-auth-edition-rules" aria-labelledby="register-rules-heading">
                 <p className="np-cat np-cat-left">House rules</p>
