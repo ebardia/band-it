@@ -16,6 +16,7 @@ const PROOF_ILLUSTRATION = (
     src={PROOF_PIGEONS_IMAGE}
     alt="Two carrier pigeons chatting beside a water cooler in a mailroom corridor."
     caption="The mail room — gossip travels faster than the afternoon edition."
+    size="large"
   />
 )
 
@@ -63,6 +64,7 @@ function VerifyEmailShell({
         </header>
 
         <AuthEditionBody
+          variant="proof"
           sidebar={
             <>
               {PROOF_ILLUSTRATION}
