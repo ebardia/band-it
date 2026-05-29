@@ -4,25 +4,80 @@ import { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
-import {
-  Card,
-  PageLayout,
-  Container,
-  Heading,
-  Text,
-  Button,
-  useToast,
-  Stack,
-  Center,
-  Progress,
-  Loading,
-  Alert,
-  IconCircle,
-  CheckIcon,
-  EmailIcon,
-  List,
-  ListItem
-} from '@/components/ui'
+import { useToast } from '@/components/ui'
+import { EditorialSurface } from '@/components/editorial/EditorialSurface'
+import { AuthEditionBody } from '@/components/newspaper/AuthEditionBody'
+import { AuthEditionIllustration } from '@/components/newspaper/AuthEditionIllustration'
+import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
+import { PROOF_PIGEONS_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
+
+const PROOF_ILLUSTRATION = (
+  <AuthEditionIllustration
+    src={PROOF_PIGEONS_IMAGE}
+    alt="Two carrier pigeons chatting beside a water cooler in a mailroom corridor."
+    caption="The mail room — gossip travels faster than the afternoon edition."
+    size="large"
+  />
+)
+
+const MAILROOM_STEPS = [
+  'Open your inbox (and peek at spam — we hide there sometimes).',
+  'Click the verification link — one tap, no crossword required.',
+  'Come back here; we\'ll whisk you to the next chapter.',
+]
+
+function formatPaperDate(d: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(d)
+}
+
+function VerifyEmailShell({
+  children,
+  sidebarBelowImage,
+}: {
+  children: React.ReactNode
+  sidebarBelowImage?: React.ReactNode
+}) {
+  return (
+    <EditorialSurface>
+      <div className="np-shell np-landing-page">
+        <header className="np-landing-masthead np-register-masthead">
+          <p className="np-cat">Band It</p>
+          <EditorialNeonMasthead
+            arcLabel="The Proof"
+            actionLabel="Desk"
+            ariaLabel="The Proof Desk"
+          />
+          <p className="np-register-tagline">
+            Where the carrier pigeon lands before your edition goes to press.
+          </p>
+          <hr className="np-rule" />
+          <div className="np-masthead-meta py-3 md:py-3.5">
+            <span suppressHydrationWarning>{formatPaperDate(new Date())}</span>
+            <span className="text-right">Carrier Edition</span>
+          </div>
+          <p className="np-register-steps">Step 2 of 3 — Register · Verify · Daily</p>
+        </header>
+
+        <AuthEditionBody
+          variant="proof"
+          sidebar={
+            <>
+              {PROOF_ILLUSTRATION}
+              {sidebarBelowImage}
+            </>
+          }
+        >
+          {children}
+        </AuthEditionBody>
+      </div>
+    </EditorialSurface>
+  )
+}
 
 function VerifyEmailContent() {
   const router = useRouter()
@@ -42,7 +97,7 @@ function VerifyEmailContent() {
     const accessToken = localStorage.getItem('accessToken')
     if (accessToken) {
       try {
-        const decoded: any = jwtDecode(accessToken)
+        const decoded = jwtDecode<{ userId: string }>(accessToken)
         setUserId(decoded.userId)
       } catch (error) {
         console.error('Invalid token:', error)
@@ -50,16 +105,14 @@ function VerifyEmailContent() {
     }
   }, [])
 
-  // Poll to check if email was verified on another device
   const { data: profileData, refetch: refetchProfile } = trpc.auth.getProfile.useQuery(
     { userId },
     {
       enabled: !!userId && !token && !hasVerified.current,
-      refetchInterval: 5000, // Poll every 5 seconds
-    }
+      refetchInterval: 5000,
+    },
   )
 
-  // Redirect if email is verified (detected via polling)
   useEffect(() => {
     if (profileData?.user?.emailVerified && !hasVerified.current) {
       hasVerified.current = true
@@ -101,6 +154,8 @@ function VerifyEmailContent() {
       setVerifying(true)
       verifyEmailMutation.mutate({ token })
     }
+    // Token link should fire once on mount; mutation identity is unstable in deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
   const handleResend = () => {
@@ -109,115 +164,152 @@ function VerifyEmailContent() {
     }
   }
 
+  const handleCheckStatus = () => {
+    setCheckingStatus(true)
+    refetchProfile().then((result) => {
+      setCheckingStatus(false)
+      if (result.data?.user?.emailVerified) {
+        hasVerified.current = true
+        showToast('Email verified! Redirecting...', 'success')
+        setTimeout(() => router.replace('/daily'), 1500)
+      } else {
+        showToast('Not verified yet — the pigeon is still in transit.', 'info')
+      }
+    })
+  }
+
   if (token) {
     return (
-      <PageLayout>
-        <Container size="sm">
-          <Card>
-            {verifying && !verifyEmailMutation.isError ? (
-              <Loading message="Verifying Email..." />
-            ) : verifyEmailMutation.isSuccess ? (
-              <Center>
-                <Stack spacing="lg">
-                  <IconCircle variant="success" size="md">
-                    <CheckIcon />
-                  </IconCircle>
-                  <Heading level={1}>Email Verified! ✅</Heading>
-                  <Text variant="muted">Redirecting to your home screen...</Text>
-                </Stack>
-              </Center>
-            ) : null}
-          </Card>
-        </Container>
-      </PageLayout>
+      <VerifyEmailShell>
+        <section className="np-welcome-lead np-auth-edition-lead" aria-live="polite">
+          {verifying && !verifyEmailMutation.isError ? (
+            <>
+              <p className="np-cat np-cat-left">Hot off the wire</p>
+              <h1 className="np-welcome-headline">Checking your proof…</h1>
+              <p className="np-welcome-dek np-quiet-left">
+                Hold the front page — we&apos;re confirming that link right now.
+              </p>
+            </>
+          ) : verifyEmailMutation.isSuccess ? (
+            <>
+              <p className="np-cat np-cat-left">Cleared for press</p>
+              <h1 className="np-welcome-headline">Proof approved</h1>
+              <p className="np-welcome-dek">
+                Your address is verified. Rolling the presses and taking you to your Daily…
+              </p>
+            </>
+          ) : verifyEmailMutation.isError ? (
+            <>
+              <p className="np-cat np-cat-left">Hold the presses</p>
+              <h1 className="np-welcome-headline">That link didn&apos;t stick</h1>
+              <p className="np-welcome-dek">
+                The verification link may have expired or already been used. Ask the mail room
+                to send another.
+              </p>
+              <div className="np-daily-spread-actions" style={{ marginTop: '1.25rem' }}>
+                {userId ? (
+                  <button
+                    type="button"
+                    className="np-profile-btn np-profile-btn-primary"
+                    onClick={handleResend}
+                    disabled={resendMutation.isPending}
+                  >
+                    {resendMutation.isPending ? 'Calling the pigeon…' : 'Send another proof'}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="np-action np-action-left"
+                  onClick={() => router.replace('/verify-email')}
+                >
+                  Back to the mail room →
+                </button>
+              </div>
+            </>
+          ) : null}
+        </section>
+      </VerifyEmailShell>
     )
   }
 
   return (
-    <PageLayout>
-      <Container size="sm">
-        <Card>
-          <Stack spacing="lg">
-            <Center>
-              <IconCircle variant="primary" size="md">
-                <EmailIcon />
-              </IconCircle>
-              <Heading level={1}>Check Your Email</Heading>
-              <Text variant="muted">We've sent a verification link to</Text>
-              <Text weight="semibold">{email}</Text>
-            </Center>
+    <VerifyEmailShell
+      sidebarBelowImage={
+        <aside className="np-auth-edition-rules" aria-labelledby="verify-rail-heading">
+          <p className="np-cat np-cat-left">Pigeon notes</p>
+          <h2 id="verify-rail-heading" className="np-picks-header">
+            Nothing yet?
+          </h2>
+          <p className="np-excerpt">
+            Carriers get lost. Spam folders eat good mail. Give it a minute, then try again.
+          </p>
+          <p className="np-byline np-byline-left">Still waiting?</p>
+          <button
+            type="button"
+            className="np-action np-action-left"
+            onClick={handleResend}
+            disabled={resendMutation.isPending || !userId}
+          >
+            {resendMutation.isPending ? 'Sending…' : 'Resend the proof →'}
+          </button>
+          <p className="np-field-hint" style={{ marginTop: '1.25rem' }}>
+            Wrong address? You&apos;ll need to register again with the correct email.
+          </p>
+        </aside>
+      }
+    >
+      <section className="np-welcome-lead np-auth-edition-lead" aria-labelledby="verify-heading">
+        <p className="np-cat np-cat-left">Mail room</p>
+        <h1 id="verify-heading" className="np-welcome-headline">
+          Your proof is in the mail
+        </h1>
+        <p className="np-welcome-dek">
+          We sent a verification link to{' '}
+          <strong>{email || 'your inbox'}</strong>. One click and you&apos;re cleared for the
+          next edition of Band It — work, play, causes, and whatever else you band together for.
+        </p>
+      </section>
 
-            <Progress
-              steps={[
-                { label: 'Register', status: 'complete' },
-                { label: 'Verify', status: 'active' },
-                { label: 'Get started', status: 'inactive' },
-              ]}
-            />
+      <div aria-labelledby="verify-steps-heading">
+        <p className="np-cat np-cat-left">Reader&apos;s guide</p>
+        <h2 id="verify-steps-heading" className="np-picks-header np-picks-header-left">
+          What to do next
+        </h2>
+        <ol className="np-fineprint-list" style={{ listStyle: 'none', counterReset: 'step' }}>
+          {MAILROOM_STEPS.map((step, i) => (
+            <li key={step} className="np-fineprint-item">
+              <span className="np-daily-index-num" style={{ marginRight: '0.5rem' }}>
+                {i + 1}.
+              </span>
+              {step}
+            </li>
+          ))}
+        </ol>
 
-            <Alert variant="info">
-              <Text variant="small" weight="semibold">Next steps:</Text>
-              <List ordered>
-                <ListItem>Open your email inbox</ListItem>
-                <ListItem>Click the verification link</ListItem>
-                <ListItem>Continue to invitations or your dashboard</ListItem>
-              </List>
-            </Alert>
-
-            <Center>
-              <Text variant="small">Already verified on another device?</Text>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setCheckingStatus(true)
-                  refetchProfile().then((result) => {
-                    setCheckingStatus(false)
-                    if (result.data?.user?.emailVerified) {
-                      hasVerified.current = true
-                      showToast('Email verified! Redirecting...', 'success')
-                      setTimeout(() => router.replace('/daily'), 1500)
-                    } else {
-                      showToast('Email not verified yet', 'info')
-                    }
-                  })
-                }}
-                disabled={checkingStatus}
-              >
-                {checkingStatus ? 'Checking...' : 'Check verification status'}
-              </Button>
-            </Center>
-
-            <Center>
-              <Text variant="small">Didn't receive the email?</Text>
-              <Text variant="small" color="muted">Check your spam folder</Text>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleResend}
-                disabled={resendMutation.isPending}
-              >
-                {resendMutation.isPending ? 'Sending...' : 'Resend verification email'}
-              </Button>
-            </Center>
-          </Stack>
-        </Card>
-      </Container>
-    </PageLayout>
+        <div className="np-daily-spread-actions" style={{ marginTop: '1.5rem' }}>
+          <button
+            type="button"
+            className="np-profile-btn np-profile-btn-primary"
+            onClick={handleCheckStatus}
+            disabled={checkingStatus || !userId}
+          >
+            {checkingStatus ? 'Checking the wire…' : 'Already verified elsewhere?'}
+          </button>
+        </div>
+      </div>
+    </VerifyEmailShell>
   )
 }
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={
-      <PageLayout>
-        <Container size="sm">
-          <Card>
-            <Loading message="Loading..." />
-          </Card>
-        </Container>
-      </PageLayout>
-    }>
+    <Suspense
+      fallback={
+        <VerifyEmailShell>
+          <p className="np-quiet">Opening the mail room…</p>
+        </VerifyEmailShell>
+      }
+    >
       <VerifyEmailContent />
     </Suspense>
   )

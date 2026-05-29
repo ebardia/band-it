@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
+import { LANDING_STEAMPUNK_FACTORY_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 import { trpc } from '@/lib/trpc'
 
 function formatPaperDate(d: Date) {
@@ -17,7 +18,7 @@ function formatPaperDate(d: Date) {
   }).format(d)
 }
 
-const HEADLINE_LINE_1 = 'AI is taking the jobs.'
+const HEADLINE_LINE_1 = 'AI got nothin on me.'
 const HEADLINE_LINE_2 = 'Time to step in the ring.'
 
 const PHOTO_CAPTION = 'step in - claim your corner'
@@ -194,19 +195,37 @@ export function LandingNewspaperPage() {
                   How it works
                 </p>
                 <p className="np-landing-pipeline-thesis">{PIPELINE_THESIS}</p>
-                <ol className="np-landing-pipeline-flow">
-                  {PIPELINE_STEPS.map((step, index) => (
-                    <li key={step.label} className="np-landing-pipeline-step">
-                      <div className="np-landing-pipeline-step-head">
-                        <span className="np-landing-pipeline-index" aria-hidden>
-                          {String(index + 1).padStart(2, '0')}
-                        </span>
-                        <span className="np-landing-pipeline-label">{step.label}</span>
-                      </div>
-                      <p className="np-landing-pipeline-text">{step.text}</p>
-                    </li>
-                  ))}
-                </ol>
+                <div className="np-landing-pipeline-layout">
+                  <ol className="np-landing-pipeline-flow">
+                    {PIPELINE_STEPS.map((step, index) => (
+                      <li key={step.label} className="np-landing-pipeline-step">
+                        <div className="np-landing-pipeline-step-head">
+                          <span className="np-landing-pipeline-index" aria-hidden>
+                            {String(index + 1).padStart(2, '0')}
+                          </span>
+                          <span className="np-landing-pipeline-label">{step.label}</span>
+                        </div>
+                        <p className="np-landing-pipeline-text">{step.text}</p>
+                      </li>
+                    ))}
+                  </ol>
+
+                  <figure className="np-landing-pipeline-figure">
+                    <div className="np-daily-classified-frame">
+                      <Image
+                        src={LANDING_STEAMPUNK_FACTORY_IMAGE}
+                        alt="A vast steampunk factory floor of brass gears, flywheels, steam pipes, and Victorian machinery."
+                        width={1200}
+                        height={675}
+                        className="np-daily-classified-img"
+                      />
+                    </div>
+                    <figcaption className="np-daily-classified-caption">
+                      Under the hood — where opportunities, assemblies, workspace, and histories
+                      turn the gears.
+                    </figcaption>
+                  </figure>
+                </div>
               </section>
 
               <p className="np-profile-pullquote">{PULL_QUOTE}</p>
