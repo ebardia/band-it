@@ -1,11 +1,14 @@
 'use client'
 
 import { useEffect, useState, useRef, Suspense } from 'react'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import { useToast } from '@/components/ui'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
+import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
+import { PROOF_PIGEONS_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 
 const MAILROOM_STEPS = [
   'Open your inbox (and peek at spam — we hide there sometimes).',
@@ -28,7 +31,11 @@ function VerifyEmailShell({ children }: { children: React.ReactNode }) {
       <div className="np-shell np-landing-page">
         <header className="np-landing-masthead np-register-masthead">
           <p className="np-cat">Band It</p>
-          <p className="np-register-title">The Proof Desk</p>
+          <EditorialNeonMasthead
+            arcLabel="The Proof"
+            actionLabel="Desk"
+            ariaLabel="The Proof Desk"
+          />
           <p className="np-register-tagline">
             Where the carrier pigeon lands before your edition goes to press.
           </p>
@@ -39,6 +46,23 @@ function VerifyEmailShell({ children }: { children: React.ReactNode }) {
           </div>
           <p className="np-register-steps">Step 2 of 3 — Register · Verify · Daily</p>
         </header>
+
+        <figure className="np-waitroom-hero">
+          <div className="np-daily-classified-frame">
+            <Image
+              src={PROOF_PIGEONS_IMAGE}
+              alt="Two carrier pigeons chatting beside a water cooler in a mailroom corridor."
+              width={1308}
+              height={872}
+              className="np-daily-classified-img"
+              priority
+            />
+          </div>
+          <figcaption className="np-daily-classified-caption">
+            The mail room — gossip travels faster than the afternoon edition.
+          </figcaption>
+        </figure>
+
         {children}
       </div>
     </EditorialSurface>

@@ -1,11 +1,14 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { trpc } from '@/lib/trpc'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useToast } from '@/components/ui'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
+import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
+import { REGISTER_CLERK_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 
 // Current version of community guidelines - increment when guidelines change
 const COMMUNITY_GUIDELINES_VERSION = 1
@@ -135,7 +138,11 @@ function RegisterContent() {
       <div className="np-shell np-landing-page">
         <header className="np-landing-masthead np-register-masthead">
           <p className="np-cat">Band It</p>
-          <p className="np-register-title">The Register</p>
+          <EditorialNeonMasthead
+            arcLabel="The"
+            actionLabel="Register"
+            ariaLabel="The Register"
+          />
           <p className="np-register-tagline">Sign the book and claim your seat at the table.</p>
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
@@ -144,6 +151,22 @@ function RegisterContent() {
           </div>
           <p className="np-register-steps">Step 1 of 3 — Register · Verify · Daily</p>
         </header>
+
+        <figure className="np-waitroom-hero">
+          <div className="np-daily-classified-frame">
+            <Image
+              src={REGISTER_CLERK_IMAGE}
+              alt="A vintage robot clerk behind a wood counter with an open guest register and fountain pen."
+              width={1308}
+              height={872}
+              className="np-daily-classified-img"
+              priority
+            />
+          </div>
+          <figcaption className="np-daily-classified-caption">
+            The subscriptions desk — sign here; the clerk has been expecting you since 1952.
+          </figcaption>
+        </figure>
 
         <section className="np-welcome-lead" aria-labelledby="register-heading">
           <p className="np-cat np-cat-left">Subscriptions desk</p>
