@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
+import { LANDING_STEAMPUNK_FACTORY_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 import { trpc } from '@/lib/trpc'
 
 function formatPaperDate(d: Date) {
@@ -17,7 +18,7 @@ function formatPaperDate(d: Date) {
   }).format(d)
 }
 
-const HEADLINE_LINE_1 = 'AI is taking the jobs.'
+const HEADLINE_LINE_1 = 'AI got nothin on me.'
 const HEADLINE_LINE_2 = 'Time to step in the ring.'
 
 const PHOTO_CAPTION = 'step in - claim your corner'
@@ -207,6 +208,22 @@ export function LandingNewspaperPage() {
                     </li>
                   ))}
                 </ol>
+
+                <figure className="np-landing-pipeline-figure">
+                  <div className="np-daily-classified-frame">
+                    <Image
+                      src={LANDING_STEAMPUNK_FACTORY_IMAGE}
+                      alt="A vast steampunk factory floor of brass gears, flywheels, steam pipes, and Victorian machinery."
+                      width={1200}
+                      height={675}
+                      className="np-daily-classified-img"
+                    />
+                  </div>
+                  <figcaption className="np-daily-classified-caption">
+                    Under the hood — where opportunities, assemblies, workspace, and histories turn
+                    the gears.
+                  </figcaption>
+                </figure>
               </section>
 
               <p className="np-profile-pullquote">{PULL_QUOTE}</p>

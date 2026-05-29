@@ -589,6 +589,20 @@
   text-align: left;
 }
 
+.np-landing-pipeline-figure {
+  margin: 1.75rem 0 0;
+  max-width: 100%;
+}
+
+.np-landing-pipeline-figure .np-daily-classified-frame {
+  margin-top: 0;
+}
+
+.np-landing-pipeline-figure .np-daily-classified-caption {
+  text-align: left;
+  margin-top: 0.65rem;
+}
+
 .np-landing-editorial {
   margin-top: 0.5rem;
 }
