@@ -1,14 +1,23 @@
 'use client'
 
 import { useEffect, useState, useRef, Suspense } from 'react'
-import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
 import { useToast } from '@/components/ui'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
+import { AuthEditionBody } from '@/components/newspaper/AuthEditionBody'
+import { AuthEditionIllustration } from '@/components/newspaper/AuthEditionIllustration'
 import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
 import { PROOF_PIGEONS_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
+
+const PROOF_ILLUSTRATION = (
+  <AuthEditionIllustration
+    src={PROOF_PIGEONS_IMAGE}
+    alt="Two carrier pigeons chatting beside a water cooler in a mailroom corridor."
+    caption="The mail room — gossip travels faster than the afternoon edition."
+  />
+)
 
 const MAILROOM_STEPS = [
   'Open your inbox (and peek at spam — we hide there sometimes).',
@@ -47,23 +56,7 @@ function VerifyEmailShell({ children }: { children: React.ReactNode }) {
           <p className="np-register-steps">Step 2 of 3 — Register · Verify · Daily</p>
         </header>
 
-        <figure className="np-waitroom-hero">
-          <div className="np-daily-classified-frame">
-            <Image
-              src={PROOF_PIGEONS_IMAGE}
-              alt="Two carrier pigeons chatting beside a water cooler in a mailroom corridor."
-              width={1308}
-              height={872}
-              className="np-daily-classified-img"
-              priority
-            />
-          </div>
-          <figcaption className="np-daily-classified-caption">
-            The mail room — gossip travels faster than the afternoon edition.
-          </figcaption>
-        </figure>
-
-        {children}
+        <AuthEditionBody illustration={PROOF_ILLUSTRATION}>{children}</AuthEditionBody>
       </div>
     </EditorialSurface>
   )
@@ -171,7 +164,7 @@ function VerifyEmailContent() {
   if (token) {
     return (
       <VerifyEmailShell>
-        <section className="np-welcome-lead" aria-live="polite">
+        <section className="np-welcome-lead np-auth-edition-lead" aria-live="polite">
           {verifying && !verifyEmailMutation.isError ? (
             <>
               <p className="np-cat np-cat-left">Hot off the wire</p>
@@ -224,7 +217,7 @@ function VerifyEmailContent() {
 
   return (
     <VerifyEmailShell>
-      <section className="np-welcome-lead" aria-labelledby="verify-heading">
+      <section className="np-welcome-lead np-auth-edition-lead" aria-labelledby="verify-heading">
         <p className="np-cat np-cat-left">Mail room</p>
         <h1 id="verify-heading" className="np-welcome-headline">
           Your proof is in the mail

@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { trpc } from '@/lib/trpc'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useToast } from '@/components/ui'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
+import { AuthEditionBody } from '@/components/newspaper/AuthEditionBody'
+import { AuthEditionIllustration } from '@/components/newspaper/AuthEditionIllustration'
 import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
 import { REGISTER_CLERK_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 
@@ -152,43 +153,36 @@ function RegisterContent() {
           <p className="np-register-steps">Step 1 of 3 — Register · Verify · Daily</p>
         </header>
 
-        <figure className="np-waitroom-hero">
-          <div className="np-daily-classified-frame">
-            <Image
+        <AuthEditionBody
+          illustration={
+            <AuthEditionIllustration
               src={REGISTER_CLERK_IMAGE}
               alt="A vintage robot clerk behind a wood counter with an open guest register and fountain pen."
-              width={1308}
-              height={872}
-              className="np-daily-classified-img"
-              priority
+              caption="The subscriptions desk — sign here; the clerk has been expecting you since 1952."
             />
-          </div>
-          <figcaption className="np-daily-classified-caption">
-            The subscriptions desk — sign here; the clerk has been expecting you since 1952.
-          </figcaption>
-        </figure>
+          }
+        >
+          <section className="np-welcome-lead" aria-labelledby="register-heading">
+            <p className="np-cat np-cat-left">Subscriptions desk</p>
+            <h1 id="register-heading" className="np-welcome-headline">
+              Put your name on the list
+            </h1>
+            <p className="np-welcome-dek">
+              A free account is your press pass to Band It. Tell us who you are, agree to keep the
+              room friendly, and we&apos;ll start your edition.
+            </p>
+          </section>
 
-        <section className="np-welcome-lead" aria-labelledby="register-heading">
-          <p className="np-cat np-cat-left">Subscriptions desk</p>
-          <h1 id="register-heading" className="np-welcome-headline">
-            Put your name on the list
-          </h1>
-          <p className="np-welcome-dek">
-            A free account is your press pass to Band It. Tell us who you are, agree to keep the
-            room friendly, and we&apos;ll start your edition.
-          </p>
-        </section>
+          {showInviteBanner && (
+            <div className="np-register-alert" role="status">
+              You&apos;ve been invited to join a band. Create your account to review and accept the
+              invitation on the next page.
+            </div>
+          )}
 
-        {showInviteBanner && (
-          <div className="np-register-alert" role="status">
-            You&apos;ve been invited to join a band. Create your account to review and accept the
-            invitation on the next page.
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="np-daily-spread">
-            <div className="np-daily-spread-main">
+          <form onSubmit={handleSubmit}>
+            <div className="np-daily-spread">
+              <div className="np-daily-spread-main">
               <p className="np-cat np-cat-left">Your details</p>
               <h2 className="np-picks-header np-picks-header-left">For the record</h2>
 
@@ -288,9 +282,9 @@ function RegisterContent() {
                   {registerMutation.isPending ? 'Setting the type…' : 'Sign the register'}
                 </button>
               </div>
-            </div>
+              </div>
 
-            <aside className="np-daily-spread-rail" aria-labelledby="register-rules-heading">
+              <aside className="np-daily-spread-rail" aria-labelledby="register-rules-heading">
               <p className="np-cat np-cat-left">House rules</p>
               <h2 id="register-rules-heading" className="np-picks-header">Before you sign</h2>
               <p className="np-excerpt">
@@ -309,9 +303,10 @@ function RegisterContent() {
               <Link href="/login" className="np-action np-action-left">
                 Sign in →
               </Link>
-            </aside>
-          </div>
-        </form>
+              </aside>
+            </div>
+          </form>
+        </AuthEditionBody>
       </div>
     </EditorialSurface>
   )

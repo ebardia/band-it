@@ -2021,6 +2021,67 @@
   margin: 0;
 }
 
+/* --- Auth edition pages (register, verify-email) --- */
+.np-auth-edition-body {
+  display: grid;
+  gap: 1.5rem 2rem;
+  align-items: start;
+  margin-top: 0.5rem;
+}
+
+.np-auth-edition-main {
+  min-width: 0;
+}
+
+.np-auth-edition-main .np-welcome-lead {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+}
+
+.np-auth-edition-figure {
+  margin: 0;
+  width: 100%;
+  max-width: 16rem;
+  justify-self: end;
+}
+
+.np-auth-edition-figure .np-daily-classified-frame {
+  margin-top: 0;
+  padding: 0.25rem;
+}
+
+.np-auth-edition-figure .np-daily-classified-caption {
+  text-align: left;
+  font-size: 0.55rem;
+  line-height: 1.4;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 900px) {
+  .np-auth-edition-body {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 16rem);
+    gap: 1.75rem 2.25rem;
+  }
+
+  .np-auth-edition-figure {
+    position: sticky;
+    top: 1.25rem;
+    max-width: 16rem;
+  }
+}
+
+@media (max-width: 899px) {
+  .np-auth-edition-body {
+    grid-template-columns: 1fr;
+  }
+
+  .np-auth-edition-figure {
+    max-width: 12rem;
+    margin-left: auto;
+    margin-right: 0;
+  }
+}
+
 /* --- Registration ("The Register" edition) --- */
 .np-register-masthead {
   text-align: center;
