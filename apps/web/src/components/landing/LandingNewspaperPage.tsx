@@ -129,13 +129,6 @@ const RAIL_BLOCKS: RailBlock[] = [
     href: '/register',
   },
   {
-    title: 'For recruiters',
-    detail:
-      'Run multiple project teams in one transparent place. Your bench, your agents, your back-office.',
-    cta: 'See how',
-    href: '/about',
-  },
-  {
     title: 'The Daily',
     detail: 'Your morning edition \u2014 what\u2019s on your rack today.',
     cta: 'Learn more',
@@ -287,7 +280,7 @@ export function LandingNewspaperPage() {
                     <div className="np-daily-classified-frame">
                       <Image
                         src={LANDING_STEAMPUNK_FACTORY_IMAGE}
-                        alt="A vast steampunk factory floor of brass gears, flywheels, steam pipes, and Victorian machinery."
+                        alt="Steampunk makeshift dressing room: rolling racks, fitting-room curtains, hats, coats, and boots under gas lamps and brass pipes."
                         width={1200}
                         height={675}
                         className="np-daily-classified-img"
