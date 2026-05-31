@@ -283,10 +283,10 @@ Phase 2: **flag on Opportunity** via `OpportunityLabel.verdict`. No automatic pr
 - **Run pipeline now** (manual trigger; admin/founder).
 - Weekly summary (Phase 2+): listings processed, surfaced, labeled, time-saved estimate.
 
-### Pre-UI deliverable (Track A — Joe)
+### Pre-UI deliverable (Track A — customer)
 
-- Spreadsheet with same columns; Joe marks buy/maybe/not in meeting.
-- Labels imported when DB exists.
+- Spreadsheet with same columns; customer marks buy/maybe/not in meeting.
+- Labels imported when DB exists. See [Customer Track A runbook](./customer-track-a-runbook.md).
 
 ---
 
@@ -327,7 +327,7 @@ Phase 2: **flag on Opportunity** via `OpportunityLabel.verdict`. No automatic pr
 
 ### Phase 0 (pre-build / Joe spreadsheet)
 
-Operator-run **discovery sprint**: real URLs and listings found via permitted means + manual research. Document source catalog and 20–30 real opportunities for Joe. See [Pre-customer runbook](#pre-customer-runbook-track-a).
+Operator-run **discovery sprint**: real URLs and listings found via permitted means + manual research. Document source catalog and 20–30 real opportunities for the customer. See [Customer Track A runbook](./customer-track-a-runbook.md).
 
 ### Adapters (Phase 1+)
 
@@ -359,29 +359,9 @@ Operator-run **discovery sprint**: real URLs and listings found via permitted me
 
 ## Pre-customer runbook (Track A)
 
-**Owner**: Band It operator (not Joe).
+**Owner**: Band It operator (not the customer).
 
-**Output**: Spreadsheet `joe-opportunity-review-YYYYMMDD` with columns:
-
-| Column | Description |
-|--------|-------------|
-| `rank` | Pre-meeting agent sort (1…N) |
-| `title` | Short description |
-| `url` | Listing or source page |
-| `source_name` | Marketplace / broker / GOOB seller |
-| `asking_price` | If known |
-| `est_resale_or_benchmark` | Reference channel note |
-| `est_margin_pct` | Best-effort |
-| `legitimacy_score` | 1–5 + one-line reason |
-| `why_surfaced` | Agent/human summary |
-| `joe_verdict` | buy / maybe / not (filled with Joe) |
-| `joe_why` | Optional |
-
-**Categories**: tag `home_furnishings` where applicable; allow `general_merchandise`.
-
-**Legitimacy checklist** (include in runbook appendix): verify seller identity, GOOB consistency, manifest claims, payment red flags, duplicate photos, too-good pricing.
-
-**Meeting goal**: Joe reacts to **real** list; no promise of automation coverage yet.
+Full checklist, search queries, legitimacy rubric, and meeting flow: **[Customer Track A runbook](./customer-track-a-runbook.md)**.
 
 ---
 
@@ -415,22 +395,22 @@ New surfaces (planned):
 
 ## Success metrics
 
-### Phase 0 (Joe meeting)
+### Phase 0 (customer meeting)
 
 - ≥20 **real** opportunities documented with URLs.
-- Joe completes verdicts on ≥15 rows.
-- ≥3 actionable “buy” or “maybe” items Joe agrees were worth his time.
+- Customer completes verdicts on ≥15 rows.
+- ≥3 actionable “buy” or “maybe” items the customer agrees were worth their time.
 
 ### Phase 1 (product)
 
 - Manual pipeline run completes with cost ≤ ~$10.
-- Top 20 displayed in Desk for Joe’s band.
+- Top 20 displayed in Desk for the customer’s band.
 - Run reproducible next day with fresh ingest.
 
 ### Phase 2+
 
 - Label rate ≥60% of surfaced rows per week.
-- Week-over-week precision@10 on “buy” (Joe agrees with top 10).
+- Week-over-week precision@10 on “buy” (customer agrees with top 10).
 
 ---
 
