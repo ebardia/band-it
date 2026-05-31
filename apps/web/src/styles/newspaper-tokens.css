@@ -508,6 +508,16 @@
   margin-top: 0.35rem;
 }
 
+.np-landing-editorial-bookend {
+  font-family: var(--np-lead-head);
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--np-rule);
+}
+
 .np-landing-rail-link {
   display: inline-block;
   margin-top: 0.45rem;

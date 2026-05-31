@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
 import {
-  LANDING_MOUNTAIN_PEAKS_IMAGE,
+  LANDING_DRY_CLEANER_RACK_IMAGE,
   LANDING_STEAMPUNK_FACTORY_IMAGE,
 } from '@/components/newspaper/newspaperPlaceholders'
 import { trpc } from '@/lib/trpc'
@@ -21,32 +21,32 @@ function formatPaperDate(d: Date) {
   }).format(d)
 }
 
-const LEAD_HEADLINE = 'Which peak are you climbing today?'
+const LEAD_HEADLINE = 'What are you wearing today?'
 
 const LEAD_DEK =
-  'An action-packed daily edition — your team, your agents, your next move. Built around what you can do, not what you\u2019re told to do.'
+  'An action-packed daily edition. Pick what suits the work \u2014 the team, the agents, the mission. Your closet is bigger than you think.'
 
 const PHOTO_CAPTION =
-  'Pick your peak. Bring your people. Bring your agents. Ship something today.'
+  'The whole rack. Try something on. Change it by lunch.'
 
-const OPPORTUNITIES_KICKER = "Today's opportunities"
-const OPPORTUNITIES_HEADING = "What's on your front page this morning"
+const OPPORTUNITIES_KICKER = 'This morning'
+const OPPORTUNITIES_HEADING = "What\u2019s on your rack"
 
 const OPPORTUNITY_TEASERS = [
   {
-    title: 'A paid project that needs your kind of team.',
+    title: 'Wear the researcher hat.',
     detail:
-      'Marketing agency in your region needs a four-person team for a six-week campaign build. Your skills match. Two collaborators already interested.',
+      'A nonprofit needs to understand who\u2019s funding their space right now. Two hours of agent work plus your read produces a report they\u2019ll actually use.',
   },
   {
-    title: 'A question your agents can chase down by tomorrow.',
+    title: 'Put on the campaign jacket.',
     detail:
-      'A nonprofit is trying to understand the latest funding patterns in their space. Two hours of agent work plus a human read produces a report they\u2019ll actually use.',
+      'A marketing agency in your region is building out a six-week launch and needs a four-person team. Your skills fit. Two collaborators are already in.',
   },
   {
-    title: 'A weekend effort that needs hands.',
+    title: 'Lace up the weekend boots.',
     detail:
-      'A neighborhood mural project lost its lead artist. Three people are looking for a fourth. No pay, real fun.',
+      'A neighborhood mural project lost its lead artist on Saturday. Three people are looking for a fourth. No pay, real fun.',
   },
 ]
 
@@ -55,7 +55,7 @@ const THESIS_LEAD =
   'The age of human-in-the-loop AI is ending. Group-in-the-loop is beginning.'
 
 const THESIS_PARAGRAPHS = [
-  'Most AI tools imagine one person prompting one model. That\u2019s the old model wearing new clothes.',
+  'Most AI tools imagine one person prompting one model. That\u2019s the old way wearing new clothes.',
   'Real work \u2014 research, creative projects, building things, solving messy problems \u2014 is rarely a solo act. It\u2019s a small group of people with the right skills, the right agents, and a shared workspace, moving together. The team thinks. The agents do. The humans choose what matters.',
   'Band It is built for that. Your team forms around a project. Your agents come with you. The work happens out in the open, with transparency and accountability built in from the first hour.',
   'You don\u2019t replace humans with AI. You don\u2019t bolt AI onto humans. You compose them \u2014 group in the loop, together.',
@@ -66,24 +66,24 @@ const PIPELINE_HEADING = 'Four moves, every project'
 
 const PIPELINE_STEPS = [
   {
-    label: 'The Rack',
-    text: 'Projects, problems, and opportunities \u2014 paid, volunteer, experimental, local, global. Some come from companies. Some from communities. Some you create yourself. Everything you might do today, in one place.',
+    label: 'The Closet',
+    text: 'Projects, problems, and opportunities \u2014 paid, volunteer, experimental, local, global. Some come from companies. Some from communities. Some you create yourself. Hung up where you can see them.',
   },
   {
-    label: 'The Team',
-    text: 'Band It helps you assemble the right combination for the work \u2014 people with the skills, agents with the capabilities, and the trust signals that say this group can actually deliver. A designer here. A researcher there. A handful of agents you\u2019ve built or borrowed. A team that fits the job.',
+    label: 'Getting Dressed',
+    text: 'Band It helps you assemble the right combination for the work \u2014 people with the skills, agents with the capabilities, and the trust signals that say this group can deliver. A designer here, a researcher there, a few agents you\u2019ve built or borrowed. A team dressed for the job.',
   },
   {
-    label: 'The Workspace',
-    text: 'One transparent space for the whole project: tasks, decisions, files, money, agents at work, humans deciding. Everyone involved can see where things stand and how they\u2019re moving. No black boxes. No chasing updates.',
+    label: 'The Fitting Room',
+    text: 'One transparent space for the whole project: tasks, decisions, files, money, agents at work, humans deciding. Try it. Change it. Tear it out and try again \u2014 without paying a huge price for every experiment.',
   },
   {
-    label: 'The Record',
-    text: 'Not a static resume. A living history of what you built, who you worked with, what your agents handled well, and what you carry into tomorrow\u2019s project. Your reputation moves with you \u2014 the work, the team, and the trust all travel together.',
+    label: 'The Wardrobe',
+    text: 'Not a static resume. A living wardrobe of what you\u2019ve worn, who you\u2019ve worked with, what your agents handled well, and what you can take into tomorrow\u2019s project. Your record moves with you.',
   },
 ]
 
-const PULL_QUOTE = '\u201cThe work isn\u2019t disappearing. The way we organize for it is.\u201d'
+const PULL_QUOTE = '\u201cTry it. Don\u2019t like it? Change it. All on a whim.\u201d'
 
 const BRIEFING_HEADING = 'Where does Band It fit?'
 const BRIEFING_LEAD = "It's not what you've seen before."
@@ -92,20 +92,20 @@ const BRIEFING_PARAGRAPHS = [
   'Not a freelance marketplace where you bid against strangers for the lowest price. Not a project management tool that organizes work you somehow have to find on your own. Not an agent builder that drops you off once the agent is built. Not a staffing agency that disappears the moment the contract is signed.',
   'Those are all single-piece tools for a single-piece world.',
   'Band It is the whole picture.',
-  'A coordination layer where a small group of humans and their AI capabilities can take on real work \u2014 find it, form around it, ship it, and get paid for it \u2014 all in one transparent place. The project, the people, the agents, the money, the record. Together, not scattered across six tools and three companies.',
+  'A coordination layer where a small group of humans and their AI capabilities take on real work \u2014 find it, form around it, ship it, and get paid for it \u2014 all in one transparent place. The project, the people, the agents, the money, the record. Together, not scattered across six tools and three companies.',
 ]
 
-const EDITORIAL_HEADING = 'The Creativity Age is starting. Band It is built for it.'
+const EDITORIAL_HEADING = 'Who knew humanity would end up in the dry-cleaning business?'
 
 const EDITORIAL_PARAGRAPHS = [
-  'Technology is becoming a utility. The skills that used to define a career \u2014 knowing the right software, owning the right title, climbing the right ladder \u2014 are flattening fast. What\u2019s left is what humans do best: choose, combine, create, and decide together. Often with agents at our side.',
+  'Endless racks of roles, swapped in and out as the day demands. A research hat in the morning, a marketing jacket by afternoon, dancing shoes for the evening project. The work isn\u2019t disappearing \u2014 the way we organize for it is. Technology is becoming a utility, and what\u2019s left is what humans do best: choose, combine, create, and decide together. Often with agents at our side.',
   'Band It is built for that world. Real projects. Real teams. Real money. Full visibility. A record that follows the person, not the employer.',
 ]
 
-const EDITORIAL_CLOSER = 'Which peak today?'
+const EDITORIAL_CLOSER = 'What are you wearing today?'
 
 const PIPELINE_FIGURE_CAPTION =
-  'Under the rack \u2014 where projects, teams, workspace, and record keep the whole day moving.'
+  'Behind the counter \u2014 closet, fitting room, and wardrobe, all on one rolling rack.'
 
 type RailBlock = {
   title: string
@@ -124,7 +124,7 @@ const RAIL_BLOCKS: RailBlock[] = [
   {
     title: 'For companies',
     detail:
-      'Bring us a project. We\u2019ll assemble the team and the agents to ship it, with full visibility every step.',
+      'Bring us a project. We\u2019ll dress the team for it and ship it in the open.',
     cta: 'Bring a project',
     href: '/register',
   },
@@ -211,8 +211,8 @@ export function LandingNewspaperPage() {
                   </div>
                   <figure className="np-landing-lead-photo">
                     <Image
-                      src={LANDING_MOUNTAIN_PEAKS_IMAGE}
-                      alt="Editorial illustration of mountain peaks with a figure choosing a path"
+                      src={LANDING_DRY_CLEANER_RACK_IMAGE}
+                      alt="Editorial illustration of a long dry-cleaner rolling rack hung with hats, lab coats, tool belts, and work shoes"
                       width={640}
                       height={480}
                       className="np-landing-lead-photo-img"
@@ -329,7 +329,9 @@ export function LandingNewspaperPage() {
                     {paragraph}
                   </p>
                 ))}
-                <p className="np-profile-manifesto np-landing-closer">{EDITORIAL_CLOSER}</p>
+                <p className="np-profile-manifesto np-landing-closer np-landing-editorial-bookend">
+                  {EDITORIAL_CLOSER}
+                </p>
                 <p className="np-landing-paragraph">
                   <Link href="/manifesto" className="np-landing-rail-link">
                     Read the longer essay &rarr;
