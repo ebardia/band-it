@@ -18,3 +18,6 @@ export const PROOF_PIGEONS_IMAGE = '/proof-pigeons.png'
 
 /** Landing — steampunk factory under the how-it-works pipeline */
 export const LANDING_STEAMPUNK_FACTORY_IMAGE = '/landing-steampunk-factory.png'
+
+/** Landing — editorial mountain peaks hero */
+export const LANDING_MOUNTAIN_PEAKS_IMAGE = '/landing-mountain-peaks.png'

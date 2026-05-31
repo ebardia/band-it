@@ -403,6 +403,154 @@
   margin-bottom: 1.25rem;
 }
 
+.np-landing-lead-copy {
+  min-width: 0;
+}
+
+.np-landing-lead-cta {
+  margin-top: 0.35rem;
+}
+
+.np-landing-platform-cta {
+  display: inline-block;
+  font-family: var(--np-ui);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--np-paper);
+  background: var(--np-ink);
+  border: 1px solid var(--np-ink);
+  padding: 0.55rem 0.95rem;
+  text-decoration: none;
+  margin-top: 0.5rem;
+}
+
+.np-landing-platform-cta:hover {
+  background: var(--np-paper);
+  color: var(--np-ink);
+}
+
+.np-landing-section-kicker {
+  font-family: var(--np-ui);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  margin: 0 0 0.35rem;
+}
+
+.np-landing-opportunities {
+  margin-bottom: 1.35rem;
+}
+
+.np-landing-opportunity-cards {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .np-landing-opportunity-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+.np-landing-opportunity-card {
+  border: 1px solid var(--np-rule);
+  padding: 0.85rem 0.9rem 0.95rem;
+  background: color-mix(in srgb, var(--np-paper) 92%, var(--np-ink) 8%);
+}
+
+.np-landing-opportunity-title {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: 0.98rem;
+  line-height: 1.3;
+  margin: 0 0 0.55rem;
+  color: var(--np-ink);
+}
+
+.np-landing-opportunity-detail {
+  font-family: var(--np-body);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0;
+  color: var(--np-muted);
+}
+
+.np-landing-thesis-lead {
+  margin: 0 0 0.85rem;
+  max-width: 42rem;
+}
+
+.np-landing-briefing-lead-line {
+  font-family: var(--np-body);
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0 0 0.75rem;
+  color: var(--np-ink);
+}
+
+.np-landing-editorial-head {
+  margin: 0 0 0.75rem;
+}
+
+.np-landing-editorial-p {
+  margin-bottom: 0.85rem;
+}
+
+.np-landing-editorial-cta {
+  margin-top: 0.35rem;
+}
+
+.np-landing-rail-link {
+  display: inline-block;
+  margin-top: 0.45rem;
+  font-family: var(--np-ui);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--np-accent);
+  text-decoration: none;
+}
+
+.np-landing-rail-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.np-landing-rail-platform-cta {
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.np-manifesto-shell {
+  padding-bottom: 2.5rem;
+}
+
+.np-manifesto-back {
+  display: inline-block;
+  margin-bottom: 1rem;
+  font-family: var(--np-ui);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+  text-decoration: none;
+}
+
+.np-manifesto-back:hover {
+  color: var(--np-accent);
+}
+
 .np-landing-intro {
   margin: 0.25rem 0 1.5rem;
 }
