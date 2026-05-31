@@ -1,0 +1,21 @@
+source_name,url,role,access_today,tos_risk,notes
+BULQ (Optoro),https://www.bulq.com/,upstream,login_required,medium,Marketplace for manifested cases/pallets; flat-rate case shipping; pallet freight extra (liftgate). No public listing API.
+BULQ on eBay,https://www.ebay.com/str/BULQ,upstream,public,low,eBay-only cases with manifest guarantee; good for smaller lots.
+Direct Liquidation,https://www.directliquidation.com/furniture,upstream,login_required,medium,Retailer-sourced furniture auctions + Buy It Now; resale certificate typically required.
+888 Lots,https://888lots.com/,upstream,login_required,medium,B2B fixed-price + negotiate; requires resale cert/EIN. Furniture category often sparse—check lots page.
+Via Trading,https://www.viatrading.com/,upstream,login_required,medium,LA-area liquidator; pallets/truckloads; resale cert; furniture in category mix.
+Quicklotz,https://www.quicklotz.com/,upstream,login_required,medium,Pallets/truckloads NY/TX/FL/Charlotte; furniture collection may be empty—verify stock.
+Genco Marketplace,https://www.gencomarketplace.com/,upstream,login_required,medium,FedEx Supply Chain liquidator; truckloads/pallets; often via sales rep not pure self-serve browse.
+American Merchandise Liquidators,https://www.americanmerchandiseliquidators.com/,upstream,login_required,medium,Regional liquidator (verify current site/access).
+Liquiditys,https://liquiditys.com/collections/furniture,upstream,public,low,Fixed-price Wayfair/mixed furniture truckloads with posted ask + est retail (freight extra).
+Excess Pallet Liquidation,https://excesspallet.com/,upstream,public,low,Wayfair/Costway truckloads; site states shipping-inclusive on many SKUs—confirm at checkout.
+Worldly Treasures Liquidators,https://www.worldlytreasuresliquidators.com/available-truckloads,upstream,public,low,Broker price list (email/phone order); many truckload SKUs; Link to Photos on select lines.
+Unboxed Wholesale,https://www.unboxedwholesale.com/,upstream,login_required,medium,Ohio-based truckloads; furniture + store closing opportunity buys (intermittent).
+B-Stock (Target),https://bstock.com/auctions/retailers/target/,upstream,login_required,medium,Official Target liquidation auctions; furniture gaylords/LTL appear periodically.
+B-Stock Direct (Walmart furniture),https://bstock.com/direct/furniture/,upstream,login_required,medium,Walmart furniture truckload programs (bid/Buy Now).
+B-Stock (Wayfair),https://bstock.com/wayfair/,upstream,login_required,medium,Wayfair open-box/returns auctions when listed.
+Liquidation.com,https://www.liquidation.com/furniture.html,benchmark_only,login_required,medium,Use current bid + MSRP on furniture pallets as resale ceiling—not where customer should source buy inventory.
+B-Stock auctions,https://bstock.com/auctions/,benchmark_only,login_required,medium,Comparable closed auctions for major retailers when same category/condition.
+Regional store closing sales (example),https://homenewsnow.com/blog/2026/05/25/gustafsons-furniture-mattress-goes-out-of-business-after-98-years/,upstream,public,low,Illustrative GOOB channel—verify seller via auctioneer (e.g. PFP); not an online pallet SKU.
+GovDeals / regional auctioneers,https://www.govdeals.com/,upstream,public,low,Surplus/estate-style lots; search furniture; vet legitimacy per seller.
+Facebook Marketplace / Craigslist,https://www.facebook.com/marketplace/,upstream,public,medium,Local GOOB and warehouse cleanouts; high scam risk—human vet required.
