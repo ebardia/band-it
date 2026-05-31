@@ -34,6 +34,8 @@ The customer should receive:
 
 ## Workbook structure
 
+**Ready-made CSVs (2026-05-29 research pass):** [customer-track-a-spreadsheet/](./customer-track-a-spreadsheet/)
+
 Use one spreadsheet (Google Sheets or Excel) with two tabs.
 
 ### Tab 1: `Sources`
