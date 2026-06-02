@@ -16,5 +16,8 @@ export const REGISTER_CLERK_IMAGE = '/register-clerk.png'
 /** Verify email — carrier pigeons at the water cooler */
 export const PROOF_PIGEONS_IMAGE = '/proof-pigeons.png'
 
-/** Landing — steampunk factory under the how-it-works pipeline */
-export const LANDING_STEAMPUNK_FACTORY_IMAGE = '/landing-steampunk-factory.png'
+/** Landing — steampunk wardrobe / fitting room beside the four-step pipeline */
+export const LANDING_STEAMPUNK_FACTORY_IMAGE = '/landing-steampunk-wardrobe.png'
+
+/** Landing — dry-cleaner rolling rack hero */
+export const LANDING_DRY_CLEANER_RACK_IMAGE = '/landing-dry-cleaner-rack.png'
