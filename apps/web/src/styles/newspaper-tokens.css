@@ -461,7 +461,7 @@
 }
 
 .np-landing-opportunity-card {
-  border: 1px solid var(--np-rule);
+  border: 1px solid var(--np-line);
   padding: 0.85rem 0.9rem 0.95rem;
   background: color-mix(in srgb, var(--np-paper) 92%, var(--np-ink) 8%);
 }
@@ -515,7 +515,7 @@
   letter-spacing: -0.02em;
   margin-top: 1rem;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--np-rule);
+  border-top: 1px solid var(--np-line);
 }
 
 .np-landing-rail-link {

@@ -257,10 +257,10 @@ export function LandingNewspaperPage() {
               </section>
 
               <section className="np-landing-pipeline" aria-labelledby="landing-pipeline-heading">
-                <p className="np-landing-pipeline-kicker" id="landing-pipeline-heading">
-                  {PIPELINE_KICKER}
-                </p>
-                <p className="np-landing-pipeline-thesis">{PIPELINE_HEADING}</p>
+                <p className="np-landing-pipeline-kicker">{PIPELINE_KICKER}</p>
+                <h2 id="landing-pipeline-heading" className="np-landing-pipeline-thesis">
+                  {PIPELINE_HEADING}
+                </h2>
                 <div className="np-landing-pipeline-layout">
                   <ol className="np-landing-pipeline-flow">
                     {PIPELINE_STEPS.map((step, index) => (
