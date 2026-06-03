@@ -37,7 +37,7 @@ export default function ManifestoPage() {
           <div className="np-landing-columns np-landing-story">
             {MANIFESTO_PARAGRAPHS.map((paragraph, index) => (
               <p
-                key={index}
+                key={paragraph}
                 className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
               >
                 {paragraph}
