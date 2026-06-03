@@ -6,10 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
-import {
-  LANDING_DRY_CLEANER_RACK_IMAGE,
-  LANDING_STEAMPUNK_FACTORY_IMAGE,
-} from '@/components/newspaper/newspaperPlaceholders'
+import { LANDING_BANDIT_LAYER_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 import { trpc } from '@/lib/trpc'
 
 function formatPaperDate(d: Date) {
@@ -21,91 +18,121 @@ function formatPaperDate(d: Date) {
   }).format(d)
 }
 
-const LEAD_HEADLINE = 'What are you wearing today?'
+const LEAD_HEADLINE = 'The Band It Layer'
 
 const LEAD_DEK =
-  'An action-packed daily edition. Pick what suits the work \u2014 the team, the agents, the mission. Your closet is bigger than you think.'
+  'Band It wraps the AI stack \u2014 intelligence signal processing on one side, human in the loop on the other, vertical agents in the middle, and verified business intelligence out. Put the layer on. Run the workflow.'
 
-const PHOTO_CAPTION =
-  'The whole rack. Try something on. Change it by lunch.'
+const HERO_FIGURE_CAPTION =
+  'Fig. 1 \u2014 The Band It layer: signals \u00b7 stack \u00b7 human swarm \u00b7 the goods.'
 
-const OPPORTUNITIES_KICKER = 'This morning'
-const OPPORTUNITIES_HEADING = "What\u2019s on your rack"
+const SIGNALS_KICKER = 'Intelligence signal processing'
+const SIGNALS_HEADING = 'The signal desk'
 
-const OPPORTUNITY_TEASERS = [
+const SIGNAL_FEEDS = [
   {
-    title: 'Wear the researcher hat.',
+    title: 'Open web',
     detail:
-      'A nonprofit needs to understand who\u2019s funding their space right now. Two hours of agent work plus your read produces a report they\u2019ll actually use.',
+      'Public filings, press, forums, and market chatter \u2014 screened into structured signal, not raw noise.',
   },
   {
-    title: 'Put on the campaign jacket.',
+    title: 'IoT & telemetry',
     detail:
-      'A marketing agency in your region is building out a six-week launch and needs a four-person team. Your skills fit. Two collaborators are already in.',
+      'Industrial sensors, ambient feeds, and operational data correlated with the questions your agents are hunting.',
   },
   {
-    title: 'Lace up the weekend boots.',
+    title: 'Personal devices',
     detail:
-      'A neighborhood mural project lost its lead artist on Saturday. Three people are looking for a fourth. No pay, real fun.',
+      'Wearables and monitoring where policy allows \u2014 optional inputs your band chooses to trust.',
+  },
+  {
+    title: 'Government data',
+    detail:
+      'Public records, liens, court dockets, and regulatory filings \u2014 the early stress signals others miss.',
+  },
+  {
+    title: 'Satellite & geospatial',
+    detail:
+      'Overhead imagery and location intelligence when the workflow needs eyes on the ground from above.',
   },
 ]
+
+const STACK_KICKER = 'Anatomy of the stack'
+const STACK_HEADING = 'Layers 1\u20136 inside the helmet'
+
+const STACK_INTRO =
+  'Band It does not pretend to be the whole AI industry. It hugs the stack \u2014 from energy and silicon through models, orchestration, and vertical agents \u2014 and adds the layer that turns raw capability into decision-grade output.'
+
+const STACK_LAYERS = [
+  { num: '01', label: 'Energy', text: 'Power, cooling, grid \u2014 the foundation everything else stands on.' },
+  { num: '02', label: 'Chips', text: 'GPUs, memory, networking \u2014 the hardware engine.' },
+  { num: '03', label: 'Infrastructure', text: 'Data centers, cloud, storage \u2014 where compute lives.' },
+  { num: '04', label: 'Large language models', text: 'Foundation and fine-tuned models \u2014 the algorithmic core.' },
+  {
+    num: '05',
+    label: 'Agent management platform',
+    text: 'Routing, tools, memory, multi-agent supervision \u2014 where Band It steers orchestration.',
+  },
+  {
+    num: '06',
+    label: 'Vertical AI agents',
+    text: 'Domain workflows off the shelf or composed by your band \u2014 legal, ops, discovery, research, and more.',
+  },
+]
+
+const FLOW_KICKER = 'How the layer works'
+const FLOW_HEADING = 'Signals \u00b7 Humans \u00b7 The Goods'
+
+const FLOW_STEPS = [
+  {
+    label: 'Collect & process',
+    text: 'Live feeds enter the signal desk, get screened and correlated, and route into the agent platform and vertical agents you configure.',
+  },
+  {
+    label: 'Run vertical agents',
+    text: 'Off-the-shelf or custom agents execute the workflow \u2014 scan, enrich, rank, draft \u2014 on top of layers 5 and 6 inside the stack.',
+  },
+  {
+    label: 'Human in the loop',
+    text: 'Humans steer every meaningful step: labels, tasks, projects, proposals. Agents propose; people approve. No autopilot on judgment calls.',
+  },
+  {
+    label: 'The Goods',
+    text: 'Verified business intelligence flows out \u2014 webhooks, documents, dashboards your customer can act on. Mind blown, business grounded.',
+  },
+]
+
+const PULL_QUOTE =
+  '\u201cSignals in. Humans steering. The Goods out \u2014 verified intelligence your customer can use.\u201d'
 
 const THESIS_KICKER = 'The thesis'
-const THESIS_LEAD =
-  'The age of human-in-the-loop AI is ending. Group-in-the-loop is beginning.'
+const THESIS_LEAD = 'Human in the loop at every step that matters.'
 
 const THESIS_PARAGRAPHS = [
-  'Most AI tools imagine one person prompting one model. That\u2019s the old way wearing new clothes.',
-  'Real work \u2014 research, creative projects, building things, solving messy problems \u2014 is rarely a solo act. It\u2019s a small group of people with the right skills, the right agents, and a shared workspace, moving together. The team thinks. The agents do. The humans choose what matters.',
-  'Band It is built for that. Your team forms around a project. Your agents come with you. The work happens out in the open, with transparency and accountability built in from the first hour.',
-  'You don\u2019t replace humans with AI. You don\u2019t bolt AI onto humans. You compose them \u2014 group in the loop, together.',
+  'Most AI products stop at the model or the chat box. Band It is the layer that sits on top \u2014 collecting intelligence signals, feeding vertical agents, and keeping humans in the loop from first scan to final delivery.',
+  'Your band composes workflows: agent nodes, human checkpoints, sinks into the systems you already run. Opportunity discovery, research desks, compliance scans \u2014 same engine, different templates.',
+  'Transparency is built in. Every node leaves a trace. Every approval is recorded. The stack does the heavy compute; Band It does the accountable orchestration.',
+  'You don\u2019t replace humans with AI. You don\u2019t bolt AI onto humans. You wrap the stack with signal processing, agents, and judgment \u2014 together.',
 ]
-
-const PIPELINE_KICKER = 'How a day goes'
-const PIPELINE_HEADING = 'Four moves, every project'
-
-const PIPELINE_STEPS = [
-  {
-    label: 'The Closet',
-    text: 'Projects, problems, and opportunities \u2014 paid, volunteer, experimental, local, global. Some come from companies. Some from communities. Some you create yourself. Hung up where you can see them.',
-  },
-  {
-    label: 'Getting Dressed',
-    text: 'Band It helps you assemble the right combination for the work \u2014 people with the skills, agents with the capabilities, and the trust signals that say this group can deliver. A designer here, a researcher there, a few agents you\u2019ve built or borrowed. A team dressed for the job.',
-  },
-  {
-    label: 'The Fitting Room',
-    text: 'One transparent space for the whole project: tasks, decisions, files, money, agents at work, humans deciding. Try it. Change it. Tear it out and try again \u2014 without paying a huge price for every experiment.',
-  },
-  {
-    label: 'The Wardrobe',
-    text: 'Not a static resume. A living wardrobe of what you\u2019ve worn, who you\u2019ve worked with, what your agents handled well, and what you can take into tomorrow\u2019s project. Your record moves with you.',
-  },
-]
-
-const PULL_QUOTE = '\u201cTry it. Don\u2019t like it? Change it. All on a whim.\u201d'
 
 const BRIEFING_HEADING = 'Where does Band It fit?'
-const BRIEFING_LEAD = "It's not what you've seen before."
+const BRIEFING_LEAD = 'Not another piece of the puzzle. The layer that completes it.'
 
 const BRIEFING_PARAGRAPHS = [
-  'Not a freelance marketplace where you bid against strangers for the lowest price. Not a project management tool that organizes work you somehow have to find on your own. Not an agent builder that drops you off once the agent is built. Not a staffing agency that disappears the moment the contract is signed.',
-  'Those are all single-piece tools for a single-piece world.',
-  'Band It is the whole picture.',
-  'A coordination layer where a small group of humans and their AI capabilities take on real work \u2014 find it, form around it, ship it, and get paid for it \u2014 all in one transparent place. The project, the people, the agents, the money, the record. Together, not scattered across six tools and three companies.',
+  'Not a raw LLM wrapper. Not a chatbot with a logo. Not a SIEM dashboard. Not an agent builder that drops you at deployment and walks away.',
+  'Those tools handle one slice. Band It is the layer that connects signal intake, agent orchestration, human review, and business-ready output \u2014 in one transparent band workspace.',
+  'Built on the industry stack. Responsible for what crosses the visor.',
+  'Intelligence signal processing in. Vertical agents at work. Humans in the loop throughout. The Goods delivered to your customer\u2019s business flow.',
 ]
 
-const EDITORIAL_HEADING = 'Who knew humanity would end up in the dry-cleaning business?'
+const EDITORIAL_HEADING = 'Put the layer on'
 
 const EDITORIAL_PARAGRAPHS = [
-  'Endless racks of roles, swapped in and out as the day demands. A research hat in the morning, a marketing jacket by afternoon, dancing shoes for the evening project. The work isn\u2019t disappearing \u2014 the way we organize for it is. Technology is becoming a utility, and what\u2019s left is what humans do best: choose, combine, create, and decide together. Often with agents at our side.',
-  'Band It is built for that world. Real projects. Real teams. Real money. Full visibility. A record that follows the person, not the employer.',
+  'The AI stack got deep fast \u2014 energy, chips, infra, models, platforms, vertical agents. Most organizations cannot assemble that themselves. What they need is a layer that hugs the stack: collects the right signals, routes them to the right agents, keeps humans steering, and ships intelligence that holds up in a meeting room.',
+  'Band It is that layer. Real workflows. Real checkpoints. Real output into the systems you already trust. The helmet is the metaphor \u2014 one piece that gives you signal processing, orchestration, human judgment, and deliverable results.',
 ]
 
-const EDITORIAL_CLOSER = 'What are you wearing today?'
-
-const PIPELINE_FIGURE_CAPTION =
-  'Behind the counter \u2014 closet, fitting room, and wardrobe, all on one rolling rack.'
+const EDITORIAL_CLOSER = 'Signals \u00b7 Humans \u00b7 The Goods.'
 
 type RailBlock = {
   title: string
@@ -116,27 +143,26 @@ type RailBlock = {
 
 const RAIL_BLOCKS: RailBlock[] = [
   {
-    title: 'For workers',
-    detail: 'Real work, real teams, your agents come with you.',
+    title: 'For operators',
+    detail: 'Run signal-to-outcome workflows with agents and human checkpoints.',
     cta: 'Get started',
     href: '/register',
   },
   {
     title: 'For companies',
-    detail:
-      'Bring us a project. We\u2019ll dress the team for it and ship it in the open.',
-    cta: 'Bring a project',
+    detail: 'Bring a use case. We\u2019ll compose the layer around your stack.',
+    cta: 'Bring a workflow',
     href: '/register',
   },
   {
-    title: 'The Daily',
-    detail: 'Your morning edition \u2014 what\u2019s on your rack today.',
+    title: 'Agent workflows',
+    detail: 'Vertical agents off the shelf or built by your band.',
     cta: 'Learn more',
-    href: '/daily',
+    href: '/manifesto',
   },
   {
     title: 'Talk It Out',
-    detail: 'When the group needs a facilitator, not another app.',
+    detail: 'When the group needs a facilitator, not another dashboard.',
     cta: 'See how',
     href: '/talk-it-out',
   },
@@ -145,7 +171,7 @@ const RAIL_BLOCKS: RailBlock[] = [
 function PlatformCta({ className }: { className?: string }) {
   return (
     <Link href="/register" className={`np-landing-platform-cta${className ? ` ${className}` : ''}`}>
-      Step onto the platform &rarr;
+      Put on the layer &rarr;
     </Link>
   )
 }
@@ -183,7 +209,8 @@ export function LandingNewspaperPage() {
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
             <span suppressHydrationWarning>
-              The Daily &middot; {formatPaperDate(new Date())} &middot; Vol. I &middot; Your edition
+              The Band It Layer &middot; {formatPaperDate(new Date())} &middot; Vol. I &middot; Anatomy
+              of the stack
             </span>
           </div>
           <hr className="np-rule" />
@@ -194,50 +221,85 @@ export function LandingNewspaperPage() {
             <main className="np-profile-main">
               <p className="np-cat np-cat-left">Lead</p>
               <section className="np-landing-arena" aria-labelledby="landing-headline">
-                <div className="np-landing-arena-row">
-                  <div className="np-landing-lead-copy">
-                    <h1 id="landing-headline" className="np-headline-lead np-headline-lead-left">
-                      {LEAD_HEADLINE}
-                    </h1>
-                    <p className="np-landing-dek">{LEAD_DEK}</p>
-                    <PlatformCta className="np-landing-lead-cta" />
-                  </div>
-                  <figure className="np-landing-lead-photo">
-                    <Image
-                      src={LANDING_DRY_CLEANER_RACK_IMAGE}
-                      alt="Editorial illustration of a long dry-cleaner rolling rack hung with hats, lab coats, tool belts, and work shoes"
-                      width={640}
-                      height={480}
-                      className="np-landing-lead-photo-img"
-                      priority
-                    />
-                    <figcaption className="np-landing-photo-caption">{PHOTO_CAPTION}</figcaption>
-                  </figure>
+                <div className="np-landing-lead-copy">
+                  <h1 id="landing-headline" className="np-headline-lead np-headline-lead-left">
+                    {LEAD_HEADLINE}
+                  </h1>
+                  <p className="np-landing-dek">{LEAD_DEK}</p>
+                  <PlatformCta className="np-landing-lead-cta" />
                 </div>
+                <figure className="np-landing-hero-figure">
+                  <Image
+                    src={LANDING_BANDIT_LAYER_IMAGE}
+                    alt="Vintage newspaper diagram of the Band It layer: a space helmet wrapping the AI stack with intelligence signal processing on the left, human in the loop on the right, and layers from energy through vertical agents inside"
+                    width={1536}
+                    height={1024}
+                    className="np-landing-hero-figure-img"
+                    priority
+                  />
+                  <figcaption className="np-landing-photo-caption">{HERO_FIGURE_CAPTION}</figcaption>
+                </figure>
               </section>
 
-              <section
-                className="np-landing-opportunities"
-                aria-labelledby="landing-opportunities-heading"
-              >
-                <p className="np-landing-section-kicker">{OPPORTUNITIES_KICKER}</p>
-                <h2
-                  id="landing-opportunities-heading"
-                  className="np-picks-header np-picks-header-left"
-                >
-                  {OPPORTUNITIES_HEADING}
+              <section className="np-landing-opportunities" aria-labelledby="landing-signals-heading">
+                <p className="np-landing-section-kicker">{SIGNALS_KICKER}</p>
+                <h2 id="landing-signals-heading" className="np-picks-header np-picks-header-left">
+                  {SIGNALS_HEADING}
                 </h2>
-                <ul className="np-landing-opportunity-cards">
-                  {OPPORTUNITY_TEASERS.map((teaser) => (
-                    <li key={teaser.title} className="np-landing-opportunity-card">
-                      <p className="np-landing-opportunity-title">{teaser.title}</p>
-                      <p className="np-landing-opportunity-detail">{teaser.detail}</p>
+                <ul className="np-landing-opportunity-cards np-landing-signal-cards">
+                  {SIGNAL_FEEDS.map((feed, index) => (
+                    <li key={index} className="np-landing-opportunity-card">
+                      <p className="np-landing-opportunity-title">{feed.title}</p>
+                      <p className="np-landing-opportunity-detail">{feed.detail}</p>
                     </li>
                   ))}
                 </ul>
               </section>
 
               <hr className="np-rule" />
+
+              <section className="np-landing-stack" aria-labelledby="landing-stack-heading">
+                <p className="np-landing-section-kicker">{STACK_KICKER}</p>
+                <h2 id="landing-stack-heading" className="np-headline-serif np-landing-thesis-lead">
+                  {STACK_HEADING}
+                </h2>
+                <p className="np-landing-paragraph np-landing-stack-intro">{STACK_INTRO}</p>
+                <ol className="np-landing-stack-layers">
+                  {STACK_LAYERS.map((layer) => (
+                    <li key={layer.num} className="np-landing-stack-layer">
+                      <div className="np-landing-pipeline-step-head">
+                        <span className="np-landing-pipeline-index" aria-hidden>
+                          {layer.num}
+                        </span>
+                        <span className="np-landing-pipeline-label">{layer.label}</span>
+                      </div>
+                      <p className="np-landing-pipeline-text">{layer.text}</p>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+
+              <section className="np-landing-pipeline" aria-labelledby="landing-flow-heading">
+                <p className="np-landing-pipeline-kicker">{FLOW_KICKER}</p>
+                <h2 id="landing-flow-heading" className="np-landing-pipeline-thesis">
+                  {FLOW_HEADING}
+                </h2>
+                <ol className="np-landing-pipeline-flow np-landing-pipeline-flow--solo">
+                  {FLOW_STEPS.map((step, index) => (
+                    <li key={step.label} className="np-landing-pipeline-step">
+                      <div className="np-landing-pipeline-step-head">
+                        <span className="np-landing-pipeline-index" aria-hidden>
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <span className="np-landing-pipeline-label">{step.label}</span>
+                      </div>
+                      <p className="np-landing-pipeline-text">{step.text}</p>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+
+              <p className="np-profile-pullquote">{PULL_QUOTE}</p>
 
               <section className="np-landing-story" aria-labelledby="landing-thesis-heading">
                 <p className="np-landing-section-kicker">{THESIS_KICKER}</p>
@@ -247,7 +309,7 @@ export function LandingNewspaperPage() {
                 <div className="np-landing-columns">
                   {THESIS_PARAGRAPHS.map((paragraph, index) => (
                     <p
-                      key={paragraph}
+                      key={index}
                       className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
                     >
                       {paragraph}
@@ -255,45 +317,6 @@ export function LandingNewspaperPage() {
                   ))}
                 </div>
               </section>
-
-              <section className="np-landing-pipeline" aria-labelledby="landing-pipeline-heading">
-                <p className="np-landing-pipeline-kicker">{PIPELINE_KICKER}</p>
-                <h2 id="landing-pipeline-heading" className="np-landing-pipeline-thesis">
-                  {PIPELINE_HEADING}
-                </h2>
-                <div className="np-landing-pipeline-layout">
-                  <ol className="np-landing-pipeline-flow">
-                    {PIPELINE_STEPS.map((step, index) => (
-                      <li key={step.label} className="np-landing-pipeline-step">
-                        <div className="np-landing-pipeline-step-head">
-                          <span className="np-landing-pipeline-index" aria-hidden>
-                            {String(index + 1).padStart(2, '0')}
-                          </span>
-                          <span className="np-landing-pipeline-label">{step.label}</span>
-                        </div>
-                        <p className="np-landing-pipeline-text">{step.text}</p>
-                      </li>
-                    ))}
-                  </ol>
-
-                  <figure className="np-landing-pipeline-figure">
-                    <div className="np-daily-classified-frame">
-                      <Image
-                        src={LANDING_STEAMPUNK_FACTORY_IMAGE}
-                        alt="Steampunk makeshift dressing room: rolling racks, fitting-room curtains, hats, coats, and boots under gas lamps and brass pipes."
-                        width={1200}
-                        height={675}
-                        className="np-daily-classified-img"
-                      />
-                    </div>
-                    <figcaption className="np-daily-classified-caption">
-                      {PIPELINE_FIGURE_CAPTION}
-                    </figcaption>
-                  </figure>
-                </div>
-              </section>
-
-              <p className="np-profile-pullquote">{PULL_QUOTE}</p>
 
               <section className="np-landing-briefing" aria-labelledby="landing-briefing-heading">
                 <div className="np-landing-briefing-inner">
@@ -303,8 +326,8 @@ export function LandingNewspaperPage() {
                   <h3 className="np-headline-serif np-landing-briefing-question">{BRIEFING_HEADING}</h3>
                   <p className="np-landing-briefing-lead-line">{BRIEFING_LEAD}</p>
                   <div className="np-landing-briefing-columns">
-                    {BRIEFING_PARAGRAPHS.map((paragraph) => (
-                      <p key={paragraph} className="np-landing-paragraph">
+                    {BRIEFING_PARAGRAPHS.map((paragraph, index) => (
+                      <p key={index} className="np-landing-paragraph">
                         {paragraph}
                       </p>
                     ))}
@@ -317,8 +340,8 @@ export function LandingNewspaperPage() {
                   Editorial
                 </h2>
                 <h3 className="np-headline-serif np-landing-editorial-head">{EDITORIAL_HEADING}</h3>
-                {EDITORIAL_PARAGRAPHS.map((paragraph) => (
-                  <p key={paragraph} className="np-landing-paragraph np-landing-editorial-p">
+                {EDITORIAL_PARAGRAPHS.map((paragraph, index) => (
+                  <p key={index} className="np-landing-paragraph np-landing-editorial-p">
                     {paragraph}
                   </p>
                 ))}
@@ -337,9 +360,9 @@ export function LandingNewspaperPage() {
             <aside className="np-profile-rail" aria-label="Front page briefs">
               <div className="np-rail-block">
                 <p className="np-profile-meta-rail" suppressHydrationWarning>
-                  BAND IT
+                  BAND IT LAYER
                   <br />
-                  WORK &middot; PLAY &middot; TALK IT OUT
+                  SIGNALS &middot; AGENTS &middot; HUMANS
                   <br />
                   {formatPaperDate(new Date()).toUpperCase()}
                 </p>

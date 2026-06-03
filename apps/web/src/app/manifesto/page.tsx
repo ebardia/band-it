@@ -3,13 +3,12 @@ import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
 
 const MANIFESTO_PARAGRAPHS = [
-  'Technology is about to become a utility.',
-  'You wake up in the morning, go to your wardrobe, and put on some clothes. The top might be for research, the belt for marketing, the skirt for, yes, dancing, and the shoes for gardening. You might also wear a hat for teaching. Each of these persona items will give you your superpower for the day. Oh, and your closet is not that small; it\u2019s more like the rolling rack of clothes at a dry cleaner.',
-  'The age of AI agents is going to eliminate the need to learn or develop technology. Most tech companies will be replaced by AI agents. The only thing left for us to do is be our authentic selves.',
-  'It can be the age of optimal productivity, where we do what we are best at. We will do our best work with others. Creativity is still the top winner. Each person will have the ability to continuously define and build what they need at a moment\u2019s notice, with no hesitation for errors. Try it. Don\u2019t like it? Change it. All on a whim. Keep doing trial and error; it won\u2019t cost much.',
-  'The environment? There will be a multitude of solutions for every imaginable and unimaginable situation. Political conflicts? An AI agent facilitator is constantly at work to reduce friction and offer win-win solutions. Health concerns? You are constantly monitored (this one is already here). Your diet habits are guided, and your mood is influenced by the activities suggested to you, at the pace you prefer.',
-  'This all sounds like science fiction, but it is already happening. It may take a few years to spread throughout society, but it won\u2019t take that long. We went from the Agricultural Age to the Industrial Age and then to the Information Age, and now we are entering the Creativity Age. People are at their best when they get to that \u201caha\u201d moment. What is better than trying that new idea? Build on it, share it, work on it some more, and work on yourself while you\u2019re at it.',
-  'Who knew that one day all of humanity would be in the dry-cleaning business?',
+  'The AI stack is real \u2014 energy, chips, infrastructure, models, agent platforms, vertical agents. Most organizations will buy pieces of it, not build the whole thing. What they still need is a layer that wraps the stack: intelligence in, judgment throughout, business intelligence out.',
+  'Band It is that layer. On the left, the signal desk \u2014 open web, records, telemetry, geospatial, whatever feeds your workflow. On the right, human in the loop \u2014 not a cosmetic review button, but checkpoints at every step that matters: labels, tasks, projects, proposals.',
+  'Inside the helmet sits the industry stack. Band It does not replace it; it hugs it. Signals route into orchestration and vertical agents \u2014 yours or off the shelf. Humans steer. Agents execute. The trace stays transparent.',
+  'The output is The Goods: verified intelligence your customer can plug into business flow \u2014 webhooks, documents, dashboards, operational systems. Not model output for its own sake. Decision-grade results.',
+  'Workflows compose the same way bands already work: agent nodes, human nodes, sinks. Opportunity discovery, research desks, compliance scans \u2014 one engine, different templates. Try a workflow. Change it. Ship it.',
+  'We are past the age of one human prompting one model in a chat box. We are in the age of signal processing, vertical agents, and humans in the loop at every step \u2014 wrapped in one layer you can put on and run.',
 ]
 
 export default function ManifestoPage() {
@@ -20,7 +19,7 @@ export default function ManifestoPage() {
           <DailyMastheadTitle />
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
-            <span>Manifesto · Vol. I</span>
+            <span>Manifesto · Vol. I · The Band It Layer</span>
           </div>
           <hr className="np-rule" />
         </header>
@@ -30,17 +29,15 @@ export default function ManifestoPage() {
             &larr; Front page
           </Link>
           <p className="np-cat np-cat-left">Essay</p>
-          <h1 className="np-headline-lead np-headline-lead-left">
-            The Creativity Age
-          </h1>
+          <h1 className="np-headline-lead np-headline-lead-left">The Band It Layer</h1>
           <p className="np-landing-dek">
-            A longer view on utility, persona, agents, and the dry-cleaner closet — the
-            vision behind Band It.
+            A longer view on intelligence signal processing, the AI stack, human-in-the-loop
+            orchestration, and delivering The Goods — the vision behind Band It.
           </p>
           <div className="np-landing-columns np-landing-story">
             {MANIFESTO_PARAGRAPHS.map((paragraph, index) => (
               <p
-                key={paragraph}
+                key={index}
                 className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
               >
                 {paragraph}
@@ -49,7 +46,7 @@ export default function ManifestoPage() {
           </div>
           <p className="np-landing-paragraph np-landing-editorial-cta">
             <Link href="/register" className="np-landing-platform-cta">
-              Step onto the platform &rarr;
+              Put on the layer &rarr;
             </Link>
           </p>
         </div>
