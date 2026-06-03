@@ -6,7 +6,10 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
-import { LANDING_BANDIT_LAYER_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
+import {
+  LANDING_BANDIT_LAYER_IMAGE,
+  LANDING_MAGICIAN_JUGGLER_IMAGE,
+} from '@/components/newspaper/newspaperPlaceholders'
 import { trpc } from '@/lib/trpc'
 
 function formatPaperDate(d: Date) {
@@ -91,11 +94,14 @@ const BRIEFING_PARAGRAPHS = [
   'Opportunity discovery, research desks, compliance scans: same engine, different templates. Every node leaves a trace. Every approval is recorded.',
 ]
 
+const BRIEFING_MAGICIAN_CAPTION =
+  'Fig. 2 \u2014 One layer, many moving parts: signals, stack, agents, humans, The Goods.'
+
 type RailBlock = {
   title: string
   detail: string
-  cta: string
-  href: string
+  cta?: string
+  href?: string
 }
 
 const RAIL_BLOCKS: RailBlock[] = [
@@ -103,15 +109,11 @@ const RAIL_BLOCKS: RailBlock[] = [
     title: 'For operators',
     detail:
       'You run the layer day to day \u2014 configure workflows, steer agents, pass human checkpoints, and ship The Goods.',
-    cta: 'Get started',
-    href: '/register',
   },
   {
     title: 'For companies',
     detail:
       'You bring the use case and the customer \u2014 we compose signal feeds, agents, and review steps around your problem.',
-    cta: 'Bring a workflow',
-    href: '/register',
   },
   {
     title: 'Agent workflows',
@@ -179,7 +181,6 @@ export function LandingNewspaperPage() {
                     {LEAD_HEADLINE}
                   </h1>
                   <p className="np-landing-dek">{LEAD_DEK}</p>
-                  <PlatformCta className="np-landing-lead-cta" />
                 </div>
                 <figure className="np-landing-hero-figure">
                   <Image
@@ -233,28 +234,43 @@ export function LandingNewspaperPage() {
               </section>
 
               <section className="np-landing-briefing" aria-labelledby="landing-briefing-heading">
-                <div className="np-landing-briefing-inner">
-                  <p className="np-landing-section-kicker">{BRIEFING_KICKER}</p>
-                  <h2 id="landing-briefing-heading" className="np-headline-serif np-landing-briefing-question">
-                    {BRIEFING_HEADING}
-                  </h2>
-                  <p className="np-landing-briefing-lead-line">{BRIEFING_LEAD}</p>
-                  <div className="np-landing-briefing-columns">
-                    {BRIEFING_PARAGRAPHS.map((paragraph, index) => (
-                      <p
-                        key={index}
-                        className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
-                      >
-                        {paragraph}
-                      </p>
-                    ))}
+                <div className="np-landing-briefing-split">
+                  <div className="np-landing-briefing-inner">
+                    <p className="np-landing-section-kicker">{BRIEFING_KICKER}</p>
+                    <h2
+                      id="landing-briefing-heading"
+                      className="np-headline-serif np-landing-briefing-question"
+                    >
+                      {BRIEFING_HEADING}
+                    </h2>
+                    <p className="np-landing-briefing-lead-line">{BRIEFING_LEAD}</p>
+                    <div className="np-landing-briefing-columns">
+                      {BRIEFING_PARAGRAPHS.map((paragraph, index) => (
+                        <p
+                          key={index}
+                          className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
+                        >
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                    <p className="np-landing-paragraph">
+                      <Link href="/manifesto" className="np-landing-rail-link">
+                        Read the longer essay &rarr;
+                      </Link>
+                    </p>
+                    <PlatformCta className="np-landing-editorial-cta" />
                   </div>
-                  <p className="np-landing-paragraph">
-                    <Link href="/manifesto" className="np-landing-rail-link">
-                      Read the longer essay &rarr;
-                    </Link>
-                  </p>
-                  <PlatformCta className="np-landing-editorial-cta" />
+                  <figure className="np-landing-briefing-figure">
+                    <Image
+                      src={LANDING_MAGICIAN_JUGGLER_IMAGE}
+                      alt="Vintage engraving of a circus magician juggling signals, chips, servers, agents, infrastructure tools, and The Goods while spinning Signals, Humans, and Stack on his head"
+                      width={1536}
+                      height={1024}
+                      className="np-landing-briefing-figure-img"
+                    />
+                    <figcaption className="np-landing-photo-caption">{BRIEFING_MAGICIAN_CAPTION}</figcaption>
+                  </figure>
                 </div>
               </section>
             </main>
@@ -274,9 +290,11 @@ export function LandingNewspaperPage() {
                 <div key={block.title} className="np-rail-block">
                   <h2 className="np-picks-header">{block.title}</h2>
                   <p className="np-preview-line">{block.detail}</p>
-                  <Link href={block.href} className="np-landing-rail-link">
-                    {block.cta} &rarr;
-                  </Link>
+                  {block.cta && block.href ? (
+                    <Link href={block.href} className="np-landing-rail-link">
+                      {block.cta} &rarr;
+                    </Link>
+                  ) : null}
                 </div>
               ))}
 

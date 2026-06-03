@@ -18,3 +18,6 @@ export const PROOF_PIGEONS_IMAGE = '/proof-pigeons.png'
 
 /** Landing — Band It layer diagram (vintage stack + signal desk + human loop) */
 export const LANDING_BANDIT_LAYER_IMAGE = '/landing-bandit-layer.png'
+
+/** Landing — vintage magician juggling signals, stack, agents, The Goods */
+export const LANDING_MAGICIAN_JUGGLER_IMAGE = '/landing-magician-juggler.png'
