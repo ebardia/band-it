@@ -6,7 +6,13 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
-import { LANDING_BANDIT_LAYER_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
+import {
+  LANDING_BANDIT_LAYER_IMAGE,
+  LANDING_BANDIT_LAYER_SIGNALS_IMAGE,
+  LANDING_BANDIT_LAYER_STACK_IMAGE,
+  LANDING_BANDIT_LAYER_HUMANS_IMAGE,
+  LANDING_BANDIT_LAYER_GOODS_IMAGE,
+} from '@/components/newspaper/newspaperPlaceholders'
 import { trpc } from '@/lib/trpc'
 
 function formatPaperDate(d: Date) {
@@ -21,13 +27,15 @@ function formatPaperDate(d: Date) {
 const LEAD_HEADLINE = 'The Band It Layer'
 
 const LEAD_DEK =
-  'Band It wraps the AI stack \u2014 intelligence signal processing on one side, human in the loop on the other, vertical agents in the middle, and verified business intelligence out. Put the layer on. Run the workflow.'
+  'Band It wraps the AI stack \u2014 intelligence signal processing on one side, human in the loop on the other, vertical agents in the middle, and verified business intelligence out.'
 
 const HERO_FIGURE_CAPTION =
   'Fig. 1 \u2014 The Band It layer: signals \u00b7 stack \u00b7 human swarm \u00b7 the goods.'
 
 const SIGNALS_KICKER = 'Intelligence signal processing'
 const SIGNALS_HEADING = 'The signal desk'
+const SIGNALS_FIGURE_CAPTION =
+  'Fig. 2 \u2014 Intelligence signal processing: live feeds screened into machine-readable signal.'
 
 const SIGNAL_FEEDS = [
   {
@@ -59,6 +67,8 @@ const SIGNAL_FEEDS = [
 
 const STACK_KICKER = 'Anatomy of the stack'
 const STACK_HEADING = 'Layers 1\u20136 inside the helmet'
+const STACK_FIGURE_CAPTION =
+  'Fig. 3 \u2014 The industry stack from energy through vertical agents, wrapped by the Band It layer.'
 
 const STACK_INTRO =
   'Band It does not pretend to be the whole AI industry. It hugs the stack \u2014 from energy and silicon through models, orchestration, and vertical agents \u2014 and adds the layer that turns raw capability into decision-grade output.'
@@ -102,34 +112,30 @@ const FLOW_STEPS = [
   },
 ]
 
-const PULL_QUOTE =
-  '\u201cSignals in. Humans steering. The Goods out \u2014 verified intelligence your customer can use.\u201d'
+const HUMANS_FIGURE_CAPTION =
+  'Fig. 4 \u2014 Human in the loop: reviewers steer orchestration and domain agents at every checkpoint.'
+const GOODS_FIGURE_CAPTION =
+  'Fig. 5 \u2014 The Goods: verified intelligence out \u2014 mind blown, business grounded.'
 
-const THESIS_KICKER = 'The thesis'
-const THESIS_LEAD = 'Human in the loop at every step that matters.'
-
-const THESIS_PARAGRAPHS = [
-  'Most AI products stop at the model or the chat box. Band It is the layer that sits on top \u2014 collecting intelligence signals, feeding vertical agents, and keeping humans in the loop from first scan to final delivery.',
-  'Your band composes workflows: agent nodes, human checkpoints, sinks into the systems you already run. Opportunity discovery, research desks, compliance scans \u2014 same engine, different templates.',
-  'Transparency is built in. Every node leaves a trace. Every approval is recorded. The stack does the heavy compute; Band It does the accountable orchestration.',
-  'You don\u2019t replace humans with AI. You don\u2019t bolt AI onto humans. You wrap the stack with signal processing, agents, and judgment \u2014 together.',
-]
-
-const BRIEFING_HEADING = 'Where does Band It fit?'
-const BRIEFING_LEAD = 'Not another piece of the puzzle. The layer that completes it.'
+const BRIEFING_KICKER = 'Briefing'
+const BRIEFING_HEADING = 'Not a chat box. The layer that completes the stack.'
+const BRIEFING_LEAD =
+  'Human in the loop at every step that matters \u2014 from first signal to final delivery.'
 
 const BRIEFING_PARAGRAPHS = [
-  'Not a raw LLM wrapper. Not a chatbot with a logo. Not a SIEM dashboard. Not an agent builder that drops you at deployment and walks away.',
-  'Those tools handle one slice. Band It is the layer that connects signal intake, agent orchestration, human review, and business-ready output \u2014 in one transparent band workspace.',
-  'Built on the industry stack. Responsible for what crosses the visor.',
-  'Intelligence signal processing in. Vertical agents at work. Humans in the loop throughout. The Goods delivered to your customer\u2019s business flow.',
+  'Most AI products stop at the model or a single prompt. Band It wraps layers 1\u20136: intelligence signal processing in, vertical agents at work, humans steering throughout, and business-ready output into the systems you already run.',
+  'Not a raw LLM wrapper, a SIEM dashboard, or an agent builder that vanishes after deploy. One transparent workspace where your band composes workflows \u2014 agent nodes, human checkpoints, sinks to webhooks and documents.',
+  'Opportunity discovery, research desks, compliance scans: same engine, different templates. Every node leaves a trace. Every approval is recorded.',
 ]
 
-const EDITORIAL_HEADING = 'Put the layer on'
+const EDITORIAL_KICKER = 'Editorial'
+const EDITORIAL_HEADING = 'Wear the AI helmet'
+const EDITORIAL_PULL =
+  '\u201cSignals in. Humans steering. The Goods out \u2014 verified intelligence your customer can use.\u201d'
 
 const EDITORIAL_PARAGRAPHS = [
-  'The AI stack got deep fast \u2014 energy, chips, infra, models, platforms, vertical agents. Most organizations cannot assemble that themselves. What they need is a layer that hugs the stack: collects the right signals, routes them to the right agents, keeps humans steering, and ships intelligence that holds up in a meeting room.',
-  'Band It is that layer. Real workflows. Real checkpoints. Real output into the systems you already trust. The helmet is the metaphor \u2014 one piece that gives you signal processing, orchestration, human judgment, and deliverable results.',
+  'The stack got deep fast. Most organizations cannot assemble it themselves \u2014 and should not have to. They need one layer that hugs the stack: collects the right signals, routes them to the right agents, keeps humans in the loop, and ships intelligence that holds up in a meeting room.',
+  'That is Band It. The helmet is the metaphor: signal desk on the left, human swarm on the right, industry stack inside, The Goods out the top. Real workflows. Real checkpoints. Real output.',
 ]
 
 const EDITORIAL_CLOSER = 'Signals \u00b7 Humans \u00b7 The Goods.'
@@ -171,8 +177,29 @@ const RAIL_BLOCKS: RailBlock[] = [
 function PlatformCta({ className }: { className?: string }) {
   return (
     <Link href="/register" className={`np-landing-platform-cta${className ? ` ${className}` : ''}`}>
-      Put on the layer &rarr;
+      Wear the AI helmet &rarr;
     </Link>
+  )
+}
+
+function DetailFigure({
+  src,
+  alt,
+  caption,
+  width,
+  height,
+}: {
+  src: string
+  alt: string
+  caption: string
+  width: number
+  height: number
+}) {
+  return (
+    <figure className="np-landing-detail-figure">
+      <Image src={src} alt={alt} width={width} height={height} className="np-landing-detail-figure-img" />
+      <figcaption className="np-landing-photo-caption">{caption}</figcaption>
+    </figure>
   )
 }
 
@@ -254,6 +281,13 @@ export function LandingNewspaperPage() {
                     </li>
                   ))}
                 </ul>
+                <DetailFigure
+                  src={LANDING_BANDIT_LAYER_SIGNALS_IMAGE}
+                  alt="Detail of the signal desk panel on the Band It layer helmet diagram"
+                  caption={SIGNALS_FIGURE_CAPTION}
+                  width={430}
+                  height={680}
+                />
               </section>
 
               <hr className="np-rule" />
@@ -264,6 +298,13 @@ export function LandingNewspaperPage() {
                   {STACK_HEADING}
                 </h2>
                 <p className="np-landing-paragraph np-landing-stack-intro">{STACK_INTRO}</p>
+                <DetailFigure
+                  src={LANDING_BANDIT_LAYER_STACK_IMAGE}
+                  alt="Detail of the six-layer AI stack inside the Band It helmet visor"
+                  caption={STACK_FIGURE_CAPTION}
+                  width={616}
+                  height={680}
+                />
                 <ol className="np-landing-stack-layers">
                   {STACK_LAYERS.map((layer) => (
                     <li key={layer.num} className="np-landing-stack-layer">
@@ -297,37 +338,37 @@ export function LandingNewspaperPage() {
                     </li>
                   ))}
                 </ol>
-              </section>
-
-              <p className="np-profile-pullquote">{PULL_QUOTE}</p>
-
-              <section className="np-landing-story" aria-labelledby="landing-thesis-heading">
-                <p className="np-landing-section-kicker">{THESIS_KICKER}</p>
-                <h2 id="landing-thesis-heading" className="np-headline-serif np-landing-thesis-lead">
-                  {THESIS_LEAD}
-                </h2>
-                <div className="np-landing-columns">
-                  {THESIS_PARAGRAPHS.map((paragraph, index) => (
-                    <p
-                      key={index}
-                      className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
+                <div className="np-landing-detail-pair">
+                  <DetailFigure
+                    src={LANDING_BANDIT_LAYER_HUMANS_IMAGE}
+                    alt="Detail of the human-in-the-loop panel on the Band It layer helmet diagram"
+                    caption={HUMANS_FIGURE_CAPTION}
+                    width={430}
+                    height={680}
+                  />
+                  <DetailFigure
+                    src={LANDING_BANDIT_LAYER_GOODS_IMAGE}
+                    alt="Detail of smoke rising from the helmet vent — mind blown, The Goods delivered"
+                    caption={GOODS_FIGURE_CAPTION}
+                    width={816}
+                    height={320}
+                  />
                 </div>
               </section>
 
               <section className="np-landing-briefing" aria-labelledby="landing-briefing-heading">
                 <div className="np-landing-briefing-inner">
-                  <h2 id="landing-briefing-heading" className="np-picks-header np-picks-header-left">
-                    Briefing
+                  <p className="np-landing-section-kicker">{BRIEFING_KICKER}</p>
+                  <h2 id="landing-briefing-heading" className="np-headline-serif np-landing-briefing-question">
+                    {BRIEFING_HEADING}
                   </h2>
-                  <h3 className="np-headline-serif np-landing-briefing-question">{BRIEFING_HEADING}</h3>
                   <p className="np-landing-briefing-lead-line">{BRIEFING_LEAD}</p>
                   <div className="np-landing-briefing-columns">
                     {BRIEFING_PARAGRAPHS.map((paragraph, index) => (
-                      <p key={index} className="np-landing-paragraph">
+                      <p
+                        key={index}
+                        className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
+                      >
                         {paragraph}
                       </p>
                     ))}
@@ -336,10 +377,11 @@ export function LandingNewspaperPage() {
               </section>
 
               <section className="np-landing-editorial" aria-labelledby="landing-editorial-heading">
-                <h2 id="landing-editorial-heading" className="np-picks-header np-picks-header-left">
-                  Editorial
+                <p className="np-landing-section-kicker">{EDITORIAL_KICKER}</p>
+                <h2 id="landing-editorial-heading" className="np-headline-serif np-landing-editorial-head">
+                  {EDITORIAL_HEADING}
                 </h2>
-                <h3 className="np-headline-serif np-landing-editorial-head">{EDITORIAL_HEADING}</h3>
+                <p className="np-profile-pullquote np-landing-editorial-pull">{EDITORIAL_PULL}</p>
                 {EDITORIAL_PARAGRAPHS.map((paragraph, index) => (
                   <p key={index} className="np-landing-paragraph np-landing-editorial-p">
                     {paragraph}

@@ -18,3 +18,7 @@ export const PROOF_PIGEONS_IMAGE = '/proof-pigeons.png'
 
 /** Landing — Band It layer diagram (vintage stack + signal desk + human loop) */
 export const LANDING_BANDIT_LAYER_IMAGE = '/landing-bandit-layer.png'
+export const LANDING_BANDIT_LAYER_SIGNALS_IMAGE = '/landing-bandit-layer-signals.png'
+export const LANDING_BANDIT_LAYER_STACK_IMAGE = '/landing-bandit-layer-stack.png'
+export const LANDING_BANDIT_LAYER_HUMANS_IMAGE = '/landing-bandit-layer-humans.png'
+export const LANDING_BANDIT_LAYER_GOODS_IMAGE = '/landing-bandit-layer-goods.png'

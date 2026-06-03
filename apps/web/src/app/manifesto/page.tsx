@@ -46,7 +46,7 @@ export default function ManifestoPage() {
           </div>
           <p className="np-landing-paragraph np-landing-editorial-cta">
             <Link href="/register" className="np-landing-platform-cta">
-              Put on the layer &rarr;
+              Wear the AI helmet &rarr;
             </Link>
           </p>
         </div>
