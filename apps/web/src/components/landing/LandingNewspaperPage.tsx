@@ -6,13 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
-import {
-  LANDING_BANDIT_LAYER_IMAGE,
-  LANDING_BANDIT_LAYER_SIGNALS_IMAGE,
-  LANDING_BANDIT_LAYER_STACK_IMAGE,
-  LANDING_BANDIT_LAYER_HUMANS_IMAGE,
-  LANDING_BANDIT_LAYER_GOODS_IMAGE,
-} from '@/components/newspaper/newspaperPlaceholders'
+import { LANDING_BANDIT_LAYER_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 import { trpc } from '@/lib/trpc'
 
 function formatPaperDate(d: Date) {
@@ -34,8 +28,6 @@ const HERO_FIGURE_CAPTION =
 
 const SIGNALS_KICKER = 'Intelligence signal processing'
 const SIGNALS_HEADING = 'The signal desk'
-const SIGNALS_FIGURE_CAPTION =
-  'Fig. 2 \u2014 Intelligence signal processing: live feeds screened into machine-readable signal.'
 
 const SIGNAL_FEEDS = [
   {
@@ -54,9 +46,9 @@ const SIGNAL_FEEDS = [
       'Wearables and monitoring where policy allows \u2014 optional inputs your band chooses to trust.',
   },
   {
-    title: 'Government data',
+    title: 'Public infrastructure',
     detail:
-      'Public records, liens, court dockets, and regulatory filings \u2014 the early stress signals others miss.',
+      'Roads, utilities, transit, water, power, and other civic infrastructure data \u2014 what the built world is doing right now.',
   },
   {
     title: 'Satellite & geospatial',
@@ -67,8 +59,6 @@ const SIGNAL_FEEDS = [
 
 const STACK_KICKER = 'Anatomy of the stack'
 const STACK_HEADING = 'Layers 1\u20136 inside the helmet'
-const STACK_FIGURE_CAPTION =
-  'Fig. 3 \u2014 The industry stack from energy through vertical agents, wrapped by the Band It layer.'
 
 const STACK_INTRO =
   'Band It does not pretend to be the whole AI industry. It hugs the stack \u2014 from energy and silicon through models, orchestration, and vertical agents \u2014 and adds the layer that turns raw capability into decision-grade output.'
@@ -90,33 +80,6 @@ const STACK_LAYERS = [
   },
 ]
 
-const FLOW_KICKER = 'How the layer works'
-const FLOW_HEADING = 'Signals \u00b7 Humans \u00b7 The Goods'
-
-const FLOW_STEPS = [
-  {
-    label: 'Collect & process',
-    text: 'Live feeds enter the signal desk, get screened and correlated, and route into the agent platform and vertical agents you configure.',
-  },
-  {
-    label: 'Run vertical agents',
-    text: 'Off-the-shelf or custom agents execute the workflow \u2014 scan, enrich, rank, draft \u2014 on top of layers 5 and 6 inside the stack.',
-  },
-  {
-    label: 'Human in the loop',
-    text: 'Humans steer every meaningful step: labels, tasks, projects, proposals. Agents propose; people approve. No autopilot on judgment calls.',
-  },
-  {
-    label: 'The Goods',
-    text: 'Verified business intelligence flows out \u2014 webhooks, documents, dashboards your customer can act on. Mind blown, business grounded.',
-  },
-]
-
-const HUMANS_FIGURE_CAPTION =
-  'Fig. 4 \u2014 Human in the loop: reviewers steer orchestration and domain agents at every checkpoint.'
-const GOODS_FIGURE_CAPTION =
-  'Fig. 5 \u2014 The Goods: verified intelligence out \u2014 mind blown, business grounded.'
-
 const BRIEFING_KICKER = 'Briefing'
 const BRIEFING_HEADING = 'Not a chat box. The layer that completes the stack.'
 const BRIEFING_LEAD =
@@ -128,18 +91,6 @@ const BRIEFING_PARAGRAPHS = [
   'Opportunity discovery, research desks, compliance scans: same engine, different templates. Every node leaves a trace. Every approval is recorded.',
 ]
 
-const EDITORIAL_KICKER = 'Editorial'
-const EDITORIAL_HEADING = 'Wear the AI helmet'
-const EDITORIAL_PULL =
-  '\u201cSignals in. Humans steering. The Goods out \u2014 verified intelligence your customer can use.\u201d'
-
-const EDITORIAL_PARAGRAPHS = [
-  'The stack got deep fast. Most organizations cannot assemble it themselves \u2014 and should not have to. They need one layer that hugs the stack: collects the right signals, routes them to the right agents, keeps humans in the loop, and ships intelligence that holds up in a meeting room.',
-  'That is Band It. The helmet is the metaphor: signal desk on the left, human swarm on the right, industry stack inside, The Goods out the top. Real workflows. Real checkpoints. Real output.',
-]
-
-const EDITORIAL_CLOSER = 'Signals \u00b7 Humans \u00b7 The Goods.'
-
 type RailBlock = {
   title: string
   detail: string
@@ -150,13 +101,15 @@ type RailBlock = {
 const RAIL_BLOCKS: RailBlock[] = [
   {
     title: 'For operators',
-    detail: 'Run signal-to-outcome workflows with agents and human checkpoints.',
+    detail:
+      'You run the layer day to day \u2014 configure workflows, steer agents, pass human checkpoints, and ship The Goods.',
     cta: 'Get started',
     href: '/register',
   },
   {
     title: 'For companies',
-    detail: 'Bring a use case. We\u2019ll compose the layer around your stack.',
+    detail:
+      'You bring the use case and the customer \u2014 we compose signal feeds, agents, and review steps around your problem.',
     cta: 'Bring a workflow',
     href: '/register',
   },
@@ -166,12 +119,6 @@ const RAIL_BLOCKS: RailBlock[] = [
     cta: 'Learn more',
     href: '/manifesto',
   },
-  {
-    title: 'Talk It Out',
-    detail: 'When the group needs a facilitator, not another dashboard.',
-    cta: 'See how',
-    href: '/talk-it-out',
-  },
 ]
 
 function PlatformCta({ className }: { className?: string }) {
@@ -179,27 +126,6 @@ function PlatformCta({ className }: { className?: string }) {
     <Link href="/register" className={`np-landing-platform-cta${className ? ` ${className}` : ''}`}>
       Wear the AI helmet &rarr;
     </Link>
-  )
-}
-
-function DetailFigure({
-  src,
-  alt,
-  caption,
-  width,
-  height,
-}: {
-  src: string
-  alt: string
-  caption: string
-  width: number
-  height: number
-}) {
-  return (
-    <figure className="np-landing-detail-figure">
-      <Image src={src} alt={alt} width={width} height={height} className="np-landing-detail-figure-img" />
-      <figcaption className="np-landing-photo-caption">{caption}</figcaption>
-    </figure>
   )
 }
 
@@ -281,13 +207,6 @@ export function LandingNewspaperPage() {
                     </li>
                   ))}
                 </ul>
-                <DetailFigure
-                  src={LANDING_BANDIT_LAYER_SIGNALS_IMAGE}
-                  alt="Detail of the signal desk panel on the Band It layer helmet diagram"
-                  caption={SIGNALS_FIGURE_CAPTION}
-                  width={430}
-                  height={680}
-                />
               </section>
 
               <hr className="np-rule" />
@@ -298,13 +217,6 @@ export function LandingNewspaperPage() {
                   {STACK_HEADING}
                 </h2>
                 <p className="np-landing-paragraph np-landing-stack-intro">{STACK_INTRO}</p>
-                <DetailFigure
-                  src={LANDING_BANDIT_LAYER_STACK_IMAGE}
-                  alt="Detail of the six-layer AI stack inside the Band It helmet visor"
-                  caption={STACK_FIGURE_CAPTION}
-                  width={616}
-                  height={680}
-                />
                 <ol className="np-landing-stack-layers">
                   {STACK_LAYERS.map((layer) => (
                     <li key={layer.num} className="np-landing-stack-layer">
@@ -318,42 +230,6 @@ export function LandingNewspaperPage() {
                     </li>
                   ))}
                 </ol>
-              </section>
-
-              <section className="np-landing-pipeline" aria-labelledby="landing-flow-heading">
-                <p className="np-landing-pipeline-kicker">{FLOW_KICKER}</p>
-                <h2 id="landing-flow-heading" className="np-landing-pipeline-thesis">
-                  {FLOW_HEADING}
-                </h2>
-                <ol className="np-landing-pipeline-flow np-landing-pipeline-flow--solo">
-                  {FLOW_STEPS.map((step, index) => (
-                    <li key={step.label} className="np-landing-pipeline-step">
-                      <div className="np-landing-pipeline-step-head">
-                        <span className="np-landing-pipeline-index" aria-hidden>
-                          {String(index + 1).padStart(2, '0')}
-                        </span>
-                        <span className="np-landing-pipeline-label">{step.label}</span>
-                      </div>
-                      <p className="np-landing-pipeline-text">{step.text}</p>
-                    </li>
-                  ))}
-                </ol>
-                <div className="np-landing-detail-pair">
-                  <DetailFigure
-                    src={LANDING_BANDIT_LAYER_HUMANS_IMAGE}
-                    alt="Detail of the human-in-the-loop panel on the Band It layer helmet diagram"
-                    caption={HUMANS_FIGURE_CAPTION}
-                    width={430}
-                    height={680}
-                  />
-                  <DetailFigure
-                    src={LANDING_BANDIT_LAYER_GOODS_IMAGE}
-                    alt="Detail of smoke rising from the helmet vent — mind blown, The Goods delivered"
-                    caption={GOODS_FIGURE_CAPTION}
-                    width={816}
-                    height={320}
-                  />
-                </div>
               </section>
 
               <section className="np-landing-briefing" aria-labelledby="landing-briefing-heading">
@@ -373,29 +249,13 @@ export function LandingNewspaperPage() {
                       </p>
                     ))}
                   </div>
-                </div>
-              </section>
-
-              <section className="np-landing-editorial" aria-labelledby="landing-editorial-heading">
-                <p className="np-landing-section-kicker">{EDITORIAL_KICKER}</p>
-                <h2 id="landing-editorial-heading" className="np-headline-serif np-landing-editorial-head">
-                  {EDITORIAL_HEADING}
-                </h2>
-                <p className="np-profile-pullquote np-landing-editorial-pull">{EDITORIAL_PULL}</p>
-                {EDITORIAL_PARAGRAPHS.map((paragraph, index) => (
-                  <p key={index} className="np-landing-paragraph np-landing-editorial-p">
-                    {paragraph}
+                  <p className="np-landing-paragraph">
+                    <Link href="/manifesto" className="np-landing-rail-link">
+                      Read the longer essay &rarr;
+                    </Link>
                   </p>
-                ))}
-                <p className="np-profile-manifesto np-landing-closer np-landing-editorial-bookend">
-                  {EDITORIAL_CLOSER}
-                </p>
-                <p className="np-landing-paragraph">
-                  <Link href="/manifesto" className="np-landing-rail-link">
-                    Read the longer essay &rarr;
-                  </Link>
-                </p>
-                <PlatformCta className="np-landing-editorial-cta" />
+                  <PlatformCta className="np-landing-editorial-cta" />
+                </div>
               </section>
             </main>
 
