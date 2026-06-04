@@ -1,31 +1,49 @@
-# Import this deck into Google Slides (no PowerPoint license needed)
+# Open this deck in Google Slides (no PowerPoint license)
 
-Google Slides opens `.pptx` files in the browser. You do **not** need Microsoft PowerPoint installed.
+**Do not upload a `.png` or `.jpg` file to create a presentation** — Google Slides only treats those as pictures, not as a full slide deck.
 
-## Slide 1 (style preview)
+Use one of these instead:
 
-1. Open [Google Drive](https://drive.google.com).
-2. **New → File upload** and choose:
-   - `band-it-layer-deck-slide-01.pptx` (in this folder)
-3. Double-click the uploaded file → **Open with → Google Slides**.
-4. Or: open [Google Slides](https://slides.google.com) → **File → Import slides → Upload** → select the `.pptx`.
+## Option A — Import `.pptx` (recommended)
 
-Fonts may substitute (Arial Black / Georgia / Consolas are standard on Google’s side). Colors and layout should carry over.
+1. Open [Google Slides](https://slides.google.com) → **Blank presentation**
+2. **File → Import slides → Upload**
+3. Choose `band-it-layer-deck-slide-01.pptx` (in this folder)
+4. Select **Replace slides** or **Append**
 
-## Replace the illustration
+Illustrations are embedded as **JPEG** inside the file (better compatibility than loose PNG uploads).
 
-The image is a separate PNG in `assets/`. To swap art on a slide in Google Slides:
+## Option B — Import `.pdf`
 
-1. Click the picture → **Replace image → Upload from computer**
-2. Use the matching file, e.g. `assets/slide-01-newsroom-noise.png`
+If `.pptx` import looks wrong:
 
-## Rebuild after copy or image changes
+1. Build the PDF:
+   ```bash
+   pip install reportlab
+   python docs/presentations/band-it-layer-deck/scripts/build_pdf_slide.py 1
+   ```
+2. In Google Slides: **File → Import slides → Upload** → `band-it-layer-deck-slide-01.pdf`
+
+Each PDF page becomes one slide (layout is flattened; text may not be editable).
+
+## Option C — Browser preview (no Google account)
+
+Open `slide-01-preview.html` in Chrome/Edge to check layout and copy.
+
+## Replace the illustration inside Google Slides
+
+1. Click the picture on the slide
+2. **Replace image → Upload from computer**
+3. Use `assets/slide-01-newsroom-noise.jpg` (JPEG, not PNG)
+
+## Regenerate assets and deck
 
 ```bash
+python docs/presentations/band-it-layer-deck/scripts/sync_assets.py 1
 python docs/presentations/band-it-layer-deck/scripts/build_slide.py 1
+python docs/presentations/band-it-layer-deck/scripts/build_pdf_slide.py 1
+python docs/presentations/band-it-layer-deck/scripts/build_html_slide.py 1
 ```
-
-Then re-import or replace the slide in your Google Slides deck.
 
 ## Full deck (when all 10 slides are ready)
 
@@ -33,4 +51,4 @@ Then re-import or replace the slide in your Google Slides deck.
 python docs/presentations/band-it-layer-deck/scripts/build_slide.py --all
 ```
 
-Upload `band-it-layer-deck.pptx` the same way.
+Upload `band-it-layer-deck.pptx` the same way as Option A.

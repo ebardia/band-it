@@ -40,7 +40,11 @@ def parse_slide_md(path: Path) -> dict:
             paragraphs.append(" ".join(lines))
 
     num = path.stem.split("-", 1)[0]
-    matches = sorted(ASSETS_DIR.glob(f"slide-{num}-*.png"))
+    matches = sorted(
+        list(ASSETS_DIR.glob(f"slide-{num}-*.jpg"))
+        + list(ASSETS_DIR.glob(f"slide-{num}-*.jpeg"))
+        + list(ASSETS_DIR.glob(f"slide-{num}-*.png"))
+    )
     asset = matches[-1] if matches else None
     caption_m = re.search(r"^## Fig caption\s*\n(.+?)(?=\n## )", text, re.M | re.S)
     fig_caption = caption_m.group(1).strip() if caption_m else f"Fig. {int(num)} — Signal desk"
@@ -58,7 +62,9 @@ def parse_slide_md(path: Path) -> dict:
 def build_html(data: dict) -> str:
     img_b64 = ""
     if data["asset"] and data["asset"].exists():
-        img_b64 = base64.b64encode(data["asset"].read_bytes()).decode("ascii")
+        raw = data["asset"].read_bytes()
+        mime = "image/jpeg" if data["asset"].suffix.lower() in (".jpg", ".jpeg") else "image/png"
+        img_b64 = base64.b64encode(raw).decode("ascii")
 
     bullets_html = "".join(f"<li>{b}</li>" for b in data["bullets"])
     paras_html = "".join(f"<p>{p}</p>" for p in data["paragraphs"])
@@ -167,7 +173,7 @@ def build_html(data: dict) -> str:
       </div>
     </div>
     <figure class="figure">
-      <img src="data:image/png;base64,{img_b64}" alt="Fig. {data['num']}" />
+      <img src="data:{mime};base64,{img_b64}" alt="Fig. {data['num']}" />
       <figcaption class="caption">{data['fig_caption']}</figcaption>
     </figure>
     <footer class="footer">THE BAND IT LAYER</footer>

@@ -60,7 +60,11 @@ def parse_slide_md(path: Path) -> dict:
 
     slug = path.stem  # e.g. 01-problem
     num = slug.split("-", 1)[0]
-    matches = sorted(ASSETS_DIR.glob(f"slide-{num}-*.png"))
+    matches = sorted(
+        list(ASSETS_DIR.glob(f"slide-{num}-*.jpg"))
+        + list(ASSETS_DIR.glob(f"slide-{num}-*.jpeg"))
+        + list(ASSETS_DIR.glob(f"slide-{num}-*.png"))
+    )
     asset = matches[-1] if matches else None
     caption_m = re.search(r"^## (?:Image caption|Fig caption)\s*\n(.+?)(?=\n## )", text, re.M | re.S)
     fig_caption = caption_m.group(1).strip() if caption_m else f"Fig. {int(num)} — Signal desk"

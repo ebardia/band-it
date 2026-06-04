@@ -33,5 +33,5 @@ Vintage 1950s newspaper engraving of a newsroom overwhelmed by ticker tape, tele
 Fig. 1 — The line outside the entrance (too much noise, one door in)
 
 ## Asset
-- **Current:** `../assets/slide-01-newsroom-noise.png` — sepia “waiting room line” engraving (site art; not the helmet).
+- **Current:** `../assets/slide-01-newsroom-noise.jpg` — sepia “waiting room line” engraving (site art; not the helmet).
 - **Target:** Replace with bespoke ticker-tape newsroom engraving when image gen is available.

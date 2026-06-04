@@ -1,6 +1,8 @@
 # Deck image assets
 
-One PNG per slide, named `slide-NN-<short-name>.png` (e.g. `slide-01-newsroom-noise.png`).
+One **JPEG** per slide, named `slide-NN-<short-name>.jpg` (e.g. `slide-01-newsroom-noise.jpg`).
+
+Google Slides cannot open a raw image file as a presentation — JPEGs are embedded in `.pptx` / used when you **Replace image** on a slide.
 
 ## Regenerate slide 1 from site art
 

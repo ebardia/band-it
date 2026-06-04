@@ -19,7 +19,7 @@ ASSETS = ROOT / "assets"
 PUBLIC = REPO / "apps" / "web" / "public"
 
 SLIDE_SOURCES: dict[str, tuple[Path, str]] = {
-    "1": (PUBLIC / "waiting-room-line.png", "slide-01-newsroom-noise.png"),
+    "1": (PUBLIC / "waiting-room-line.png", "slide-01-newsroom-noise.jpg"),
 }
 
 
@@ -30,8 +30,14 @@ def sepia_copy(src: Path, dst: Path) -> None:
     img = ImageEnhance.Color(img).enhance(0.4)
     img = ImageEnhance.Contrast(img).enhance(1.1)
     ASSETS.mkdir(parents=True, exist_ok=True)
-    img.save(dst, optimize=True)
+    img.save(dst, format="JPEG", quality=88, optimize=True)
     print(f"Wrote {dst} ({dst.stat().st_size} bytes)")
+    parts = dst.stem.split("-")
+    if len(parts) >= 2:
+        prefix = f"{parts[0]}-{parts[1]}"
+        for old in ASSETS.glob(f"{prefix}-*.png"):
+            old.unlink()
+            print(f"Removed {old}")
 
 
 def main() -> None:
