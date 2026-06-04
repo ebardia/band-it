@@ -13,6 +13,7 @@ export function AdminSidebar() {
     { label: '📊 Dashboard', path: '/admin' },
     { label: '📈 Analytics', path: '/admin/analytics' },
     { label: '👥 Users', path: '/admin/users' },
+    { label: '🚪 Waiting room', path: '/admin/waiting-room' },
     { label: '🎸 Bands', path: '/admin/bands' },
   ]
 

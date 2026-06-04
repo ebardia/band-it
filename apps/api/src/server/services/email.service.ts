@@ -974,6 +974,51 @@ export const emailService = {
   },
 
   /**
+   * Notify a user they have been approved past the waiting-room gate.
+   */
+  async sendAccessApprovedEmail(options: { email: string; userName: string }) {
+    const { email, userName } = options
+    const loginUrl = `${FRONTEND_URL}/login`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #10B981;">You're invited to enter Band It</h1>
+        <p style="font-size: 16px; color: #374151;">
+          Hi ${userName}, your spot at the members' entrance is ready. You can log in and head to your Daily.
+        </p>
+        <div style="margin: 30px 0;">
+          <a href="${loginUrl}"
+             style="background-color: #10B981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            Enter Band It
+          </a>
+        </div>
+        <p style="font-size: 14px; color: #374151;">
+          Use the same email and password you registered with. If you haven't verified your email yet, you may be asked to do that first.
+        </p>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+        <p style="font-size: 12px; color: #9CA3AF;">
+          If you didn't sign up for Band It, you can ignore this message.
+        </p>
+      </div>
+    `
+
+    if (isDevelopment) {
+      console.log('\n=================================')
+      console.log('📧 ACCESS APPROVED EMAIL:')
+      console.log(`To: ${email}`)
+      console.log(`Login: ${loginUrl}`)
+      console.log('=================================\n')
+      return { success: true }
+    }
+
+    return this.sendEmail({
+      to: email,
+      subject: "You're invited to enter Band It",
+      html,
+    })
+  },
+
+  /**
    * Send event created notification email to band members
    */
   async sendEventCreatedEmail(options: {

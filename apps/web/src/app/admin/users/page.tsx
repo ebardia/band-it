@@ -235,6 +235,10 @@ export default function AdminUsersPage() {
       badges.push(<Badge key="unverified" variant="secondary">Unverified</Badge>)
     }
 
+    if (!user.isAdmin && !user.accessApproved) {
+      badges.push(<Badge key="waiting" variant="warning">Waiting room</Badge>)
+    }
+
     return badges
   }
 

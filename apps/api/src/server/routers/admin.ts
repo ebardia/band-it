@@ -107,6 +107,7 @@ export const adminRouter = router({
             name: true,
             email: true,
             isAdmin: true,
+            accessApproved: true,
             emailVerified: true,
             createdAt: true,
             warningCount: true,
@@ -131,6 +132,127 @@ export const adminRouter = router({
         users,
         total,
         pages: Math.ceil(total / input.limit),
+      }
+    }),
+
+  /**
+   * Users in the waiting room (registered but not yet approved to enter).
+   */
+  getUsersPendingAccess: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        search: z.string().optional(),
+        page: z.number().default(1),
+        limit: z.number().default(50),
+      })
+    )
+    .query(async ({ input }) => {
+      await requireAdmin(input.userId)
+
+      const now = new Date()
+      const baseWhere = {
+        accessApproved: false,
+        isAdmin: false,
+        bannedAt: null,
+        OR: [
+          { suspendedUntil: null },
+          { suspendedUntil: { lte: now } },
+        ],
+      }
+
+      const where = input.search
+        ? {
+            AND: [
+              baseWhere,
+              {
+                OR: [
+                  { name: { contains: input.search, mode: 'insensitive' as const } },
+                  { email: { contains: input.search, mode: 'insensitive' as const } },
+                ],
+              },
+            ],
+          }
+        : baseWhere
+
+      const [users, total] = await Promise.all([
+        prisma.user.findMany({
+          where,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            emailVerified: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'asc' },
+          skip: (input.page - 1) * input.limit,
+          take: input.limit,
+        }),
+        prisma.user.count({ where }),
+      ])
+
+      return {
+        users,
+        total,
+        pages: Math.ceil(total / input.limit),
+      }
+    }),
+
+  /**
+   * Approve selected users past the waiting room and email each an invite to enter.
+   */
+  approveUsersAccess: publicProcedure
+    .input(
+      z.object({
+        adminUserId: z.string(),
+        targetUserIds: z.array(z.string()).min(1).max(100),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.adminUserId)
+
+      const targets = await prisma.user.findMany({
+        where: {
+          id: { in: input.targetUserIds },
+          accessApproved: false,
+          isAdmin: false,
+          bannedAt: null,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      })
+
+      if (targets.length === 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No eligible users to approve (they may already have access)',
+        })
+      }
+
+      await prisma.user.updateMany({
+        where: { id: { in: targets.map((t) => t.id) } },
+        data: { accessApproved: true },
+      })
+
+      let emailsFailed = 0
+      for (const target of targets) {
+        const result = await emailService.sendAccessApprovedEmail({
+          email: target.email,
+          userName: target.name,
+        })
+        if (!result?.success) {
+          emailsFailed += 1
+        }
+      }
+
+      return {
+        approvedCount: targets.length,
+        approved: targets,
+        emailsFailed,
       }
     }),
 
