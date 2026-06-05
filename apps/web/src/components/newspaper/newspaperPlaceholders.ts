@@ -16,8 +16,8 @@ export const REGISTER_CLERK_IMAGE = '/register-clerk.png'
 /** Verify email — carrier pigeons at the water cooler */
 export const PROOF_PIGEONS_IMAGE = '/proof-pigeons.png'
 
-/** Landing — Band It layer diagram (vintage stack + signal desk + human loop) */
-export const LANDING_BANDIT_LAYER_IMAGE = '/landing-bandit-layer.png'
+/** Landing — opportunity conveyor belt (steampunk factory line) */
+export const LANDING_BANDIT_LAYER_IMAGE = '/landing-opportunity-conveyor.png'
 
 /** Landing — vintage magician juggling signals, stack, agents, The Goods */
 export const LANDING_MAGICIAN_JUGGLER_IMAGE = '/landing-magician-juggler.png'
