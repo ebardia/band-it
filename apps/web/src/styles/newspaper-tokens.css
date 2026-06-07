@@ -3139,14 +3139,58 @@
 }
 
 /* Adopt A Cat Bot landing */
-.np-catbot-masthead-title {
-  font-family: var(--np-display);
-  font-size: clamp(2rem, 6vw, 3.25rem);
+.np-catbot-masthead-brand {
+  --np-daily-neon-tight: #ffe566;
+  --np-daily-neon-mid: #ffdd00;
+  --np-daily-neon-wide: #ffc400;
+  --np-daily-neon-halo: rgba(255, 170, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto 0.35rem;
+  max-width: min(100%, 44rem);
+  position: relative;
+  padding-top: 0.5rem;
+}
+
+.np-catbot-masthead-hat {
+  font-family: var(--np-condensed);
+  font-size: clamp(1.15rem, 4.5vw, 1.85rem);
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-align: center;
-  margin: 0.25rem 0 0;
-  line-height: 1.05;
+  line-height: 1;
+  margin: 0;
+  padding: 0.15rem 0.85rem 0.35rem;
+  color: var(--np-ink);
+  transform: rotate(-11deg);
+  transform-origin: center bottom;
+  position: relative;
+  z-index: 2;
+  top: 0.35rem;
+  white-space: nowrap;
+}
+
+.np-catbot-masthead-bot {
+  font-family: var(--np-condensed);
+  font-size: clamp(2.85rem, 11.5vw, 4.85rem);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+  margin: 0;
+  padding: 0.15rem 0 0.2rem;
+  color: var(--np-ink);
+  -webkit-text-stroke: 0.35px var(--np-daily-neon-tight);
+  paint-order: stroke fill;
+  text-shadow:
+    0 0 1px var(--np-daily-neon-tight),
+    0 0 3px var(--np-daily-neon-mid),
+    0 0 6px var(--np-daily-neon-mid),
+    0 0 10px var(--np-daily-neon-wide),
+    0 0 16px var(--np-daily-neon-halo);
 }
 
 .np-catbot-masthead-tagline {
@@ -3157,7 +3201,12 @@
   text-transform: uppercase;
   text-align: center;
   color: var(--np-muted);
-  margin: 0.35rem 0 0.75rem;
+  margin: 0.15rem 0 0.75rem;
+}
+
+.np-landing-dek--lead {
+  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+  line-height: 1.55;
 }
 
 .np-landing-hero-figure--cat {
@@ -3168,8 +3217,40 @@
   margin: 1.5rem 0;
 }
 
-.np-landing-classified {
+.np-landing-example-hire-row {
+  display: grid;
+  gap: 1.25rem 1.5rem;
   margin: 1.75rem 0 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .np-landing-example-hire-row {
+    grid-template-columns: minmax(0, 2.35fr) minmax(0, 1fr);
+    gap: 1.5rem 2rem;
+  }
+}
+
+.np-landing-example-col {
+  min-width: 0;
+}
+
+.np-landing-hire-col {
+  min-width: 0;
+}
+
+.np-landing-briefing-columns--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.np-landing-hire-col .np-landing-classified-box {
+  margin-top: 0;
+}
+
+.np-landing-classified {
+  margin: 0;
 }
 
 .np-landing-classified-box {

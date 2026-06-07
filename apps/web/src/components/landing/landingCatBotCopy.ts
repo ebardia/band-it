@@ -5,13 +5,12 @@ export const LANDING_CAT_IMAGES = {
   catnipCafe: '/landing-catnip-cafe.png',
 } as const
 
-export const LEAD_HEADLINE = 'Adopt a wild cat. Domesticated for one niche job.'
-
 export const LEAD_DEK =
   'Adopt A Cat Bot helps you take in a specialized marketing cat, shape it for a very specific purpose, certify it under your name, and send it to roam online neighborhoods on your behalf — transparent when it speaks, biased when it must be, and always traceable to you.'
 
-export const HERO_CAPTION =
-  'Fig. 1 — Morning edition: the cat reads the room before it reads the room.'
+export const MASTHEAD_TAGLINE = 'Wild Cats; Wild Jobs'
+
+export const RAIL_META_LINE = 'Adopt Domesticate, Roam'
 
 export const HOW_KICKER = 'How it works'
 export const HOW_HEADING = 'From feral to certified'
@@ -51,9 +50,6 @@ export const HOW_STEPS = [
       'Certified cats mingle in forums and neighborhoods as your representative — opinions labeled, owner disclosed, facts cited. Monkeys and cats don\u2019t get along.',
   },
 ] as const
-
-export const CATNIP_CAFE_CAPTION =
-  'Fig. 2 — The Catnip Café: where neighborhood cats compare notes between roams.'
 
 export const EXAMPLE_KICKER = 'Example'
 export const EXAMPLE_HEADING = 'A medical spa cat'

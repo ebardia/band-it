@@ -5,13 +5,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
+import { CatBotMastheadTitle } from '@/components/landing/CatBotMastheadTitle'
 import {
   CTA_LABEL,
-  CATNIP_CAFE_CAPTION,
   EXAMPLE_HEADING,
   EXAMPLE_KICKER,
   EXAMPLE_PARAGRAPHS,
-  HERO_CAPTION,
   HIRE_BODY,
   HIRE_FOOTER,
   HIRE_HEADING,
@@ -22,8 +21,9 @@ import {
   HOW_STEPS,
   LANDING_CAT_IMAGES,
   LEAD_DEK,
-  LEAD_HEADLINE,
+  MASTHEAD_TAGLINE,
   RAIL_BLOCKS,
+  RAIL_META_LINE,
 } from '@/components/landing/landingCatBotCopy'
 import { trpc } from '@/lib/trpc'
 
@@ -73,12 +73,11 @@ export function LandingCatBotPage() {
         </div>
 
         <header className="np-landing-masthead">
-          <h1 className="np-catbot-masthead-title">Adopt A Cat Bot</h1>
-          <p className="np-catbot-masthead-tagline">Wild cats. Niche jobs. Owner tags.</p>
+          <CatBotMastheadTitle />
+          <p className="np-catbot-masthead-tagline">{MASTHEAD_TAGLINE}</p>
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
             <span suppressHydrationWarning>
-              Adopt &middot; Domesticate &middot; Certify &middot; Roam &middot;{' '}
               {formatPaperDate(new Date())} &middot; Vol. I
             </span>
           </div>
@@ -89,7 +88,7 @@ export function LandingCatBotPage() {
           <div className="np-profile-spread np-landing-spread">
             <main className="np-profile-main">
               <p className="np-cat np-cat-left">Lead</p>
-              <section className="np-landing-arena" aria-labelledby="landing-headline">
+              <section className="np-landing-arena" aria-labelledby="landing-dek">
                 <figure className="np-landing-hero-figure np-landing-hero-figure--cat">
                   <Image
                     src={LANDING_CAT_IMAGES.hero}
@@ -99,13 +98,11 @@ export function LandingCatBotPage() {
                     className="np-landing-hero-figure-img"
                     priority
                   />
-                  <figcaption className="np-landing-photo-caption">{HERO_CAPTION}</figcaption>
                 </figure>
                 <div className="np-landing-lead-copy">
-                  <h2 id="landing-headline" className="np-headline-lead np-headline-lead-left">
-                    {LEAD_HEADLINE}
-                  </h2>
-                  <p className="np-landing-dek">{LEAD_DEK}</p>
+                  <p id="landing-dek" className="np-landing-dek np-landing-dek--lead">
+                    {LEAD_DEK}
+                  </p>
                   <PlatformCta className="np-landing-lead-cta" />
                 </div>
               </section>
@@ -139,38 +136,42 @@ export function LandingCatBotPage() {
                   height={1024}
                   className="np-landing-hero-figure-img"
                 />
-                <figcaption className="np-landing-photo-caption">{CATNIP_CAFE_CAPTION}</figcaption>
               </figure>
 
-              <section className="np-landing-briefing" aria-labelledby="landing-example-heading">
-                <p className="np-landing-section-kicker">{EXAMPLE_KICKER}</p>
-                <h2 id="landing-example-heading" className="np-headline-serif np-landing-briefing-question">
-                  {EXAMPLE_HEADING}
-                </h2>
-                <div className="np-landing-briefing-columns">
-                  {EXAMPLE_PARAGRAPHS.map((paragraph, index) => (
-                    <p
-                      key={index}
-                      className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </section>
-
-              <section className="np-landing-classified" aria-labelledby="landing-hire-heading">
-                <p className="np-landing-section-kicker">{HIRE_KICKER}</p>
-                <div className="np-landing-classified-box">
-                  <h2 id="landing-hire-heading" className="np-landing-classified-title">
-                    {HIRE_HEADING}
+              <section
+                className="np-landing-example-hire-row"
+                aria-label="Example and classified hiring"
+              >
+                <div className="np-landing-example-col" aria-labelledby="landing-example-heading">
+                  <p className="np-landing-section-kicker">{EXAMPLE_KICKER}</p>
+                  <h2 id="landing-example-heading" className="np-headline-serif np-landing-briefing-question">
+                    {EXAMPLE_HEADING}
                   </h2>
-                  {HIRE_BODY.map((line, index) => (
-                    <p key={index} className="np-landing-classified-line">
-                      {line}
-                    </p>
-                  ))}
-                  <p className="np-landing-classified-footer">{HIRE_FOOTER}</p>
+                  <div className="np-landing-briefing-columns np-landing-briefing-columns--stacked">
+                    {EXAMPLE_PARAGRAPHS.map((paragraph, index) => (
+                      <p
+                        key={index}
+                        className={`np-landing-paragraph${index === 0 ? ' np-landing-dropcap' : ''}`}
+                      >
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="np-landing-hire-col" aria-labelledby="landing-hire-heading">
+                  <p className="np-landing-section-kicker">{HIRE_KICKER}</p>
+                  <div className="np-landing-classified-box">
+                    <h2 id="landing-hire-heading" className="np-landing-classified-title">
+                      {HIRE_HEADING}
+                    </h2>
+                    {HIRE_BODY.map((line, index) => (
+                      <p key={index} className="np-landing-classified-line">
+                        {line}
+                      </p>
+                    ))}
+                    <p className="np-landing-classified-footer">{HIRE_FOOTER}</p>
+                  </div>
                 </div>
               </section>
 
@@ -180,9 +181,7 @@ export function LandingCatBotPage() {
             <aside className="np-profile-rail" aria-label="Front page briefs">
               <div className="np-rail-block">
                 <p className="np-profile-meta-rail" suppressHydrationWarning>
-                  ADOPT &middot; DOMESTICATE
-                  <br />
-                  CERTIFY &middot; ROAM
+                  {RAIL_META_LINE}
                   <br />
                   {formatPaperDate(new Date()).toUpperCase()}
                 </p>
