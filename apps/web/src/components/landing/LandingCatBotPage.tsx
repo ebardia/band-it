@@ -73,8 +73,12 @@ export function LandingCatBotPage() {
         </div>
 
         <header className="np-landing-masthead">
-          <CatBotMastheadTitle />
-          <p className="np-catbot-masthead-tagline">{MASTHEAD_TAGLINE}</p>
+          <div className="np-catbot-masthead-row">
+            <CatBotMastheadTitle />
+            <div className="np-catbot-masthead-tagline-ad" aria-label={MASTHEAD_TAGLINE}>
+              <p className="np-catbot-masthead-tagline-ad-inner">{MASTHEAD_TAGLINE}</p>
+            </div>
+          </div>
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
             <span suppressHydrationWarning>
