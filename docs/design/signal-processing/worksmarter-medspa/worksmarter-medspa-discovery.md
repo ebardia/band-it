@@ -11,7 +11,7 @@
 | **Signals** | [med-spa-opportunity-signals.csv](./med-spa-opportunity-signals.csv), [affluent-consumer-signals.csv](./affluent-consumer-signals.csv) |
 | **Hypothesis artifacts** | [campaign-brief-potomac-skin-care.md](./campaign-brief-potomac-skin-care.md), [campaign-leads-potomac-skin-care-research.csv](./campaign-leads-potomac-skin-care-research.csv) |
 | **Reference playbook** | [pre-channel-opportunity-discovery.md](../../pre-channel-opportunity-discovery.md) |
-| **Product pivot** | [Adopt A Cat Bot](../../adopt-a-cat-bot.md) — med spa consent paths as v0 neighborhood hypothesis |
+| **Product pivot** | [Adopt A Cat Bot](../../adopt-a-cat-bot.md) — product spec; [Platform](../../adopt-a-cat-bot-platform.md) — Big Band → Band → Cat, repo strategy |
 
 ---
 

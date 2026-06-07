@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|--------|
 | **Product name** | Adopt A Cat Bot (working) |
-| **Domain** | New domain TBD (successor to Band It consumer positioning) |
+| **Domain** | [adoptacatbot.com](https://adoptacatbot.com) (target); App Store app later |
 | **Status** | Draft — concept + v0 spec |
 | **Parent** | [Design docs](./) |
-| **Related** | [Work Smarter med spa demo](./signal-processing/worksmarter-medspa/worksmarter-medspa-discovery.md) (first neighborhood hypothesis), [Agent workflow composition](./agent-workflow-composition.md) (optional implementation substrate in monorepo) |
+| **Related** | [Platform & migration](./adopt-a-cat-bot-platform.md) (repo, Big Band hierarchy, keep/hide/new), [Work Smarter med spa demo](./signal-processing/worksmarter-medspa/worksmarter-medspa-discovery.md) (first neighborhood hypothesis), [Agent workflow composition](./agent-workflow-composition.md) (optional implementation substrate in monorepo) |
 | **Audience** | Product, engineering, design, early adopters |
 
 ---
@@ -453,17 +453,21 @@ After success: second roam using **approved memory**; measure Tier 0–1 answers
 
 ## 18. Data model (conceptual)
 
+Org hierarchy and platform migration: [adopt-a-cat-bot-platform.md §3–7](./adopt-a-cat-bot-platform.md).
+
 ```text
 User
- └── Cat[]
-       ├── world_prompt
-       ├── owner_profile
-       ├── neighborhood_config
-       ├── episodic_log[]      → RoamReport
-       ├── approved_memory[]   → MemoryItem
-       ├── discard_log[]       → MemoryItem (rejected)
-       └── roam_schedule
+ └── Member[] → Big Band | Band
+       Big Band (reseller)
+         └── Band (client) — the "musical band" cats belong to
+               └── CatBot[]
+                     ├── world_prompt, owner_profile, neighborhood_config
+                     ├── RoamRun[]        → return packets (episodic)
+                     ├── MemoryItem[]     → approved / discard (semantic)
+                     └── roam_schedule
 ```
+
+**Proposals, projects, and tasks are not part of this model** — legacy Band It only; hidden from Cat Bot product.
 
 ---
 
@@ -485,13 +489,14 @@ Avoid **Car Bot** in user-facing copy (typo in early email).
 
 ## 20. Open questions
 
-1. Exact new domain and brand separation from Band It codebase name?
+1. ~~Exact new domain~~ → **adoptacatbot.com** (see [platform doc](./adopt-a-cat-bot-platform.md))
 2. Reddit/data provider strategy for production (official API vs manual paste in v0)?
 3. Public vs private cats (can others view a cat’s approved opinions)?
 4. Embedding search vs structured tags for memory retrieval in v1?
 5. Pricing: per roam, per cat, memory storage, or subscription?
 6. Legal review for “biased marketing cat with disclosed owner”?
 7. Can one cat’s memory fork into a child cat (lineage)?
+8. Cat song format when we ship that layer (see [platform doc §3.2](./adopt-a-cat-bot-platform.md))?
 
 ---
 
@@ -514,3 +519,4 @@ Source: founder email to friend (lightly edited).
 | Date | Change |
 |------|--------|
 | 2026-05-29 | Initial design doc: product pivot, lifecycle, 3-angle roam, memory, API tiers, schemas, v0 test, phased delivery |
+| 2026-05-29 | §18: Big Band → Band → Cat hierarchy; link to platform doc; adoptacatbot.com |

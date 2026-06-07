@@ -15,7 +15,8 @@ Reusable **signal → exclude → verify → rank → act** patterns for Band It
 | [pre-channel-opportunity-discovery.md](../pre-channel-opportunity-discovery.md) | **Vertical instance** — reverse logistics / trapped stock (customer Track A) |
 | [pre-channel-ai-discovery-analysis.md](../pre-channel-ai-discovery-analysis.md) | Deep analysis; same playbook, different signals |
 | [agent-workflow-composition.md](../agent-workflow-composition.md) | How bands compose scanner → classifier → ranker → human nodes |
-| [adopt-a-cat-bot.md](../adopt-a-cat-bot.md) | **Product pivot** — specialized roam agents, 3-angle learning, gated memory (Work Smarter med spa = first neighborhood test) |
+| [adopt-a-cat-bot.md](../adopt-a-cat-bot.md) | **Product pivot** — specialized roam agents, 3-angle learning, gated memory |
+| [adopt-a-cat-bot-platform.md](../adopt-a-cat-bot-platform.md) | **Platform** — same repo, Big Band → Band → Cat, keep/hide/new, adoptacatbot.com |
 | Helmet / stack diagrams (`../intelligence-signal-processing-*.png`) | Product narrative art — not operational specs |
 
 **Rule:** Put **framework + reusable signal catalogs** here. Put **customer-specific spreadsheets and meeting artifacts** under `customer-track-a-spreadsheet/` (or a future `customer-track-b/`).
