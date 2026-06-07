@@ -78,11 +78,6 @@ export const RAIL_BLOCKS = [
       'Agencies, resellers, and businesses that need a cat per client or per niche — not another generic assistant.',
   },
   {
-    title: 'For resellers',
-    detail:
-      'A Big Band roster of client bands, each with its own certified cats and disclosure tags.',
-  },
-  {
     title: 'The longer story',
     detail: 'How we think about roams, memory, and transparent bias.',
     cta: 'Read the essay',

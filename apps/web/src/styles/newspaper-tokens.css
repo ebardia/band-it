@@ -3170,7 +3170,7 @@
   margin: 0;
   max-width: min(100%, 44rem);
   position: relative;
-  padding-top: 0.75rem;
+  padding-top: 0.35rem;
   grid-column: 1;
 }
 
@@ -3180,22 +3180,21 @@
   }
 }
 
-.np-catbot-masthead-hat {
+.np-catbot-masthead-arc {
+  width: min(100%, 32rem);
+  height: auto;
+  overflow: visible;
+  display: block;
+  margin-bottom: -0.55rem;
+}
+
+.np-catbot-masthead-arc-text {
   font-family: var(--np-condensed);
-  font-size: clamp(1.65rem, 6.25vw, 2.65rem);
+  font-size: clamp(1.85rem, 6.5vw, 2.75rem);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  text-align: center;
-  line-height: 1;
-  margin: 0 0 0.35rem;
-  padding: 0.1rem 1rem 0.55rem;
-  color: var(--np-ink);
-  transform: rotate(-11deg) translateY(-0.35rem);
-  transform-origin: center bottom;
-  position: relative;
-  z-index: 2;
-  white-space: nowrap;
+  fill: var(--np-ink);
 }
 
 .np-catbot-masthead-bot {
@@ -3219,12 +3218,15 @@
     0 0 16px var(--np-daily-neon-halo);
 }
 
-/* 1950s-style side advertisement badge */
+/* 1950s flashy side-ad starburst frame */
 .np-catbot-masthead-tagline-ad {
   position: relative;
   grid-column: 1;
   justify-self: center;
-  max-width: min(100%, 14rem);
+  max-width: min(100%, 15rem);
+  padding: 1.1rem;
+  transform: rotate(-3deg);
+  filter: drop-shadow(5px 6px 0 rgba(26, 10, 0, 0.22));
 }
 
 @media (min-width: 768px) {
@@ -3232,54 +3234,84 @@
     grid-column: 3;
     justify-self: end;
     align-self: center;
-    margin-right: clamp(0.25rem, 2vw, 1.5rem);
-    max-width: 12.5rem;
+    margin-right: clamp(0.25rem, 1.5vw, 1rem);
+    max-width: 13.5rem;
   }
 }
 
-.np-catbot-masthead-tagline-ad-inner {
-  font-family: var(--np-protest);
-  font-size: clamp(0.95rem, 2.2vw, 1.15rem);
-  font-weight: 400;
-  line-height: 1.25;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-align: center;
-  color: var(--np-ink);
-  margin: 0;
-  padding: 0.65rem 0.85rem 0.7rem;
-  background: linear-gradient(180deg, #fffef9 0%, #f3efe3 100%);
-  border: 3px solid var(--np-ink);
-  outline: 2px solid var(--np-ink);
-  outline-offset: 3px;
-  box-shadow:
-    4px 4px 0 color-mix(in srgb, var(--np-ink) 18%, transparent),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.65);
-}
-
-.np-catbot-masthead-tagline-ad::before,
-.np-catbot-masthead-tagline-ad::after {
+.np-catbot-masthead-tagline-ad::before {
   content: '';
   position: absolute;
-  width: 0.55rem;
-  height: 0.55rem;
-  border: 2px solid var(--np-ink);
-  background: var(--np-paper-warm);
+  inset: 0;
+  z-index: 0;
+  background: repeating-conic-gradient(
+    from 8deg at 50% 50%,
+    #ffd100 0deg 12deg,
+    #e63946 12deg 24deg
+  );
+  clip-path: polygon(
+    50% 0%,
+    61% 8%,
+    74% 2%,
+    78% 16%,
+    92% 18%,
+    88% 32%,
+    100% 42%,
+    90% 52%,
+    98% 66%,
+    84% 70%,
+    82% 86%,
+    68% 82%,
+    58% 96%,
+    50% 84%,
+    42% 96%,
+    32% 82%,
+    18% 86%,
+    16% 70%,
+    2% 66%,
+    10% 52%,
+    0% 42%,
+    12% 32%,
+    8% 18%,
+    22% 16%,
+    26% 2%,
+    39% 8%
+  );
+}
+
+.np-catbot-masthead-tagline-ad::after {
+  content: '★';
+  position: absolute;
+  top: -0.15rem;
+  right: 0.65rem;
+  z-index: 3;
+  font-size: 0.85rem;
+  color: #ffd100;
+  text-shadow:
+    0 0 4px #ff6b00,
+    1px 1px 0 #1a1a1a;
   pointer-events: none;
 }
 
-.np-catbot-masthead-tagline-ad::before {
-  top: -6px;
-  left: -6px;
-  border-right: none;
-  border-bottom: none;
-}
-
-.np-catbot-masthead-tagline-ad::after {
-  bottom: -6px;
-  right: -6px;
-  border-left: none;
-  border-top: none;
+.np-catbot-masthead-tagline-ad-inner {
+  position: relative;
+  z-index: 1;
+  font-family: var(--np-protest);
+  font-size: clamp(1rem, 2.35vw, 1.22rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #1a0a00;
+  margin: 0;
+  padding: 0.75rem 0.95rem 0.8rem;
+  background: linear-gradient(165deg, #fffef2 0%, #ffe9a8 48%, #ffd56a 100%);
+  border: 3px solid #1a1a1a;
+  box-shadow:
+    inset 0 0 0 2px #ffd100,
+    inset 0 -8px 16px rgba(230, 57, 70, 0.12),
+    0 0 0 2px #e63946;
 }
 
 .np-landing-dek--lead {
