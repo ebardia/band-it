@@ -3137,3 +3137,80 @@
     margin-top: 2.25rem;
   }
 }
+
+/* Adopt A Cat Bot landing */
+.np-catbot-masthead-title {
+  font-family: var(--np-display);
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: center;
+  margin: 0.25rem 0 0;
+  line-height: 1.05;
+}
+
+.np-catbot-masthead-tagline {
+  font-family: var(--np-ui);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--np-muted);
+  margin: 0.35rem 0 0.75rem;
+}
+
+.np-landing-hero-figure--cat {
+  margin-bottom: 1rem;
+}
+
+.np-landing-catnip-figure {
+  margin: 1.5rem 0;
+}
+
+.np-landing-classified {
+  margin: 1.75rem 0 1.25rem;
+}
+
+.np-landing-classified-box {
+  border: 2px solid var(--np-ink);
+  padding: 1rem 1.1rem 1.1rem;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--np-paper) 96%, var(--np-ink) 4%),
+    color-mix(in srgb, var(--np-paper) 96%, var(--np-ink) 4%) 4px,
+    color-mix(in srgb, var(--np-paper) 92%, var(--np-ink) 8%) 4px,
+    color-mix(in srgb, var(--np-paper) 92%, var(--np-ink) 8%) 8px
+  );
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--np-ink) 25%, transparent);
+}
+
+.np-landing-classified-title {
+  font-family: var(--np-display);
+  font-size: clamp(1.35rem, 3.5vw, 1.85rem);
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.np-landing-classified-line {
+  font-family: var(--np-body);
+  font-size: 1rem;
+  line-height: 1.55;
+  text-align: center;
+  margin: 0 0 0.45rem;
+}
+
+.np-landing-classified-footer {
+  font-family: var(--np-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--np-muted);
+  margin: 0.85rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--np-line-soft);
+}

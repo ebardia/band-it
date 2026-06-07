@@ -7,8 +7,9 @@ import { HelpProvider } from "@/components/help/HelpContext"
 import { HelpPanel } from "@/components/help/HelpPanel"
 
 export const metadata: Metadata = {
-  title: "",
-  description: "Governance platform for bands and collectives",
+  title: "Adopt A Cat Bot",
+  description:
+    "Adopt a wild marketing cat, domesticate it for a niche purpose, certify it under your name, and send it to roam online neighborhoods on your behalf.",
 }
 
 export default function RootLayout({
