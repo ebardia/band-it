@@ -138,7 +138,7 @@ function RegisterContent() {
     <EditorialSurface>
       <div className="np-shell np-landing-page">
         <header className="np-landing-masthead np-register-masthead">
-          <p className="np-cat">Band It</p>
+          <p className="np-cat">Adopt A Cat Bot</p>
           <EditorialNeonMasthead
             arcLabel="The"
             actionLabel="Register"
@@ -159,8 +159,8 @@ function RegisterContent() {
             <>
               <AuthEditionIllustration
                 src={REGISTER_CLERK_IMAGE}
-                alt="A vintage robot clerk behind a wood counter with an open guest register and fountain pen."
-                caption="The subscriptions desk — sign here; the clerk has been expecting you since 1952."
+                alt="A vintage cat robot clerk behind a wood counter with an open guest register and fountain pen."
+                caption="The adoption desk — sign here; the cat robot clerk has been expecting you since 1952."
                 size="large"
               />
               <aside className="np-auth-edition-rules" aria-labelledby="register-rules-heading">
@@ -169,7 +169,7 @@ function RegisterContent() {
                   Before you sign
                 </h2>
                 <p className="np-excerpt">
-                  Band It is a family-friendly room where people of all ages collaborate. Breaking
+                  Adopt A Cat Bot is a family-friendly room where people of all ages collaborate. Breaking
                   these may cost you your spot.
                 </p>
                 <ul className="np-fineprint-list">
@@ -193,8 +193,8 @@ function RegisterContent() {
               Put your name on the list
             </h1>
             <p className="np-welcome-dek">
-              A free account is your press pass to Band It. Tell us who you are, agree to keep the
-              room friendly, and we&apos;ll start your edition.
+              A free account is your press pass to adoption. Tell us who you are, agree to keep the
+              room friendly, and we&apos;ll start your edition on Adopt A Cat Bot.
             </p>
           </section>
 

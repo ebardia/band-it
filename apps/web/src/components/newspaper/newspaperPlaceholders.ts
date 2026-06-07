@@ -10,8 +10,8 @@ export const DAILY_CLASSIFIED_IMAGE = '/daily-classified-member.png'
 /** Waiting room — the line outside the Band Entrance */
 export const WAITING_ROOM_IMAGE = '/waiting-room-line.png'
 
-/** Register — robot clerk at the sign-in counter */
-export const REGISTER_CLERK_IMAGE = '/register-clerk.png'
+/** Register — cat robot clerk at the adoption desk */
+export const REGISTER_CLERK_IMAGE = '/register-cat-robot.png'
 
 /** Verify email — carrier pigeons at the water cooler */
 export const PROOF_PIGEONS_IMAGE = '/proof-pigeons.png'
