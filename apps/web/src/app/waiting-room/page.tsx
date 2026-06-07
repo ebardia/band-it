@@ -123,7 +123,7 @@ export default function WaitingRoomPage() {
             <span className="np-dropcap" aria-hidden="true">
               T
             </span>
-            wo honest reasons. First, we&apos;re actively demodleing the agency and want your first
+            wo honest reasons. First, we&apos;re actively remodeling the agency and want your first
             real visit to be a good one. Second — full transparency — we&apos;re letting people in
             gradually. It&apos;s partly so nothing breaks under a crowd, and partly because
             &ldquo;limited early access&rdquo; sounds far more exciting than &ldquo;please come in,
