@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
-import { CatBotMastheadTitle } from '@/components/landing/CatBotMastheadTitle'
+import { CatBotMastheadHeader } from '@/components/landing/CatBotMastheadHeader'
 import { CTA_LABEL } from '@/components/landing/landingCatBotCopy'
 
 const MANIFESTO_PARAGRAPHS = [
@@ -12,18 +12,27 @@ const MANIFESTO_PARAGRAPHS = [
   'We are in the business of human-in-the-loop marketing cats: adopt, domesticate, certify, roam, represent \u2014 with evidence, with gates, with owner tags on every opinion that matters. Not another chat box that hallucinates pipeline. A cat that learns the block, reports back, and only remembers what you let it keep.',
 ]
 
+function formatPaperDate(d: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(d)
+}
+
 export default function ManifestoPage() {
   return (
     <EditorialSurface>
       <div className="np-shell np-landing-page">
-        <header className="np-landing-masthead">
-          <CatBotMastheadTitle />
-          <hr className="np-rule" />
-          <div className="np-masthead-meta py-3 md:py-3.5">
-            <span>Manifesto &middot; Vol. I &middot; Wild cats, wild jobs</span>
-          </div>
-          <hr className="np-rule" />
-        </header>
+        <CatBotMastheadHeader
+          meta={
+            <>
+              Manifesto &middot; {formatPaperDate(new Date())} &middot; Vol. I
+            </>
+          }
+          layout="centered"
+        />
 
         <div className="np-profile-shell np-manifesto-shell">
           <Link href="/" className="np-manifesto-back">

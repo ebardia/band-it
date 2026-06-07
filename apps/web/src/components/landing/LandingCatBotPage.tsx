@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
-import { CatBotMastheadTitle } from '@/components/landing/CatBotMastheadTitle'
+import { CatBotMastheadHeader } from '@/components/landing/CatBotMastheadHeader'
 import {
   CTA_LABEL,
   EXAMPLE_HEADING,
@@ -21,7 +21,6 @@ import {
   HOW_STEPS,
   LANDING_CAT_IMAGES,
   LEAD_DEK,
-  MASTHEAD_TAGLINE,
   RAIL_BLOCKS,
   RAIL_META_LINE,
 } from '@/components/landing/landingCatBotCopy'
@@ -41,6 +40,20 @@ function PlatformCta({ className }: { className?: string }) {
     <Link href="/register" className={`np-landing-platform-cta${className ? ` ${className}` : ''}`}>
       {CTA_LABEL}
     </Link>
+  )
+}
+
+function HowStepCard({ step }: { step: (typeof HOW_STEPS)[number] }) {
+  return (
+    <li className="np-landing-stack-layer">
+      <div className="np-landing-pipeline-step-head">
+        <span className="np-landing-pipeline-index" aria-hidden>
+          {step.num}
+        </span>
+        <span className="np-landing-pipeline-label">{step.label}</span>
+      </div>
+      <p className="np-landing-pipeline-text">{step.text}</p>
+    </li>
   )
 }
 
@@ -72,21 +85,10 @@ export function LandingCatBotPage() {
           </button>
         </div>
 
-        <header className="np-landing-masthead">
-          <div className="np-catbot-masthead-row">
-            <CatBotMastheadTitle />
-            <div className="np-catbot-masthead-tagline-ad" aria-label={MASTHEAD_TAGLINE}>
-              <p className="np-catbot-masthead-tagline-ad-inner">{MASTHEAD_TAGLINE}</p>
-            </div>
-          </div>
-          <hr className="np-rule" />
-          <div className="np-masthead-meta py-3 md:py-3.5">
-            <span suppressHydrationWarning>
-              {formatPaperDate(new Date())} &middot; Vol. I
-            </span>
-          </div>
-          <hr className="np-rule" />
-        </header>
+        <CatBotMastheadHeader
+          meta={<>{formatPaperDate(new Date())} &middot; Vol. I</>}
+          layout="landing"
+        />
 
         <div className="np-profile-shell np-landing-shell">
           <div className="np-profile-spread np-landing-spread">
@@ -117,30 +119,33 @@ export function LandingCatBotPage() {
                   {HOW_HEADING}
                 </h2>
                 <p className="np-landing-paragraph np-landing-stack-intro">{HOW_INTRO}</p>
-                <ol className="np-landing-stack-layers">
-                  {HOW_STEPS.map((step) => (
-                    <li key={step.num} className="np-landing-stack-layer">
-                      <div className="np-landing-pipeline-step-head">
-                        <span className="np-landing-pipeline-index" aria-hidden>
-                          {step.num}
-                        </span>
-                        <span className="np-landing-pipeline-label">{step.label}</span>
-                      </div>
-                      <p className="np-landing-pipeline-text">{step.text}</p>
-                    </li>
-                  ))}
-                </ol>
+                <div className="np-landing-how-grid">
+                  <ol className="np-landing-how-row np-landing-how-row--pair">
+                    {HOW_STEPS.slice(0, 2).map((step) => (
+                      <HowStepCard key={step.num} step={step} />
+                    ))}
+                  </ol>
+                  <div className="np-landing-how-row np-landing-how-row--catnip">
+                    <ol className="np-landing-how-row np-landing-how-row--single">
+                      <HowStepCard step={HOW_STEPS[2]} />
+                    </ol>
+                    <figure className="np-landing-catnip-figure np-landing-catnip-figure--compact">
+                      <Image
+                        src={LANDING_CAT_IMAGES.catnipCafe}
+                        alt="The Catnip Café — cats gathered outside a neighborhood café at night"
+                        width={1536}
+                        height={1024}
+                        className="np-landing-hero-figure-img"
+                      />
+                    </figure>
+                  </div>
+                  <ol className="np-landing-how-row np-landing-how-row--pair">
+                    {HOW_STEPS.slice(3, 5).map((step) => (
+                      <HowStepCard key={step.num} step={step} />
+                    ))}
+                  </ol>
+                </div>
               </section>
-
-              <figure className="np-landing-hero-figure np-landing-catnip-figure">
-                <Image
-                  src={LANDING_CAT_IMAGES.catnipCafe}
-                  alt="The Catnip Café — cats gathered outside a neighborhood café at night"
-                  width={1536}
-                  height={1024}
-                  className="np-landing-hero-figure-img"
-                />
-              </figure>
 
               <section
                 className="np-landing-example-hire-row"
@@ -196,7 +201,7 @@ export function LandingCatBotPage() {
                   <h2 className="np-picks-header">{block.title}</h2>
                   <p className="np-preview-line">{block.detail}</p>
                   {'cta' in block && block.cta && block.href ? (
-                    <Link href={block.href} className="np-landing-rail-link">
+                    <Link href={block.href} className="np-landing-rail-link np-landing-rail-link-neon">
                       {block.cta} &rarr;
                     </Link>
                   ) : null}
