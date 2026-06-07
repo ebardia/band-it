@@ -169,8 +169,8 @@ function RegisterContent() {
                   Before you sign
                 </h2>
                 <p className="np-excerpt">
-                  Adopt A Cat Bot is a family-friendly room where people of all ages collaborate. Breaking
-                  these may cost you your spot.
+                  Cat Bot Adoption agency is a family-friendly room where people of all ages collaborate.
+                  Breaking these may cost you your spot.
                 </p>
                 <ul className="np-fineprint-list">
                   {HOUSE_RULES.map((rule) => (

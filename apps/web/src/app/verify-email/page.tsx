@@ -46,14 +46,14 @@ function VerifyEmailShell({
     <EditorialSurface>
       <div className="np-shell np-landing-page">
         <header className="np-landing-masthead np-register-masthead">
-          <p className="np-cat">Band It</p>
+          <p className="np-cat">Adopt A Cat Bot</p>
           <EditorialNeonMasthead
             arcLabel="The Proof"
             actionLabel="Desk"
             ariaLabel="The Proof Desk"
           />
           <p className="np-register-tagline">
-            Where the carrier pigeon lands before your edition goes to press.
+            Where the carrier pigeon lands before your Cat Bots go out to roam.
           </p>
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
@@ -195,7 +195,8 @@ function VerifyEmailContent() {
               <p className="np-cat np-cat-left">Cleared for press</p>
               <h1 className="np-welcome-headline">Proof approved</h1>
               <p className="np-welcome-dek">
-                Your address is verified. Rolling the presses and taking you to your Daily…
+                Your address is verified. The adoption agency is rolling out the welcome mat — taking
+                you to your Daily…
               </p>
             </>
           ) : verifyEmailMutation.isError ? (
@@ -241,7 +242,8 @@ function VerifyEmailContent() {
             Nothing yet?
           </h2>
           <p className="np-excerpt">
-            Carriers get lost. Spam folders eat good mail. Give it a minute, then try again.
+            Carriers get lost. Spam folders eat good mail. Give it a minute, then try again — the
+            agency will resend.
           </p>
           <p className="np-byline np-byline-left">Still waiting?</p>
           <button
@@ -265,8 +267,8 @@ function VerifyEmailContent() {
         </h1>
         <p className="np-welcome-dek">
           We sent a verification link to{' '}
-          <strong>{email || 'your inbox'}</strong>. One click and you&apos;re cleared for the
-          next edition of Band It — work, play, causes, and whatever else you band together for.
+          <strong>{email || 'your inbox'}</strong>. One click and Adopt A Cat Bot clears you at the
+          agency — then your Cat Bots can get to work roaming on your behalf.
         </p>
       </section>
 
