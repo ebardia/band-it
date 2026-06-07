@@ -1,0 +1,24 @@
+zip,city,state,area_label,segment_tags,notes
+20854,Potomac,MD,potomac_md,"affluent_residential;executive;family",Primary med spa feeder zip
+20817,Rockville,MD,bethesda_corridor,"affluent_residential;wellness",Near NIH; professional households
+20814,Bethesda,MD,bethesda,"affluent_residential;executive;gala",Downtown Bethesda professional
+20815,Chevy Chase,MD,chevy_chase,"affluent_residential;country_club;gala",Chevy Chase Club corridor
+20816,Bethesda,MD,bethesda_north,"affluent_residential;executive",Edgemoor / north Bethesda
+20818,Cabin John,MD,cabin_john,"affluent_residential;family",Potomac adjacency
+22066,Great Falls,VA,great_falls_va,"affluent_residential;country_club;equestrian",Great Falls / River Bend
+22039,Fairfax Station,VA,fairfax_station,"affluent_residential;country_club",South Fairfax affluent
+22101,McLean,VA,mclean,"affluent_residential;executive;luxury_retail",Tysons adjacency
+22102,McLean,VA,mclean_east,"affluent_residential;executive",McLean / Langley corridor
+22182,Vienna,VA,vienna,"affluent_residential;family",Select Vienna pockets
+22207,Arlington,VA,north_arlington,"affluent_residential;executive",Country club adjacency
+20007,Washington,DC,georgetown,"affluent_residential;gala;luxury_retail",Georgetown
+20008,Washington,DC,nw_dc_foxhall,"affluent_residential;diplomatic;gala",Foxhall / Palisades edge
+20016,Washington,DC,nw_dc_spring_valley,"affluent_residential;diplomatic;gala",Spring Valley / Wesley Heights
+20015,Washington,DC,nw_dc_kent,"affluent_residential;diplomatic",Kent / AU Park affluent
+20190,Reston,VA,reston,"affluent_residential;executive",Reston affluent pockets
+20164,Stone Ridge,VA,stone_ridge,"affluent_residential;family",Loudoun affluent
+20148,Aldie,VA,aldie,"affluent_residential;equestrian",Western Loudoun
+20833,Brookeville,MD,brookeville,"affluent_residential;equestrian",Montgomery rural affluent
+20837,Poolesville,MD,poolesville,"affluent_residential;equestrian",Agricultural/residential affluent
+21401,Annapolis,MD,annapolis,"affluent_residential;luxury_travel;gala",Annapolis waterfront corridor
+20878,Gaithersburg,MD,gaithersburg_north,"affluent_residential;executive",Select north Gburg pockets

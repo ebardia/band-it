@@ -1,0 +1,22 @@
+signal_id,signal_name,signal_role,phase,category,what_it_indicates,primary_sources,verification_hint,score_weight
+F01,DMV_med_spa_footprint,fit,v1,fit,Medical spa or aesthetic clinic in DC metro service area,Google Maps; seed CSV; Places API,Confirm address in DC MD VA metro,0
+F02,Independent_or_small_group,fit,v1,fit,1–5 locations not enterprise chain HQ,Website; LinkedIn; seed notes,Exclude national HQ-controlled marketing,0
+F03,Work_Smarter_ICP_size,fit,v1,fit,Owner-operated or small team; agency-sized buyer,Website About; team page; reviews,Not hospital system or PE rollup (unless demo exception),0
+M01,New_location_or_second_site,hunt,v1,growth,Opening second site or coming soon announcement,Website; Google Maps; local press,Confirm opening timeline,+10
+M02,New_service_line,hunt,v1,growth,Added injectables body contouring membership with weak promotion,Website services page diff; Instagram,Compare to competitor promotion depth,+10
+M03,Hiring_patient_coordinator,hunt,v1,operations,Hiring front desk patient coordinator or office manager,Indeed; careers page,Role at spa not national chain HR,+10
+M04,Hiring_marketing_role,hunt,v1,operations,Marketing social media or growth hire at spa level,Indeed; LinkedIn jobs,Direct signal for CRM/funnel need,+10
+M05,Ownership_or_rebrand,hunt,v1,growth,Rebrand new medical director under new management,Website press; social banner change,Confirm within 12 months,+10
+M06,No_online_booking,hunt,v1,digital_pain,Phone-only or contact form; no self-serve booking,Website; GMB,Click through booking flow,+10
+M07,Stale_website_or_social,hunt,v1,digital_pain,Website copyright old or social inactive 90+ days,Website; Instagram Facebook,Check last post date,+10
+M08,Fragmented_marketing_stack,hunt,v1,digital_pain,Calendry Mailchimp spreadsheets mentioned; no unified CRM,Website; job posts; discovery call notes,Look for tool sprawl language,+10
+M09,Weak_Google_Business_Profile,hunt,v1,reputation,Few photos incomplete services no Q&A on GMB,Google Maps listing,Manual GMB audit,+10
+M10,Review_velocity_gap,hunt,v1,reputation,Competitors gaining reviews faster; flat or declining count,Google review count over time,Compare 2–3 local comps,+10
+M11,Review_theme_ops_pain,hunt,v1,reputation,Reviews cite wait times follow-up scheduling confusion,Google review text,NLP or keyword scan,+10
+M12,Heavy_discounting,hunt,v1,reputation,Groupon LivingSocial deal-heavy pattern,Groupon; site offers,Margin stress needs pipeline not promos,+10
+M13,New_competitor_nearby,hunt,v1,market,Another med spa opened within ~5 miles,Google Maps; local news,Map competitors by zip,+10
+M14,Premium_zip_budget_digital,hunt,v1,affluence_mismatch,Serves affluent zips but digital presence looks discount,Zip served vs site quality,Crosswalk to affluent-dmv-zips.csv,+10
+M15,VIP_positioning_no_nurture,hunt,v1,digital_pain,Membership VIP language but no visible email SMS nurture,Website; social,No lead magnet sequence apparent,+10
+X01,Already_agency_managed,exclude,v1,partner,Site credits Work Smarter or full-service agency of record,Website footer About,Do not pitch unless displacement story,−50
+X02,Enterprise_chain_HQ,exclude,v1,fit,National med spa chain centralized marketing,Hierarcy on website,Out of scope for white-label agency demo,−50
+X03,Hospital_affiliated_cosmetic,exclude,v1,fit,Hospital system owned cosmetic clinic unless chosen ICP,About page affiliations,Long sales cycle wrong demo,−50

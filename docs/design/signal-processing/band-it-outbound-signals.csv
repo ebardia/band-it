@@ -1,0 +1,57 @@
+signal_id,signal_name,signal_role,phase,category,what_it_indicates,primary_sources,verification_hint,automation_notes,score_weight
+F01,DC_metro_footprint,fit,v1,fit,Company HQ office or majority of jobs in DC–MD–VA,LinkedIn; careers; state SOS; website contact,Confirm address or job geo in DMV,Required gate before hunt scoring,0
+F02,SMB_revenue_band,fit,v1,fit,Estimated revenue $2M–$10M,Employee count proxy; credit API Phase 2; contract mentions,Cross-check headcount and business type,Required gate (or F03),0
+F03,SMB_headcount_band,fit,v1,fit,Approximately 10–100 employees,LinkedIn company size; careers page; SOS,Spot-check LinkedIn headcount range,Required gate (or F02),0
+B01,Recent_hiring_surge,hunt,v1,growth,Job postings up materially vs prior 90 days,Indeed; LinkedIn Jobs; company careers,Compare posting count month over month,+10
+B02,Business_development_hiring,hunt,v1,growth,New BD capture partnerships or growth roles,Indeed; LinkedIn,Confirm role is net-new not backfill,+10
+B03,Ops_or_project_coordinator_hiring,hunt,v1,operational_stress,Hiring to coordinate work across teams,Indeed; LinkedIn,Read JD for cross-functional coordination,+10
+B04,New_service_or_vertical,hunt,v1,growth,Website or news adds service line or industry segment,Website diff; local press; PR,Archive.org or news hit naming new offering,+10
+B05,Leadership_change_CEO_COO,hunt,v1,organizational_change,New CEO COO or President in last 12 months,LinkedIn; press; SOS filings,Confirm start date and scope,+10
+B06,Knowledge_concentration_risk,hunt,v1,band_it_specific,One founder or SME appears central to all delivery,Website bios; reviews; About page,Named individual on every case study or service,+10
+B07,Workflow_fragmentation,hunt,v1,band_it_specific,Email spreadsheet manual handoffs mentioned publicly,Job posts; case studies; reviews,Quote or JD mentions Excel email manual process,+10
+B08,Gov_or_contract_facing_growth,hunt,v1,capture_management,SAM activity contract win/loss proposal hiring,USAspending; SAM; FPDS; job posts,Active SAM reg or capture role posted,+10
+B09,Digital_modernization_mention,hunt,v1,technology_readiness,CRM ERP cloud or process improvement language,Website; jobs; local press,Named system migration or modernization,+10
+B10,Multi_team_delivery_model,hunt,v1,band_it_specific,Project-based or multi-practice delivery needs orchestration,Website services; NAICS; org chart hints,Multiple practices or project delivery model,+10
+X01,Enterprise_stack_locked,exclude,v1,technology_readiness,Large enterprise stack with no stated ops pain; low openness,Website; jobs; case studies,Penalize −50 if no hunt signals stack
+X02,Wrong_business_model,exclude,v1,fit,Staffing MSP-only pure dev shop reseller—not Band It ICP,NAICS; About page,Penalize −50
+X03,AI_native_product_company,exclude,v1,technology_readiness,Core product is AI SaaS; builds agents internally,Website; Crunchbase; jobs,Penalize −50
+G01,Recent_hiring_surge,backlog,phase2,growth,Job postings increased >X% in 90 days,Indeed LinkedIn,See ChatGPT catalog,
+G02,New_department_creation,backlog,phase2,growth,Roles in previously nonexistent department,LinkedIn jobs,,
+G03,Multiple_open_positions,backlog,phase2,growth,Several openings posted simultaneously,Indeed,,
+G04,New_office_opening,backlog,phase2,growth,Expansion into new geography,Press leases,,
+G05,Geographic_expansion,backlog,phase2,growth,Entering new market or territory,Press website,,
+G06,Partnership_announcement,backlog,phase2,growth,Strategic partnership announced,Press,,
+G07,Acquisition_activity,backlog,phase2,growth,Company acquires another business,Press SOS,,
+G08,Funding_event,backlog,phase2,growth,Investment or financing closed,Press Crunchbase,,
+G09,High_job_turnover,backlog,phase2,operational_stress,Same positions repeatedly advertised,Indeed,,
+G10,Long_term_open_positions,backlog,phase2,operational_stress,Critical roles open for months,Indeed,,
+G11,Rapid_growth_without_systems,backlog,phase2,operational_stress,Hiring outpaces organizational maturity,Jobs reviews,,
+G12,Employee_complaints_inefficiency,backlog,phase2,operational_stress,Reviews mention chaos or inefficiency,Glassdoor Indeed reviews,,
+G13,Customer_service_complaints,backlog,phase2,operational_stress,Reviews indicate operational bottlenecks,Google reviews,,
+G14,Missed_deadlines_public,backlog,phase2,operational_stress,Public references to project delays,Press reviews,,
+G15,Leadership_overload,backlog,phase2,operational_stress,Founder in day-to-day everything,LinkedIn bios posts,,
+G16,Manual_process_indicators,backlog,phase2,operational_stress,Spreadsheets email workflows cited,Jobs site,,
+G17,Microsoft_Copilot_adoption,backlog,phase2,technology_readiness,Public Copilot rollout mention,Press LinkedIn,Hard for SMB Phase 1
+G18,ChatGPT_leadership_mention,backlog,phase2,technology_readiness,Leadership discussing AI adoption,Press podcasts,,
+G19,AI_job_postings,backlog,phase2,technology_readiness,Hiring AI/ML roles,Indeed,,
+G20,Data_analyst_hiring,backlog,phase2,technology_readiness,Analytics automation interest,Indeed,,
+G21,Business_systems_upgrade,backlog,phase2,technology_readiness,CRM ERP migration underway,Jobs press,,
+G22,Technology_leadership_hire,backlog,phase2,technology_readiness,New CIO CTO,LinkedIn press,,
+G23,Cloud_migration,backlog,phase2,technology_readiness,Moving systems to cloud,Jobs press,,
+G24,Government_contract_award,backlog,phase2,capture_management,Recent contract win,USAspending FPDS,,
+G25,Government_contract_loss,backlog,phase2,capture_management,Recent contract loss,USAspending,,
+G26,New_NAICS_codes,backlog,phase2,capture_management,Expansion into adjacent markets,SAM,,
+G27,Proposal_manager_hiring,backlog,phase2,capture_management,Increasing bid activity,Indeed,,
+G28,Capture_manager_hiring,backlog,phase2,capture_management,Direct capture signal,Indeed,,
+G29,Contract_vehicle_award,backlog,phase2,capture_management,New vehicle access,FPDS,,
+G30,New_CEO,backlog,phase2,organizational_change,Leadership transition,Press LinkedIn,,
+G31,Private_equity_investment,backlog,phase2,organizational_change,PE pressure to scale,Press,Hard without paid data
+G32,Merger_activity,backlog,phase2,organizational_change,Integration challenges ahead,Press,,
+G33,Rebranding_initiative,backlog,phase2,organizational_change,Company repositioning,Website press,,
+G34,New_regulation_industry,backlog,phase2,market,Regulatory change affects sector,Trade press,Analyst-grade for SMB
+G35,Competitive_pressure_local,backlog,phase2,market,Competitor enters local market,Local news,,
+G36,Opportunity_discovery_needs,backlog,phase2,band_it_specific,Success depends on finding opportunities early,Customer interviews,Calibrate from wins
+G37,Human_bottleneck_detection,backlog,phase2,band_it_specific,Critical decisions in few individuals,Interviews site,,
+G38,Institutional_knowledge_risk,backlog,phase2,band_it_specific,Expertise hard to transfer,Reviews jobs,,
+G39,Signal_rich_environment,backlog,phase2,band_it_specific,Industry generates actionable information,Vertical definition,,
+G40,Growth_through_coordination,backlog,phase2,band_it_specific,Success needs coordination not just hiring,Interviews,,
