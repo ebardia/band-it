@@ -7,7 +7,7 @@ export const NEWSPAPER_ROUNDTABLE_IMAGE =
 /** Daily onboarding — vintage classified self-ad (Option B) */
 export const DAILY_CLASSIFIED_IMAGE = '/daily-classified-member.png'
 
-/** Waiting room — the line outside the Band Entrance */
+/** Waiting room — the line outside the Cat Bot Adoption Agency entrance */
 export const WAITING_ROOM_IMAGE = '/waiting-room-line.png'
 
 /** Register — cat robot clerk at the adoption desk */
