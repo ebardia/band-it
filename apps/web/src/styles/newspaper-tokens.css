@@ -6,7 +6,13 @@
   --np-muted: #5c5c5c;
   --np-line: #0a0a0a;
   --np-line-soft: #e0e0e0;
-  --np-accent: #0014ff;
+  --np-accent: #0a0a0a;
+  --np-accent-border: #ffdd00;
+  --np-link: #0a0a0a;
+  --np-neon-tight: #ffe566;
+  --np-neon-mid: #ffdd00;
+  --np-neon-wide: #ffc400;
+  --np-neon-halo: rgba(255, 170, 0, 0.55);
 
   --np-lead-head: var(--font-lead-black), "Arial Black", sans-serif;
   --np-condensed: var(--font-condensed), "Arial Narrow", sans-serif;
@@ -43,7 +49,53 @@
   margin: 0;
 }
 
-/* Masthead — bold, minimal */
+/* Black type + yellow neon glow (replaces former blue accent text) */
+.np-neon-text,
+.np-action,
+.np-consent-link,
+.np-landing-rail-link,
+.np-field-toggle,
+.np-tio-brief-sources a {
+  color: var(--np-ink);
+  -webkit-text-stroke: 0.35px var(--np-neon-tight);
+  paint-order: stroke fill;
+  text-shadow:
+    0 0 1px var(--np-neon-tight),
+    0 0 3px var(--np-neon-mid),
+    0 0 6px var(--np-neon-mid),
+    0 0 10px var(--np-neon-wide),
+    0 0 14px var(--np-neon-halo);
+}
+
+.np-neon-text:hover,
+.np-action:hover,
+.np-consent-link:hover,
+.np-landing-rail-link:hover,
+.np-field-toggle:hover,
+.np-tio-brief-sources a:hover {
+  text-shadow:
+    0 0 2px var(--np-neon-tight),
+    0 0 5px var(--np-neon-mid),
+    0 0 10px var(--np-neon-mid),
+    0 0 16px var(--np-neon-wide),
+    0 0 22px var(--np-neon-halo);
+}
+
+.np-landing-auth-link:hover,
+.np-manifesto-back:hover,
+.np-nav-escape:hover,
+.np-ed-menu-subitem:hover:not(.np-ed-menu-subitem--danger) {
+  color: var(--np-ink);
+  -webkit-text-stroke: 0.35px var(--np-neon-tight);
+  paint-order: stroke fill;
+  text-shadow:
+    0 0 1px var(--np-neon-tight),
+    0 0 3px var(--np-neon-mid),
+    0 0 6px var(--np-neon-mid),
+    0 0 10px var(--np-neon-wide),
+    0 0 14px var(--np-neon-halo);
+}
+
 .np-masthead-title {
   font-family: var(--np-condensed);
   font-weight: 700;
@@ -147,7 +199,6 @@
 }
 
 .np-landing-auth-link:hover {
-  color: var(--np-accent);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -634,39 +685,11 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--np-accent);
   text-decoration: none;
 }
 
 .np-landing-rail-link:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.np-landing-rail-link-neon {
-  --np-daily-neon-tight: #ffe566;
-  --np-daily-neon-mid: #ffdd00;
-  --np-daily-neon-wide: #ffc400;
-  --np-daily-neon-halo: rgba(255, 170, 0, 0.55);
-  color: var(--np-ink);
-  -webkit-text-stroke: 0.35px var(--np-daily-neon-tight);
-  paint-order: stroke fill;
-  text-shadow:
-    0 0 1px var(--np-daily-neon-tight),
-    0 0 3px var(--np-daily-neon-mid),
-    0 0 6px var(--np-daily-neon-mid),
-    0 0 10px var(--np-daily-neon-wide),
-    0 0 14px var(--np-daily-neon-halo);
-}
-
-.np-landing-rail-link-neon:hover {
   text-decoration: none;
-  text-shadow:
-    0 0 2px var(--np-daily-neon-tight),
-    0 0 5px var(--np-daily-neon-mid),
-    0 0 10px var(--np-daily-neon-mid),
-    0 0 16px var(--np-daily-neon-wide),
-    0 0 22px var(--np-daily-neon-halo);
 }
 
 .np-landing-rail-platform-cta {
@@ -692,7 +715,8 @@
 }
 
 .np-manifesto-back:hover {
-  color: var(--np-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .np-landing-intro {
@@ -1207,7 +1231,6 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--np-accent);
   text-decoration: none;
   display: inline-block;
   margin: 0 auto;
@@ -1261,7 +1284,6 @@
 }
 
 .np-nav-escape:hover {
-  color: var(--np-accent);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -2043,7 +2065,7 @@
 }
 
 .np-field:focus {
-  outline: 2px solid var(--np-accent);
+  outline: 2px solid var(--np-accent-border);
   outline-offset: 1px;
 }
 
@@ -2094,8 +2116,8 @@
 }
 
 .np-profile-btn-primary {
-  border-color: var(--np-accent);
-  color: var(--np-accent);
+  border-color: var(--np-accent-border);
+  background: var(--np-paper);
 }
 
 .np-profile-btn-primary:hover {
@@ -2270,7 +2292,7 @@
 }
 
 .np-taxonomy-check input {
-  accent-color: var(--np-accent);
+  accent-color: var(--np-accent-border);
 }
 
 /* Profile — resume intake */
@@ -2623,7 +2645,6 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--np-accent);
   background: none;
   border: none;
   cursor: pointer;
@@ -2678,11 +2699,10 @@
   width: 1rem;
   height: 1rem;
   flex-shrink: 0;
-  accent-color: var(--np-accent);
+  accent-color: var(--np-accent-border);
 }
 
 .np-consent-link {
-  color: var(--np-accent);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -2796,7 +2816,7 @@
 }
 
 .np-ed-menu-item--active {
-  border-left: 3px solid var(--np-accent);
+  border-left: 3px solid var(--np-accent-border);
   padding-left: calc(1rem - 3px);
 }
 
@@ -2839,16 +2859,14 @@
   border-bottom: none;
 }
 
-.np-ed-menu-subitem:hover {
-  color: var(--np-accent);
-}
-
 .np-ed-menu-subitem--danger {
   color: #b91c1c;
 }
 
 .np-ed-menu-subitem--danger:hover {
   color: #991b1b;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
 }
 
 .np-ed-placeholder {
@@ -3023,7 +3041,7 @@
 .np-tio-message--facilitator {
   background: var(--np-ink);
   color: var(--np-paper);
-  border-left: 3px solid var(--np-accent);
+  border-left: 3px solid var(--np-accent-border);
 }
 
 .np-tio-message--user {
@@ -3139,7 +3157,6 @@
 }
 
 .np-tio-brief-sources a {
-  color: var(--np-link, #1a4d7a);
   text-decoration: underline;
   font-size: 0.9rem;
 }
@@ -3451,6 +3468,29 @@
   .np-landing-catnip-figure--compact .np-landing-hero-figure-img {
     max-height: 12.5rem;
   }
+}
+
+/* App nav — help button on editorial / in-app pages */
+.np-help-nav-btn {
+  background: var(--np-ink, #0a0a0a);
+  border: 1px solid var(--np-neon-mid, #ffdd00);
+  color: var(--np-ink, #0a0a0a);
+  -webkit-text-stroke: 0.35px var(--np-neon-tight, #ffe566);
+  paint-order: stroke fill;
+  text-shadow:
+    0 0 1px var(--np-neon-tight, #ffe566),
+    0 0 3px var(--np-neon-mid, #ffdd00),
+    0 0 6px var(--np-neon-mid, #ffdd00),
+    0 0 10px var(--np-neon-wide, #ffc400);
+}
+
+.np-help-nav-btn:hover {
+  background: #0a0a0a;
+  text-shadow:
+    0 0 2px var(--np-neon-tight, #ffe566),
+    0 0 5px var(--np-neon-mid, #ffdd00),
+    0 0 10px var(--np-neon-mid, #ffdd00),
+    0 0 16px var(--np-neon-wide, #ffc400);
 }
 
 .np-landing-example-hire-row {

@@ -27,10 +27,8 @@ export function HelpButton({ className, size = 'md', 'data-guide': dataGuide }: 
     <button
       onClick={startHelp}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-lg',
-        'bg-blue-100 hover:bg-blue-200 text-blue-700 hover:text-blue-800',
-        'font-medium',
-        'transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+        'np-help-nav-btn inline-flex items-center gap-1.5 rounded-lg',
+        'font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2',
         sizeClasses[size],
         className
       )}

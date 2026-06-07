@@ -201,7 +201,7 @@ export function LandingCatBotPage() {
                   <h2 className="np-picks-header">{block.title}</h2>
                   <p className="np-preview-line">{block.detail}</p>
                   {'cta' in block && block.cta && block.href ? (
-                    <Link href={block.href} className="np-landing-rail-link np-landing-rail-link-neon">
+                    <Link href={block.href} className="np-landing-rail-link">
                       {block.cta} &rarr;
                     </Link>
                   ) : null}
