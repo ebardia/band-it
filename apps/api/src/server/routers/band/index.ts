@@ -76,6 +76,7 @@ export const bandRouter = router({
 
   // Update
   updateDetails: bandUpdateRouter.updateDetails,
+  updateAgencyProfile: bandUpdateRouter.updateAgencyProfile,
 
   // AI Instructions
   listAIInstructions: bandAIInstructionRouter.list,

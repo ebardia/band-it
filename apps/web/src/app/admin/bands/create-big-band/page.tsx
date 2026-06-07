@@ -1,24 +1,65 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
+import { trpc } from '@/lib/trpc'
+import { AGENCY_PRODUCTS } from '@band-it/shared'
+import { useToast, Loading } from '@/components/ui'
+import { EditorialSurface } from '@/components/editorial/EditorialSurface'
+import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
 import {
-  Heading,
-  Text,
-  Stack,
-  Card,
-  Loading,
-  Alert,
-  AdminLayout,
-  Flex,
-  Button,
-  Input,
-  Textarea,
-  useToast
-} from '@/components/ui'
-import { AppNav } from '@/components/AppNav'
+  EditorialAddressFields,
+  EditorialChecklist,
+  EditorialError,
+  EditorialFieldGroup,
+  EditorialHint,
+  EditorialInput,
+  EditorialLabel,
+  EditorialLogoUpload,
+  EditorialSocialFields,
+  EditorialTextarea,
+} from '@/components/band-profile/EditorialFormFields'
+
+function formatPaperDate(d: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(d)
+}
+
+const emptyAddress = {
+  addressLine1: '',
+  addressLine2: '',
+  city: '',
+  state: '',
+  zipcode: '',
+  country: 'US',
+}
+
+const emptySocial = {
+  websiteUrl: '',
+  facebookUrl: '',
+  instagramUrl: '',
+  xUrl: '',
+  tiktokUrl: '',
+  youtubeUrl: '',
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      resolve(result.split(',')[1] ?? '')
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
 
 export default function CreateBigBandPage() {
   const router = useRouter()
@@ -30,24 +71,28 @@ export default function CreateBigBandPage() {
     name: string
     email: string
   } | null>(null)
-  const [formData, setFormData] = useState({
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [uploadedLogoName, setUploadedLogoName] = useState<string | null>(null)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+
+  const [form, setForm] = useState({
     name: '',
-    description: '',
     mission: '',
-    values: '',
-    membershipRequirements: '',
-    zipcode: '',
-    imageUrl: '',
+    productsOffered: [] as string[],
+    productsOther: '',
+    clientSearchRadiusMiles: 50,
+    logoUrl: '',
+    ...emptyAddress,
+    ...emptySocial,
   })
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
       try {
-        const decoded: any = jwtDecode(token)
+        const decoded = jwtDecode<{ userId: string }>(token)
         setUserId(decoded.userId)
-      } catch (error) {
-        console.error('Invalid token:', error)
+      } catch {
         router.push('/login')
       }
     } else {
@@ -57,233 +102,320 @@ export default function CreateBigBandPage() {
 
   const { data: profileData, isLoading: profileLoading } = trpc.auth.getProfile.useQuery(
     { userId: userId! },
-    { enabled: !!userId }
+    { enabled: !!userId },
   )
 
   const { data: searchResults, isLoading: searchLoading } = trpc.admin.searchUsersForFounder.useQuery(
     { adminUserId: userId!, search: founderSearch },
     {
       enabled: !!userId && profileData?.user?.isAdmin && founderSearch.length >= 2,
-    }
+    },
   )
 
+  const uploadFileMutation = trpc.file.upload.useMutation()
   const createBigBandMutation = trpc.admin.createBigBand.useMutation({
-    onSuccess: (data) => {
-      showToast('Big Band created successfully!', 'success')
+    onSuccess: () => {
+      showToast('Agency created successfully!', 'success')
       router.push('/admin/bands')
     },
     onError: (error) => {
-      showToast(error.message || 'Failed to create Big Band', 'error')
+      showToast(error.message || 'Failed to create agency', 'error')
     },
   })
 
+  const setAddress = (field: keyof typeof emptyAddress, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+    setFieldErrors((prev) => {
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
+  }
+
+  const setSocial = (field: keyof typeof emptySocial, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleLogoUpload = async (file: File) => {
+    if (!userId) return
+    setIsUploadingLogo(true)
+    try {
+      const base64Data = await fileToBase64(file)
+      const result = await uploadFileMutation.mutateAsync({
+        fileName: file.name,
+        mimeType: file.type,
+        base64Data,
+        userId,
+        category: 'IMAGE',
+      })
+      setForm((prev) => ({ ...prev, logoUrl: result.file.url }))
+      setUploadedLogoName(result.file.originalName)
+      showToast('Logo uploaded', 'success')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to upload logo'
+      showToast(message, 'error')
+    } finally {
+      setIsUploadingLogo(false)
+    }
+  }
+
+  const validate = () => {
+    const errors: Record<string, string> = {}
+    if (!selectedFounder) errors.founder = 'Select a founder'
+    if (form.name.trim().length < 2) errors.name = 'Agency name must be at least 2 characters'
+    if (form.mission.trim().length < 10) errors.mission = 'Mission must be at least 10 characters'
+    if (form.productsOffered.length === 0) errors.productsOffered = 'Select at least one product'
+    if (form.productsOffered.includes('OTHER') && !form.productsOther.trim()) {
+      errors.productsOther = 'Describe other products'
+    }
+    if (!form.addressLine1.trim()) errors.addressLine1 = 'Street address is required'
+    if (!form.city.trim()) errors.city = 'City is required'
+    if (!form.state.trim()) errors.state = 'State is required'
+    if (form.zipcode.trim().length < 3) errors.zipcode = 'ZIP code is required'
+    return errors
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!userId || !selectedFounder) {
       showToast('Please select a founder', 'error')
       return
     }
 
+    const errors = validate()
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      showToast(Object.values(errors)[0], 'error')
+      return
+    }
+    setFieldErrors({})
+
     createBigBandMutation.mutate({
       adminUserId: userId,
       founderId: selectedFounder.id,
-      ...formData,
-      zipcode: formData.zipcode || undefined,
-      imageUrl: formData.imageUrl || undefined,
+      name: form.name.trim(),
+      mission: form.mission.trim(),
+      productsOffered: form.productsOffered as (
+        | 'HIGHLEVEL_CRM'
+        | 'CRM_SETUP'
+        | 'PIPELINE_AUTOMATION'
+        | 'WEBSITE_FUNNEL'
+        | 'REPUTATION'
+        | 'SMS_EMAIL'
+        | 'CATBOT_TRAINING'
+        | 'OTHER'
+      )[],
+      productsOther: form.productsOther.trim() || undefined,
+      clientSearchRadiusMiles: form.clientSearchRadiusMiles,
+      logoUrl: form.logoUrl || undefined,
+      addressLine1: form.addressLine1.trim(),
+      addressLine2: form.addressLine2.trim() || undefined,
+      city: form.city.trim(),
+      state: form.state.trim(),
+      zipcode: form.zipcode.trim(),
+      country: form.country.trim() || 'US',
+      websiteUrl: form.websiteUrl.trim() || undefined,
+      facebookUrl: form.facebookUrl.trim() || undefined,
+      instagramUrl: form.instagramUrl.trim() || undefined,
+      xUrl: form.xUrl.trim() || undefined,
+      tiktokUrl: form.tiktokUrl.trim() || undefined,
+      youtubeUrl: form.youtubeUrl.trim() || undefined,
     })
   }
 
   if (profileLoading) {
     return (
-      <>
-        <AppNav />
-        <AdminLayout pageTitle="Create Big Band" subtitle="Loading...">
-          <Loading message="Checking permissions..." />
-        </AdminLayout>
-      </>
+      <EditorialSurface>
+        <div className="np-shell">
+          <Loading message="Checking permissions…" />
+        </div>
+      </EditorialSurface>
     )
   }
 
   if (!profileData?.user?.isAdmin) {
     return (
-      <>
-        <AppNav />
-        <AdminLayout pageTitle="Access Denied">
-          <Alert variant="danger">
-            <Text>You do not have permission to access the admin area.</Text>
-          </Alert>
-        </AdminLayout>
-      </>
+      <EditorialSurface>
+        <div className="np-shell np-profile-form-shell">
+          <p className="np-quiet">You do not have permission to access this page.</p>
+          <Link href="/" className="np-action">
+            ← Home
+          </Link>
+        </div>
+      </EditorialSurface>
     )
   }
 
   return (
-    <>
-      <AppNav />
-      <AdminLayout pageTitle="Create Big Band" subtitle="Create a new Big Band with an assigned founder">
+    <EditorialSurface>
+      <div className="np-shell np-landing-page np-profile-form-shell">
+        <header className="np-landing-masthead np-register-masthead">
+          <p className="np-cat">Adopt A Cat Bot</p>
+          <EditorialNeonMasthead
+            arcLabel="Cat Bot Adoption"
+            actionLabel="Agency"
+            ariaLabel="Cat Bot Adoption Agency"
+          />
+          <p className="np-register-tagline">
+            Create a reseller agency and assign its founder.
+          </p>
+          <hr className="np-rule" />
+          <div className="np-masthead-meta py-3 md:py-3.5">
+            <span suppressHydrationWarning>{formatPaperDate(new Date())}</span>
+            <span className="text-right">Admin Edition</span>
+          </div>
+        </header>
+
         <form onSubmit={handleSubmit}>
-          <Stack spacing="lg">
-            {/* Founder Selection */}
-            <Card>
-              <Stack spacing="md">
-                <Heading level={2}>Select Founder</Heading>
-                <Text color="muted">Search for a user to assign as the Big Band founder</Text>
-
-                {selectedFounder ? (
-                  <Flex justify="between" align="center" className="p-3 bg-green-50 rounded-lg border border-green-200">
-                    <Stack spacing="xs">
-                      <Text weight="semibold">{selectedFounder.name}</Text>
-                      <Text variant="small" color="muted">{selectedFounder.email}</Text>
-                    </Stack>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedFounder(null)}
-                    >
-                      Change
-                    </Button>
-                  </Flex>
-                ) : (
-                  <>
-                    <Input
-                      label="Search Users"
-                      type="text"
-                      value={founderSearch}
-                      onChange={(e) => setFounderSearch(e.target.value)}
-                      placeholder="Search by name or email..."
-                    />
-                    {searchLoading && <Loading message="Searching..." />}
-                    {searchResults?.users && searchResults.users.length > 0 && (
-                      <div className="border rounded-lg divide-y">
-                        {searchResults.users.map((user) => (
-                          <Flex
-                            key={user.id}
-                            justify="between"
-                            align="center"
-                            className="p-3 hover:bg-gray-50 cursor-pointer"
-                            onClick={() => {
-                              setSelectedFounder(user)
-                              setFounderSearch('')
-                            }}
-                          >
-                            <Stack spacing="xs">
-                              <Text weight="semibold">{user.name}</Text>
-                              <Text variant="small" color="muted">{user.email}</Text>
-                            </Stack>
-                            {user.emailVerified && (
-                              <Text variant="small" className="text-green-600">Verified</Text>
-                            )}
-                          </Flex>
-                        ))}
-                      </div>
-                    )}
-                    {founderSearch.length >= 2 && !searchLoading && searchResults?.users?.length === 0 && (
-                      <Text color="muted">No users found</Text>
-                    )}
-                  </>
-                )}
-              </Stack>
-            </Card>
-
-            {/* Band Details */}
-            <Card>
-              <Stack spacing="md">
-                <Heading level={2}>Band Details</Heading>
-
-                <Input
-                  label="Band Name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter Big Band name"
-                />
-
-                <Textarea
-                  label="Description"
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe this Big Band..."
-                  rows={4}
-                  helperText="At least 10 characters"
-                />
-
-                <Textarea
-                  label="Mission Statement"
-                  required
-                  value={formData.mission}
-                  onChange={(e) => setFormData({ ...formData, mission: e.target.value })}
-                  placeholder="What is this Big Band's mission?"
-                  rows={3}
-                  helperText="At least 10 characters"
-                />
-
-                <Textarea
-                  label="Values"
-                  required
-                  value={formData.values}
-                  onChange={(e) => setFormData({ ...formData, values: e.target.value })}
-                  placeholder="Community, Excellence, Collaboration"
-                  rows={2}
-                  helperText="Separate with commas"
-                />
-
-                <Textarea
-                  label="Membership Requirements"
-                  required
-                  value={formData.membershipRequirements}
-                  onChange={(e) => setFormData({ ...formData, membershipRequirements: e.target.value })}
-                  placeholder="Requirements for joining this Big Band..."
-                  rows={3}
-                  helperText="At least 10 characters"
-                />
-
-                <Flex gap="md">
-                  <Input
-                    label="Postal Code (Optional)"
-                    type="text"
-                    value={formData.zipcode}
-                    onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
-                    placeholder="e.g. 12345, SW1A 1AA"
-                    maxLength={10}
+          <EditorialFieldGroup kicker="Founder" title="Assign agency founder">
+            {selectedFounder ? (
+              <div className="np-register-alert">
+                <p className="np-excerpt">
+                  <strong>{selectedFounder.name}</strong> — {selectedFounder.email}
+                </p>
+                <button
+                  type="button"
+                  className="np-action np-action-left"
+                  onClick={() => setSelectedFounder(null)}
+                >
+                  Change founder →
+                </button>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <EditorialLabel htmlFor="founder-search">Search users</EditorialLabel>
+                  <EditorialInput
+                    id="founder-search"
+                    type="search"
+                    value={founderSearch}
+                    onChange={(e) => setFounderSearch(e.target.value)}
+                    placeholder="Name or email…"
                   />
-                  <Input
-                    label="Image URL (Optional)"
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder="https://..."
-                    className="flex-1"
-                  />
-                </Flex>
-              </Stack>
-            </Card>
+                  <EditorialHint>Type at least 2 characters</EditorialHint>
+                </div>
+                {searchLoading ? <p className="np-quiet">Searching…</p> : null}
+                {searchResults?.users && searchResults.users.length > 0 ? (
+                  <ul className="np-fineprint-list">
+                    {searchResults.users.map((user) => (
+                      <li key={user.id} className="np-fineprint-item">
+                        <button
+                          type="button"
+                          className="np-action np-action-left"
+                          onClick={() => {
+                            setSelectedFounder(user)
+                            setFounderSearch('')
+                          }}
+                        >
+                          {user.name} — {user.email} →
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {founderSearch.length >= 2 && !searchLoading && searchResults?.users?.length === 0 ? (
+                  <p className="np-quiet">No users found</p>
+                ) : null}
+              </>
+            )}
+            <EditorialError message={fieldErrors.founder} />
+          </EditorialFieldGroup>
 
-            {/* Actions */}
-            <Flex gap="md" justify="end">
-              <Button
-                type="button"
-                variant="ghost"
-                size="lg"
-                onClick={() => router.push('/admin/bands')}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                disabled={!selectedFounder || createBigBandMutation.isPending}
-              >
-                {createBigBandMutation.isPending ? 'Creating...' : 'Create Big Band'}
-              </Button>
-            </Flex>
-          </Stack>
+          <EditorialFieldGroup kicker="Agency" title="Agency name & mission">
+            <div>
+              <EditorialLabel htmlFor="agency-name">Agency name</EditorialLabel>
+              <EditorialInput
+                id="agency-name"
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Work Smarter Digital"
+                error={fieldErrors.name}
+              />
+            </div>
+            <div>
+              <EditorialLabel htmlFor="agency-mission">Mission statement</EditorialLabel>
+              <EditorialTextarea
+                id="agency-mission"
+                required
+                rows={3}
+                value={form.mission}
+                onChange={(e) => setForm({ ...form, mission: e.target.value })}
+                placeholder="What this agency helps clients achieve…"
+                error={fieldErrors.mission}
+              />
+            </div>
+          </EditorialFieldGroup>
+
+          <EditorialFieldGroup kicker="Offerings" title="Products they offer">
+            <EditorialChecklist
+              options={AGENCY_PRODUCTS}
+              selected={form.productsOffered}
+              onChange={(productsOffered) => setForm({ ...form, productsOffered })}
+              otherValue={form.productsOther}
+              onOtherChange={(productsOther) => setForm({ ...form, productsOther })}
+              otherLabel="Describe other products"
+            />
+            <EditorialError message={fieldErrors.productsOffered} />
+          </EditorialFieldGroup>
+
+          <EditorialFieldGroup kicker="Territory" title="Address & client radius">
+            <EditorialAddressFields values={form} onChange={setAddress} errors={fieldErrors} />
+            <div>
+              <EditorialLabel htmlFor="client-radius">
+                Client search radius (miles from address)
+              </EditorialLabel>
+              <EditorialInput
+                id="client-radius"
+                type="number"
+                min={1}
+                max={500}
+                required
+                value={form.clientSearchRadiusMiles}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    clientSearchRadiusMiles: parseInt(e.target.value, 10) || 1,
+                  })
+                }
+              />
+              <EditorialHint>How far out this agency looks for client businesses</EditorialHint>
+            </div>
+          </EditorialFieldGroup>
+
+          <EditorialFieldGroup kicker="Presence" title="Logo & links">
+            <div>
+              <EditorialLabel>Logo</EditorialLabel>
+              <EditorialLogoUpload
+                logoUrl={form.logoUrl}
+                uploadedName={uploadedLogoName}
+                isUploading={isUploadingLogo}
+                onUpload={handleLogoUpload}
+                onRemove={() => {
+                  setForm((prev) => ({ ...prev, logoUrl: '' }))
+                  setUploadedLogoName(null)
+                }}
+              />
+            </div>
+            <EditorialSocialFields values={form} onChange={setSocial} />
+          </EditorialFieldGroup>
+
+          <div className="np-profile-form-actions">
+            <button
+              type="submit"
+              className="np-profile-btn np-profile-btn-primary"
+              disabled={!selectedFounder || createBigBandMutation.isPending}
+            >
+              {createBigBandMutation.isPending ? 'Creating…' : 'Create agency'}
+            </button>
+            <p className="np-field-hint" style={{ marginTop: '1rem' }}>
+              <Link href="/admin/bands" className="np-action">
+                ← Back to admin bands
+              </Link>
+            </p>
+          </div>
         </form>
-      </AdminLayout>
-    </>
+      </div>
+    </EditorialSurface>
   )
 }

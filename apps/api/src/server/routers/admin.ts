@@ -9,6 +9,11 @@ import { createDefaultChannel } from './channel'
 import { runDigestJob } from '../../cron/digest-cron'
 import { runTaskEscalationJob, runChecklistEscalationJob } from '../../cron/task-escalation-cron'
 import { runGracePeriodCheck, runBillingOwnerCheck, runLowMemberCountCheck, runAutoConfirms, runAutoConfirmWarnings } from '../../cron/billing-cron'
+import {
+  agencyBigBandCreateInputSchema,
+  mapAddress,
+  mapSocialLinks,
+} from '../../lib/band-profile-validation'
 
 // Helper to check if user is admin
 async function requireAdmin(userId: string) {
@@ -1631,23 +1636,10 @@ export const adminRouter = router({
    * Create a Big Band with an assigned founder
    */
   createBigBand: publicProcedure
-    .input(
-      z.object({
-        adminUserId: z.string(),
-        founderId: z.string(),
-        name: z.string().min(2, 'Band name must be at least 2 characters'),
-        description: z.string().min(10, 'Description must be at least 10 characters'),
-        mission: z.string().min(10, 'Mission must be at least 10 characters'),
-        values: z.string().min(1, 'Please enter at least one value'),
-        membershipRequirements: z.string().min(10, 'Please describe membership requirements'),
-        zipcode: z.string().min(3).max(10).optional(),
-        imageUrl: z.string().url().optional(),
-      })
-    )
+    .input(agencyBigBandCreateInputSchema)
     .mutation(async ({ input }) => {
       await requireAdmin(input.adminUserId)
 
-      // Verify founder exists and is not banned
       const founder = await prisma.user.findUnique({
         where: { id: input.founderId },
         select: { id: true, name: true, bannedAt: true, deletedAt: true },
@@ -1667,7 +1659,6 @@ export const adminRouter = router({
         })
       }
 
-      // Generate unique slug
       let baseSlug = input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
       let slug = baseSlug
       let counter = 1
@@ -1677,28 +1668,28 @@ export const adminRouter = router({
         counter++
       }
 
-      // Convert comma-separated values to array
-      const valuesArray = input.values.split(',').map(v => v.trim()).filter(Boolean)
-
-      // Create the Big Band
       const band = await prisma.band.create({
         data: {
           name: input.name,
           slug,
-          description: input.description,
+          description: input.mission,
           mission: input.mission,
-          values: valuesArray,
+          values: [],
+          productsOffered: input.productsOffered,
+          productsOther: input.productsOther ?? null,
+          clientSearchRadiusMiles: input.clientSearchRadiusMiles,
           skillsLookingFor: [],
           whatMembersWillLearn: [],
-          membershipRequirements: input.membershipRequirements,
+          membershipRequirements: '',
           whoCanApprove: ['FOUNDER', 'GOVERNOR'],
           whoCanCreateProposals: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'],
-          zipcode: input.zipcode || null,
-          imageUrl: input.imageUrl || null,
+          ...mapAddress(input),
+          ...mapSocialLinks(input),
+          imageUrl: input.logoUrl ?? null,
           createdById: input.founderId,
-          parentBandId: null, // Big Band has no parent
-          isBigBand: true,   // Explicitly mark as Big Band
-          status: 'ACTIVE', // Big Bands start active immediately
+          parentBandId: null,
+          isBigBand: true,
+          status: 'ACTIVE',
           activatedAt: new Date(),
         },
       })

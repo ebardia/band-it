@@ -3571,3 +3571,75 @@
   padding-top: 0.65rem;
   border-top: 1px dashed var(--np-line-soft);
 }
+
+/* Band / agency profile forms */
+.np-form-row-2 {
+  display: grid;
+  gap: 0.75rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .np-form-row-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.np-checklist-grid {
+  display: grid;
+  gap: 0.5rem 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .np-checklist-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.np-logo-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--np-line-soft);
+}
+
+.np-logo-preview-img {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+  background: var(--np-paper-warm);
+}
+
+.np-logo-upload-btn {
+  display: inline-block;
+  font-family: var(--np-ui);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.65rem 1.25rem;
+  border: 1px solid var(--np-line);
+  cursor: pointer;
+  color: var(--np-ink);
+}
+
+.np-logo-upload-btn:hover {
+  border-color: var(--np-accent-border);
+}
+
+.np-profile-form-shell {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+.np-profile-form-actions {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.np-profile-form-actions .np-profile-btn-primary {
+  width: 100%;
+  max-width: 20rem;
+}
+
