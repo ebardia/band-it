@@ -365,14 +365,20 @@ This cat is owned by [Owner]. Mission: [mission]. It may favor paths that benefi
 
 ## 12. Community learning (v0)
 
+**Principle:** v0 roams are **fully programmatic** — no manual copy-paste from browsers. Each item in a return packet must carry a **citable URL or API id** (permalink, place id, review id).
+
 ### 12.1 Sources
 
-| Source | v0 | Notes |
-|--------|-----|-------|
-| Reddit (public threads) | Yes | Read-only; cite permalink |
-| Forums / niche communities | Yes | Same |
-| Owner/SME notes | Yes | Highest weight |
-| Generic web search | Secondary | Fills gaps after community pass |
+| Source | v0 | Programmatic | Notes |
+|--------|-----|--------------|-------|
+| Reddit (public threads) | Yes | Official API | Read-only; cite permalink |
+| Google Business reviews | Yes | Places API | Truncated review set per place; strong for experience themes |
+| Yelp reviews | Yes | Fusion API | Similar limits; good aesthetics vertical coverage |
+| Forums / niche communities | Yes | Search API + public fetch | No unified forum API; discover via search, fetch public HTML |
+| News / local press | Yes | RSS / news APIs | Scandals, openings; weaker for conversational gossip |
+| YouTube comments | Optional | Data API | Experience stories on review/tour videos; quota-limited |
+| Owner/SME notes | Yes | In-app input | Highest weight; not “community roam” |
+| Generic web search | Secondary | Brave / Serp / Programmable Search | Fills gaps after community pass |
 
 ### 12.2 Constraints
 
@@ -380,6 +386,140 @@ This cat is owned by [Owner]. Mission: [mission]. It may favor paths that benefi
 - **Read-only** in v0 (no posting as cat without explicit later feature)
 - **Moderation**: items proposing illegal acts, harassment, or deceptive tactics → `do_not_do` + discard
 - **Noise**: loud minorities, stale threads—confidence scores and TTL required
+- **No scraping** where an official API exists (Reddit, Places, Yelp)
+- **No login-walled sources** in v0 (Nextdoor, private Facebook groups, etc.)
+
+### 12.3 Programmatic access tiers
+
+Sources grouped by how reliably a roam script can read them **without human steps**.
+
+#### Tier 1 — Official APIs (automate today)
+
+| Source | What you get | Med-spa / DMV relevance | Credentials |
+|--------|----------------|-------------------------|-------------|
+| **Reddit** | Posts, comments, subreddit search | High — e.g. `r/SkincareAddiction`, `r/PlasticSurgery`, `r/30PlusSkinCare`, `r/Botox`, `r/washingtondc`, `r/nova`, `r/MontgomeryCountyMD`; provider-name search | OAuth app (`REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`) |
+| **Google Places** | Ratings, review snippets, counts, discovery by zip | High — seed spas and “med spa near {zip}” | `GOOGLE_PLACES_API_KEY` |
+| **Yelp Fusion** | Reviews, ratings, business metadata | High — aesthetics vertical | `YELP_API_KEY` |
+| **Google News / RSS** | Headlines, snippets | Medium — brand/regional news | RSS (no key) or news aggregator |
+| **YouTube Data** | Titles, comments on public videos | Medium — “med spa review” experience narratives | API key + quota |
+| **Bluesky / Mastodon** | Public posts | Low–medium volume today | Public AT/AP APIs |
+
+#### Tier 2 — Discovery APIs + public fetch (forums)
+
+Forums rarely expose a unified API. v0 pattern:
+
+```text
+Search API query → public result URLs → fetch HTML text → LLM extract themes
+```
+
+| Approach | Role | Caveat |
+|----------|------|--------|
+| **Brave Search / SerpAPI / Google Programmable Search** | Find `"med spa" Potomac site:reddit.com OR forum` | Paid per query; respect destination site ToS on fetch |
+| **Public page fetch** | Extract thread body from discovered URLs | Reuse pattern in [band_it_outbound/fetch.py](./signal-processing/scripts/band_it_outbound/fetch.py); API-first for Reddit/Yelp/Places |
+
+Use Tier 2 **after** Tier 1 pass — not instead of it.
+
+#### Tier 3 — High human value, not v0-automatable
+
+Do **not** depend on these for zero-manual v0 roams:
+
+| Source | Blocker |
+|--------|---------|
+| **Nextdoor** | No public API; login-walled |
+| **Facebook Groups** | Graph API does not expose third-party group feeds |
+| **Instagram / TikTok** (neighborhood chatter) | Official APIs restricted to owned accounts or research tiers |
+| **RealSelf** | No official consumer API; core med-spa Q&A; scraping fragile / ToS-sensitive |
+| **Discord / private Slack** | Requires membership and bot invite |
+| **WhatsApp / iMessage** | Not accessible |
+
+Affluent DMV “gossip” often lives in Tier 3 — that is an explicit **coverage gap** v0 accepts; Reddit + review APIs still validate the roam → return-packet → domestication loop.
+
+### 12.4 Recommended v0 roam lab pipeline
+
+Hypothesis test script (no platform integration; scheduled or one-shot):
+
+```text
+1. Seed spas      → Google Places by affluent zip ([affluent-dmv-zips.csv](./signal-processing/worksmarter-medspa/affluent-dmv-zips.csv))
+2. Community      → Reddit API (keywords + subreddits + spa names)
+3. Reviews        → Places + Yelp per seeded spa
+4. Discovery      → Search API for forum/blog hits Reddit missed
+5. Synthesize     → LLM → mood, themes, questions, quote-like snippets + citations
+6. Output         → return packet JSON/CSV (source, confidence, TTL)
+```
+
+**Minimum viable trio:** Reddit + Google Places reviews + Yelp.
+
+Optional env: `BRAVE_SEARCH_API_KEY` (or equivalent) for step 4.
+
+First gold-path neighborhood: [Work Smarter med spa demo](./signal-processing/worksmarter-medspa/worksmarter-medspa-discovery.md) (Potomac Skin Care).
+
+**Lab script:** [run_cat_bot_roam_v0.py](./signal-processing/scripts/run_cat_bot_roam_v0.py) — see [signal-processing README](./signal-processing/README.md#run-cat-bot-roam-lab-v0).
+
+### 12.5 Roam angle → source mapping
+
+| Roam angle | Tier 1–2 sources |
+|------------|------------------|
+| Mood / emotion / style | Reddit skincare subs; review language (Places/Yelp); YouTube comments |
+| Good / bad experiences | Places, Yelp, Reddit review threads |
+| Questions (“is X worth it?”) | Reddit search; YouTube; Quora via search + fetch (no stable API) |
+| Local affluent zip vibe | Geo Reddit subs; news RSS — not Nextdoor in v0 |
+| Reputation / competitive | Review velocity + themes; news mentions |
+
+### 12.6 Reddit policy alignment (factory vs approval)
+
+Reddit’s [Responsible Builder Policy](https://support.reddithelp.com/hc/en-us/articles/42728983564564-Responsible-Builder-Policy) requires **explicit approval before any Data API access**. Self-service app creation at `/prefs/apps` is not sufficient. This section records how Cat Bot stays aligned while scaling beyond a single v0 cat.
+
+#### Scoped subs, not Reddit-wide factory roam
+
+| Model | Reddit fit |
+|-------|------------|
+| **One cat · one neighborhood** (v0) | Good — list 5–10 subs in an API Access Request |
+| **Factory · many cats** | Each cat carries a **neighborhood map** (named subs + keywords); roam only within that map |
+| **Generic cat · roam anywhere** | Not supported — do not design for open-ended Reddit search |
+
+**Implication:** Reddit is an **optional, per-neighborhood source**, not the universal roam backbone. Factory-scale collection relies primarily on Places, Yelp, news, and search-assisted public pages (§12.3–12.4). Reddit is added where a cat’s map includes subs **and** access is approved for that scope.
+
+#### “Train AI agents” vs what Cat Bot actually does
+
+Reddit restricts using platform data to **train or improve ML models**. Cat Bot must **not** conflate product language (“learn,” “domesticate”) with that prohibition.
+
+| Reddit prohibits | Cat Bot does **not** do |
+|------------------|-------------------------|
+| Fine-tune / train model **weights** on Reddit content | Fixed foundation model (Claude, etc.); no weight updates from Reddit |
+| Build **training datasets** from Reddit for AI products | Bulk export or corpus building |
+| Undisclosed commercial use of Reddit data | Resell or redistribute Reddit content |
+
+| Cat Bot **does** do | Policy framing (internal + API requests) |
+|---------------------|------------------------------------------|
+| Read public posts **read-only** with OAuth | Approved-scope search + fetch |
+| **Inference-time** summarization into a return packet | Analysis for human review — not model training |
+| Owner **Keep** promotes snippets to `approved_memory` | Cited **RAG reference memory** with TTL — not training data |
+| Owner **Discard** + `do_not_do` | Explicit rejection log |
+
+**Domestication = curated memory** (§6.4), not manual model training. Community text shapes answers through **retrieval + owner gate**, not through updating model weights.
+
+#### Language for API Access Requests
+
+**Use:**
+
+- Read-only research; permalinks cited in owner-reviewed reports
+- No posting, voting, DMs, or bulk export
+- No use of Reddit data to train or improve ML models
+- Approved items stored as cited reference memory (RAG) with TTL; human domestication required
+
+**Avoid:**
+
+- “Train AI agents” or “learn from Reddit to get smarter”
+- “Factory that roams all of Reddit”
+- Undisclosed commercial/marketing use (Work Smarter client campaigns may require **commercial** approval — separate from non-commercial research)
+
+#### Commercial use
+
+If a cat serves **paid marketing or client campaigns** using Reddit-sourced intel, treat that as **commercial** under Reddit’s policy and seek **written approval** on that path — do not rely on a non-commercial research request alone.
+
+#### v0 without Reddit
+
+The roam lab (§12.4) and v0 hypothesis test (§16) remain valid **without Reddit**: Places + Yelp + news + optional search still prove roam → return packet → domestication. Add Reddit when API access is approved for a cat’s neighborhood map.
 
 ---
 
@@ -405,6 +545,7 @@ Cats may **cross-check** by comparing return packets; owner still decides.
 | Stale “facts” | TTL + re-verify on roam |
 | Hidden marketing bias | Mandatory owner disclosure |
 | Overfitting to first subreddit | Three-angle protocol + neighborhood map diversification |
+| Reddit policy / factory scale | §12.6 — scoped subs per cat; RAG not training; Reddit optional |
 | API cost runaway | Roam on schedule/button; tiered answer path; per-cat budgets |
 
 ---
@@ -431,7 +572,7 @@ The med-spa work validated the **problem** (path dependency toward contact hunti
 | **Cat** | “Potomac consent paths” |
 | **Neighborhood** | Affluent DMV med-spa end clients; digital opt-in only |
 | **Mission** | Map how target personas discover and consent—not cold contact |
-| **Communities** | 2–3 relevant subs/forums + owner/SME note if available |
+| **Communities** | Programmatic stack §12.4 (Reddit + Places + Yelp; search for forum gaps) |
 | **Success** | Return packet with 3 distinct angles, named STUCK_TRAP, actionable ranked paths |
 | **Compare** | Quality vs linear doc-only agent chain |
 
@@ -490,7 +631,7 @@ Avoid **Car Bot** in user-facing copy (typo in early email).
 ## 20. Open questions
 
 1. ~~Exact new domain~~ → **adoptacatbot.com** (see [platform doc](./adopt-a-cat-bot-platform.md))
-2. Reddit/data provider strategy for production (official API vs manual paste in v0)?
+2. ~~Reddit/data provider strategy for production (official API vs manual paste in v0)?~~ → **v0: official APIs only; no manual paste** (§12.3–12.4). Production: rate limits, caching, data-retention policy TBD.
 3. Public vs private cats (can others view a cat’s approved opinions)?
 4. Embedding search vs structured tags for memory retrieval in v1?
 5. Pricing: per roam, per cat, memory storage, or subscription?
@@ -520,3 +661,6 @@ Source: founder email to friend (lightly edited).
 |------|--------|
 | 2026-05-29 | Initial design doc: product pivot, lifecycle, 3-angle roam, memory, API tiers, schemas, v0 test, phased delivery |
 | 2026-05-29 | §18: Big Band → Band → Cat hierarchy; link to platform doc; adoptacatbot.com |
+| 2026-05-29 | §12.3–12.5: programmatic community access tiers, v0 roam lab pipeline, angle→source mapping; resolve open Q2 |
+| 2026-05-29 | §12.4 lab script: `signal-processing/scripts/run_cat_bot_roam_v0.py` |
+| 2026-06-08 | §12.6: Reddit Responsible Builder Policy — scoped subs, RAG vs training, API request language |

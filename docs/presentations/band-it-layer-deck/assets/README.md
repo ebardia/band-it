@@ -1,16 +1,28 @@
 # Deck image assets
 
-One **JPEG** per slide, named `slide-NN-<short-name>.jpg` (e.g. `slide-01-newsroom-noise.jpg`).
+Generated art: **`slide 1.png` … `slide 10.png`** (space before number) in this folder.
 
-Google Slides cannot open a raw image file as a presentation — JPEGs are embedded in `.pptx` / used when you **Replace image** on a slide.
+Legacy naming `slide-01-*.jpg` still works as a fallback.
 
-## Regenerate slide 1 from site art
+Google Slides cannot open a raw image file as a presentation — images are embedded in `.pptx` via `build_slide.py`.
+
+## Regenerate slide 1 illustration
+
+**OpenAI (recommended)** — add `OPENAI_API_KEY=sk-...` to repo root `.env`, then:
 
 ```bash
-python docs/presentations/band-it-layer-deck/scripts/sync_assets.py 1
+pip install openai
+python docs/presentations/band-it-layer-deck/scripts/generate_slide_01_openai.py
+python docs/presentations/band-it-layer-deck/scripts/build_slide.py 1
 ```
 
-Source: `apps/web/public/waiting-room-line.png` (sepia treatment).
+**Offline fallback** (PIL composite from site art):
+
+```bash
+python docs/presentations/band-it-layer-deck/scripts/generate_slide_01_illustration.py
+```
+
+Output: `slide-01-signal-vs-noise.jpg`. Legacy: `sync_assets.py 1` → `slide-01-newsroom-noise.jpg`.
 
 ## Rebuild deck after replacing an image
 

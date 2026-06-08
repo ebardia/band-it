@@ -1,18 +1,20 @@
 # Slide copy archive
 
-Paste order → files:
+| # | Markdown | Asset | Status |
+|---|----------|-------|--------|
+| 1 | `01-hero.md` | `assets/slide 1.png` | Image-only hero |
+| 2 | `02-problem.md` | `assets/slide 2.png` | The problem (signals in noise) |
+| 3 | `03-introducing.md` | `assets/slide 3.png` | Introducing Band It |
+| 4–10 | `04-*.md` … | `assets/slide N.png` | Paste copy when ready |
 
-| # | File | Status |
-|---|------|--------|
-| 1 | `01-problem.md` | ✅ Built → `../band-it-layer-deck-slide-01.pptx` |
-| 2 | `02-*.md` | Pending |
-| 3 | `03-*.md` | Pending |
-| 4 | `04-*.md` | Pending |
-| 5 | `05-*.md` | Pending |
-| 6 | `06-*.md` | Pending |
-| 7 | `07-*.md` | Pending |
-| 8 | `08-*.md` | Pending |
-| 9 | `09-*.md` | Pending |
-| 10 | `10-*.md` | Pending |
+## Build
 
-When all 10 are in, run deck build → `band-it-layer-deck.pptx` in this folder.
+```bash
+# Slides 1–2 (current)
+python docs/presentations/band-it-layer-deck/scripts/build_slide.py 1 2
+
+# Full deck when all markdown files exist
+python docs/presentations/band-it-layer-deck/scripts/build_slide.py --all
+```
+
+Output: `band-it-layer-deck-slides-01-02.pptx` or `band-it-layer-deck.pptx`

@@ -47,3 +47,26 @@ python docs/design/signal-processing/scripts/run_band_it_outbound_v1.py \
 
 Script package: `scripts/band_it_outbound/` — detectors, scoring, optional fetch.
 
+## Run Cat Bot roam lab (v0)
+
+Programmatic roam for [Adopt A Cat Bot §12.4](../adopt-a-cat-bot.md#124-recommended-v0-roam-lab-pipeline) — Reddit, Google Places, Yelp, optional Brave, news RSS → return packet JSON.
+
+```bash
+python docs/design/signal-processing/scripts/run_cat_bot_roam_v0.py \
+  --zip 20854 --max-spas 2 --no-synthesize
+```
+
+| Flag | Purpose |
+|------|---------|
+| `--zip` | Filter seed spas by zip (e.g. Potomac `20854`) |
+| `--spa-name` | Filter spas where name contains substring |
+| `--max-spas` | Cap review API calls per run |
+| `--no-synthesize` | Heuristic return packet (no Anthropic call) |
+| `--no-reddit` / `--no-places` / `--no-yelp` / `--no-brave` / `--no-news` | Disable a source |
+
+**Env vars** (repo `.env` or shell): `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `GOOGLE_PLACES_API_KEY`, `YELP_API_KEY`, optional `BRAVE_SEARCH_API_KEY`, optional `ANTHROPIC_API_KEY`.
+
+**Output:** `output/cat-bot-roam-evidence-*.json` (raw items) and `output/cat-bot-roam-packet-*.json` (§9 return packet shape).
+
+Script package: `scripts/cat_bot_roam/`.
+

@@ -6,7 +6,7 @@ from html.parser import HTMLParser
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-USER_AGENT = "BandItOutboundBot/1.0 (+https://banditeco.com; signal-processing-v1)"
+USER_AGENT = "BandItOutboundBot/1.0 (+https://adoptacatbot.com; signal-processing-v1)"
 TIMEOUT_SEC = 15
 
 

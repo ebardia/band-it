@@ -7,6 +7,7 @@ import { HelpProvider } from "@/components/help/HelpContext"
 import { HelpPanel } from "@/components/help/HelpPanel"
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://adoptacatbot.com'),
   title: "Adopt A Cat Bot",
   description:
     "Adopt a wild marketing cat, domesticate it for a niche purpose, certify it under your name, and send it to roam online neighborhoods on your behalf.",
