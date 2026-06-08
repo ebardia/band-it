@@ -12,3 +12,6 @@ export * from './welcomeInterests'
 
 // Export admin config
 export * from './admin'
+
+// Band / agency profile options
+export * from './bandProfile'

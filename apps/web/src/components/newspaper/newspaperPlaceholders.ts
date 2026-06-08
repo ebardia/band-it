@@ -7,17 +7,17 @@ export const NEWSPAPER_ROUNDTABLE_IMAGE =
 /** Daily onboarding — vintage classified self-ad (Option B) */
 export const DAILY_CLASSIFIED_IMAGE = '/daily-classified-member.png'
 
-/** Waiting room — the line outside the Band Entrance */
+/** Waiting room — the line outside the Cat Bot Adoption Agency entrance */
 export const WAITING_ROOM_IMAGE = '/waiting-room-line.png'
 
-/** Register — robot clerk at the sign-in counter */
-export const REGISTER_CLERK_IMAGE = '/register-clerk.png'
+/** Register — cat robot clerk at the adoption desk */
+export const REGISTER_CLERK_IMAGE = '/register-cat-robot.png'
 
 /** Verify email — carrier pigeons at the water cooler */
 export const PROOF_PIGEONS_IMAGE = '/proof-pigeons.png'
 
-/** Landing — Band It layer diagram (vintage stack + signal desk + human loop) */
-export const LANDING_BANDIT_LAYER_IMAGE = '/landing-bandit-layer.png'
+/** Landing — opportunity conveyor belt (steampunk factory line) */
+export const LANDING_BANDIT_LAYER_IMAGE = '/landing-opportunity-conveyor.png'
 
 /** Landing — vintage magician juggling signals, stack, agents, The Goods */
 export const LANDING_MAGICIAN_JUGGLER_IMAGE = '/landing-magician-juggler.png'

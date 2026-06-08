@@ -1,0 +1,18 @@
+signal_id,signal_name,signal_role,phase,category,what_it_indicates,primary_sources,campaign_use,score_weight
+C01,Affluent_residential_zip,fit,v1,geography,Spa service area intersects high-income zip codes,affluent-dmv-zips.csv; drive-time from spa,Geo-target ads SMS email tags,0
+C02,Country_club_golf_proximity,hunt,v1,lifestyle,Near country clubs or golf-centric affluent communities,Zip table; club directories; event sponsors,Creative: pre-event consult membership,0
+C03,Luxury_travel_affinity,hunt,v1,lifestyle,Audience likely takes luxury cruises high-end tours,Voyage/travel agent co-marketing; seasonal hooks,Creative: before cruise reunion gala,0
+C04,Charity_gala_arts_patron,hunt,v1,lifestyle,Galas hospital foundations school benefits in trade area,Local society pages; nonprofit sponsors,Creative: event-ready treatments,0
+C05,Luxury_retail_auto_adjacency,hunt,v1,lifestyle,High-end auto jewelry equine services in corridor,Retail locators; zip affluence proxy,Partnership or geo ad placement,0
+C06,Wellness_adjacency,hunt,v1,lifestyle,Equinox premium gym Pilates functional medicine nearby,Maps; business directories,Cross-promo or lookalike audience,0
+C07,Executive_professional_density,hunt,v1,lifestyle,Lawyers consultants diplomats executives NW DC Tysons,Zip employment mix; LinkedIn geo,Weekday lunch-hour consult offers,0
+C08,Life_stage_seasonal,hunt,v1,timing,Wedding reunion holiday party season,calendar,Cadence and offer packaging,0
+C09,Med_spas_own_signals,hunt,v1,context,Layer A signals on approved spa inform angle,Agent 1 output,Personalize pitch to spa pain,0
+C10,Compliance_safe_messaging,calibrate,v1,compliance,No medical claims; consult required disclaimers,Work Smarter policy,All Agent 2 copy must pass,0
+C11,Woman_owned_business_owner,hunt,v2,professional,Owner-operated business in affluent zip; often publishes business contact,MD MBE/WBE; VA SWaM; NAWBO; Maps; local press,Weekday consult; business email on website,0
+C12,New_business_opening,hunt,v2,growth,Recent opening or press profile in trade area,Local news; MD Business Express; ribbon-cuttings,New-in-town professional intro angle,0
+C13,Zip_net_in_migration,fit,v2,geography,Trade-area zip gaining affluent households vs neighbors,Census ACS; IRS county migration; market reports,Prioritize segment ad spend; boost C01 zips,0
+C14,Recent_home_purchase,hunt,v2,life_event,New owner in spa trade area from public deed record,County land records; MD SDAT; real estate closings,Direct mail welcome; new-to-neighborhood consult offer,0
+C15,New_mover_household,hunt,v2,life_event,Household recently changed address in licensed or spa CRM data,USPS NCOA licensed; spa CRM; broker new-mover product,Re-engagement or welcome sequence — licensed/opt-in only,0
+C16,Recent_political_donation,hunt,v2,philanthropy,Named FEC or state campaign contribution in zip/date window,fec.gov; MD/VA/DC campaign finance portals,Affluent engaged donor; C04/C07 overlap; professional tone only,0
+C17,Named_charity_sponsor_tier,hunt,v2,philanthropy,Listed on gala program honor roll or sponsor tier PDF,Hospital foundation reports; charity gala brochures; annual reports,Event-ready consult; extends C04 with amount/tier evidence,0

@@ -9,6 +9,11 @@ import { createDefaultChannel } from './channel'
 import { runDigestJob } from '../../cron/digest-cron'
 import { runTaskEscalationJob, runChecklistEscalationJob } from '../../cron/task-escalation-cron'
 import { runGracePeriodCheck, runBillingOwnerCheck, runLowMemberCountCheck, runAutoConfirms, runAutoConfirmWarnings } from '../../cron/billing-cron'
+import {
+  agencyBigBandCreateInputSchema,
+  mapAddress,
+  mapSocialLinks,
+} from '../../lib/band-profile-validation'
 
 // Helper to check if user is admin
 async function requireAdmin(userId: string) {
@@ -107,6 +112,7 @@ export const adminRouter = router({
             name: true,
             email: true,
             isAdmin: true,
+            accessApproved: true,
             emailVerified: true,
             createdAt: true,
             warningCount: true,
@@ -131,6 +137,127 @@ export const adminRouter = router({
         users,
         total,
         pages: Math.ceil(total / input.limit),
+      }
+    }),
+
+  /**
+   * Users in the waiting room (registered but not yet approved to enter).
+   */
+  getUsersPendingAccess: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        search: z.string().optional(),
+        page: z.number().default(1),
+        limit: z.number().default(50),
+      })
+    )
+    .query(async ({ input }) => {
+      await requireAdmin(input.userId)
+
+      const now = new Date()
+      const baseWhere = {
+        accessApproved: false,
+        isAdmin: false,
+        bannedAt: null,
+        OR: [
+          { suspendedUntil: null },
+          { suspendedUntil: { lte: now } },
+        ],
+      }
+
+      const where = input.search
+        ? {
+            AND: [
+              baseWhere,
+              {
+                OR: [
+                  { name: { contains: input.search, mode: 'insensitive' as const } },
+                  { email: { contains: input.search, mode: 'insensitive' as const } },
+                ],
+              },
+            ],
+          }
+        : baseWhere
+
+      const [users, total] = await Promise.all([
+        prisma.user.findMany({
+          where,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            emailVerified: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'asc' },
+          skip: (input.page - 1) * input.limit,
+          take: input.limit,
+        }),
+        prisma.user.count({ where }),
+      ])
+
+      return {
+        users,
+        total,
+        pages: Math.ceil(total / input.limit),
+      }
+    }),
+
+  /**
+   * Approve selected users past the waiting room and email each an invite to enter.
+   */
+  approveUsersAccess: publicProcedure
+    .input(
+      z.object({
+        adminUserId: z.string(),
+        targetUserIds: z.array(z.string()).min(1).max(100),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await requireAdmin(input.adminUserId)
+
+      const targets = await prisma.user.findMany({
+        where: {
+          id: { in: input.targetUserIds },
+          accessApproved: false,
+          isAdmin: false,
+          bannedAt: null,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      })
+
+      if (targets.length === 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No eligible users to approve (they may already have access)',
+        })
+      }
+
+      await prisma.user.updateMany({
+        where: { id: { in: targets.map((t) => t.id) } },
+        data: { accessApproved: true },
+      })
+
+      let emailsFailed = 0
+      for (const target of targets) {
+        const result = await emailService.sendAccessApprovedEmail({
+          email: target.email,
+          userName: target.name,
+        })
+        if (!result?.success) {
+          emailsFailed += 1
+        }
+      }
+
+      return {
+        approvedCount: targets.length,
+        approved: targets,
+        emailsFailed,
       }
     }),
 
@@ -1509,23 +1636,10 @@ export const adminRouter = router({
    * Create a Big Band with an assigned founder
    */
   createBigBand: publicProcedure
-    .input(
-      z.object({
-        adminUserId: z.string(),
-        founderId: z.string(),
-        name: z.string().min(2, 'Band name must be at least 2 characters'),
-        description: z.string().min(10, 'Description must be at least 10 characters'),
-        mission: z.string().min(10, 'Mission must be at least 10 characters'),
-        values: z.string().min(1, 'Please enter at least one value'),
-        membershipRequirements: z.string().min(10, 'Please describe membership requirements'),
-        zipcode: z.string().min(3).max(10).optional(),
-        imageUrl: z.string().url().optional(),
-      })
-    )
+    .input(agencyBigBandCreateInputSchema)
     .mutation(async ({ input }) => {
       await requireAdmin(input.adminUserId)
 
-      // Verify founder exists and is not banned
       const founder = await prisma.user.findUnique({
         where: { id: input.founderId },
         select: { id: true, name: true, bannedAt: true, deletedAt: true },
@@ -1545,7 +1659,6 @@ export const adminRouter = router({
         })
       }
 
-      // Generate unique slug
       let baseSlug = input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
       let slug = baseSlug
       let counter = 1
@@ -1555,28 +1668,28 @@ export const adminRouter = router({
         counter++
       }
 
-      // Convert comma-separated values to array
-      const valuesArray = input.values.split(',').map(v => v.trim()).filter(Boolean)
-
-      // Create the Big Band
       const band = await prisma.band.create({
         data: {
           name: input.name,
           slug,
-          description: input.description,
+          description: input.mission,
           mission: input.mission,
-          values: valuesArray,
+          values: [],
+          productsOffered: input.productsOffered,
+          productsOther: input.productsOther ?? null,
+          clientSearchRadiusMiles: input.clientSearchRadiusMiles,
           skillsLookingFor: [],
           whatMembersWillLearn: [],
-          membershipRequirements: input.membershipRequirements,
+          membershipRequirements: '',
           whoCanApprove: ['FOUNDER', 'GOVERNOR'],
           whoCanCreateProposals: ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'],
-          zipcode: input.zipcode || null,
-          imageUrl: input.imageUrl || null,
+          ...mapAddress(input),
+          ...mapSocialLinks(input),
+          imageUrl: input.logoUrl ?? null,
           createdById: input.founderId,
-          parentBandId: null, // Big Band has no parent
-          isBigBand: true,   // Explicitly mark as Big Band
-          status: 'ACTIVE', // Big Bands start active immediately
+          parentBandId: null,
+          isBigBand: true,
+          status: 'ACTIVE',
           activatedAt: new Date(),
         },
       })

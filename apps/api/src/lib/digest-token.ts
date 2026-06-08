@@ -67,7 +67,7 @@ export function verifyUnsubscribeToken(token: string): string | null {
  */
 export function getUnsubscribeUrl(userId: string): string {
   const token = generateUnsubscribeToken(userId)
-  const baseUrl = process.env.FRONTEND_URL || 'https://banditeco.com'
+  const baseUrl = process.env.FRONTEND_URL || 'https://adoptacatbot.com'
   return `${baseUrl}/unsubscribe?token=${token}`
 }
 
@@ -75,6 +75,6 @@ export function getUnsubscribeUrl(userId: string): string {
  * Generate the preferences URL for an email
  */
 export function getPreferencesUrl(): string {
-  const baseUrl = process.env.FRONTEND_URL || 'https://banditeco.com'
+  const baseUrl = process.env.FRONTEND_URL || 'https://adoptacatbot.com'
   return `${baseUrl}/user-dashboard/settings`
 }

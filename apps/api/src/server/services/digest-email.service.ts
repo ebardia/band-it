@@ -16,7 +16,7 @@ function renderDigestEmail(
   const actionCards = actions.map((action) => {
     const { icon, typeLabel, buttonLabel } = getActionDetails(action.type)
     const urgencyHtml = getUrgencyHtml(action)
-    const baseUrl = process.env.FRONTEND_URL || 'https://banditeco.com'
+    const baseUrl = process.env.FRONTEND_URL || 'https://adoptacatbot.com'
     const fullUrl = `${baseUrl}${action.url}`
 
     return `

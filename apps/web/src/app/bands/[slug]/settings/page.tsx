@@ -146,15 +146,31 @@ export default function BandSettingsPage() {
               bandSlug={slug}
               userId={userId}
               userRole={currentMember?.role}
+              isBigBand={band.isBigBand}
               initialData={{
                 name: band.name,
                 description: band.description,
                 mission: band.mission,
                 values: band.values || [],
-                skillsLookingFor: band.skillsLookingFor || [],
-                whatMembersWillLearn: band.whatMembersWillLearn || [],
-                membershipRequirements: band.membershipRequirements,
+                businessType: band.businessType,
+                servicesOffered: band.servicesOffered || [],
+                servicesOther: band.servicesOther,
+                productsOffered: band.productsOffered || [],
+                productsOther: band.productsOther,
+                serviceAreaMiles: band.serviceAreaMiles,
+                clientSearchRadiusMiles: band.clientSearchRadiusMiles,
+                addressLine1: band.addressLine1,
+                addressLine2: band.addressLine2,
+                city: band.city,
+                state: band.state,
                 zipcode: band.zipcode,
+                country: band.country,
+                websiteUrl: band.websiteUrl,
+                facebookUrl: band.facebookUrl,
+                instagramUrl: band.instagramUrl,
+                xUrl: band.xUrl,
+                tiktokUrl: band.tiktokUrl,
+                youtubeUrl: band.youtubeUrl,
                 imageUrl: band.imageUrl,
               }}
             />

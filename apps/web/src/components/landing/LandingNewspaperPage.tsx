@@ -21,81 +21,85 @@ function formatPaperDate(d: Date) {
   }).format(d)
 }
 
-const LEAD_HEADLINE = 'The Band It Layer'
+const LEAD_HEADLINE = 'Uncover opportunities. Validate them. Run the campaigns.'
 
 const LEAD_DEK =
-  'Band It wraps the AI stack \u2014 intelligence signal processing on one side, human in the loop on the other, vertical agents in the middle, and verified business intelligence out.'
+  'Band It helps you find opportunities for your products and services, lets your subject-matter experts verify and validate each lead, then launches marketing campaigns for the lists that pass review \u2014 two agents, your people in the loop, every step on the record.'
 
 const HERO_FIGURE_CAPTION =
-  'Fig. 1 \u2014 The Band It layer: signals \u00b7 stack \u00b7 human swarm \u00b7 the goods.'
+  'Fig. 1 \u2014 The opportunity conveyor belt: signals in, discovery and validation in the middle, campaigns out.'
 
-const SIGNALS_KICKER = 'Intelligence signal processing'
-const SIGNALS_HEADING = 'The signal desk'
+const SIGNALS_KICKER = 'Step one'
+const SIGNALS_HEADING = 'Signal detection'
 
 const SIGNAL_FEEDS = [
   {
-    title: 'Open web',
+    title: 'Hiring & growth',
     detail:
-      'Public filings, press, forums, and market chatter \u2014 screened into structured signal, not raw noise.',
+      'A regional HVAC firm posts three service-manager roles and expands into commercial installs \u2014 a signal of capacity stress and a wedge for your operations product.',
   },
   {
-    title: 'IoT & telemetry',
+    title: 'Market & regulation',
     detail:
-      'Industrial sensors, ambient feeds, and operational data correlated with the questions your agents are hunting.',
+      'New EPA reporting rules hit your target vertical \u2014 a signal that compliance-heavy buyers will need help in the next quarter, before competitors reach them.',
   },
   {
-    title: 'Personal devices',
+    title: 'Digital footprint',
     detail:
-      'Wearables and monitoring where policy allows \u2014 optional inputs your band chooses to trust.',
+      'LinkedIn, press, and job boards show a CRM migration plus a new business-development hire \u2014 a signal the account is buying now, not someday.',
   },
   {
-    title: 'Public infrastructure',
+    title: 'Operational stress',
     detail:
-      'Roads, utilities, transit, water, power, and other civic infrastructure data \u2014 what the built world is doing right now.',
+      'Glassdoor churn, backlog complaints, or delayed permit filings \u2014 signals of coordination pain your service is built to solve.',
   },
   {
-    title: 'Satellite & geospatial',
+    title: 'Public records & contracts',
     detail:
-      'Overhead imagery and location intelligence when the workflow needs eyes on the ground from above.',
+      'SAM.gov awards, permit pulls, or franchise filings in your geography \u2014 signals that name accounts entering a change window worth a call.',
   },
 ]
 
-const STACK_KICKER = 'Anatomy of the stack'
-const STACK_HEADING = 'Layers 1\u20136 inside the helmet'
+const WORKFLOW_KICKER = 'Step two'
+const WORKFLOW_HEADING = 'Discovery agent + your SME'
 
-const STACK_INTRO =
-  'Band It does not pretend to be the whole AI industry. It hugs the stack \u2014 from energy and silicon through models, orchestration, and vertical agents \u2014 and adds the layer that turns raw capability into decision-grade output.'
+const WORKFLOW_INTRO =
+  'Signals do not become pipeline on their own. The discovery agent hunts across feeds you define, correlates evidence, and ranks who might need what you sell \u2014 and why now. Your subject-matter expert reviews every lead before it moves forward: approve, reject, or edit with context only a human would know.'
 
-const STACK_LAYERS = [
-  { num: '01', label: 'Energy', text: 'Power, cooling, grid \u2014 the foundation everything else stands on.' },
-  { num: '02', label: 'Chips', text: 'GPUs, memory, networking \u2014 the hardware engine.' },
-  { num: '03', label: 'Infrastructure', text: 'Data centers, cloud, storage \u2014 where compute lives.' },
-  { num: '04', label: 'Large language models', text: 'Foundation and fine-tuned models \u2014 the algorithmic core.' },
+const WORKFLOW_STEPS = [
   {
-    num: '05',
-    label: 'Agent management platform',
-    text: 'Routing, tools, memory, multi-agent supervision \u2014 where Band It steers orchestration.',
+    num: '01',
+    label: 'Discovery agent',
+    text:
+      'Watches your signal feeds, applies fit filters, and assembles ranked opportunity lists with evidence attached \u2014 company, trigger, suggested angle, confidence.',
   },
   {
-    num: '06',
-    label: 'Vertical AI agents',
-    text: 'Domain workflows off the shelf or composed by your band \u2014 legal, ops, discovery, research, and more.',
+    num: '02',
+    label: 'Human validation',
+    text:
+      'Your SME checks fit, timing, and tone. Bad leads drop. Good leads get enriched. Nothing reaches outreach until a person signs off.',
+  },
+  {
+    num: '03',
+    label: 'Validated list',
+    text:
+      'What exits is a campaign-ready audience: verified accounts, approved messaging angles, and segment tags your team trusts.',
   },
 ]
 
-const BRIEFING_KICKER = 'Briefing'
-const BRIEFING_HEADING = 'Not a chat box. The layer that completes the stack.'
+const BRIEFING_KICKER = 'Step three'
+const BRIEFING_HEADING = 'Marketing agent + your review'
 const BRIEFING_LEAD =
-  'Human in the loop at every step that matters \u2014 from first signal to final delivery.'
+  'Validated lists become campaigns \u2014 with your team steering copy, channels, and spend.'
 
 const BRIEFING_PARAGRAPHS = [
-  'Most AI products stop at the model or a single prompt. Band It wraps layers 1\u20136: intelligence signal processing in, vertical agents at work, humans steering throughout, and business-ready output into the systems you already run.',
-  'Not a raw LLM wrapper, a SIEM dashboard, or an agent builder that vanishes after deploy. One transparent workspace where your band composes workflows \u2014 agent nodes, human checkpoints, sinks to webhooks and documents.',
-  'Opportunity discovery, research desks, compliance scans: same engine, different templates. Every node leaves a trace. Every approval is recorded.',
+  'The marketing agent turns approved segments into outbound assets: email sequences tuned to each trigger, LinkedIn ad variants for accounts that just won municipal contracts, nurture tracks for companies with fresh BD hires, and landing-page copy matched to the signal that surfaced them.',
+  'You set brand voice, compliance boundaries, and budget caps. The agent drafts; your marketer approves. Sequences ship to the CRM, ad platforms, or webhooks you already use \u2014 not a black box that sends on its own.',
+  'Same conveyor, different products: a med-spa chain gets a re-engagement campaign for lapsed members; a B2B services firm gets a call-list brief for contractors expanding into government work. Every send traces back to the signal that started it.',
 ]
 
 const BRIEFING_MAGICIAN_CAPTION =
-  'Fig. 2 \u2014 One layer, many moving parts: signals, stack, agents, humans, The Goods.'
+  'Fig. 2 \u2014 Two agents, one human checkpoint: discovery in, validation through, campaigns out.'
 
 type RailBlock = {
   title: string
@@ -108,17 +112,17 @@ const RAIL_BLOCKS: RailBlock[] = [
   {
     title: 'For operators',
     detail:
-      'You run the layer day to day \u2014 configure workflows, steer agents, pass human checkpoints, and ship The Goods.',
+      'Configure signal feeds, run discovery, pass SME review, and launch campaigns from one workspace \u2014 with a full audit trail.',
   },
   {
     title: 'For companies',
     detail:
-      'You bring the use case and the customer \u2014 we compose signal feeds, agents, and review steps around your problem.',
+      'Bring your product, ICP, and compliance rules. We compose the discovery and marketing agents around how you already sell.',
   },
   {
-    title: 'Agent workflows',
-    detail: 'Vertical agents off the shelf or built by your band.',
-    cta: 'Learn more',
+    title: 'The longer story',
+    detail: 'How Band It thinks about signals, agents, and human checkpoints.',
+    cta: 'Read the essay',
     href: '/manifesto',
   },
 ]
@@ -126,7 +130,7 @@ const RAIL_BLOCKS: RailBlock[] = [
 function PlatformCta({ className }: { className?: string }) {
   return (
     <Link href="/register" className={`np-landing-platform-cta${className ? ` ${className}` : ''}`}>
-      Wear the AI helmet &rarr;
+      Start discovering &rarr;
     </Link>
   )
 }
@@ -164,8 +168,8 @@ export function LandingNewspaperPage() {
           <hr className="np-rule" />
           <div className="np-masthead-meta py-3 md:py-3.5">
             <span suppressHydrationWarning>
-              The Band It Layer &middot; {formatPaperDate(new Date())} &middot; Vol. I &middot; Anatomy
-              of the stack
+              Signals &middot; Opportunities &middot; Campaigns &middot; {formatPaperDate(new Date())}{' '}
+              &middot; Vol. I
             </span>
           </div>
           <hr className="np-rule" />
@@ -185,7 +189,7 @@ export function LandingNewspaperPage() {
                 <figure className="np-landing-hero-figure">
                   <Image
                     src={LANDING_BANDIT_LAYER_IMAGE}
-                    alt="Vintage newspaper diagram of the Band It layer: a space helmet wrapping the AI stack with intelligence signal processing on the left, human in the loop on the right, and layers from energy through vertical agents inside"
+                    alt="Vintage steampunk engraving of the Band It opportunity conveyor belt: boxes for human tasks, AI agents, decision points, and automated processes passing from signal to action"
                     width={1536}
                     height={1024}
                     className="np-landing-hero-figure-img"
@@ -212,22 +216,22 @@ export function LandingNewspaperPage() {
 
               <hr className="np-rule" />
 
-              <section className="np-landing-stack" aria-labelledby="landing-stack-heading">
-                <p className="np-landing-section-kicker">{STACK_KICKER}</p>
-                <h2 id="landing-stack-heading" className="np-headline-serif np-landing-thesis-lead">
-                  {STACK_HEADING}
+              <section className="np-landing-stack" aria-labelledby="landing-workflow-heading">
+                <p className="np-landing-section-kicker">{WORKFLOW_KICKER}</p>
+                <h2 id="landing-workflow-heading" className="np-headline-serif np-landing-thesis-lead">
+                  {WORKFLOW_HEADING}
                 </h2>
-                <p className="np-landing-paragraph np-landing-stack-intro">{STACK_INTRO}</p>
+                <p className="np-landing-paragraph np-landing-stack-intro">{WORKFLOW_INTRO}</p>
                 <ol className="np-landing-stack-layers">
-                  {STACK_LAYERS.map((layer) => (
-                    <li key={layer.num} className="np-landing-stack-layer">
+                  {WORKFLOW_STEPS.map((step) => (
+                    <li key={step.num} className="np-landing-stack-layer">
                       <div className="np-landing-pipeline-step-head">
                         <span className="np-landing-pipeline-index" aria-hidden>
-                          {layer.num}
+                          {step.num}
                         </span>
-                        <span className="np-landing-pipeline-label">{layer.label}</span>
+                        <span className="np-landing-pipeline-label">{step.label}</span>
                       </div>
-                      <p className="np-landing-pipeline-text">{layer.text}</p>
+                      <p className="np-landing-pipeline-text">{step.text}</p>
                     </li>
                   ))}
                 </ol>
@@ -264,7 +268,7 @@ export function LandingNewspaperPage() {
                   <figure className="np-landing-briefing-figure">
                     <Image
                       src={LANDING_MAGICIAN_JUGGLER_IMAGE}
-                      alt="Vintage engraving of a circus magician juggling signals, chips, servers, agents, infrastructure tools, and The Goods while spinning Signals, Humans, and Stack on his head"
+                      alt="Vintage engraving of a circus magician juggling signals, opportunity lists, campaign assets, and review checkpoints while balancing discovery and marketing agents with a human reviewer"
                       width={1536}
                       height={1024}
                       className="np-landing-briefing-figure-img"
@@ -278,9 +282,9 @@ export function LandingNewspaperPage() {
             <aside className="np-profile-rail" aria-label="Front page briefs">
               <div className="np-rail-block">
                 <p className="np-profile-meta-rail" suppressHydrationWarning>
-                  BAND IT LAYER
+                  DISCOVERY AGENT
                   <br />
-                  SIGNALS &middot; AGENTS &middot; HUMANS
+                  SME REVIEW &middot; MARKETING AGENT
                   <br />
                   {formatPaperDate(new Date()).toUpperCase()}
                 </p>

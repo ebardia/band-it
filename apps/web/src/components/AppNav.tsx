@@ -78,7 +78,7 @@ export function AppNav() {
           {/* Help Button */}
           <button
             onClick={toggleHelp}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 hover:text-blue-800 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="np-help-nav-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
             title="Help Center"
           >
             <span>?</span>

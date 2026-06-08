@@ -572,12 +572,32 @@ model Band {
 
   // Location
   zipcode     String?
+  addressLine1 String?
+  addressLine2 String?
+  city        String?
+  state       String?
+  country     String?  @default("US")
+
+  // Business / agency profile (Cat Bot)
+  businessType            String?   // e.g. MEDICAL_SPA
+  servicesOffered         String[]  @default([])
+  servicesOther           String?   @db.Text
+  productsOffered         String[]  @default([])
+  productsOther           String?   @db.Text
+  serviceAreaMiles        Int?      // Client business service radius
+  clientSearchRadiusMiles Int?      // Agency client search radius
+  websiteUrl              String?
+  facebookUrl             String?
+  instagramUrl            String?
+  xUrl                    String?
+  tiktokUrl               String?
+  youtubeUrl              String?
 
   // Matching
-  skillsLookingFor     String[]
-  whatMembersWillLearn String[]
+  skillsLookingFor     String[] @default([])
+  whatMembersWillLearn String[] @default([])
 
-  // Visual
+  // Visual (logo)
   imageUrl    String?
 
   // Status
@@ -607,7 +627,7 @@ model Band {
   gracePeriodEndsAt     DateTime?
 
   // Membership Configuration
-  membershipRequirements String @db.Text
+  membershipRequirements String @default("") @db.Text
   whoCanApprove         MemberRole[]  // DEPRECATED: Use voting-based approval instead
 
   // Member Application Voting

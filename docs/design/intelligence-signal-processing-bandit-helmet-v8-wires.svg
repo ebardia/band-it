@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 1024">
+  <image href="intelligence-signal-processing-bandit-helmet-v5.png" width="1536" height="1024"/>
+  <g fill="none" stroke="#6b5038" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left: one trunk, split below stack, up to 06 and 05 -->
+    <path stroke-width="12" d="M 408 430 L 536 430 L 582 430"/>
+    <path stroke-width="10" d="M 582 430 L 582 304 L 592 304"/>
+    <path stroke-width="10" d="M 582 430 L 582 344 L 592 344"/>
+    <!-- Right -->
+    <path stroke-width="12" d="M 1128 430 L 1000 430 L 954 430"/>
+    <path stroke-width="10" d="M 954 430 L 954 304 L 944 304"/>
+    <path stroke-width="10" d="M 954 430 L 954 344 L 944 344"/>
+  </g>
+</svg>

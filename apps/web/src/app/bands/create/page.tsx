@@ -1,90 +1,119 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { trpc } from '@/lib/trpc'
 import { jwtDecode } from 'jwt-decode'
-import { MIN_MEMBERS_TO_ACTIVATE, REQUIRE_PAYMENT_TO_ACTIVATE } from '@band-it/shared'
+import { trpc } from '@/lib/trpc'
+import { useToast } from '@/components/ui'
+import { BUSINESS_TYPES, MEDICAL_SPA_SERVICES } from '@band-it/shared'
+import { EditorialSurface } from '@/components/editorial/EditorialSurface'
+import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
 import {
-  Heading,
-  Text,
-  Stack,
-  Input,
-  Textarea,
-  Button,
-  useToast,
-  Alert,
-  PageWrapper,
-  DashboardContainer,
-  Flex,
-  Box,
-  FileUpload,
-  Loading
-} from '@/components/ui'
-import { TemplateSelector } from '@/components/onboarding'
-import { AppNav } from '@/components/AppNav'
+  EditorialAddressFields,
+  EditorialChecklist,
+  EditorialFieldGroup,
+  EditorialHint,
+  EditorialInput,
+  EditorialLabel,
+  EditorialLogoUpload,
+  EditorialSocialFields,
+  EditorialTextarea,
+  EditorialError,
+} from '@/components/band-profile/EditorialFormFields'
 
-export default function CreateBandPage() {
-  return (
-    <Suspense fallback={<PageWrapper variant="dashboard"><Loading message="Loading..." /></PageWrapper>}>
-      <CreateBandContent />
-    </Suspense>
-  )
+function formatPaperDate(d: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(d)
 }
 
-function CreateBandContent() {
+const emptyAddress = {
+  addressLine1: '',
+  addressLine2: '',
+  city: '',
+  state: '',
+  zipcode: '',
+  country: 'US',
+}
+
+const emptySocial = {
+  websiteUrl: '',
+  facebookUrl: '',
+  instagramUrl: '',
+  xUrl: '',
+  tiktokUrl: '',
+  youtubeUrl: '',
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      resolve(result.split(',')[1] ?? '')
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+function CreateBusinessBandContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { showToast } = useToast()
-  const [userId, setUserId] = useState<string | null>(null)
   const parentBandId = searchParams.get('parentBandId')
   const parentBandName = searchParams.get('parentBandName')
-  const templateFromUrl = searchParams.get('template')
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(templateFromUrl)
 
-  const [formData, setFormData] = useState({
+  const [userId, setUserId] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [uploadedLogoName, setUploadedLogoName] = useState<string | null>(null)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+
+  const [form, setForm] = useState({
     name: '',
+    businessType: 'MEDICAL_SPA',
     description: '',
     mission: '',
     values: '',
-    skillsLookingFor: '',
-    whatMembersWillLearn: '',
-    membershipRequirements: '',
-    zipcode: '',
-    imageUrl: '',
-    // Governance settings
-    votingMethod: 'SIMPLE_MAJORITY' as 'SIMPLE_MAJORITY' | 'SUPERMAJORITY_66' | 'SUPERMAJORITY_75' | 'UNANIMOUS',
-    votingPeriodDays: 7,
-    quorumPercentage: 50,
+    servicesOffered: [] as string[],
+    servicesOther: '',
+    serviceAreaMiles: 25,
+    logoUrl: '',
+    ...emptyAddress,
+    ...emptySocial,
   })
-  const [votingPeriodUnit, setVotingPeriodUnit] = useState<'hours' | 'days'>('days')
-  const [votingPeriodValue, setVotingPeriodValue] = useState(7)
-  const [whoCanApprove, setWhoCanApprove] = useState<string[]>(['FOUNDER'])
-  const [whoCanCreateProposals, setWhoCanCreateProposals] = useState<string[]>(['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR'])
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [uploadedImageName, setUploadedImageName] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  // Validation rules matching backend (band.create.ts)
-  const validateForm = (): Record<string, string> => {
-    const errors: Record<string, string> = {}
-    const trim = (s: string) => s.trim()
-    if (trim(formData.name).length < 2) errors.name = 'Band name must be at least 2 characters'
-    if (trim(formData.description).length < 10) errors.description = 'Description must be at least 10 characters'
-    if (trim(formData.mission).length < 10) errors.mission = 'Mission must be at least 10 characters'
-    if (trim(formData.values).length < 1) errors.values = 'Please enter at least one value'
-    if (trim(formData.skillsLookingFor).length < 1) errors.skillsLookingFor = 'Please enter skills you are looking for'
-    if (trim(formData.whatMembersWillLearn).length < 1) errors.whatMembersWillLearn = 'Please enter what members will learn'
-    if (trim(formData.membershipRequirements).length < 10) errors.membershipRequirements = 'Please describe membership requirements'
-    const zip = trim(formData.zipcode)
-    if (zip.length > 0) {
-      if (zip.length < 3) errors.zipcode = 'Postal code must be at least 3 characters'
-      else if (zip.length > 10) errors.zipcode = 'Postal code must be at most 10 characters'
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (!token) {
+      router.replace('/login')
+      return
     }
-    return errors
-  }
+    try {
+      const decoded = jwtDecode<{ userId: string }>(token)
+      setUserId(decoded.userId)
+    } catch {
+      router.replace('/login')
+    }
+  }, [router])
 
-  const clearFieldError = (field: string) => {
+  const uploadFileMutation = trpc.file.upload.useMutation()
+  const createBandMutation = trpc.band.create.useMutation({
+    onSuccess: () => {
+      showToast('Business profile created!', 'success')
+      router.push('/bands/my-bands')
+    },
+    onError: (error) => {
+      showToast(error.message || 'Could not create business', 'error')
+    },
+  })
+
+  const setAddress = (field: keyof typeof emptyAddress, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
     setFieldErrors((prev) => {
       const next = { ...prev }
       delete next[field]
@@ -92,462 +121,273 @@ function CreateBandContent() {
     })
   }
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token)
-        setUserId(decoded.userId)
-      } catch (error) {
-        console.error('Invalid token:', error)
-        router.push('/login')
-      }
-    } else {
-      router.push('/login')
-    }
-  }, [router])
+  const setSocial = (field: keyof typeof emptySocial, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+  }
 
-  const uploadFileMutation = trpc.file.upload.useMutation()
-
-  // Fetch template defaults when template is selected
-  const { data: templateDefaults } = trpc.onboarding.getTemplateDefaults.useQuery(
-    { templateId: selectedTemplate! },
-    { enabled: !!selectedTemplate }
-  )
-
-  // Apply template defaults to form
-  useEffect(() => {
-    if (templateDefaults) {
-      setFormData(prev => ({
-        ...prev,
-        mission: templateDefaults.suggestedMission || prev.mission,
-        values: templateDefaults.suggestedValues?.join(', ') || prev.values,
-        votingMethod: templateDefaults.suggestedVotingMethod || prev.votingMethod,
-      }))
-      if (templateDefaults.suggestedVotingPeriodDays) {
-        setVotingPeriodValue(templateDefaults.suggestedVotingPeriodDays)
-        setVotingPeriodUnit('days')
-      }
-    }
-  }, [templateDefaults])
-
-  const handleImageUpload = async (fileData: { fileName: string; mimeType: string; base64Data: string }) => {
+  const handleLogoUpload = async (file: File) => {
     if (!userId) return
-
-    setIsUploadingImage(true)
+    setIsUploadingLogo(true)
     try {
+      const base64Data = await fileToBase64(file)
       const result = await uploadFileMutation.mutateAsync({
-        ...fileData,
+        fileName: file.name,
+        mimeType: file.type,
+        base64Data,
         userId,
         category: 'IMAGE',
       })
-      setFormData(prev => ({ ...prev, imageUrl: result.file.url }))
-      setUploadedImageName(result.file.originalName)
-      showToast('Image uploaded', 'success')
-    } catch (error: any) {
-      showToast(error.message || 'Failed to upload image', 'error')
+      setForm((prev) => ({ ...prev, logoUrl: result.file.url }))
+      setUploadedLogoName(result.file.originalName)
+      showToast('Logo uploaded', 'success')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to upload logo'
+      showToast(message, 'error')
     } finally {
-      setIsUploadingImage(false)
+      setIsUploadingLogo(false)
     }
   }
 
-  const removeImage = () => {
-    setFormData(prev => ({ ...prev, imageUrl: '' }))
-    setUploadedImageName(null)
+  const validate = () => {
+    const errors: Record<string, string> = {}
+    if (form.name.trim().length < 2) errors.name = 'Business name must be at least 2 characters'
+    if (form.description.trim().length < 10) errors.description = 'Description must be at least 10 characters'
+    if (form.mission.trim().length < 10) errors.mission = 'Mission must be at least 10 characters'
+    if (!form.values.trim()) errors.values = 'Enter at least one value'
+    if (form.servicesOffered.length === 0) errors.servicesOffered = 'Select at least one service'
+    if (form.servicesOffered.includes('OTHER') && !form.servicesOther.trim()) {
+      errors.servicesOther = 'Describe other services'
+    }
+    if (!form.addressLine1.trim()) errors.addressLine1 = 'Street address is required'
+    if (!form.city.trim()) errors.city = 'City is required'
+    if (!form.state.trim()) errors.state = 'State is required'
+    if (form.zipcode.trim().length < 3) errors.zipcode = 'ZIP code is required'
+    if (form.serviceAreaMiles < 1) errors.serviceAreaMiles = 'Service area must be at least 1 mile'
+    return errors
   }
-
-  const createBandMutation = trpc.band.create.useMutation({
-    onSuccess: (data) => {
-      showToast('Band created successfully!', 'success')
-      router.push('/bands/my-bands')
-    },
-    onError: (error: any) => {
-      try {
-        // Parse the error message which contains JSON string
-        if (error.message) {
-          const parsedErrors = JSON.parse(error.message)
-          if (Array.isArray(parsedErrors) && parsedErrors.length > 0) {
-            showToast(parsedErrors[0].message, 'error')
-            return
-          }
-        }
-      } catch (e) {
-        // If parsing fails, fall back to generic message
-      }
-      showToast(error.message || 'Please check all required fields', 'error')
-    },
-  })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!userId) {
-      showToast('You must be logged in to create a band', 'error')
-      return
-    }
+    if (!userId) return
 
-    if (whoCanApprove.length === 0) {
-      showToast('Please select at least one role that can approve members', 'error')
-      return
-    }
-
-    const errors = validateForm()
+    const errors = validate()
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
-      const firstMessage = Object.values(errors)[0]
-      showToast(firstMessage, 'error')
+      showToast(Object.values(errors)[0], 'error')
       return
     }
     setFieldErrors({})
 
-    // Calculate voting period settings
-    const votingPeriodDays = votingPeriodUnit === 'days' ? votingPeriodValue : 7
-    const votingPeriodHours = votingPeriodUnit === 'hours' ? votingPeriodValue : null
-
     createBandMutation.mutate({
       userId,
-      ...formData,
-      votingPeriodDays,
-      votingPeriodHours,
-      whoCanApprove: whoCanApprove as any,
-      whoCanCreateProposals: whoCanCreateProposals as any,
+      name: form.name.trim(),
+      businessType: form.businessType as 'MEDICAL_SPA',
+      description: form.description.trim(),
+      mission: form.mission.trim(),
+      values: form.values.trim(),
+      servicesOffered: form.servicesOffered as (
+        | 'BOTOX'
+        | 'FILLERS'
+        | 'LASER_HAIR'
+        | 'LASER_SKIN'
+        | 'CHEMICAL_PEEL'
+        | 'MICRONEEDLING'
+        | 'BODY_CONTOURING'
+        | 'IV_THERAPY'
+        | 'SKIN_REJUVENATION'
+        | 'MEDICAL_FACIAL'
+        | 'OTHER'
+      )[],
+      servicesOther: form.servicesOther.trim() || undefined,
+      serviceAreaMiles: form.serviceAreaMiles,
+      logoUrl: form.logoUrl || undefined,
+      addressLine1: form.addressLine1.trim(),
+      addressLine2: form.addressLine2.trim() || undefined,
+      city: form.city.trim(),
+      state: form.state.trim(),
+      zipcode: form.zipcode.trim(),
+      country: form.country.trim() || 'US',
+      websiteUrl: form.websiteUrl.trim() || undefined,
+      facebookUrl: form.facebookUrl.trim() || undefined,
+      instagramUrl: form.instagramUrl.trim() || undefined,
+      xUrl: form.xUrl.trim() || undefined,
+      tiktokUrl: form.tiktokUrl.trim() || undefined,
+      youtubeUrl: form.youtubeUrl.trim() || undefined,
       parentBandId: parentBandId || undefined,
-      templateId: selectedTemplate || undefined,
     })
   }
 
-  const handleRoleToggle = (role: string) => {
-    if (whoCanApprove.includes(role)) {
-      setWhoCanApprove(whoCanApprove.filter(r => r !== role))
-    } else {
-      setWhoCanApprove([...whoCanApprove, role])
-    }
-  }
-
-  const handleProposalRoleToggle = (role: string) => {
-    if (whoCanCreateProposals.includes(role)) {
-      setWhoCanCreateProposals(whoCanCreateProposals.filter(r => r !== role))
-    } else {
-      setWhoCanCreateProposals([...whoCanCreateProposals, role])
-    }
-  }
-
-  const roles = ['FOUNDER', 'GOVERNOR', 'MODERATOR', 'CONDUCTOR', 'VOTING_MEMBER', 'OBSERVER']
-
-  const votingMethods = [
-    { value: 'SIMPLE_MAJORITY', label: 'Simple Majority (>50%)', description: 'Proposals pass when more than half vote yes' },
-    { value: 'SUPERMAJORITY_66', label: 'Supermajority (>66%)', description: 'Proposals need two-thirds approval' },
-    { value: 'SUPERMAJORITY_75', label: 'Supermajority (>75%)', description: 'Proposals need three-quarters approval' },
-    { value: 'UNANIMOUS', label: 'Unanimous (100%)', description: 'Everyone must agree for proposals to pass' },
-  ]
-
   return (
-    <PageWrapper variant="dashboard">
-      <AppNav />
+    <EditorialSurface>
+      <div className="np-shell np-landing-page np-profile-form-shell">
+        <header className="np-landing-masthead np-register-masthead">
+          <p className="np-cat">Adopt A Cat Bot</p>
+          <EditorialNeonMasthead
+            arcLabel={parentBandId ? 'Client' : 'New'}
+            actionLabel="Business"
+            ariaLabel={parentBandId ? 'New Client Business' : 'New Business'}
+          />
+          <p className="np-register-tagline">
+            {parentBandId
+              ? `Register a client business under ${parentBandName || 'your agency'}.`
+              : 'Tell us about your business so your Cat Bots know who they speak for.'}
+          </p>
+          <hr className="np-rule" />
+          <div className="np-masthead-meta py-3 md:py-3.5">
+            <span suppressHydrationWarning>{formatPaperDate(new Date())}</span>
+            <span className="text-right">Business Edition</span>
+          </div>
+        </header>
 
-      <DashboardContainer>
-        <div className="max-w-3xl mx-auto">
-          <Stack spacing="xl">
-            <Heading level={1}>{parentBandId ? 'Create a Sub-band' : 'Create a New Band'}</Heading>
-            <Text variant="muted">
-              {parentBandId
-                ? 'Fill out the information below to create your sub-band. You\'ll be the founder!'
-                : 'Fill out the information below to create your band. You\'ll be the founder!'}
-            </Text>
-
-            {(MIN_MEMBERS_TO_ACTIVATE > 1 || REQUIRE_PAYMENT_TO_ACTIVATE) && !parentBandId && (
-              <Alert variant="info">
-                <Text variant="small">
-                  {REQUIRE_PAYMENT_TO_ACTIVATE
-                    ? `Your band will start in PENDING status. Once you have ${MIN_MEMBERS_TO_ACTIVATE} active member${MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'} and set up payment, it will become ACTIVE.`
-                    : `Your band will start in PENDING status. Once you have ${MIN_MEMBERS_TO_ACTIVATE} active member${MIN_MEMBERS_TO_ACTIVATE === 1 ? '' : 's'}, it will automatically become ACTIVE.`
-                  }
-                </Text>
-              </Alert>
-            )}
-
-            {parentBandId && (
-              <Alert variant="info">
-                <Stack spacing="xs">
-                  <Text variant="small" weight="semibold">Creating a Sub-band</Text>
-                  <Text variant="small">
-                    {parentBandName
-                      ? `This band will be created as a sub-band under "${parentBandName}".`
-                      : 'This band will be created as a sub-band under the selected Big Band.'
-                    }
-                  </Text>
-                </Stack>
-              </Alert>
-            )}
-
-            {/* Template Selection */}
-            <Box>
-              <Text weight="semibold" className="mb-2">What kind of group are you organizing?</Text>
-              <Text variant="small" color="muted" className="mb-4">
-                Choose a template to get tailored guidance and suggested settings.
-              </Text>
-              <TemplateSelector
-                selectedTemplate={selectedTemplate}
-                onSelect={setSelectedTemplate}
+        <form onSubmit={handleSubmit}>
+          <EditorialFieldGroup kicker="Identity" title="Business name & type">
+            <div>
+              <EditorialLabel htmlFor="business-name">Business name</EditorialLabel>
+              <EditorialInput
+                id="business-name"
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Potomac Skin Care"
+                error={fieldErrors.name}
               />
-            </Box>
+            </div>
+            <div>
+              <EditorialLabel htmlFor="business-type">Business type</EditorialLabel>
+              <select
+                id="business-type"
+                className="np-field"
+                value={form.businessType}
+                onChange={(e) => setForm({ ...form, businessType: e.target.value })}
+              >
+                {BUSINESS_TYPES.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </EditorialFieldGroup>
 
-            <form onSubmit={handleSubmit}>
-              <Stack spacing="lg">
-                <Input
-                  label="Band Name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => { setFormData({ ...formData, name: e.target.value }); clearFieldError('name') }}
-                  placeholder="The Rockin' Rebels"
-                  error={fieldErrors.name}
-                  data-guide="band-name"
-                />
+          <EditorialFieldGroup kicker="Story" title="Description & mission">
+            <div>
+              <EditorialLabel htmlFor="business-description">Description</EditorialLabel>
+              <EditorialTextarea
+                id="business-description"
+                required
+                rows={4}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Who you are and what makes your practice distinct…"
+                error={fieldErrors.description}
+              />
+            </div>
+            <div>
+              <EditorialLabel htmlFor="business-mission">Mission statement</EditorialLabel>
+              <EditorialTextarea
+                id="business-mission"
+                required
+                rows={3}
+                value={form.mission}
+                onChange={(e) => setForm({ ...form, mission: e.target.value })}
+                placeholder="What you are trying to achieve for your clients…"
+                error={fieldErrors.mission}
+              />
+            </div>
+            <div>
+              <EditorialLabel htmlFor="business-values">Values</EditorialLabel>
+              <EditorialTextarea
+                id="business-values"
+                required
+                rows={2}
+                value={form.values}
+                onChange={(e) => setForm({ ...form, values: e.target.value })}
+                placeholder="Warmth, precision, discretion"
+                error={fieldErrors.values}
+              />
+              <EditorialHint>Separate with commas</EditorialHint>
+            </div>
+          </EditorialFieldGroup>
 
-                {/* Why we ask these questions */}
-                <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-5">
-                  <Text weight="bold" className="text-amber-900">
-                    The Band description, mission and values aren't just words on a page—they become the foundation of everything your band does. Our algorithms use them to connect you with people whose strengths and passions align with your goals. Additionally, as you create proposals, projects, and tasks, the same principles help ensure your work stays true to what you set out to do. Define them well, and they'll guide you long after today.
-                  </Text>
-                </div>
+          <EditorialFieldGroup kicker="Services" title="Services offered">
+            <EditorialChecklist
+              options={MEDICAL_SPA_SERVICES}
+              selected={form.servicesOffered}
+              onChange={(servicesOffered) => setForm({ ...form, servicesOffered })}
+              otherValue={form.servicesOther}
+              onOtherChange={(servicesOther) => setForm({ ...form, servicesOther })}
+            />
+            <EditorialError message={fieldErrors.servicesOffered} />
+          </EditorialFieldGroup>
 
-                <Textarea
-                  label="Description"
-                  required
-                  value={formData.description}
-                  onChange={(e) => { setFormData({ ...formData, description: e.target.value }); clearFieldError('description') }}
-                  placeholder="Tell people about your band..."
-                  rows={4}
-                  helperText="At least 10 characters - What kind of music do you play? What's your band's story?"
-                  error={fieldErrors.description}
-                  data-guide="band-description"
-                />
+          <EditorialFieldGroup kicker="Location" title="Address & service area">
+            <EditorialAddressFields values={form} onChange={setAddress} errors={fieldErrors} />
+            <div>
+              <EditorialLabel htmlFor="service-area">Service area (miles from address)</EditorialLabel>
+              <EditorialInput
+                id="service-area"
+                type="number"
+                min={1}
+                max={500}
+                required
+                value={form.serviceAreaMiles}
+                onChange={(e) =>
+                  setForm({ ...form, serviceAreaMiles: parseInt(e.target.value, 10) || 1 })
+                }
+                error={fieldErrors.serviceAreaMiles}
+              />
+            </div>
+          </EditorialFieldGroup>
 
-                <Textarea
-                  label="Mission Statement"
-                  required
-                  value={formData.mission}
-                  onChange={(e) => { setFormData({ ...formData, mission: e.target.value }); clearFieldError('mission') }}
-                  placeholder="Our mission is to..."
-                  rows={3}
-                  helperText="At least 10 characters - What is your band trying to achieve?"
-                  error={fieldErrors.mission}
-                  data-guide="band-mission"
-                />
+          <EditorialFieldGroup kicker="Presence" title="Logo & links">
+            <div>
+              <EditorialLabel>Logo</EditorialLabel>
+              <EditorialLogoUpload
+                logoUrl={form.logoUrl}
+                uploadedName={uploadedLogoName}
+                isUploading={isUploadingLogo}
+                onUpload={handleLogoUpload}
+                onRemove={() => {
+                  setForm((prev) => ({ ...prev, logoUrl: '' }))
+                  setUploadedLogoName(null)
+                }}
+              />
+            </div>
+            <EditorialSocialFields values={form} onChange={setSocial} />
+          </EditorialFieldGroup>
 
-                <Textarea
-                  label="Band Values"
-                  required
-                  value={formData.values}
-                  onChange={(e) => { setFormData({ ...formData, values: e.target.value }); clearFieldError('values') }}
-                  placeholder="Creativity, Collaboration, Community"
-                  rows={2}
-                  helperText="Separate with commas"
-                  error={fieldErrors.values}
-                />
+          <div className="np-profile-form-actions">
+            <button
+              type="submit"
+              className="np-profile-btn np-profile-btn-primary"
+              disabled={createBandMutation.isPending}
+            >
+              {createBandMutation.isPending ? 'Creating…' : 'Create business'}
+            </button>
+            <p className="np-field-hint" style={{ marginTop: '1rem' }}>
+              <Link href="/bands/my-bands" className="np-action">
+                ← Back to my bands
+              </Link>
+            </p>
+          </div>
+        </form>
+      </div>
+    </EditorialSurface>
+  )
+}
 
-                <Textarea
-                  label="Skills We're Looking For"
-                  required
-                  value={formData.skillsLookingFor}
-                  onChange={(e) => { setFormData({ ...formData, skillsLookingFor: e.target.value }); clearFieldError('skillsLookingFor') }}
-                  placeholder="Guitar, Drums, Vocals, Marketing"
-                  rows={2}
-                  helperText="Separate with commas - these will be matched with potential members"
-                  error={fieldErrors.skillsLookingFor}
-                />
-
-                <Textarea
-                  label="What Members Will Learn"
-                  required
-                  value={formData.whatMembersWillLearn}
-                  onChange={(e) => { setFormData({ ...formData, whatMembersWillLearn: e.target.value }); clearFieldError('whatMembersWillLearn') }}
-                  placeholder="Performance skills, Music theory, Band management"
-                  rows={2}
-                  helperText="Separate with commas - these will be matched with members' development goals"
-                  error={fieldErrors.whatMembersWillLearn}
-                />
-
-                <Textarea
-                  label="Membership Requirements"
-                  required
-                  value={formData.membershipRequirements}
-                  onChange={(e) => { setFormData({ ...formData, membershipRequirements: e.target.value }); clearFieldError('membershipRequirements') }}
-                  placeholder="We're looking for committed musicians who can practice weekly..."
-                  rows={3}
-                  helperText="At least 10 characters - What are the requirements to join your band?"
-                  error={fieldErrors.membershipRequirements}
-                />
-
-                <Box>
-                  <Text variant="small" weight="semibold" className="mb-2">Who Can Approve New Members?</Text>
-                  <Text variant="small" color="muted" className="mb-3">Select the roles that can approve membership applications</Text>
-                  <Stack spacing="sm">
-                    {roles.map((role) => (
-                      <label key={role} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={whoCanApprove.includes(role)}
-                          onChange={() => handleRoleToggle(role)}
-                          className="w-4 h-4"
-                        />
-                        <Text variant="small">{role.replace('_', ' ')}</Text>
-                      </label>
-                    ))}
-                  </Stack>
-                </Box>
-
-                {/* Governance Policy Section */}
-                <div className="border-t border-gray-200 pt-6 mt-2">
-                  <Heading level={2} className="mb-4">Governance Policy</Heading>
-                  <Text color="muted" className="mb-6">Define how decisions are made in your band</Text>
-
-                  <Stack spacing="lg">
-                    <Box>
-                      <Text variant="small" weight="semibold" className="mb-2">Voting Method</Text>
-                      <Text variant="small" color="muted" className="mb-3">How should proposals be approved?</Text>
-                      <Stack spacing="sm">
-                        {votingMethods.map((method) => (
-                          <label key={method.value} className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input
-                              type="radio"
-                              name="votingMethod"
-                              value={method.value}
-                              checked={formData.votingMethod === method.value}
-                              onChange={(e) => setFormData({ ...formData, votingMethod: e.target.value as any })}
-                              className="w-4 h-4 mt-0.5"
-                            />
-                            <div>
-                              <Text variant="small" weight="semibold">{method.label}</Text>
-                              <Text variant="small" color="muted">{method.description}</Text>
-                            </div>
-                          </label>
-                        ))}
-                      </Stack>
-                    </Box>
-
-                    <Flex gap="md" align="end">
-                      <Box className="flex-1">
-                        <Input
-                          label="Voting Period"
-                          type="number"
-                          min={1}
-                          max={votingPeriodUnit === 'hours' ? 720 : 30}
-                          value={votingPeriodValue}
-                          onChange={(e) => setVotingPeriodValue(parseInt(e.target.value) || (votingPeriodUnit === 'hours' ? 24 : 7))}
-                          helperText={votingPeriodUnit === 'hours' ? 'How long members have to vote (1-720 hours)' : 'How long members have to vote (1-30 days)'}
-                        />
-                      </Box>
-                      <Box className="pb-6">
-                        <Flex gap="sm">
-                          <Button
-                            type="button"
-                            variant={votingPeriodUnit === 'hours' ? 'primary' : 'secondary'}
-                            size="sm"
-                            onClick={() => {
-                              setVotingPeriodUnit('hours')
-                              if (votingPeriodValue > 720) setVotingPeriodValue(168) // Default to 7 days in hours
-                            }}
-                          >
-                            Hours
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={votingPeriodUnit === 'days' ? 'primary' : 'secondary'}
-                            size="sm"
-                            onClick={() => {
-                              setVotingPeriodUnit('days')
-                              if (votingPeriodValue > 30) setVotingPeriodValue(7)
-                            }}
-                          >
-                            Days
-                          </Button>
-                        </Flex>
-                      </Box>
-                      <Box className="flex-1">
-                        <Input
-                          label="Quorum (%)"
-                          type="number"
-                          min={1}
-                          max={100}
-                          value={formData.quorumPercentage}
-                          onChange={(e) => setFormData({ ...formData, quorumPercentage: parseInt(e.target.value) || 50 })}
-                          helperText="Minimum % of members that must vote"
-                        />
-                      </Box>
-                    </Flex>
-
-                    <Box>
-                      <Text variant="small" weight="semibold" className="mb-2">Who Can Create Proposals?</Text>
-                      <Text variant="small" color="muted" className="mb-3">Select the roles that can submit proposals for voting</Text>
-                      <Stack spacing="sm">
-                        {roles.map((role) => (
-                          <label key={role} className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={whoCanCreateProposals.includes(role)}
-                              onChange={() => handleProposalRoleToggle(role)}
-                              className="w-4 h-4"
-                            />
-                            <Text variant="small">{role.replace('_', ' ')}</Text>
-                          </label>
-                        ))}
-                      </Stack>
-                    </Box>
-                  </Stack>
-                </div>
-
-                <Input
-                  label="Postal Code (Optional)"
-                  type="text"
-                  value={formData.zipcode}
-                  onChange={(e) => { setFormData({ ...formData, zipcode: e.target.value }); clearFieldError('zipcode') }}
-                  placeholder="e.g. 12345, SW1A 1AA"
-                  maxLength={10}
-                  helperText="Leave blank if your band covers a large area"
-                  error={fieldErrors.zipcode}
-                />
-
-                <Box>
-                  <Text variant="small" weight="semibold" className="mb-2">Band Image (Optional)</Text>
-                  {formData.imageUrl ? (
-                    <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                      <img src={formData.imageUrl} alt="Band" className="w-16 h-16 object-cover rounded-lg" />
-                      <div className="flex-1">
-                        <Text variant="small">{uploadedImageName || 'Image uploaded'}</Text>
-                      </div>
-                      <Button type="button" variant="danger" size="sm" onClick={removeImage}>
-                        Remove
-                      </Button>
-                    </div>
-                  ) : (
-                    <FileUpload
-                      onUpload={handleImageUpload}
-                      isUploading={isUploadingImage}
-                      label=""
-                      description="Upload a logo or image for your band"
-                      accept="image/jpeg,image/png,image/gif,image/webp"
-                      maxSizeMB={5}
-                    />
-                  )}
-                </Box>
-
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  disabled={createBandMutation.isPending}
-                  className="w-full"
-                  data-guide="band-create-button"
-                >
-                  {createBandMutation.isPending ? 'Creating Band...' : 'Create Band'}
-                </Button>
-              </Stack>
-            </form>
-          </Stack>
-        </div>
-      </DashboardContainer>
-    </PageWrapper>
+export default function CreateBandPage() {
+  return (
+    <Suspense
+      fallback={
+        <EditorialSurface>
+          <div className="np-shell">
+            <p className="np-quiet">Loading…</p>
+          </div>
+        </EditorialSurface>
+      }
+    >
+      <CreateBusinessBandContent />
+    </Suspense>
   )
 }

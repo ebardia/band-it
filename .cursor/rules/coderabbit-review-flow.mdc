@@ -1,0 +1,35 @@
+---
+description: CodeRabbit PR review loop — staging PR, user brings comments, agent fixes
+alwaysApply: true
+---
+
+# CodeRabbit (CR) review flow
+
+This is the standard release workflow for Band It. Do not skip steps or treat "merge to production" as the default next action after opening a PR.
+
+## Branch roles
+
+- **`pre-profile-baseline`** → staging (Railway staging services must track this branch)
+- **`main`** → production (`adoptacatbot.com`; `banditeco.com` legacy alias on same Railway deploy)
+
+## The loop (repeat until CR is clean)
+
+1. **Implement on staging** — work lands on `pre-profile-baseline` (feature branch → PR → merge to baseline if needed).
+2. **Open a production PR** — `pre-profile-baseline` → `main` (e.g. `gh pr create --base main --head pre-profile-baseline`).
+3. **Trigger CodeRabbit** — user comments on the PR: `@coderabbitai full review` (auto_review is off in `.coderabbit.yaml`).
+4. **User brings CR comments here** — paste, screenshot, or list findings from the GitHub PR. **Do not ask the user to merge yet.**
+5. **Agent fixes** — address every actionable CR item on `pre-profile-baseline`, push, PR updates automatically.
+6. **Re-review** — user re-triggers CR or replies on threads; repeat steps 4–5 until satisfied.
+7. **Merge PR to `main`** — only after user explicitly approves post-CR fixes. Then verify production deploy.
+
+## What the agent should do
+
+- After creating a CR PR: remind user to post `@coderabbitai full review` and **wait for them to paste CR comments** for fixes.
+- When user shares CR feedback: fix issues, commit to `pre-profile-baseline`, summarize what changed; **do not push to `main` or merge unless asked**.
+- Do not fast-forward `main` or tell user "you're ready for production" until CR loop is done.
+
+## What the agent should not do
+
+- End with "merge when ready" as the primary next step right after opening the PR.
+- Bypass the PR and `git push origin pre-profile-baseline:main` when the user asked for CR review.
+- Commit unrelated local changes when fixing CR items.

@@ -1,0 +1,9 @@
+company_name,website,city,state,employee_count,industry,job_postings_text,leadership_notes,sam_registered,source_notes
+Capitol Systems Integrators,https://example.com,Arlington,VA,42,IT consulting and federal integration,"Business Development Manager — grow federal pipeline. Proposal Coordinator — support capture team.","Welcomes new COO Jane Reyes 2025.",yes,DMV integrator; manual CRM notes on site
+Riverbend Professional Services,,Bethesda,MD,28,management consulting,"Project Coordinator — cross-functional client delivery.","Founder Michael Chen featured on every case study page.",no,Spreadsheet-based project tracking mentioned on careers page
+Nova Staffing Group,,Rockville,MD,65,staffing and temp placement,"Recruiter — multiple openings. Account Manager.",,,Staffing agency — should exclude X02
+Arlington Data Labs,https://example.com,Arlington,VA,15,AI SaaS platform,"Senior ML Engineer — build our AI agents product.","CEO builds autonomous AI workflow product.",no,AI-native — should exclude X03
+Fairfax Gov Solutions,,Fairfax,VA,55,government consulting,"Capture Manager — federal opportunities. Business Development Lead.","",yes,SAM active; BD hiring
+District Ops Collective,,Washington,DC,18,operations and back-office,"Operations Coordinator — Excel reporting daily. Email workflow improvement.",Founder still runs day-to-day ops.,no,Manual process language
+Silver Spring Advisory,,Silver Spring,MD,35,professional services,"Director Business Development. Senior Consultant — new healthcare vertical launch.","Announces expanded healthcare advisory practice.",no,New vertical + BD hire
+Tysons Cloud Partners,,McLean,VA,90,Microsoft partner,"Cloud migration engineer. CRM administrator.","Salesforce Customer 360 deployment complete.",no,Enterprise stack signal X01 candidate
