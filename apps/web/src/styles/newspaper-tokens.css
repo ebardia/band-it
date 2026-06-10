@@ -600,6 +600,21 @@
   margin: 0 0 0.35rem;
 }
 
+.np-landing-use-case {
+  margin: 0.5rem 0 1.15rem;
+  padding: 0.85rem 0 0.85rem 1rem;
+  border-left: 3px solid var(--np-ink);
+  background: color-mix(in srgb, var(--np-paper) 94%, var(--np-ink) 6%);
+}
+
+.np-landing-use-case .np-landing-section-kicker {
+  margin-bottom: 0.5rem;
+}
+
+.np-landing-use-case .np-landing-paragraph {
+  margin: 0;
+}
+
 .np-landing-opportunities {
   margin-bottom: 1.35rem;
 }

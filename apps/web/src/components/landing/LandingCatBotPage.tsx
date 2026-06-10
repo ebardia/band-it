@@ -11,6 +11,8 @@ import {
   CAT_TYPES_HEADING,
   CAT_TYPES_INTRO,
   CAT_TYPES_KICKER,
+  CAT_TYPES_USE_CASE,
+  CAT_TYPES_USE_CASE_KICKER,
   CTA_LABEL,
   EXAMPLE_HEADING,
   EXAMPLE_KICKER,
@@ -156,6 +158,10 @@ export function LandingCatBotPage() {
                 <h2 id="landing-cat-types-heading" className="np-headline-serif np-landing-thesis-lead">
                   {CAT_TYPES_HEADING}
                 </h2>
+                <div className="np-landing-use-case">
+                  <p className="np-landing-section-kicker">{CAT_TYPES_USE_CASE_KICKER}</p>
+                  <p className="np-landing-paragraph">{CAT_TYPES_USE_CASE}</p>
+                </div>
                 <p className="np-landing-paragraph np-landing-stack-intro">{CAT_TYPES_INTRO}</p>
                 <ol className="np-landing-how-row np-landing-how-row--pair">
                   {CAT_TYPES.map((cat) => (

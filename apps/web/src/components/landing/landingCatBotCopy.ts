@@ -54,6 +54,10 @@ export const HOW_STEPS = [
 export const CAT_TYPES_KICKER = 'The litter'
 export const CAT_TYPES_HEADING = 'One porch, several specialists'
 
+export const CAT_TYPES_USE_CASE_KICKER = 'Use case · Washington, D.C.'
+export const CAT_TYPES_USE_CASE =
+  'We built this crew first for a physician-led medical spa in an affluent neighborhood along the Potomac corridor — the kind of market where clients compare credentials, read guest articles, and notice when a neighbor-group post wears a too-shiny sales coat. Three cats, one owner, about an hour a week of human touch where VIP trust still demands a name on the byline.'
+
 export const CAT_TYPES_INTRO =
   'A serious business rarely needs one cat doing everything. It needs a small crew — each with a collar tag and a narrow job — so you automate what the internet allows and stay human where trust demands it.'
 
