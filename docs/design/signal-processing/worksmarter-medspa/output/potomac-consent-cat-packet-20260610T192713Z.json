@@ -1,0 +1,138 @@
+{
+  "roam_id": "a7900a2f-9c67-466f-824e-0cc86849900a",
+  "cat_id": "potomac-consent-cat-v0",
+  "neighborhood": "Potomac Skin Care trade area \u2014 affluent DMV med spa (20854 + 12mi radius)",
+  "mission": "Map how affluent clients discover, trust, and consent to med spa care \u2014 not cold contact or review-scrape outreach",
+  "completed_at": "2026-06-10T19:27:31.822570+00:00",
+  "synthesis_mode": "heuristic",
+  "owner_disclosure": {
+    "owner_name": "Work Smarter Digital (for Potomac Skin Care)",
+    "owner_mission": "Consent-native digital paths for Potomac Skin Care \u2014 SMS keyword, website concierge, partner embeds; HighLevel nurture after opt-in",
+    "bias_statement": "This cat is owned by Work Smarter Digital on behalf of Potomac Skin Care. It may favor CRM, re-engagement, and physician-trust messaging over discount or cold lists."
+  },
+  "angle_1": {
+    "thesis": "Review platforms surface experience themes (service quality, wait times, results).",
+    "evidence": [
+      {
+        "source_url": "https://maps.google.com/?cid=14585053514945980082&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+        "quote_or_summary": "Rating 5 from 44 reviews.",
+        "observed_at": "2026-06-10",
+        "source": "google_places",
+        "title": "Google aggregate \u2014 Potomac Skin Care"
+      },
+      {
+        "source_url": "https://www.yelp.com/biz/potomac-skin-care-potomac?adjust_creative=LrnHVZ69wdHHyLz0KgXCMA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=LrnHVZ69wdHHyLz0KgXCMA",
+        "quote_or_summary": "Rating 0.0 from 0 reviews.",
+        "observed_at": "2026-06-10",
+        "source": "yelp",
+        "title": "Yelp aggregate \u2014 Potomac Skin Care"
+      }
+    ],
+    "confidence": "low"
+  },
+  "angle_2": {
+    "thesis": "Community threads emphasize questions, skepticism, and rejected outreach patterns.",
+    "evidence": [
+      {
+        "source_url": "https://www.wellnessliving.com/explore/locations/medical-aesthetics/us-md-potomac/potomacskincare/reviews",
+        "quote_or_summary": "Potomac Skin Care in Potomac, MD - Med Spa, see class schedules and staff bios ... Location Details. Share. 10000 Falls Rd # 100, Potomac, Maryland, 20854, USA",
+        "observed_at": "2026-06-10",
+        "source": "tavily_search",
+        "title": "Potomac Skin Care - WellnessLiving"
+      },
+      {
+        "source_url": "https://evexiamedspa.com/location/maryland-usa/potomac-md",
+        "quote_or_summary": "Transform your skin with medical grade facials at Potomac, MD! Our certified providers use cutting-edge products and techniques to purify, hydrate, and nourish",
+        "observed_at": "2026-06-10",
+        "source": "tavily_search",
+        "title": "Potomac, MD - Evexia Medspa"
+      },
+      {
+        "source_url": "https://cosmetic-dermatology-center.com/med-spa-in-potomac-md",
+        "quote_or_summary": "Experience top-notch Med spa in Potomac, MD. Our specialists provide personalized treatments for all skin concerns. Schedule your appointment today!",
+        "observed_at": "2026-06-10",
+        "source": "tavily_search",
+        "title": "Med spa in Potomac, MD - Cosmetic Dermatology Center"
+      },
+      {
+        "source_url": "https://www.alunaaesthetics.com",
+        "quote_or_summary": "Experience advanced, personalized care in a boutique medspa where modern medicine meets timeless aesthetics. Our focus is natural, transformative results through a thoughtful balance of injectables and skin health. Led by Yelena Burshteyn, NP-C, our team combines medical expertise with an artistic eye to create results that feel natural and timeless. Our boutique injectables are curated for precision and impact, delivered only by expert providers who know how to achieve a flawless, radiant beauty that\u2019s fresh, natural, and entirely your own. Aluna Aesthetics offers neurotoxin treatments to soften fine lines, relax tension, and refresh your look with subtle, natural results. Aluna Aesthetics offers dermal fillers to restore volume, enhance lips, and smooth under-eyes with soft, natural results. **Expert Care.** Our injectables are administered by providers who specialize in balance aesthetic precision. **Natural Results.** We enhance your features to achieve a fresh, effortless look that stays true to your beauty. Book your personalized appointment today and take the first step toward refined results.",
+        "observed_at": "2026-06-10",
+        "source": "tavily_search",
+        "title": "Aluna Aesthetics | Boutique Medspa in Potomac, Maryland"
+      },
+      {
+        "source_url": "https://www.yelp.com/biz/potomac-skin-care-potomac",
+        "quote_or_summary": "10000 Falls Rd. Ste 100. Potomac, MD 20854. Directions ; (301) 765-0990. Call Now ; Visit Website. http://www.potomacskin.com.",
+        "observed_at": "2026-06-10",
+        "source": "tavily_search",
+        "title": "POTOMAC SKIN CARE - Updated June 2026 - Yelp"
+      },
+      {
+        "source_url": "https://www.plasticsurgery.org/patient-safety/how-to-choose-the-right-medical-spa-for-you",
+        "quote_or_summary": "# How to Choose the Right Medical Spa for You. A medical spa, or med spa, blends the soothing environment of a day spa with medical-grade treatments usually found in a doctor's office. For patients, it's important to understand that not all med spas are created equal. The gold standard is a med spa run by a physician with specialized training in the treatments offered \u2013 typically a board-certified plastic surgeon, facial plastic surgeon or dermatologist. That's why it's important to do your research before choosing a facility. It's important to choose a provider who is trained to handle any complications that may arise during or after your treatment. The best way to be sure you're in safe hands is to see a physician with specialized training in the types of procedures \u2013 and areas of the body \u2013 commonly treated in a med spa setting.",
+        "observed_at": "2026-06-10",
+        "source": "tavily_search",
+        "title": "How to Choose the Right Medical Spa for You | ASPS"
+      },
+      {
+        "source_url": "https://alluraderm.com/blog/physician-led-med-spa",
+        "quote_or_summary": "Physician-led spas conduct thorough consultations, review your medical background, and customize your treatment plan with an eye for both beauty and health.",
+        "observed_at": "2026-06-10",
+        "source": "tavily_search",
+        "title": "Why Choose a Physician-Led Med Spa? 5 Key Benefits for Safety ..."
+      },
+      {
+        "source_url": "https://robertfreundmd.com/skincare/how-to-choose-the-right-medical-spa-what-to-look-for-before-your-first-treatment",
+        "quote_or_summary": "How to Choose the Right Medical Spa: What to Look for Before Your First Treatment. # How to Choose the Right Medical Spa: What to Look for Before Your First Treatment. A medical spa blends medical grade treatments only found in doctors offices with a more relaxing environment, all overseen by a trusted care provider. The gold standard is a med spa run by a physician with specialized training in the treatments offered \u2013 typically a board-certified plastic surgeon, who has in-depth knowledge on facial anatomy and producing best aesthetic outcomes. Although most treatments offered at med spas are relatively low risk, they still involve your health and your appearance, and require medical knowledge, clinical judgment, and thorough training to perform them safely and effectively. When choosing a med spa, make sure they offer the specific procedures you\u2019re looking for and have experience performing them safely and effectively. Med spa provider credentials, experience and professional referrals should hold the most importance.",
+        "observed_at": "2026-06-10",
+        "source": "tavily_search",
+        "title": "How to Choose the Right Medical Spa: What to Look for Before Your First Treatment. - Robert Freund MD"
+      }
+    ],
+    "confidence": "medium",
+    "contradicts_angle_1": "Reviews optimize for outcomes; forums optimize for trust and process."
+  },
+  "angle_3": {
+    "thesis": "Owned site positioning and regional news frame physician-trust and VIP experience.",
+    "evidence": [
+      {
+        "source_url": "https://www.thepotomacskincare.com/",
+        "quote_or_summary": "we look forward to partnering with you on your journey to wellness. Feel like a VIP on every visit! Potomac Skin Care ESSENTIALS Venus Bliss | PDO Smooth Filler | Thread Lift | Venus Freeze | Venus Legacy | Venus TriBella | Botox | Juvederm | Radiesse | Bellafill | Belotero | 3-Step Peel | Obagi Blu | le an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained | Us Testimonials Most Preferred Skin & Aesthetic Clinic in the heart of Potomac since 1998 Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebi | DO Smooth Filler | Thread Lift | Venus Freeze | Venus Legacy | Venus TriBella | Botox | Juvederm | Radiesse | Bellafill | Belotero | 3-Step Peel | Obagi Blue Peel | Radiance Peel | Microdermabrasion | Sclerotherapy | Liquid Facelift ------------------------- Non-surgical Body Contouring | Cellulite | omac since 1998 Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, | tations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained medical professional is eager to learn more about you! Potomac Skin Care has been a trusted pioneer for 30 years in the aesthetic industry in Maryland, and we are c\n\n---\n\nThePotomacSkinCare Search this site Embedded Files Skip to main content Skip to navigation ThePotomacSkinCare Home Services Venus Bliss\u2122 Fat Treatment Venus Versa\u2122 TriBella PDO Thre",
+        "observed_at": "2026-06-10",
+        "source": "spa_website",
+        "title": "Spa website \u2014 Potomac Skin Care"
+      }
+    ],
+    "confidence": "low",
+    "lens": "Spa website + regional press (consent machines A/B/C context)"
+  },
+  "stuck_trap": "Buy contact lists or cold-DM affluent zip residents from review scrapes.",
+  "recommendation": {
+    "ranked_paths": [
+      "Consent-native discovery (user-initiated search and spa-owned nurture)",
+      "Community-informed FAQ and objection handling on owned channels",
+      "Partnership with local trust anchors (studios, physicians) \u2014 verify manually"
+    ],
+    "human_decision_needed": "Which path matches Potomac Skin Care brand and legal boundaries?"
+  },
+  "do_not_do": [
+    "Scrape login-walled neighborhoods (Nextdoor, private Facebook groups)",
+    "Treat review snippets as opted-in marketing contacts"
+  ],
+  "proposed_memory_items": [],
+  "collection_stats": {
+    "evidence_count": 26,
+    "skipped_sources": [
+      "brave",
+      "reddit"
+    ],
+    "warnings": [
+      "yelp reviews Jeu2fq2_zR36Kdcq-x_gLQ: HTTP 404 for https://api.yelp.com/v3/businesses/Jeu2fq2_zR36Kdcq-x_gLQ/reviews: {\"error\": {\"code\": \"NOT_FOUND\", \"description\": \"Resource could not be found.\"}}",
+      "gemini synthesis fallback: Unterminated string starting at: line 106 column 17 (char 9509)",
+      "anthropic synthesis fallback: HTTP 400 for https://api.anthropic.com/v1/messages: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011Cbv8WAvNJZBCiVHvmDf1K\"}"
+    ]
+  },
+  "client_band": "Potomac Skin Care",
+  "big_band": "Work Smarter Digital"
+}

@@ -7,6 +7,10 @@ import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { CatBotMastheadHeader } from '@/components/landing/CatBotMastheadHeader'
 import {
+  CAT_TYPES,
+  CAT_TYPES_HEADING,
+  CAT_TYPES_INTRO,
+  CAT_TYPES_KICKER,
   CTA_LABEL,
   EXAMPLE_HEADING,
   EXAMPLE_KICKER,
@@ -145,6 +149,24 @@ export function LandingCatBotPage() {
                     ))}
                   </ol>
                 </div>
+              </section>
+
+              <section className="np-landing-stack" aria-labelledby="landing-cat-types-heading">
+                <p className="np-landing-section-kicker">{CAT_TYPES_KICKER}</p>
+                <h2 id="landing-cat-types-heading" className="np-headline-serif np-landing-thesis-lead">
+                  {CAT_TYPES_HEADING}
+                </h2>
+                <p className="np-landing-paragraph np-landing-stack-intro">{CAT_TYPES_INTRO}</p>
+                <ol className="np-landing-how-row np-landing-how-row--pair">
+                  {CAT_TYPES.map((cat) => (
+                    <li key={cat.name} className="np-landing-stack-layer">
+                      <div className="np-landing-pipeline-step-head">
+                        <span className="np-landing-pipeline-label">{cat.name}</span>
+                      </div>
+                      <p className="np-landing-pipeline-text">{cat.text}</p>
+                    </li>
+                  ))}
+                </ol>
               </section>
 
               <section

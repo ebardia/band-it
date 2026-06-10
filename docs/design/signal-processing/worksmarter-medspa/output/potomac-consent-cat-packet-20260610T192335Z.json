@@ -1,0 +1,94 @@
+{
+  "roam_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "cat_id": "potomac-consent-cat-v0",
+  "neighborhood": "Potomac Skin Care trade area \u2014 affluent DMV med spa (20854 + 12mi radius)",
+  "mission": "Map how affluent clients discover, trust, and consent to med spa care \u2014 not cold contact or review-scrape outreach",
+  "completed_at": "2024-07-30T12:00:00Z",
+  "owner_disclosure": {
+    "owner_name": "Work Smarter Digital (for Potomac Skin Care)",
+    "owner_mission": "Consent-native digital paths for Potomac Skin Care \u2014 SMS keyword, website concierge, partner embeds; HighLevel nurture after opt-in",
+    "bias_statement": "This cat is owned by Work Smarter Digital on behalf of Potomac Skin Care. It may favor CRM, re-engagement, and physician-trust messaging over discount or cold lists."
+  },
+  "angle_1": {
+    "thesis": "Affluent clients in the Potomac area likely use Google as a primary initial discovery and validation tool for med spas, heavily relying on aggregate star ratings and review counts to establish baseline credibility and trust before deeper engagement.",
+    "evidence": [
+      {
+        "source": "google_places",
+        "url": "https://maps.google.com/?cid=14585053514945980082&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+        "title": "Google aggregate \u2014 Potomac Skin Care",
+        "text": "Rating 5 from 44 reviews.",
+        "observed_at": "2026-06-10T19:23:34.302835+00:00",
+        "spa_name": "Potomac Skin Care"
+      }
+    ],
+    "confidence": "High"
+  },
+  "angle_2": {
+    "thesis": "Beyond aggregate reviews, affluent clients prioritize direct physician expertise, a long-standing reputation, and a personalized 'VIP' partnership approach as key trust signals and decision factors when choosing a med spa, often seeking direct consultation as part of their discovery process.",
+    "contradicts_angle_1": "While positive Google reviews are a strong initial signal (Angle 1), the spa's direct messaging on its website prioritizes physician expertise, a long-standing reputation (since 1998), and a personalized 'VIP' partnership approach, suggesting that for affluent clients, direct professional trust and a clear process for consultation may be equally or more critical than aggregated scores from all platforms, especially when other platforms like Yelp show no engagement.",
+    "evidence": [
+      {
+        "source": "spa_website",
+        "url": "https://www.thepotomacskincare.com/",
+        "title": "Spa website \u2014 Potomac Skin Care",
+        "text": "we look forward to partnering with you on your journey to wellness. Feel like a VIP on every visit! Potomac Skin Care ESSENTIALS ... Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained | Us Testimonials Most Preferred Skin & Aesthetic Clinic in the heart of Potomac since 1998 Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available.",
+        "observed_at": "2026-06-10T19:23:35.455434+00:00",
+        "spa_name": "Potomac Skin Care"
+      }
+    ],
+    "confidence": "High"
+  },
+  "angle_3": {
+    "thesis": "Affluent clients are drawn to med spas that clearly articulate a range of advanced, specific treatments and promise a premium, 'VIP' experience, indicating a desire for targeted solutions and high-quality service delivery.",
+    "lens": "Service Specificity & Premium Experience",
+    "evidence": [
+      {
+        "source": "spa_website",
+        "url": "https://www.thepotomacskincare.com/",
+        "title": "Spa website \u2014 Potomac Skin Care",
+        "text": "Feel like a VIP on every visit! Potomac Skin Care ESSENTIALS Venus Bliss | PDO Smooth Filler | Thread Lift | Venus Freeze | Venus Legacy | Venus TriBella | Botox | Juvederm | Radiesse | Bellafill | Belotero | 3-Step Peel | Obagi Blu | le an appointment with us ... Non-surgical Body Contouring | Cellulite",
+        "observed_at": "2026-06-10T19:23:35.455434+00:00",
+        "spa_name": "Potomac Skin Care"
+      }
+    ],
+    "confidence": "High"
+  },
+  "stuck_trap": "Attempting to build trust or acquire clients solely through platforms with no engagement, such as Yelp (0.0 rating from 0 reviews), as this represents a dead end for initial discovery or validation.",
+  "recommendation": {
+    "ranked_paths": [
+      "Leverage and amplify the strong Google review presence (5.0 from 44 reviews) as a primary trust signal and discovery channel.",
+      "Emphasize the physician-led care, the spa's long-standing reputation (since 1998), and the 'VIP' personalized experience, promoting free consultations as a low-barrier entry point to build direct trust.",
+      "Showcase specific, advanced treatments (e.g., PDO Thread Lift, Venus Bliss, Botox) with clear benefits and the premium experience, targeting clients seeking particular solutions."
+    ],
+    "human_decision_needed": "Determine specific content strategies for each ranked path, integrate these messages into HighLevel CRM nurture sequences, and design website calls-to-action that emphasize physician consultations and the VIP experience."
+  },
+  "do_not_do": [
+    "Cold-contacting individuals via email or SMS without explicit, verifiable opt-in.",
+    "Purchasing or generating fake reviews on any platform.",
+    "Making unsubstantiated or deceptive claims about treatment efficacy or results.",
+    "Aggressive outbound cold-calling or door-to-door solicitation."
+  ],
+  "proposed_memory_items": [
+    "Physician-led care",
+    "VIP experience",
+    "Free consultations",
+    "Since 1998",
+    "Consent-native paths",
+    "High-value treatments (e.g., PDO Thread Lift, Venus Bliss)",
+    "Google Reviews (primary aggregate)",
+    "Yelp (zero engagement)"
+  ],
+  "synthesis_mode": "gemini",
+  "collection_stats": {
+    "evidence_count": 3,
+    "skipped_sources": [
+      "brave",
+      "reddit"
+    ],
+    "warnings": [
+      "yelp reviews Jeu2fq2_zR36Kdcq-x_gLQ: HTTP 404 for https://api.yelp.com/v3/businesses/Jeu2fq2_zR36Kdcq-x_gLQ/reviews: {\"error\": {\"code\": \"NOT_FOUND\", \"description\": \"Resource could not be found.\"}}"
+    ]
+  },
+  "client_band": "Potomac Skin Care",
+  "big_band": "Work Smarter Digital"
+}

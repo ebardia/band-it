@@ -21,6 +21,8 @@
 | **Org model** | **Reuse Big Band → Band** hierarchy | Reseller = Big Band; end clients = Bands |
 | **Cat Bot domain** | **New models** under Band | Cat inventory, roams, memory — not mapped from tasks |
 | **Signal processing** | Stays in **design docs + scripts** (v0) | Feeds cat neighborhood/target config; not embedded in app initially |
+| **First band on platform** | **House Band** (internal dogfood) | Roaming cats for signal tuning, reseller dossiers, med-spa lab — before customer Big Band demos |
+| **Build sequencing** | **Scripts prove roam → JSON first**; then House Band on adoptacatbot | Avoid empty UI; tune signals from real API output before Prisma/UI |
 | **First vertical** | Marketing cats; med spa via Work Smarter demo | One cat in inventory at a time |
 | **Forum mingling** | **New code** + policy (read/post, moderation, disclosure) | Not in Band It today |
 | **Brand metaphor** | Bands are **musical groups for cats**; **cat songs** later | Symbolic layer on hierarchy — optional future feature |
@@ -131,6 +133,31 @@ Already implemented (see [big-band-design.md](../big-band-design.md)):
 | Cross-band policies, governance on Big Band | **No** (deferred / out of scope) |
 | Big Band proposals/projects/tasks | **No** (hidden) |
 
+### 3.5 House Band (internal dogfood)
+
+The **first Band on adoptacatbot.com** is not a customer — it is the **House Band**: the operator’s internal org for dogfood, signal tuning, and roaming cat bots before Work Smarter-scale Big Band demos ship.
+
+```text
+House Band (Band — standalone or operator Big Band)
+  └── CatBot[]     internal roster, e.g.:
+        ├── DMV Reseller Scout     → O-signal dossiers, Big Band prospecting
+        ├── Outreach Intel Cat     → pre-email roam + openers
+        └── Market Cat (med spa)   → Places + Yelp + Reddit lab vertical
+              ├── RoamRun[]        → import from scripts, later API-triggered
+              └── MemoryItem[]     → approved traps, stack facts, pitch frames
+```
+
+| Role | House Band | Customer Big Band (later, e.g. Work Smarter) |
+|------|------------|-----------------------------------------------|
+| **Purpose** | Tune signals, store roam JSON, iterate openers | White-label cats for end-client Bands |
+| **Data** | Seed CSVs, dossier JSON, signal registries | Client-facing memory + disclosure |
+| **Cats** | Scout / intel types + vertical lab cats | Marketing cats per sub-band |
+| **APIs** | Full lab stack; script-first | Subset exposed via product UI |
+
+**Why House Band exists:** Central place to **adjust signals**, **re-run roams**, and **domesticate memory** without waiting for reseller onboarding. Product spec value layer: [adopt-a-cat-bot.md §5.3](./adopt-a-cat-bot.md#53-value-on-top-of-public-sources-google-yelp-reddit-).
+
+**Sequencing:** Prove roam output in Python (`run_cat_bot_roam_v0.py`, future `run_reseller_dossier_v0.py`) → import JSON as first `RoamRun` records under House Band → add trigger UI. Do not embed detectors in `apps/api` until packet shape is stable (§6.4–6.5).
+
 ---
 
 ## 4. Reference scenario: Work Smarter + med spa
@@ -141,6 +168,8 @@ Already implemented (see [big-band-design.md](../big-band-design.md)):
 | Band | Potomac Skin Care | Dr. Jovy Eusebio; gold-path hypothesis in [med spa demo](./signal-processing/worksmarter-medspa/worksmarter-medspa-discovery.md) |
 | CatBot (v0) | e.g. “Potomac Consent Cat” | Marketing cat; neighborhood = affluent DMV med-spa **digital opt-in**; no cold contact |
 | Signal processing | External CSV/scripts | Layer A/B signals inform **targets and neighborhood** — not stored as Band It projects |
+
+**Positioning vs reseller stack:** Cat Bot complements GHL / LaaS / voice capture — see [product spec §5.4](./adopt-a-cat-bot.md#54-sits-on-the-capture-stack-anti-cannibalization) and [reseller outreach intel §9](./signal-processing/dmv-smb-tech-reseller-outreach-intel.md#9-anti-cannibalization-sits-on-the-capture-stack).
 
 ---
 
@@ -206,6 +235,8 @@ Remove from **navigation and primary routes**; do not build Cat Bot on these:
 | **Web routes** | `/`, `/cats`, `/bands/[slug]/cats`, `/cats/[id]`, domestication review UI |
 | **Cat inventory UI** | One niche cat at a time in catalog; band-scoped adoption |
 | **Forum module** | Read communities (v0); post with disclosure (later); moderation queue |
+| **Publish Cat (guest posts)** | Design: [guest-post-publish-cat-potomac-skin-care.md](./signal-processing/worksmarter-medspa/guest-post-publish-cat-potomac-skin-care.md) — not implemented until client-active |
+| **Social Cat (organic copilot)** | Design: [social-cat-campaign-copilot-potomac-skin-care.md](./signal-processing/worksmarter-medspa/social-cat-campaign-copilot-potomac-skin-care.md) — weekly plan + drafts; human publishes; not implemented until client-active |
 | **Marketing site** | adoptacatbot.com landing — adopt narrative |
 
 Product behavior (3-angle roam, memory tiers, world prompt): [adopt-a-cat-bot.md](./adopt-a-cat-bot.md).
@@ -223,6 +254,24 @@ Flow:
 ```text
 Signal scripts / SME research  →  neighborhood + target brief  →  CatBot config  →  roam
 ```
+
+### 6.5 Build sequencing (v0 — decided 2026-06-08)
+
+| Step | Where | Outcome |
+|------|--------|---------|
+| **1. Script proof** | `docs/design/signal-processing/scripts/` | Real API output: Places, Yelp, news; reseller dossier JSON (O-signals) |
+| **2. House Band shell** | adoptacatbot — Prisma `CatBot`, `RoamRun`, `MemoryItem` | Import roam JSON; view packet; domesticate |
+| **3. Roam in product** | API worker calls same logic as scripts | Adjust `neighborhoodConfig` / signal refs → re-roam |
+| **4. Customer Big Band demo** | Work Smarter + Potomac sub-band | External-facing white-label story |
+
+**Rule:** Do not build detectors inside the app before step 1 produces stable return packets. Exception: static demo UI with pre-generated JSON for an external meeting.
+
+**API priority by track:**
+
+| Track | Prove first | Defer |
+|-------|-------------|-------|
+| Med spa Market Cat | Google Places (New), Yelp Fusion, news RSS | Reddit until Data Access approved |
+| Reseller outreach | Homepage fetch, partner dirs, news | Places/Yelp (low signal for B2B agencies) |
 
 ---
 
@@ -312,13 +361,16 @@ All routes under `/bands/[slug]/proposals`, `/projects`, `/tasks`, `/calendar`, 
 | Phase | Scope | Band It legacy |
 |-------|--------|----------------|
 | **0 — Fork surface** | New landing (adoptacatbot.com); hide legacy nav; env flag | Code remains, unlinked |
-| **1 — First cat** | Prisma Cat/Roam/Memory; API + UI under Potomac band; one roam cycle | Hidden |
-| **2 — Big Band demo** | Work Smarter Big Band + Potomac sub-band + cat | Hidden |
+| **0b — Roam lab proof** | Places + Yelp + dossier scripts; tune signals from JSON output | N/A (scripts only) |
+| **1 — House Band** | Seed House Band + 1–2 cats; import roam JSON as RoamRun; domesticate UI | Hidden |
+| **2 — First customer cat** | Work Smarter Big Band + Potomac sub-band + Market Cat; one roam cycle in app | Hidden |
 | **3 — Forum read** | Community read-only for roam; citations in return packet | Hidden |
 | **4 — Forum post** | Disclosed opinions; moderation queue | Hidden |
 | **5 — Schema cleanup** | Drop unused models/migrations if direction confirmed | Removed |
 | **6 — Mobile** | Expo app; same API | N/A |
 | **Future** | **Cat songs** — packaged band voice content | N/A |
+| **Future** | **Publish Cat** — guest post pipeline when working with client band | See [guest-post design](./signal-processing/worksmarter-medspa/guest-post-publish-cat-potomac-skin-care.md) |
+| **Future** | **Social Cat** — organic social weekly copilot when working with client band | See [social-cat design](./signal-processing/worksmarter-medspa/social-cat-campaign-copilot-potomac-skin-care.md) |
 
 ---
 
@@ -345,6 +397,8 @@ Other cat types (scout, skeptic, persona) — see [product spec §13](./adopt-a-
 | Forum ToS / legal | Read-only v0; legal review before post |
 | Reseller/client identity bleed | Sub-band boundary + two-level disclosure |
 | Over-scoping Big Band governance | Reuse hierarchy only; defer policies |
+| Cat Bot perceived as review clone | §5.3 in product spec; pitch intelligence layer not stars |
+| Cannibalizing reseller capture SKUs | §5.4 + outreach intel §9; white-label Market Cat frame |
 
 ---
 
@@ -365,6 +419,9 @@ Other cat types (scout, skeptic, persona) — see [product spec §13](./adopt-a-
 | [adopt-a-cat-bot.md](./adopt-a-cat-bot.md) | Roam lifecycle, memory tiers, 3-angle protocol, schemas |
 | **This doc** | Repo strategy, org hierarchy, keep/hide/new, routes, migration |
 | [worksmarter-medspa-discovery.md](./signal-processing/worksmarter-medspa/worksmarter-medspa-discovery.md) | First vertical hypothesis |
+| [guest-post-publish-cat-potomac-skin-care.md](./signal-processing/worksmarter-medspa/guest-post-publish-cat-potomac-skin-care.md) | Publish Cat — guest post route (design; client-ready) |
+| [social-cat-campaign-copilot-potomac-skin-care.md](./signal-processing/worksmarter-medspa/social-cat-campaign-copilot-potomac-skin-care.md) | Social Cat — organic social copilot (design; client-ready) |
+| [dmv-smb-tech-reseller-outreach-intel.md](./signal-processing/dmv-smb-tech-reseller-outreach-intel.md) | Big Band prospecting dossiers, anti-cannibalization pitch |
 | [big-band-design.md](../big-band-design.md) | Original Big Band implementation (partial reuse) |
 
 ---
@@ -374,3 +431,6 @@ Other cat types (scout, skeptic, persona) — see [product spec §13](./adopt-a-
 | Date | Change |
 |------|--------|
 | 2026-05-29 | Initial platform doc: repo decision, Big Band → Band → Cat hierarchy, explicit non-mapping of governance artifacts, keep/hide/new, Work Smarter scenario, disclosure, phases, cat songs as future |
+| 2026-06-08 | §3.5 House Band; §6.5 build sequencing; phased roadmap 0b/1 House Band; links to §5.3–5.4 value and anti-cannibalization |
+| 2026-06-10 | §6.3 Publish Cat guest-post design link; phase table future Publish Cat |
+| 2026-06-10 | §6.3 Social Cat organic copilot design link; document map |

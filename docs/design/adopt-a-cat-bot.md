@@ -6,7 +6,7 @@
 | **Domain** | [adoptacatbot.com](https://adoptacatbot.com) (target); App Store app later |
 | **Status** | Draft — concept + v0 spec |
 | **Parent** | [Design docs](./) |
-| **Related** | [Platform & migration](./adopt-a-cat-bot-platform.md) (repo, Big Band hierarchy, keep/hide/new), [Work Smarter med spa demo](./signal-processing/worksmarter-medspa/worksmarter-medspa-discovery.md) (first neighborhood hypothesis), [Agent workflow composition](./agent-workflow-composition.md) (optional implementation substrate in monorepo) |
+| **Related** | [Platform & migration](./adopt-a-cat-bot-platform.md) (repo, Big Band hierarchy, House Band, keep/hide/new), [Reseller outreach intel](./signal-processing/dmv-smb-tech-reseller-outreach-intel.md) (O-signals, anti-cannibalization), [Work Smarter med spa demo](./signal-processing/worksmarter-medspa/worksmarter-medspa-discovery.md) (first neighborhood hypothesis), [Agent workflow composition](./agent-workflow-composition.md) (optional implementation substrate in monorepo) |
 | **Audience** | Product, engineering, design, early adopters |
 
 ---
@@ -83,9 +83,59 @@ Productize **exploration before commitment**:
 ### 5.2 Is not
 
 - A generic ChatGPT wrapper with a cute name
+- A **review aggregator** or prettier Yelp/Google UI — customers can already browse those sites
 - A contact scraper or cold-outreach engine by default
+- A **cheaper lead-gen or LinkedIn replacement** for agencies running GHL, LaaS, or voice capture (see §5.4)
 - A fully autonomous strategist that changes business direction without owner input
 - An offline brain that never calls an LLM (see §10)
+
+### 5.3 Value on top of public sources (Google, Yelp, Reddit, …)
+
+Google Reviews, Yelp, Reddit, and news are **public**. Anyone can open them. Cat Bot does **not** compete on “show me stars and snippets.” Its value is the **layer above** commodity browsing:
+
+| Public sources give | Cat Bot adds |
+|---------------------|--------------|
+| Raw reviews and threads, one platform at a time | **Mission-bound synthesis** — answers *your* question, not “all reviews ever” |
+| Today’s snapshot | **Domesticated memory** — owner-approved facts, traps, and voice that persist across roams |
+| Anonymous crowd consensus | **Disclosed bias** — marketing cat with named owner, mission, and labeled fact vs opinion |
+| Endless scroll | **Cross-source patterns** — stacked themes from Reddit + Places + Yelp + news + site fetch in one **return packet** |
+| No audit trail | **RoamRun evidence chain** — citations, confidence, TTL, Keep/Discard log |
+| Generic neutrality | **Band-specific action** — campaign hooks, outreach openers, “what not to claim” |
+
+**Mental model:**
+
+```text
+Public sources (Google, Yelp, Reddit, …)     ← anyone can browse here (commodity)
+        ↓
+   Cat Bot roam (mission + 3 angles + sources)
+        ↓
+   Return packet (themes, evidence, traps)
+        ↓
+   Owner domesticate (Keep / Discard)
+        ↓
+   Memory + campaigns + outreach              ← band-owned value (not on Yelp)
+```
+
+**One-line pitch:** *Review sites are the library. Cat Bot is the researcher with a brief, a notebook, and your name on the cover.*
+
+Review APIs (Places, Yelp) are **inputs** to the roam pipeline — same as Reddit or homepage fetch — not the product surface. If Cat Bot only republished stars, it would not be worth building.
+
+See also [platform doc §3.5](./adopt-a-cat-bot-platform.md#35-house-band-internal-dogfood) (House Band), [reseller outreach intel §9](./signal-processing/dmv-smb-tech-reseller-outreach-intel.md#9-anti-cannibalization-sits-on-the-capture-stack).
+
+### 5.4 Sits on the capture stack (anti-cannibalization)
+
+For **Big Band** prospects (GHL white-label shops, LinkedIn LaaS, voice/chat capture), Cat Bot is an **upstream and downstream intelligence layer** — not a substitute for their existing SKUs.
+
+| Layer | Typical reseller product | Cat Bot role |
+|-------|--------------------------|--------------|
+| **Capture / nurture** | GHL funnels, LinkedIn Autopilot, Vapi/Bland voice, chatbots ($597–$3k/mo and setup fees) | **Do not replace or undercut** |
+| **Pre-capture context** | *(often manual research)* | **Outreach dossier** — O-signals, citeable openers (“I ran a Cat Bot on your company…”) |
+| **Post-capture enrichment** | *(generic CRM fields)* | **Vertical roam + memory** — what’s happening in the client’s ZIP and vertical before/after the campaign |
+| **White-label SKU** | Agency packages tiers | **Market Cat** per end-client Band — resold under agency brand |
+
+**Pitch frame:** *You already automate leads; Cat Bot automates **vertical intelligence and memory** your stack doesn’t own.*
+
+**Not:** cheaper lead gen, LinkedIn scraping, or “we’ll replace your Dominate tier.”
 
 ---
 
@@ -367,6 +417,32 @@ This cat is owned by [Owner]. Mission: [mission]. It may favor paths that benefi
 
 **Principle:** v0 roams are **fully programmatic** — no manual copy-paste from browsers. Each item in a return packet must carry a **citable URL or API id** (permalink, place id, review id).
 
+### 12.0 Why programmatic APIs (if humans can browse Google/Yelp?)
+
+Official APIs (Places, Yelp Fusion, Reddit OAuth) exist so roams are **repeatable, citable, and ToS-safe** — not because the data is secret.
+
+| Reason | Detail |
+|--------|--------|
+| **Automation** | Roaming cat bots on schedule; 50 prospects or dozens of personas without manual re-reads |
+| **Structured output** | Same evidence shape every run → signals, RoamRun JSON, domestication UI |
+| **Cross-source merge** | One pipeline combines review language + Reddit fears + news — not three browser tabs |
+| **Citations** | Review text + Maps URI + place id in the packet for outreach and compliance |
+| **Policy** | No scraping where an official API exists (§12.2) |
+
+APIs do **not** define product value (§5.3). They feed the roam **inputs**; synthesis, domestication, and band memory define the **output**.
+
+#### When each Tier-1 source applies (by cat type)
+
+| Cat / use case | Places + Yelp | Reddit | Homepage / news fetch |
+|----------------|---------------|--------|------------------------|
+| **Med spa / local consumer Band** (Work Smarter demo) | **High** — experience themes, social proof, zip discovery | High — consent, anxiety, “worth it?” threads | Medium — brand site |
+| **Big Band reseller dossier** (DMV outreach) | **Low** — resellers rarely have meaningful Google-review signal | Low until scoped | **High** — stack, pricing, verticals (O01–O15) |
+| **Geo discovery** (“med spas in 20854”) | **High** — seed list + reviews | Medium | Low |
+
+**Google Places API (New)** enables Text Search + Place Details (ratings, review snippets, Maps links). Enable in Google Cloud; set `GOOGLE_PLACES_API_KEY` in repo `.env`. See [signal-processing README](./signal-processing/README.md#api-credentials-v0-lab).
+
+---
+
 ### 12.1 Sources
 
 | Source | v0 | Programmatic | Notes |
@@ -528,8 +604,10 @@ The roam lab (§12.4) and v0 hypothesis test (§16) remain valid **without Reddi
 | Cat | Neighborhood | Mission |
 |-----|--------------|---------|
 | **Scout** | Broad vertical | Map communities and angles |
+| **Consent** | Same neighborhood | Roam + opt-in paths only (no cold contact) |
+| **Publish** | Same neighborhood | **Guest posts / disclosed mingling** on invited third-party sites — human pitch + physician approve ([Potomac design](./signal-processing/worksmarter-medspa/guest-post-publish-cat-potomac-skin-care.md)) |
+| **Social** | Same neighborhood | **Organic social campaign copilot** — weekly plan + drafts; **human publishes** on IG/FB/groups/Nextdoor ([Potomac design](./signal-processing/worksmarter-medspa/social-cat-campaign-copilot-potomac-skin-care.md)) |
 | **Persona** | Same neighborhood | Simulate one persona’s digital behavior |
-| **Consent** | Same neighborhood | Only opt-in paths |
 | **Skeptic** | Same neighborhood | Break other cats’ conclusions |
 
 Cats may **cross-check** by comparing return packets; owner still decides.
@@ -588,7 +666,7 @@ After success: second roam using **approved memory**; measure Tier 0–1 answers
 | **v1 — Product MVP** | Adopt UI; roam trigger; domestication Keep/Discard; approved_memory store; answer-from-memory; owner disclosure |
 | **v1.5** | Multiple cats per user; scheduled roams; TTL expiry reminders |
 | **v2** | Cat templates marketplace; skeptic/scout types; cross-cat compare view |
-| **v3** | SME weighting integrations; optional post-as-cat (with strict policy); embedding search |
+| **v3** | SME weighting integrations; **Publish Cat** guest posts ([Potomac design](./signal-processing/worksmarter-medspa/guest-post-publish-cat-potomac-skin-care.md)); **Social Cat** organic campaign copilot ([Potomac design](./signal-processing/worksmarter-medspa/social-cat-campaign-copilot-potomac-skin-care.md)); optional disclosed post-as-cat on approved channels; embedding search |
 
 ---
 
@@ -664,3 +742,6 @@ Source: founder email to friend (lightly edited).
 | 2026-05-29 | §12.3–12.5: programmatic community access tiers, v0 roam lab pipeline, angle→source mapping; resolve open Q2 |
 | 2026-05-29 | §12.4 lab script: `signal-processing/scripts/run_cat_bot_roam_v0.py` |
 | 2026-06-08 | §12.6: Reddit Responsible Builder Policy — scoped subs, RAG vs training, API request language |
+| 2026-06-08 | §5.3–5.4: value on top of public review/community sources; anti-cannibalization vs capture stack; §12.0 API rationale and source matrix by cat type |
+| 2026-06-10 | §13: **Publish Cat** type + link to guest-post design; §17 v3 guest post route |
+| 2026-06-10 | §13: **Social Cat** campaign copilot + link to social-cat design |

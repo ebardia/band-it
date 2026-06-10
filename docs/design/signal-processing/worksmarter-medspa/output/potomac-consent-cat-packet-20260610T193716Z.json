@@ -1,0 +1,78 @@
+{
+  "roam_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "cat_id": "potomac-consent-cat-v0",
+  "neighborhood": "Potomac Skin Care trade area \u2014 affluent DMV med spa (20854 + 12mi radius)",
+  "mission": "Map how affluent clients discover, trust, and consent to med spa care \u2014 not cold contact or review-scrape outreach",
+  "completed_at": "2024-06-10T12:00:00Z",
+  "owner_disclosure": {
+    "owner_name": "Work Smarter Digital (for Potomac Skin Care)",
+    "owner_mission": "Consent-native digital paths for Potomac Skin Care \u2014 SMS keyword, website concierge, partner embeds; HighLevel nurture after opt-in",
+    "bias_statement": "This cat is owned by Work Smarter Digital on behalf of Potomac Skin Care. It may favor CRM, re-engagement, and physician-trust messaging over discount or cold lists."
+  },
+  "angle_1": {
+    "thesis": "Affluent clients prioritize physician-led expertise, safety, and proven results, often validated through high-rated online reviews and established reputation.",
+    "evidence": [
+      "\"Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained | Us Testimonials Most Preferred Skin & Aesthetic Clinic in the heart of Potomac since 1998\" (spa_website)",
+      "\"Rating 5 from 44 reviews.\" (google_places)",
+      "\"Physician-led spas conduct thorough consultations, review your medical background, and customize your treatment plan with an eye for both beauty and health.\" (tavily_search - alluraderm.com)",
+      "\"The gold standard is a med spa run by a physician with specialized training in the treatments offered \u2013 typically a board-certified plastic surgeon, facial plastic surgeon or dermatologist.\" (tavily_search - plasticsurgery.org)"
+    ],
+    "confidence": "High"
+  },
+  "angle_2": {
+    "thesis": "Clients seek a personalized journey to wellness, feeling like a VIP, and building long-term trust through direct engagement channels like website concierge, SMS, and tailored treatment plans.",
+    "contradicts_angle_1": "While Angle 1 focuses on external validation and credentials, Angle 2 emphasizes internal client experience, personalization, and direct, ongoing relationship-building beyond initial discovery.",
+    "evidence": [
+      "\"we look forward to partnering with you on your journey to wellness. Feel like a VIP on every visit!\" (spa_website)",
+      "\"Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available.\" (spa_website)",
+      "\"Customizing aesthetic treatments is our mission, building the best looking you is a tailored experience. ...fully personalized, non-surgical medical treatments.\" (tavily_search - potomacmedicalaesthetics.com)",
+      "\"Email marketing is one of the most reliable ways to stay top of mind, build trust, and drive repeat bookings. ...Email marketing gives you a direct line to clients. This trust gives you permission to share advice, promotions, and reminders.\" (tavily_search - clinicgrower.com)"
+    ],
+    "confidence": "High"
+  },
+  "angle_3": {
+    "thesis": "Affluent clients conduct thorough research to ensure safety, understand procedures, verify a med spa's long-term operational history, and confirm specific expertise before committing to treatments.",
+    "lens": "Patient due diligence and safety-conscious decision-making.",
+    "evidence": [
+      "\"It's important to do your research before choosing a facility. It's important to choose a provider who is trained to handle any complications that may arise during or after your treatment.\" (tavily_search - plasticsurgery.org)",
+      "\"Although most treatments offered at med spas are relatively low risk, they still involve your health and your appearance, and require medical knowledge, clinical judgment, and thorough training to perform them safely and effectively.\" (tavily_search - robertfreundmd.com)",
+      "\"If the med spa doesn\u2019t ask about your beauty concerns or goals, they won\u2019t help you make informed choices. ...determine how long each company has operated locally.\" (tavily_search - beautipharmmedspa.com)",
+      "\"A physician-led medical spa is owned and directed by a licensed physician who provides direct oversight, assessment, and supervision of all procedures.\" (tavily_search - cosmeticinjectables.com)"
+    ],
+    "confidence": "High"
+  },
+  "stuck_trap": "Relying heavily on Yelp for review validation, given Potomac Skin Care's 0.0 rating from 0 reviews there, which contradicts its strong 5.0 rating on Google from 44 reviews.",
+  "recommendation": {
+    "ranked_paths": [
+      "Implement consent-native digital paths (SMS keyword, website concierge, partner embeds) to initiate direct, personalized engagement.",
+      "Prominently highlight physician-led expertise, safety protocols, and the long-standing reputation of Potomac Skin Care across all communication channels.",
+      "Utilize HighLevel CRM for nurturing leads after opt-in, focusing on educational content that reinforces trust and addresses patient due diligence concerns."
+    ],
+    "human_decision_needed": "How to effectively integrate physician expertise and safety messaging into consent-native channels to build trust and inform clients pre-consultation, without overwhelming them."
+  },
+  "do_not_do": [
+    "Cold contact outreach (e.g., unsolicited calls, emails to purchased lists).",
+    "Review-scrape outreach or any deceptive tactics to solicit reviews.",
+    "Any marketing that does not prioritize explicit client consent for communication."
+  ],
+  "proposed_memory_items": [
+    "Physician-led trust is a key differentiator for affluent med spa clients.",
+    "Personalized wellness journeys and VIP treatment foster client loyalty.",
+    "Consent-native digital paths are crucial for ethical and effective client acquisition.",
+    "Clients perform significant due diligence regarding safety, expertise, and spa history.",
+    "Email marketing is a powerful tool for building trust and repeat bookings post-opt-in."
+  ],
+  "synthesis_mode": "gemini",
+  "collection_stats": {
+    "evidence_count": 26,
+    "skipped_sources": [
+      "brave",
+      "reddit"
+    ],
+    "warnings": [
+      "yelp reviews Jeu2fq2_zR36Kdcq-x_gLQ: HTTP 404 for https://api.yelp.com/v3/businesses/Jeu2fq2_zR36Kdcq-x_gLQ/reviews: {\"error\": {\"code\": \"NOT_FOUND\", \"description\": \"Resource could not be found.\"}}"
+    ]
+  },
+  "client_band": "Potomac Skin Care",
+  "big_band": "Work Smarter Digital"
+}

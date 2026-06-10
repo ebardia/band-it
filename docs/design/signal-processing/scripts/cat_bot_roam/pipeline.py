@@ -9,6 +9,8 @@ from .discovery_client import collect_discovery, collect_news_rss
 from .models import EvidenceItem, MedSpa, RoamConfig, RoamEvidence
 from .places_client import collect_for_spa as collect_places_for_spa
 from .reddit_client import collect_reddit
+from .spa_website_client import collect_for_spa as collect_spa_website_for_spa
+from .tavily_client import collect_tavily
 from .yelp_client import collect_for_spa as collect_yelp_for_spa
 
 
@@ -46,8 +48,11 @@ def run_roam(
     enable_places: bool = True,
     enable_yelp: bool = True,
     enable_brave: bool = True,
+    enable_tavily: bool = False,
     enable_news: bool = True,
+    enable_spa_website: bool = True,
     max_reddit_items: int = 30,
+    news_query: str = "med spa Potomac Maryland OR DMV aesthetics",
 ) -> RoamEvidence:
     evidence = RoamEvidence(config=config, spas=spas)
     skipped: set[str] = set()
@@ -84,13 +89,32 @@ def run_roam(
         else:
             skipped.add("yelp")
 
+        if enable_spa_website:
+            items, warnings = collect_spa_website_for_spa(spa)
+            evidence.items.extend(items)
+            evidence.warnings.extend(warnings)
+            if not items and warnings:
+                skipped.add("spa_website")
+        else:
+            skipped.add("spa_website")
+
     discovery_queries = [
-        f'"{spa.spa_name}" med spa review',
-        "med spa Potomac MD forum",
-        "botox DMV experience reddit OR forum",
+        f'"{spa.spa_name}" med spa Potomac Maryland',
+        "how to choose med spa physician-led consultation",
+        "botox med spa Potomac MD experience forum",
+        "affluent med spa marketing consent opt-in not cold email",
     ]
     for spa in spas[:2]:
-        discovery_queries.append(f'"{spa.spa_name}" {spa.city} review')
+        discovery_queries.append(f'"{spa.spa_name}" {spa.city} reviews')
+
+    if enable_tavily:
+        items, warnings = collect_tavily(discovery_queries, max_results=5, max_fetch=2)
+        evidence.items.extend(items)
+        evidence.warnings.extend(warnings)
+        if not items and warnings:
+            skipped.add("tavily")
+    else:
+        skipped.add("tavily")
 
     if enable_brave:
         items, warnings = collect_discovery(discovery_queries, max_results=4, max_fetch=3)
@@ -102,9 +126,11 @@ def run_roam(
         skipped.add("brave")
 
     if enable_news:
-        items, warnings = collect_news_rss("med spa Potomac Maryland OR DMV aesthetics")
+        items, warnings = collect_news_rss(news_query)
         evidence.items.extend(items)
         evidence.warnings.extend(warnings)
+    else:
+        skipped.add("news_rss")
 
     evidence.skipped_sources = sorted(skipped)
     return evidence

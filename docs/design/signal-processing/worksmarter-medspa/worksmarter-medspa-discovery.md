@@ -445,6 +445,8 @@ Production: webhook to Work Smarter’s HighLevel sub-account.
 | **0b — Layer B dry run** | Campaign brief + synthetic 10 + public research 10 (Potomac Skin Care) | Done |
 | **0c — Layer A verify** | Human call to Potomac Skin Care; buy/maybe/not | Pending |
 | **0d — Consent pilot** | SMS GLOW + web agent + partner embed — no paid social ads | Design done — [consent-machine](./consent-machine-potomac-skin-care.md) |
+| **0f — Publish Cat (guest posts)** | Disclosed guest articles on invited third-party sites — when client-active | Design only — [guest-post-publish-cat](./guest-post-publish-cat-potomac-skin-care.md) |
+| **0g — Social Cat (organic copilot)** | Weekly social plan + drafts; human publishes IG/FB/groups/Nextdoor — when client-active | Design only — [social-cat-campaign-copilot](./social-cat-campaign-copilot-potomac-skin-care.md) |
 | **0e — Opt-in leads** | Log rows in `consented-leads-template.csv` | Pending pilot |
 | **1 — Script** | `run_worksmarter_medspa_v1.py` — Layer A scoring | Not started |
 | **2 — Consent pack generator** | Agent 3 template from brief + signals | Not started |

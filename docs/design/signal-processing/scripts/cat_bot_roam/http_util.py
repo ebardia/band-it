@@ -8,7 +8,8 @@ import urllib.request
 from typing import Any
 
 USER_AGENT = "CatBotRoamLab/0.1 (+https://adoptacatbot.com; signal-processing-v0)"
-TIMEOUT_SEC = 20
+DEFAULT_TIMEOUT_SEC = 20
+TIMEOUT_SEC = DEFAULT_TIMEOUT_SEC
 
 
 def request_json(
@@ -18,6 +19,7 @@ def request_json(
     headers: dict[str, str] | None = None,
     data: dict[str, Any] | None = None,
     form: dict[str, str] | None = None,
+    timeout_sec: int | None = None,
 ) -> tuple[int, Any]:
     hdrs = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     if headers:
@@ -33,8 +35,9 @@ def request_json(
 
     req = urllib.request.Request(url, data=body, headers=hdrs, method=method)
     ctx = ssl.create_default_context()
+    timeout = timeout_sec if timeout_sec is not None else TIMEOUT_SEC
     try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT_SEC, context=ctx) as resp:
+        with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
             raw = resp.read()
             charset = resp.headers.get_content_charset() or "utf-8"
             text = raw.decode(charset, errors="replace")
