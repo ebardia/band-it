@@ -1,0 +1,62 @@
+{
+  "neighborhood": "Potomac Skin Care trade area \u2014 affluent DMV med spa (20854 + 12mi radius)",
+  "mission": "Map how affluent clients discover, trust, and consent to med spa care \u2014 not cold contact or review-scrape outreach",
+  "spas": [
+    {
+      "spa_name": "Potomac Skin Care",
+      "website": "https://www.thepotomacskincare.com/",
+      "city": "Potomac",
+      "state": "MD",
+      "zip": "20854",
+      "source_notes": ""
+    }
+  ],
+  "evidence_count": 3,
+  "warnings": [
+    "yelp reviews Jeu2fq2_zR36Kdcq-x_gLQ: HTTP 404 for https://api.yelp.com/v3/businesses/Jeu2fq2_zR36Kdcq-x_gLQ/reviews: {\"error\": {\"code\": \"NOT_FOUND\", \"description\": \"Resource could not be found.\"}}"
+  ],
+  "skipped_sources": [
+    "brave",
+    "reddit"
+  ],
+  "items": [
+    {
+      "source": "google_places",
+      "source_url": "https://maps.google.com/?cid=14585053514945980082&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "title": "Google aggregate \u2014 Potomac Skin Care",
+      "text": "Rating 5 from 44 reviews.",
+      "observed_at": "2026-06-10T15:34:53.389043+00:00",
+      "spa_name": "Potomac Skin Care",
+      "metadata": {
+        "rating": 5,
+        "review_count": 44,
+        "place_id": "ChIJJ9-qIaU0tokRsuZqnOWEaMo"
+      }
+    },
+    {
+      "source": "yelp",
+      "source_url": "https://www.yelp.com/biz/potomac-skin-care-potomac?adjust_creative=LrnHVZ69wdHHyLz0KgXCMA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=LrnHVZ69wdHHyLz0KgXCMA",
+      "title": "Yelp aggregate \u2014 Potomac Skin Care",
+      "text": "Rating 0.0 from 0 reviews.",
+      "observed_at": "2026-06-10T15:34:54.265052+00:00",
+      "spa_name": "Potomac Skin Care",
+      "metadata": {
+        "business_id": "Jeu2fq2_zR36Kdcq-x_gLQ",
+        "rating": 0.0,
+        "review_count": 0
+      }
+    },
+    {
+      "source": "spa_website",
+      "source_url": "https://www.thepotomacskincare.com/",
+      "title": "Spa website \u2014 Potomac Skin Care",
+      "text": "we look forward to partnering with you on your journey to wellness. Feel like a VIP on every visit! Potomac Skin Care ESSENTIALS Venus Bliss | PDO Smooth Filler | Thread Lift | Venus Freeze | Venus Legacy | Venus TriBella | Botox | Juvederm | Radiesse | Bellafill | Belotero | 3-Step Peel | Obagi Blu | le an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained | Us Testimonials Most Preferred Skin & Aesthetic Clinic in the heart of Potomac since 1998 Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebi | DO Smooth Filler | Thread Lift | Venus Freeze | Venus Legacy | Venus TriBella | Botox | Juvederm | Radiesse | Bellafill | Belotero | 3-Step Peel | Obagi Blue Peel | Radiance Peel | Microdermabrasion | Sclerotherapy | Liquid Facelift ------------------------- Non-surgical Body Contouring | Cellulite | omac since 1998 Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, | tations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained medical professional is eager to learn more about you! Potomac Skin Care has been a trusted pioneer for 30 years in the aesthetic industry in Maryland, and we are c\n\n---\n\nThePotomacSkinCare Search this site Embedded Files Skip to main content Skip to navigation ThePotomacSkinCare Home Services Venus Bliss\u2122 Fat Treatment Venus Versa\u2122 TriBella PDO Threadlift Lip Filler Offers Contact Us Testimonials ThePotomacSkinCare Home Services Venus Bliss\u2122 Fat Treatment Venus Versa\u2122 TriBella PDO Threadlift Lip Filler Offers Contact Us Testimonials More Home Services Venus Bliss\u2122 Fat Treatment Venus Versa\u2122 TriBella PDO Threadlift Lip Filler Offers Contact Us Testimonials Most Preferred Skin & Aesthetic Clinic in the heart of Potomac since 1998 Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained medical professional is eager to learn more about you! Potomac Skin Care has been a trusted pioneer for 30 years in the aesthetic industry in Maryland, and we are committed to providing you with the best possible care and service. We believe in helping you achieve your best self, both inside and out, and we look forward to partnering with you on your journey to wellness. Feel like a VIP on every visit! Potomac Skin Care ESSENTIALS Venus Bliss | PDO Smooth Filler | Thread Lift | Venus Freeze | Venus Legacy | Venus TriBella | Botox | Juvederm | Radiesse | Bellafill | Belotero | 3-Step Peel | Obagi Blue Peel | Radiance Peel | Microdermabrasion | Sclerotherapy | Liquid Facelift ------------------------- Non-surgical Body Contouring | Cellulite Treatment | Wrinkle Reduction | Circumferential Reduction | Skin Tightening for Neck, Arms, and Body Our Medical Aesthetic Treatment Solutions Body & Fat Treatments Skin Care Treatments Botox and Dermal Fillers Treat Now. Pay Monthly. Let your money go further and take better control of your cash flow when you pay in smaller, more manageable monthly installments with Cherry. Learn more here . Apply Now Testimonials \"Dr. Jovy knows my skin better than myself. I trust her. She has a personal approach. The staff are nice and warm too. Accessible and cozy office. I love my Potomac Skin Care!\" \"Dr. Jovy Eusebio did an excellent job on my skin. Very personable. Excellent physician. My skin has transformed beautifully. I recommend this clinic 100%.\" Venus Bliss\u2122 BEFORE & AFTER LOCATION 10000 Falls Rd Ste 100 Potomac, Maryland 20854 (301) 765-0990 info@thepotomacskincare.com \u00a9 2026 Potomac Skin Care. All rights reserved . Google Sites Report abuse Page details Page updated Google Sites Report abuse",
+      "observed_at": "2026-06-10T15:34:54.915622+00:00",
+      "spa_name": "Potomac Skin Care",
+      "metadata": {
+        "url": "https://www.thepotomacskincare.com/"
+      }
+    }
+  ],
+  "collected_at": "2026-06-10T15:34:55.336560+00:00"
+}

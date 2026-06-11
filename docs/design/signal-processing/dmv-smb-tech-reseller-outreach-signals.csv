@@ -1,0 +1,22 @@
+signal_id,signal_name,signal_role,category,description,source_hint,outreach_use,phase
+O01,Primary platform stack,outreach_intel,stack,"Named CRM/automation core: GHL HubSpot Salesforce Zoho M365 MSP",website services footer partner page,"Open with their stack; pitch Cat Bot as layer on top not replacement",v1
+O02,AI vendor stack,outreach_intel,stack,"Named AI tools: Vapi Bland Marblism GHL Conversation AI LinkedIn AI Autopilot etc",website build/pricing pages,"Show you understand their AI is configure-not-build; offer vertical intel they lack",v1
+O03,End-client vertical pages,outreach_intel,vertical,"Dedicated industry pages: home services law med spa coaches construction trades",website nav case studies,"Name their vertical; offer Cat Bot roam for that vertical under their brand",v1
+O04,White-label reseller language,outreach_intel,product,"Copy: white-label SaaS sub-accounts agency platform resell Revenue Accelerator",website about services,"Big Band pitch: white-label Cat Bots like they white-label GHL",v1
+O05,Packaged offer + price anchor,outreach_intel,commercial,"Public tier pricing or package names e.g. LaaS $597 Smart Site lead capture $3.5k",pricing services pages,"Reference their SKU; propose Cat Bot as add-on SKU for their clients",v1
+O06,Recent case study win,outreach_intel,proof,"Case study in last 12mo with metric: 3x leads 180% traffic SQL lift",website case studies Clutch,"Congratulate specific result; ask if end clients need market intel layer",v1
+O07,Founder thought leadership,outreach_intel,person,"Founder post or blog in last 90d on AI automation vertical growth",LinkedIn blog RSS,"Quote their words back; align Cat Bot to stated priority",v1
+O08,Partner tier or badge,outreach_intel,credibility,"HubSpot Platinum Diamond Elite GHL partner Salesforce AppExchange listing",partner directory website,"Acknowledge tier; partners resell more SKUs",v1
+O09,Hiring implementation roles,outreach_intel,timing,"Open job: HubSpot admin GHL implementer RevOps CRM migration",LinkedIn jobs careers page,"They are scaling delivery — Cat Bot reduces research load per vertical",v2
+O10,Geographic micro-market,outreach_intel,geo,"City/county focus beyond DMV: Baltimore SOMD NoVA Bethesda Frederick Alexandria",about contact service area,"Hyper-local opener; Cat Bot can roam their micro-market",v1
+O11,Corporate change event,outreach_intel,timing,"Merger rebrand new service line Aptitude8 OBO name change",news website press,"Acknowledge transition; pitch stable intel layer during stack change",v2
+O12,Review sentiment theme,outreach_intel,reputation,"Clutch/Google theme: responsive SMB-focused implementation quality",Clutch Google reviews,"Mirror client praise; ask how they research new verticals today",v2
+O13,Content freshness gap,outreach_intel,gap,"Blog/news stale >6mo while site pushes AI innovation",website blog,"Gentle hook: they sell modern stack but public story is quiet",v2
+O14,Competitive positioning claim,outreach_intel,positioning,"Unique claim: only automated LinkedIn proprietary tools DMV home services AI agency",homepage services,"Challenge or complement claim with roam proof for one vertical",v1
+O15,Intelligence layer gap,outreach_intel,gap,"No public offer for vertical market intel community signals competitor scan for end clients",website full crawl,"Core Cat Bot wedge: they automate leads not neighborhood roam",v1
+O16,Multi-location SMB end buyers,outreach_intel,vertical,"Serves franchises multi-location home services dental legal with local SEO",case studies SEO copy,"Cat Bot per location or per vertical map under their brand",v2
+O17,Integration complexity,outreach_intel,stack,"Salesforce+HubSpot monday.com multi-tool migrations custom API",services case studies,"Cat Bot feeds RevOps with external signals not in CRM",v2
+O18,Outbound channel emphasis,outreach_intel,channel,"LinkedIn outreach PPC local SEO voice AI chatbot as primary lead gen",services pricing,"Match pitch channel: voice/chat resellers need pre-call intel",v1
+N01,Outreach priority score,narrow,priority,"Sum of O* hook signals with pitch fit; rank top 15 for personalized outreach",computed,"Sort seed list for who gets Cat Bot dossier first",v1
+N02,Cat Bot dossier ready,narrow,readiness,"≥5 O signals filled with citeable URL/snippet for one prospect",roam output,"Ready to send I ran a cat bot on your company email",v1
+X05,Recent outreach by us,exclude,dedup,"Already contacted in last 30 days or meeting scheduled",CRM manual,"Do not double-pitch",v1

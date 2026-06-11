@@ -1,0 +1,15 @@
+signal_id,signal_name,signal_role,category,description,phase
+F01,DMV metro footprint,fit,geography,"HQ or explicit service area DC / MD / VA (DMV)",v1
+F02,SMB reseller model,fit,business_model,"Resells or implements CRM / marketing automation / MSP stack to local SMBs (not enterprise-only SI)",v1
+F03,Agency-scale buyer,fit,size,"Estimated 5–75 employees; owner-led or boutique (not Big 4 / national SI)",v1
+F04,Vertical or horizontal SMB,fit,icp,"Serves local businesses (med spa home services pro services etc.) via packaged systems",v1
+H01,Official partner badge,hunt,credibility,"Listed HubSpot Salesforce Zoho Microsoft partner OR white-label SaaS (GHL etc.) on site",v1
+H02,White-label SaaS language,hunt,product,"Site mentions white-label CRM SaaS sub-accounts revenue accelerator agency platform",v1
+H03,SMB explicit positioning,hunt,icp,"Copy targets small business local business SMB owner-operated on homepage",v1
+H04,Implementation + managed services,hunt,offer,"Offers implementation onboarding managed CRM not one-off project only",v1
+H05,Multi-location local SMB verticals,hunt,vertical,"Case studies or pages for med spa home services dental legal contractors",v2
+H06,Hiring implementation roles,hunt,growth,"Open roles: HubSpot admin CRM implementation marketing ops RevOps",v2
+X01,Enterprise-only SI,exclude,scale,"Primary ICP Fortune 500 federal prime only no SMB practice",v1
+X02,National HQ no DMV presence,exclude,geography,"No DC MD VA service area and no local case studies",v1
+X03,Pure creative no tech resale,exclude,offer,"Branding PR only; no CRM MSP or marketing automation resale",v1
+X04,SaaS vendor not reseller,exclude,type,"ISV product company not agency implementing for clients",v1

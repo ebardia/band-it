@@ -1,0 +1,315 @@
+{
+  "neighborhood": "Potomac Skin Care trade area \u2014 affluent DMV med spa (20854 + 12mi radius)",
+  "mission": "Map how affluent clients discover, trust, and consent to med spa care \u2014 not cold contact or review-scrape outreach",
+  "spas": [
+    {
+      "spa_name": "Potomac Skin Care",
+      "website": "https://www.thepotomacskincare.com/",
+      "city": "Potomac",
+      "state": "MD",
+      "zip": "20854",
+      "source_notes": ""
+    }
+  ],
+  "evidence_count": 26,
+  "warnings": [
+    "yelp reviews Jeu2fq2_zR36Kdcq-x_gLQ: HTTP 404 for https://api.yelp.com/v3/businesses/Jeu2fq2_zR36Kdcq-x_gLQ/reviews: {\"error\": {\"code\": \"NOT_FOUND\", \"description\": \"Resource could not be found.\"}}"
+  ],
+  "skipped_sources": [
+    "brave",
+    "reddit"
+  ],
+  "items": [
+    {
+      "source": "google_places",
+      "source_url": "https://maps.google.com/?cid=14585053514945980082&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "title": "Google aggregate \u2014 Potomac Skin Care",
+      "text": "Rating 5 from 44 reviews.",
+      "observed_at": "2026-06-10T19:27:03.340095+00:00",
+      "spa_name": "Potomac Skin Care",
+      "metadata": {
+        "rating": 5,
+        "review_count": 44,
+        "place_id": "ChIJJ9-qIaU0tokRsuZqnOWEaMo"
+      }
+    },
+    {
+      "source": "yelp",
+      "source_url": "https://www.yelp.com/biz/potomac-skin-care-potomac?adjust_creative=LrnHVZ69wdHHyLz0KgXCMA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=LrnHVZ69wdHHyLz0KgXCMA",
+      "title": "Yelp aggregate \u2014 Potomac Skin Care",
+      "text": "Rating 0.0 from 0 reviews.",
+      "observed_at": "2026-06-10T19:27:03.703018+00:00",
+      "spa_name": "Potomac Skin Care",
+      "metadata": {
+        "business_id": "Jeu2fq2_zR36Kdcq-x_gLQ",
+        "rating": 0.0,
+        "review_count": 0
+      }
+    },
+    {
+      "source": "spa_website",
+      "source_url": "https://www.thepotomacskincare.com/",
+      "title": "Spa website \u2014 Potomac Skin Care",
+      "text": "we look forward to partnering with you on your journey to wellness. Feel like a VIP on every visit! Potomac Skin Care ESSENTIALS Venus Bliss | PDO Smooth Filler | Thread Lift | Venus Freeze | Venus Legacy | Venus TriBella | Botox | Juvederm | Radiesse | Bellafill | Belotero | 3-Step Peel | Obagi Blu | le an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained | Us Testimonials Most Preferred Skin & Aesthetic Clinic in the heart of Potomac since 1998 Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebi | DO Smooth Filler | Thread Lift | Venus Freeze | Venus Legacy | Venus TriBella | Botox | Juvederm | Radiesse | Bellafill | Belotero | 3-Step Peel | Obagi Blue Peel | Radiance Peel | Microdermabrasion | Sclerotherapy | Liquid Facelift ------------------------- Non-surgical Body Contouring | Cellulite | omac since 1998 Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, | tations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained medical professional is eager to learn more about you! Potomac Skin Care has been a trusted pioneer for 30 years in the aesthetic industry in Maryland, and we are c\n\n---\n\nThePotomacSkinCare Search this site Embedded Files Skip to main content Skip to navigation ThePotomacSkinCare Home Services Venus Bliss\u2122 Fat Treatment Venus Versa\u2122 TriBella PDO Threadlift Lip Filler Offers Contact Us Testimonials ThePotomacSkinCare Home Services Venus Bliss\u2122 Fat Treatment Venus Versa\u2122 TriBella PDO Threadlift Lip Filler Offers Contact Us Testimonials More Home Services Venus Bliss\u2122 Fat Treatment Venus Versa\u2122 TriBella PDO Threadlift Lip Filler Offers Contact Us Testimonials Most Preferred Skin & Aesthetic Clinic in the heart of Potomac since 1998 Schedule an appointment with us Please click the link to book a consultation with our Physician. You may also call us at (301)765-0990 to book an appointment. Free consultations available. Meet Dr. Jovy Eusebio & Our Team Our authorized physician, a ZO Skin Health Circle Club Member, and a highly trained medical professional is eager to learn more about you! Potomac Skin Care has been a trusted pioneer for 30 years in the aesthetic industry in Maryland, and we are committed to providing you with the best possible care and service. We believe in helping you achieve your best self, both inside and out, and we look forward to partnering with you on your journey to wellness. Feel like a VIP on every visit! Potomac Skin Care ESSENTIALS Venus Bliss | PDO Smooth Filler | Thread Lift | Venus Freeze | Venus Legacy | Venus TriBella | Botox | Juvederm | Radiesse | Bellafill | Belotero | 3-Step Peel | Obagi Blue Peel | Radiance Peel | Microdermabrasion | Sclerotherapy | Liquid Facelift ------------------------- Non-surgical Body Contouring | Cellulite Treatment | Wrinkle Reduction | Circumferential Reduction | Skin Tightening for Neck, Arms, and Body Our Medical Aesthetic Treatment Solutions Body & Fat Treatments Skin Care Treatments Botox and Dermal Fillers Treat Now. Pay Monthly. Let your money go further and take better control of your cash flow when you pay in smaller, more manageable monthly installments with Cherry. Learn more here . Apply Now Testimonials \"Dr. Jovy knows my skin better than myself. I trust her. She has a personal approach. The staff are nice and warm too. Accessible and cozy office. I love my Potomac Skin Care!\" \"Dr. Jovy Eusebio did an excellent job on my skin. Very personable. Excellent physician. My skin has transformed beautifully. I recommend this clinic 100%.\" Venus Bliss\u2122 BEFORE & AFTER LOCATION 10000 Falls Rd Ste 100 Potomac, Maryland 20854 (301) 765-0990 info@thepotomacskincare.com \u00a9 2026 Potomac Skin Care. All rights reserved . Google Sites Report abuse Page details Page updated Google Sites Report abuse",
+      "observed_at": "2026-06-10T19:27:04.250299+00:00",
+      "spa_name": "Potomac Skin Care",
+      "metadata": {
+        "url": "https://www.thepotomacskincare.com/"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.wellnessliving.com/explore/locations/medical-aesthetics/us-md-potomac/potomacskincare/reviews",
+      "title": "Potomac Skin Care - WellnessLiving",
+      "text": "Potomac Skin Care in Potomac, MD - Med Spa, see class schedules and staff bios ... Location Details. Share. 10000 Falls Rd # 100, Potomac, Maryland, 20854, USA",
+      "observed_at": "2026-06-10T19:27:05.495676+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "\"Potomac Skin Care\" med spa Potomac Maryland"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://evexiamedspa.com/location/maryland-usa/potomac-md",
+      "title": "Potomac, MD - Evexia Medspa",
+      "text": "Transform your skin with medical grade facials at Potomac, MD! Our certified providers use cutting-edge products and techniques to purify, hydrate, and nourish",
+      "observed_at": "2026-06-10T19:27:06.322926+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "\"Potomac Skin Care\" med spa Potomac Maryland"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://cosmetic-dermatology-center.com/med-spa-in-potomac-md",
+      "title": "Med spa in Potomac, MD - Cosmetic Dermatology Center",
+      "text": "Experience top-notch Med spa in Potomac, MD. Our specialists provide personalized treatments for all skin concerns. Schedule your appointment today!",
+      "observed_at": "2026-06-10T19:27:08.483322+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "\"Potomac Skin Care\" med spa Potomac Maryland"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.alunaaesthetics.com",
+      "title": "Aluna Aesthetics | Boutique Medspa in Potomac, Maryland",
+      "text": "Experience advanced, personalized care in a boutique medspa where modern medicine meets timeless aesthetics. Our focus is natural, transformative results through a thoughtful balance of injectables and skin health. Led by Yelena Burshteyn, NP-C, our team combines medical expertise with an artistic eye to create results that feel natural and timeless. Our boutique injectables are curated for precision and impact, delivered only by expert providers who know how to achieve a flawless, radiant beauty that\u2019s fresh, natural, and entirely your own. Aluna Aesthetics offers neurotoxin treatments to soften fine lines, relax tension, and refresh your look with subtle, natural results. Aluna Aesthetics offers dermal fillers to restore volume, enhance lips, and smooth under-eyes with soft, natural results. **Expert Care.** Our injectables are administered by providers who specialize in balance aesthetic precision. **Natural Results.** We enhance your features to achieve a fresh, effortless look that stays true to your beauty. Book your personalized appointment today and take the first step toward refined results.",
+      "observed_at": "2026-06-10T19:27:08.483326+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "\"Potomac Skin Care\" med spa Potomac Maryland"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.yelp.com/biz/potomac-skin-care-potomac",
+      "title": "POTOMAC SKIN CARE - Updated June 2026 - Yelp",
+      "text": "10000 Falls Rd. Ste 100. Potomac, MD 20854. Directions ; (301) 765-0990. Call Now ; Visit Website. http://www.potomacskin.com.",
+      "observed_at": "2026-06-10T19:27:08.483330+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "\"Potomac Skin Care\" med spa Potomac Maryland"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.plasticsurgery.org/patient-safety/how-to-choose-the-right-medical-spa-for-you",
+      "title": "How to Choose the Right Medical Spa for You | ASPS",
+      "text": "# How to Choose the Right Medical Spa for You. A medical spa, or med spa, blends the soothing environment of a day spa with medical-grade treatments usually found in a doctor's office. For patients, it's important to understand that not all med spas are created equal. The gold standard is a med spa run by a physician with specialized training in the treatments offered \u2013 typically a board-certified plastic surgeon, facial plastic surgeon or dermatologist. That's why it's important to do your research before choosing a facility. It's important to choose a provider who is trained to handle any complications that may arise during or after your treatment. The best way to be sure you're in safe hands is to see a physician with specialized training in the types of procedures \u2013 and areas of the body \u2013 commonly treated in a med spa setting.",
+      "observed_at": "2026-06-10T19:27:09.551493+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "how to choose med spa physician-led consultation"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://alluraderm.com/blog/physician-led-med-spa",
+      "title": "Why Choose a Physician-Led Med Spa? 5 Key Benefits for Safety ...",
+      "text": "Physician-led spas conduct thorough consultations, review your medical background, and customize your treatment plan with an eye for both beauty and health.",
+      "observed_at": "2026-06-10T19:27:09.551537+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "how to choose med spa physician-led consultation"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://robertfreundmd.com/skincare/how-to-choose-the-right-medical-spa-what-to-look-for-before-your-first-treatment",
+      "title": "How to Choose the Right Medical Spa: What to Look for Before Your First Treatment. - Robert Freund MD",
+      "text": "How to Choose the Right Medical Spa: What to Look for Before Your First Treatment. # How to Choose the Right Medical Spa: What to Look for Before Your First Treatment. A medical spa blends medical grade treatments only found in doctors offices with a more relaxing environment, all overseen by a trusted care provider. The gold standard is a med spa run by a physician with specialized training in the treatments offered \u2013 typically a board-certified plastic surgeon, who has in-depth knowledge on facial anatomy and producing best aesthetic outcomes. Although most treatments offered at med spas are relatively low risk, they still involve your health and your appearance, and require medical knowledge, clinical judgment, and thorough training to perform them safely and effectively. When choosing a med spa, make sure they offer the specific procedures you\u2019re looking for and have experience performing them safely and effectively. Med spa provider credentials, experience and professional referrals should hold the most importance.",
+      "observed_at": "2026-06-10T19:27:09.551554+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "how to choose med spa physician-led consultation"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://cosmeticinjectables.com/blog/how-to-choose-a-medical-spa-physician-led-vs-non-physician-clinics-in-sherman-oaks",
+      "title": "How to Choose a Medical Spa: Physician-Led vs. Non-Physician ...",
+      "text": "A physician-led medical spa is owned and directed by a licensed physician who provides direct oversight, assessment, and supervision of all procedures. Non-",
+      "observed_at": "2026-06-10T19:27:09.551568+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "how to choose med spa physician-led consultation"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://beautipharmmedspa.com/7-key-questions-to-ask-when-choosing-a-med-spa",
+      "title": "7 Key Questions to Ask When Choosing a Med Spa - Beauti Pharm Med Spa",
+      "text": "With help from your Grand Blanc med spa experts, you can! Not sure which Grand Blanc med spa to choose? Then, determine which med spa procedures you\u2019ll need based on those goals. Ask which med spa procedures they recommend and why. If the med spa doesn\u2019t ask about your beauty concerns or goals, they won\u2019t help you make informed choices. Before choosing a Grand Blanc med spa, determine how long each company has operated locally. What Med Spa Services Do You Offer? However, the most popular med spa procedures may not meet your needs. Review the med spa services offered at each location. A med spa that uses the top anti-aging treatments available on the market can help you achieve natural-looking results. Ask each med spa team for at least three referrals. Ask the med spa if they offer financing options or membership discounts. Don\u2019t make the mistake of choosing a Grand Blanc med spa that lacks the services you need.",
+      "observed_at": "2026-06-10T19:27:09.551580+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "how to choose med spa physician-led consultation"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.yelp.com/biz/moksha-aesthetics-potomac?start=10",
+      "title": "MOKSHA AESTHETICS - Medical Spas - Yelp",
+      "text": "Melissa is an amazing injector a luxurious experience. This was my first Botox experience, and I went for jaw clenching. She is warm, professional, and great",
+      "observed_at": "2026-06-10T19:27:10.819825+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "botox med spa Potomac MD experience forum"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://medicalspamd.com/the-blog/2018/5/5/the-new-member-forums-cosmetic-lasers-legal-marketing-more",
+      "title": "The New Member Forums: Cosmetic Lasers, Legal, Marketing + More",
+      "text": "The new Medical Spa MD Member Forums are now open. legal, marketing, and cosmetic lasers, IPL, and RF technologies. Botox & Restylane In",
+      "observed_at": "2026-06-10T19:27:10.819851+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "botox med spa Potomac MD experience forum"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.brunobrownplasticsurgery.com/botox-in-potomac-md-your-solution-for-fine-lines-and-wrinkles",
+      "title": "Botox in Potomac, MD: Your Solution for Fine Lines and Wrinkles",
+      "text": "The med spa put a lot of injections in a few places, Dr. Bruno kept asking me to move my face to really target the lines. Botox treatment usually only takes",
+      "observed_at": "2026-06-10T19:27:10.819855+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "botox med spa Potomac MD experience forum"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://potomacmedicalaesthetics.com",
+      "title": "Potomac Medical Aesthetics: Main Home",
+      "text": "logo main logo dark logo main. logo main logo darklogo light. Beauty Customizing aesthetic treatments is our mission, building the best looking you is a tailored experience. After years as a highly respected emergency medicine physician Dr. Peter Petropoulos wanted to give men and women a place where they can achieve their unique aesthetic goals with fully personalized, non-surgical medical treatments. What is so appealing to our patients is that professional health care providers perform every medical procedure \u2013 including popular treatments like Semaglutide for Weight Loss, CoolSculpting\u00ae and ForeverYoung BBL\u00ae \u2013 themselves, ensuring natural-looking outcomes personalized to the unique goals of each patient. All other non-medical treatments, such as HydraFacial\u00ae, are performed by our aestheticians. #### Botox for Men. Potomac Medical Aesthetics customizes all cosmetic treatments for all demographics, including Men! ### Botox. Potomac Medical Aesthetics offers a unique personal touch, and treatments that do what they\u2019re supposed to. PRP for Skin + Hair Growth. 7811 Montrose Rd Ste. 310 Potomac, MD 20854.",
+      "observed_at": "2026-06-10T19:27:10.819859+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "botox med spa Potomac MD experience forum"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://medstarmedia.com/medspa-marketing/email-marketing",
+      "title": "How to Improve Your Med Spa Email Marketing - MedStar Media",
+      "text": "*By submitting this form, you consent to receive automated marketing calls, texts, and emails from Medstar Media. Consent is not a condition of purchase.",
+      "observed_at": "2026-06-10T19:27:11.972423+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "affluent med spa marketing consent opt-in not cold email"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.studio3marketing.com/med-spa/services/email-marketing",
+      "title": "Email Marketing Services for Med Spa",
+      "text": "Studio 3 Marketing provides email marketing services for med spas to nurture leads, re-engage past clients, and strengthen referral networks.",
+      "observed_at": "2026-06-10T19:27:11.972465+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "affluent med spa marketing consent opt-in not cold email"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.ednadigitalmarketing.com/med-spa-email-marketing-guide",
+      "title": "Med Spa Email Marketing Guide - How to Fill Your Schedule Fast",
+      "text": "# Med Spa Email Marketing Guide - How to Fill Your Schedule Fast. The real problem might not be your effort, it might be your strategy. Email marketing is one of the most reliable ways to stay top of mind, build trust, and drive repeat bookings. Unlike social media or paid ads, your email list gives you direct access to people who actually want to hear from you. This guide will show you how to turn emails into your most powerful booking tool. Build a High-Quality Email List (Not Just a Big One)**. A quality email list is made up of real people who are actually interested in your services and are more likely to book a treatment. They\u2019re people who clicked on your quiz, downloaded a free skincare guide, or visited your website looking for a solution. Your job is to make it easy and appealing for them to join your email list.",
+      "observed_at": "2026-06-10T19:27:11.972480+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "affluent med spa marketing consent opt-in not cold email"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.patientnow.com/resources/blog/complete-medspa-email-marketing-guide",
+      "title": "The Complete Med Spa Email Marketing Guide For Growing Practices",
+      "text": "## Ready to see PatientNow in action? ## Get The Support You Need. # The Complete Med Spa Email Marketing Guide For Growing Practices. This medspa email marketing guide isn\u2019t a gimmick. It\u2019s your growth engine. Email delivers an average ROI of up to $36 for every $1 spent. For med spas, it drives appointment bookings, boosts retention, and generates predictable revenue. But practices using automated email campaigns see up to 70\u201380% patient return rates. ## Your Patients Are in Their Inboxes. Most med spas lose patients not because of bad service. But intelligent medspa email marketing changes that. That\u2019s how you get them to make their first booking. Also, precise email marketing inspires your current patients to come back again for more treatments. So, here\u2019s your complete medspa email marketing guide. It tells you everything you need to know to build stronger connections with patients through email. ## Email Marketing Infrastructure for Med Spas.",
+      "observed_at": "2026-06-10T19:27:11.972494+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "affluent med spa marketing consent opt-in not cold email"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://clinicgrower.com/email-marketing-for-med-spas",
+      "title": "Email Marketing for Med Spas: The Complete Strategy Guide",
+      "text": "# Email Marketing for Med Spas: The Complete Guide to Boost Bookings and Build Loyalty. If you want **more bookings**, **fewer no-shows**, and **loyal, repeat clients**, *email marketing for med spas* is one of the smartest tools you can use. Unlike social posts that disappear in crowded feeds, email is **direct**, **personal**, and **fully under your control**. In this guide, you\u2019ll learn **practical, proven strategies** to make email work for your med spa:. If you\u2019re ready to keep your calendar full and your clients coming back, **read on**. ## **Why Email Marketing Is Essential for Med Spas**. Email isn\u2019t just another marketing channel\u2014it\u2019s one of the most **dependable and profitable** tools you have to keep your calendar full and your clients loyal. Email marketing gives you a **direct line** to clients. This trust gives you permission to share advice, promotions, and reminders in a way that feels one-on-one, even at scale. Your email list is the **foundation** of your med spa marketing.",
+      "observed_at": "2026-06-10T19:27:11.972509+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "affluent med spa marketing consent opt-in not cold email"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.fresha.com/lvp/potomac-skin-care-falls-road-potomac-Vq0QMG",
+      "title": "Potomac Skin Care - 10000 Falls Rd # 100 ...",
+      "text": "Potomac Skin Care. Show number. 10000 Falls Rd # 100, Potomac, MD 20854 ... Eyebrows & Lashes \u2022 1262 reviews. Deals. A serene woman enjoying her time at",
+      "observed_at": "2026-06-10T19:27:13.365840+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "\"Potomac Skin Care\" Potomac reviews"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.facebook.com/thepotomacskincare",
+      "title": "Potomac Skin Care",
+      "text": "Thank you for highly recommending Potomac Skin Care! <3 For inquiries and scheduling, call us at 301-765-0990. #potomacskincare #zoskinhealth #CommitToYourSkin.",
+      "observed_at": "2026-06-10T19:27:13.365879+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "\"Potomac Skin Care\" Potomac reviews"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.instagram.com/potomacskincare",
+      "title": "Potomac Skin Care (@potomacskincare)",
+      "text": "Thank you for highly recommending Potomac Skin Care! <3 For inquiries and scheduling, call us at 301-765-0990. #potomacskincare #zoskinhealth #CommitToYourSkin",
+      "observed_at": "2026-06-10T19:27:13.365894+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "\"Potomac Skin Care\" Potomac reviews"
+      }
+    },
+    {
+      "source": "tavily_search",
+      "source_url": "https://www.thepotomacskincare.com/testimonials",
+      "title": "Testimonials - ThePotomacSkinCare",
+      "text": "Testimonials Gallery & Testimonials \u00a9 2026 Potomac Skin Care. All rights",
+      "observed_at": "2026-06-10T19:27:13.365906+00:00",
+      "spa_name": null,
+      "metadata": {
+        "query": "\"Potomac Skin Care\" Potomac reviews"
+      }
+    }
+  ],
+  "collected_at": "2026-06-10T19:27:13.778536+00:00"
+}

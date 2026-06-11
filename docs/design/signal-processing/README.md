@@ -6,7 +6,11 @@ Reusable **signal → exclude → verify → rank → act** patterns for Band It
 |------|---------|
 | [band-it-outbound-discovery.md](./band-it-outbound-discovery.md) | Dogfood use case: find 50 DC-metro SMBs to call for Band It |
 | [band-it-outbound-signals.csv](./band-it-outbound-signals.csv) | Signal registry (fit / hunt / exclude / backlog) for agent build |
-| [worksmarter-medspa/](./worksmarter-medspa/) | **Work Smarter Digital** demo — master doc includes hypothesis tests, legal boundaries, public-role research |
+| [worksmarter-medspa/](./worksmarter-medspa/) | Work Smarter med spa demo — reseller → end-client vertical |
+| [dmv-smb-tech-reseller-discovery.md](./dmv-smb-tech-reseller-discovery.md) | **Big Band prospecting** — 50 DMV SMB technology resellers |
+| [dmv-smb-tech-reseller-outreach-intel.md](./dmv-smb-tech-reseller-outreach-intel.md) | **Pre-outreach Cat Bot dossier** — O-signals + openers |
+| [worksmarter-medspa/guest-post-publish-cat-potomac-skin-care.md](./worksmarter-medspa/guest-post-publish-cat-potomac-skin-care.md) | **Publish Cat** — guest posts when client-active (design only) |
+| [worksmarter-medspa/social-cat-campaign-copilot-potomac-skin-care.md](./worksmarter-medspa/social-cat-campaign-copilot-potomac-skin-care.md) | **Social Cat** — organic social copilot when client-active (design only) |
 
 ## How this relates to other design docs
 
@@ -27,6 +31,45 @@ Reusable **signal → exclude → verify → rank → act** patterns for Band It
 - Shared scoring, agent roles, or verification patterns that apply across verticals
 
 Do **not** duplicate pre-channel content — link to it as the reference implementation.
+
+## Build sequencing (v0)
+
+Aligns with [platform doc §6.5](../adopt-a-cat-bot-platform.md#65-build-sequencing-v0--decided-2026-06-08):
+
+```text
+1. Python roam lab (this folder)     →  real JSON, tune signals
+2. House Band on adoptacatbot        →  store RoamRun + domesticate
+3. Customer Big Band demo            →  Work Smarter + Potomac
+```
+
+| Track | Scripts | APIs to prove first |
+|-------|---------|---------------------|
+| **Med spa Market Cat** | `run_cat_bot_roam_v0.py` | Google Places (New), Yelp Fusion, news RSS; Reddit when approved |
+| **Big Band reseller outreach** | `run_reseller_dossier_v0.py` (planned) | Homepage fetch, Clutch, news — **not** Places/Yelp-first |
+
+## API credentials (v0 lab)
+
+Add to repo root `.env` (gitignored). Loader: `scripts/cat_bot_roam/env.py`.
+
+| Variable | Used for | When required |
+|----------|----------|---------------|
+| `GOOGLE_PLACES_API_KEY` | Text Search + Place Details (reviews) | Med spa / local consumer roams |
+| `YELP_API_KEY` | Fusion business + reviews | Med spa / local consumer roams |
+| `GEMINI_API_KEY` | Return packet synthesis (preferred over Anthropic in lab) | Optional — [AI Studio](https://aistudio.google.com/apikey) |
+| `GEMINI_MODEL` | Default `gemini-2.5-flash` | Optional |
+| `ANTHROPIC_API_KEY` | Return packet synthesis (fallback) | Optional |
+| `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET` | Subreddit search | Optional until Reddit Data Access approved |
+| `BRAVE_SEARCH_API_KEY` | Forum/blog discovery | Optional |
+| `ANTHROPIC_API_KEY` | LLM return packet | Optional (`--no-synthesize` for heuristic) |
+
+**Google Cloud setup:** enable **Places API (New)** (not legacy Places API), attach billing, create API key restricted to that API. Test Places-only:
+
+```bash
+python docs/design/signal-processing/scripts/run_cat_bot_roam_v0.py \
+  --zip 20854 --max-spas 1 --no-synthesize --no-reddit --no-yelp --no-brave --no-news
+```
+
+**Why APIs if data is public?** Repeatable roams, citations, cross-source merge — not a substitute for product value. See [adopt-a-cat-bot.md §5.3–12.0](../adopt-a-cat-bot.md#53-value-on-top-of-public-sources-google-yelp-reddit-).
 
 ## Run outbound discovery v1
 
