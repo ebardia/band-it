@@ -615,6 +615,25 @@
   margin: 0;
 }
 
+.np-landing-dead-mouse {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 2px solid var(--np-ink);
+  background: color-mix(in srgb, var(--np-paper) 92%, var(--np-ink) 8%);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--np-ink) 20%, transparent);
+}
+
+.np-landing-dead-mouse .np-landing-paragraph {
+  margin: 0;
+  font-family: var(--np-body);
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.np-landing-dead-mouse .np-landing-section-kicker {
+  margin-bottom: 0.65rem;
+}
+
 .np-landing-opportunities {
   margin-bottom: 1.35rem;
 }

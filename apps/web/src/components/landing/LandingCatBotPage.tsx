@@ -7,6 +7,10 @@ import { useRouter } from 'next/navigation'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
 import { CatBotMastheadHeader } from '@/components/landing/CatBotMastheadHeader'
 import {
+  CAT_BEHAVIORS,
+  CAT_BEHAVIORS_HEADING,
+  CAT_BEHAVIORS_INTRO,
+  CAT_BEHAVIORS_KICKER,
   CAT_TYPES,
   CAT_TYPES_HEADING,
   CAT_TYPES_INTRO,
@@ -14,6 +18,7 @@ import {
   CAT_TYPES_USE_CASE,
   CAT_TYPES_USE_CASE_KICKER,
   CTA_LABEL,
+  EXAMPLE_DEAD_MOUSE,
   EXAMPLE_HEADING,
   EXAMPLE_KICKER,
   EXAMPLE_PARAGRAPHS,
@@ -153,6 +158,24 @@ export function LandingCatBotPage() {
                 </div>
               </section>
 
+              <section className="np-landing-stack" aria-labelledby="landing-cat-behaviors-heading">
+                <p className="np-landing-section-kicker">{CAT_BEHAVIORS_KICKER}</p>
+                <h2 id="landing-cat-behaviors-heading" className="np-headline-serif np-landing-thesis-lead">
+                  {CAT_BEHAVIORS_HEADING}
+                </h2>
+                <p className="np-landing-paragraph np-landing-stack-intro">{CAT_BEHAVIORS_INTRO}</p>
+                <ol className="np-landing-how-row np-landing-how-row--pair">
+                  {CAT_BEHAVIORS.map((behavior) => (
+                    <li key={behavior.name} className="np-landing-stack-layer">
+                      <div className="np-landing-pipeline-step-head">
+                        <span className="np-landing-pipeline-label">{behavior.name}</span>
+                      </div>
+                      <p className="np-landing-pipeline-text">{behavior.text}</p>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+
               <section className="np-landing-stack" aria-labelledby="landing-cat-types-heading">
                 <p className="np-landing-section-kicker">{CAT_TYPES_KICKER}</p>
                 <h2 id="landing-cat-types-heading" className="np-headline-serif np-landing-thesis-lead">
@@ -185,6 +208,10 @@ export function LandingCatBotPage() {
                     {EXAMPLE_HEADING}
                   </h2>
                   <div className="np-landing-briefing-columns np-landing-briefing-columns--stacked">
+                    <blockquote className="np-landing-dead-mouse">
+                      <p className="np-landing-section-kicker">{EXAMPLE_DEAD_MOUSE.label}</p>
+                      <p className="np-landing-paragraph">{EXAMPLE_DEAD_MOUSE.text}</p>
+                    </blockquote>
                     {EXAMPLE_PARAGRAPHS.map((paragraph, index) => (
                       <p
                         key={index}

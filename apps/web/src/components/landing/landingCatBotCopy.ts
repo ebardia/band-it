@@ -6,7 +6,7 @@ export const LANDING_CAT_IMAGES = {
 } as const
 
 export const LEAD_DEK =
-  'Adopt A Cat Bot helps you take in specialized marketing cats, shape each one for a very narrow job, and send them to roam the neighborhoods that matter — Google, reviews, forums, the open web. They come back with evidence, not vibes. You keep what\u2019s true. Then, when your customers expect a human touch, the same cats hold your hand through guest articles, social posts, and the places automation can\u2019t politely enter — transparent, owner-tagged, and never pretending to be you.'
+  'Adopt A Cat Bot helps you take in specialized intelligence cats, shape each one for a very narrow job, and send them to patrol neighborhoods mainstream platforms can\u2019t resolve. They watch quietly, notice what changed, investigate what\u2019s new — and bring you the dead mouse: one vetted finding with evidence, not a dashboard full of noise. You keep what rings true. Discard the trap.'
 
 export const MASTHEAD_TAGLINE = 'Wild Cats; Wild Jobs'
 
@@ -16,26 +16,26 @@ export const HOW_KICKER = 'How it works'
 export const HOW_HEADING = 'From feral to certified'
 
 export const HOW_INTRO =
-  'These are not general chatbots that dig one hole deeper. You adopt wild cats — each built for one lane, not everything. We help you domesticate them for a neighborhood and a mission. You stay in the loop at every step: keep the good memory, discard the trap, certify what may speak on your behalf.'
+  'These are not general chatbots that dig one hole deeper. You adopt wild cats — each built for one lane, not everything. We help you domesticate them for a neighborhood and a mission. You stay in the loop at every step: keep the good memory, discard the trap, certify what may alert on your behalf.'
 
 export const HOW_STEPS = [
   {
     num: '01',
     label: 'Adopt',
     text:
-      'Choose from a small, niche inventory — a cat per job, not a Swiss Army kitten. Name the mission; set the world prompt and the rules about what it must never do.',
+      'Choose from a small, niche inventory — a cat per job, not a Swiss Army kitten. Name the mission; set the territory and the rules about what it must never do.',
   },
   {
     num: '02',
     label: 'Domesticate',
     text:
-      'Shape tone, neighborhood, and skepticism. Domestication is curated memory — not manual ML. You decide what survives the first roam.',
+      'Shape tone, targets, and skepticism. Domestication is curated memory — not manual ML. You decide what survives the first patrol.',
   },
   {
     num: '03',
     label: 'Roam & learn',
     text:
-      'Unleashed where real people discuss the niche — reviews, communities, the public web. It tries more than one angle, cites sources, and names the STUCK_TRAP it almost fell into.',
+      'Unleashed on a fixed beat — the same sources on a schedule, plus side investigations when something new appears. It tries more than one angle, cites sources, and names the STUCK_TRAP it almost fell into.',
   },
   {
     num: '04',
@@ -47,49 +47,101 @@ export const HOW_STEPS = [
     num: '05',
     label: 'Represent',
     text:
-      'Certified cats mingle only where you allow — forums, guest columns, social drafts — opinions labeled, facts cited, owner disclosed. Monkeys and cats don\u2019t get along; spam and cats don\u2019t either.',
+      'Certified cats deliver digestible catches — a finding, not a dump. Independent but reports home. Monkeys and cats don\u2019t get along; noisy alerts and cats don\u2019t either.',
+  },
+] as const
+
+export const CAT_BEHAVIORS_KICKER = 'Field guide'
+export const CAT_BEHAVIORS_HEADING = 'Why cats, not dashboards'
+
+export const CAT_BEHAVIORS_INTRO =
+  'Cats map surprisingly well onto intelligence work. These are the behaviors we build into every bot — fun framing, serious product logic.'
+
+export const CAT_BEHAVIORS = [
+  {
+    name: 'Stalking',
+    text:
+      'Patient observation before the pounce. Passive signal monitoring: track a named account for weeks and alert only when a real pattern emerges — not on every blip.',
+  },
+  {
+    name: 'Territory patrol',
+    text:
+      'Same routes, daily. Change detection on a fixed beat — pricing pages, job boards, leadership bios, license records — flag deltas, not raw dumps.',
+  },
+  {
+    name: 'Whiskers',
+    text:
+      'Proximity sensing for weak signals: hiring slowdowns, tone shifts in press releases, a receptionist job that names the incumbent software.',
+  },
+  {
+    name: 'Curiosity',
+    text:
+      'Investigate anything new in the environment. When a cat meets an unfamiliar entity — new competitor, new consolidator — it spawns a side investigation and adds it to the graph.',
+  },
+  {
+    name: 'Reports home',
+    text:
+      'Roams alone, then brings you the dead mouse. Autonomous operation; digestible catch. That is the product — not another pane of charts.',
+  },
+  {
+    name: 'Night vision',
+    text:
+      'Low-light sources mainstream platforms skip: niche forums, regulatory filings, regional press, broker listings, archived pages.',
+  },
+  {
+    name: 'Clowder coordination',
+    text:
+      'Not a hive mind. A fleet of specialists — pricing cat, hiring cat, funding cat — mostly alone, sharing scent markers (tags and entities) in a common graph.',
   },
 ] as const
 
 export const CAT_TYPES_KICKER = 'The litter'
-export const CAT_TYPES_HEADING = 'One porch, several specialists'
+export const CAT_TYPES_HEADING = 'One clowder, loose coordination'
 
-export const CAT_TYPES_USE_CASE_KICKER = 'Use case · Washington, D.C.'
+export const CAT_TYPES_USE_CASE_KICKER = 'Use case · VetDesk'
 export const CAT_TYPES_USE_CASE =
-  'We built this crew first for a physician-led medical spa in an affluent neighborhood along the Potomac corridor — the kind of market where clients compare credentials, read guest articles, and notice when a neighbor-group post wears a too-shiny sales coat. Three cats, one owner, about an hour a week of human touch where VIP trust still demands a name on the byline.'
+  'VetDesk sells practice-management software to independent veterinary clinics — fifteen people, ~$8k ACV, ~30,000 target clinics, sales-led. They have ZoomInfo, maybe Apollo, maybe 6sense. Intent data barely registers: six-person clinics do not generate enough traffic for Bombora topics, and firmographics go stale. The niche sits below the resolution of mainstream BI. That is the wedge.'
 
 export const CAT_TYPES_INTRO =
-  'A serious business rarely needs one cat doing everything. It needs a small crew — each with a collar tag and a narrow job — so you automate what the internet allows and stay human where trust demands it.'
+  'A serious team rarely needs one cat doing everything. It needs a clowder — each with a collar tag and a narrow beat — patrolling a named slice of the real TAM until someone gets a pounce moment no intent platform can produce.'
 
 export const CAT_TYPES = [
   {
-    name: 'Scout & Consent Cat',
+    name: 'Territory Cat',
     text:
-      'Roams the public web — ratings, competitors, how affluent clients research before they book — and maps opt-in paths only. No cold lists. No review-scrape outreach. Intelligence for consent, not cannon fodder.',
+      'Patrols ~2,000 named clinics weekly — website, Google Business, Yelp, state vet-board licenses. Not searching; noticing deltas: new associate on the team page, hours changed, \u201cnow accepting new patients,\u201d a second location.',
   },
   {
-    name: 'Publish Cat',
+    name: 'Whisker Cat',
     text:
-      'Turns roam memory into guest-article pitches, outlines, and drafts for invited sites — local wellness columns, partner blogs, the places editors still answer the door. You send the pitch. The physician approves the draft.',
+      'Watches weak composite signals: a receptionist job mentioning Cornerstone (current stack), an owner license renewal lapse (retirement \u2192 sale \u2192 re-evaluation window), reviews citing long hold times (operational pain).',
   },
   {
-    name: 'Social Cat',
+    name: 'Night Vision Cat',
     text:
-      'Your weekly campaign copilot: one story reshaped for Instagram, Facebook, the group thread you already belong to, Nextdoor if you\u2019re neighbor enough to post. It drafts; you publish. No autopilot into private groups. No fake neighbor.',
+      'Reads what platforms barely index: state vet-board minutes, practice-brokerage listings, Chamber announcements, VIN and vet subreddit threads complaining about specific software.',
+  },
+  {
+    name: 'Curiosity Cat',
+    text:
+      'When any cat finds an unknown — a new clinic, a regional consolidator buying practices — it spawns a one-off investigation and adds the entity to the graph for the rest of the clowder.',
   },
 ] as const
 
-export const EXAMPLE_KICKER = 'Example'
-export const EXAMPLE_HEADING = 'A medical spa cat — and why humans still show up'
+export const EXAMPLE_KICKER = 'The dead mouse'
+export const EXAMPLE_HEADING = 'What VetDesk\u2019s salesperson actually gets'
 
 export const EXAMPLE_PARAGRAPHS = [
-  'Picture a physician-led med spa in an affluent pocket of the DMV — VIP clients, consult-first culture, twenty-eight years of reputation that cannot be faked by a caption bot.',
-  'We automate what we can, in good faith: a Consent Cat roams Google, Yelp, competitor sites, and the open web. It learns how people choose a provider, what they distrust, where rivals look polished, and which traps smell like spam. It returns a structured packet — three angles, citations attached — and the owner keeps only what rings true.',
-  'Here is the reasoning most landing pages skip: this spa\u2019s customers are not impulse buyers. They read. They compare credentials. They notice when a neighbor-group post feels like an ad in a cardigan. For that market, a fully automated \u201cpresence everywhere\u201d strategy is either dishonest or unemployed — because the platforms that matter most for trust (guest articles, thoughtful social, the occasional helpful reply in a community thread) still require a human with a name.',
-  'So we did not pretend otherwise. We adopted two more cats. Publish Cat drafts guest-post pitches and articles for invited third-party sites — educational, disclosed, physician-reviewed. Social Cat holds the owner\u2019s hand through a weekly runbook: Monday\u2019s theme, Tuesday\u2019s captions, Wednesday\u2019s \u201cpost this now,\u201d one optional neighbor-tone draft if a thread deserves it. The cat does most of the writing, planning, and remembering. The human does the parts only a human should: approve medical lines, send the pitch, tap publish, stay recognizable.',
-  'The math we like: not a full-time social media manager and not a three-thousand-dollar agency retainer for organic posts — about sixty to ninety minutes a week from the owner or office manager, with cats doing the heavy lift. Enough to look professional and helpful everywhere that matters, without abandoning the consult room to chase algorithms.',
-  'That is the bargain. Roam in automation. Represent with disclosure. Let the cats hold your hand where the internet still expects a person — and let you go back to the patients who actually booked because they trusted what they read.',
+  'Forget the dashboard. Once a week, VetDesk\u2019s rep opens three to five findings — each a vetted catch with links, not a CSV export pretending to be strategy.',
+  'Existing platforms sell breadth at low resolution. Cat bots sell persistent, named-account observation at a resolution where big platforms have no data at all. The market is every vertical SaaS company whose buyers are too small or too offline to show up in intent data — vets, dental, HVAC, funeral homes, marinas.',
+  'When the pattern lines up, the cat pounces. That is the moment worth a human phone call — not the hundredth row in a signal table.',
 ] as const
+
+export const EXAMPLE_DEAD_MOUSE = {
+  label: 'Sample catch · pounce moment',
+  text:
+    'Maple Creek Animal Hospital (Boise) — practice listed with a broker in March; license transferred to Dr. Sarah Kim on May 28; she posted two front-desk job listings yesterday mentioning \u201ctransitioning systems.\u201d New owner, actively re-evaluating software, ~30-day window. Evidence: three links.',
+} as const
 
 export const HIRE_KICKER = 'Classified'
 export const HIRE_HEADING = 'Now hiring: cool cats'
@@ -97,7 +149,7 @@ export const HIRE_HEADING = 'Now hiring: cool cats'
 export const HIRE_BODY = [
   'Walk the neighborhoods. Act cool. Stay mysterious.',
   'Prior experience overrated. Attitude essential.',
-  'We are not looking for résumés. We are looking for cats who can loiter with intent, learn without lecturing, draft without impersonating, and report back without pretending they knew it all along.',
+  'We are not looking for résumés. We are looking for cats who can loiter with intent, patrol without panic, and report home with one dead mouse — not the whole field.',
 ] as const
 
 export const HIRE_FOOTER = 'Inquiries welcome. Coolness interview at the Catnip Café.'
@@ -106,11 +158,11 @@ export const RAIL_BLOCKS = [
   {
     title: 'For owners',
     detail:
-      'Agencies, resellers, and businesses that need a cat per client or per niche — roam intel, consent paths, guest posts, social runbooks — not another generic assistant.',
+      'Vertical SaaS, resellers, and niche B2B teams that need named-account cats — territory patrol, weak-signal whiskers, night-vision sources — not another intent dashboard.',
   },
   {
     title: 'The longer story',
-    detail: 'How we think about roams, memory, human-in-the-loop marketing, and transparent bias.',
+    detail: 'How we think about roams, memory, the dead mouse, and transparent bias.',
     cta: 'Read the essay',
     href: '/manifesto',
   },
