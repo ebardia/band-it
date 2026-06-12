@@ -71,6 +71,8 @@ This is **not one AI chatbot**. It is a **pipeline of factory agents** on Joe’
 | **Ranker** | Judgment | Top N for Opportunity Desk |
 | **Human** | Checkpoint | buy / maybe / not + why → trains Phase 3 judgment |
 
+**Cat Bot design language:** trait-based intelligence bots (stalking, territory patrol, dead mouse delivery) — see [Cat Bot intelligence gathering](./cat-bot-intelligence-gathering.md). Factory agents above map to cat traits; Opportunity Desk delivers **findings**, not raw signal dumps.
+
 **Deliverable to customer:** ranked **Opportunity Desk** list (Phase 1 UI) — same workflow as the spreadsheet, in product.
 
 See [Agent Factory & Opportunity Discovery](./agent-factory-opportunity-discovery.md) for schema, phases, and cost caps.
@@ -153,4 +155,5 @@ Plain-English PDF: [Pre-channel-opportunity-signals.pdf](./customer-track-a-spre
 
 ## Related (other use cases)
 
+- [Cat Bot intelligence gathering](./cat-bot-intelligence-gathering.md) — trait-based bot pattern, VetDesk reference, Finding/dead-mouse model
 - [Signal processing folder](./signal-processing/README.md) — reusable framework; [Band It outbound discovery](./signal-processing/band-it-outbound-discovery.md) dogfoods the same playbook for SMB sales.

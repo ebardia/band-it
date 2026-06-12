@@ -203,6 +203,7 @@ Opportunity Discovery Phase 1 build aligns with **workflow v1** (linear stack), 
 | **WorkflowTemplate** | Platform starter pack |
 | **WorkflowRun** | Single execution |
 | **Agent Factory** | Global catalog of agent node definitions |
+| **Cat Bot traits** | Design language for intelligence agents — see [Cat Bot intelligence gathering](./cat-bot-intelligence-gathering.md) |
 | **Artifact** | Data passed between nodes |
 
 Avoid calling the composed unit a **Proposal**—that term remains band governance.
@@ -225,3 +226,4 @@ Avoid calling the composed unit a **Proposal**—that term remains band governan
 | Date | Change |
 |------|--------|
 | 2026-05-29 | Initial draft: flexible workflow composition, node types, phases, Opportunity Discovery as first template |
+| 2026-06-11 | Glossary: Cat Bot traits link to [cat-bot-intelligence-gathering.md](./cat-bot-intelligence-gathering.md) |

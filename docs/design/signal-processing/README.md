@@ -4,6 +4,7 @@ Reusable **signal → exclude → verify → rank → act** patterns for Band It
 
 | Path | Purpose |
 |------|---------|
+| [../cat-bot-intelligence-gathering.md](../cat-bot-intelligence-gathering.md) | **Cat Bot pattern** — seven traits, dead mouse, VetDesk reference, Agent Factory mapping |
 | [band-it-outbound-discovery.md](./band-it-outbound-discovery.md) | Dogfood use case: find 50 DC-metro SMBs to call for Band It |
 | [band-it-outbound-signals.csv](./band-it-outbound-signals.csv) | Signal registry (fit / hunt / exclude / backlog) for agent build |
 | [worksmarter-medspa/](./worksmarter-medspa/) | Work Smarter med spa demo — reseller → end-client vertical |
@@ -16,6 +17,7 @@ Reusable **signal → exclude → verify → rank → act** patterns for Band It
 
 | Doc | Relationship |
 |-----|----------------|
+| [cat-bot-intelligence-gathering.md](../cat-bot-intelligence-gathering.md) | **Trait-based intelligence bots** — dead mouse, clowder, VetDesk; extends this folder + Agent Factory |
 | [pre-channel-opportunity-discovery.md](../pre-channel-opportunity-discovery.md) | **Vertical instance** — reverse logistics / trapped stock (customer Track A) |
 | [pre-channel-ai-discovery-analysis.md](../pre-channel-ai-discovery-analysis.md) | Deep analysis; same playbook, different signals |
 | [agent-workflow-composition.md](../agent-workflow-composition.md) | How bands compose scanner → classifier → ranker → human nodes |
