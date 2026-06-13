@@ -1,0 +1,74 @@
+{
+  "neighborhood": "Affluent DMV med-spa end clients",
+  "mission": "Map how target personas discover and consent \u2014 not cold contact",
+  "spas": [
+    {
+      "spa_name": "Potomac Aesthetics Med Spa",
+      "website": "",
+      "city": "Potomac",
+      "state": "MD",
+      "zip": "20854",
+      "source_notes": "VaR seed \u2014 replace with live data"
+    }
+  ],
+  "evidence_count": 4,
+  "warnings": [
+    "reddit: skipped (set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET)",
+    "google_places: skipped (set GOOGLE_PLACES_API_KEY)",
+    "yelp: skipped (set YELP_API_KEY)",
+    "brave: skipped (set BRAVE_SEARCH_API_KEY)"
+  ],
+  "skipped_sources": [
+    "brave",
+    "google_places",
+    "reddit",
+    "yelp"
+  ],
+  "items": [
+    {
+      "source": "news_rss",
+      "source_url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQTjdTX2Ita3FaUVY4a0lsMjQ3VWlaRjhRVkQ4WElWRk5nZFdObHpvaktEWkZfOG10cmVWUThrLTRwWHJ5RlVqNzFkdFVfdkRKMEdfb1NWME1yQ0FqcmQ1ZXB6RHdNMGdsYXRadThHRzYzbE5Uc1FyVlJtd1A3S2tteXN3?oc=5",
+      "title": "Empowered Women: The Rise of Moksha Aesthetics - Modern Luxury",
+      "text": "Empowered Women: The Rise of Moksha Aesthetics &nbsp;&nbsp; Modern Luxury",
+      "observed_at": "Thu, 28 Nov 2024 08:00:00 GMT",
+      "spa_name": null,
+      "metadata": {
+        "query": "med spa Potomac Maryland OR DMV aesthetics"
+      }
+    },
+    {
+      "source": "news_rss",
+      "source_url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxQSHV5SU53NHgydW5pVHdINXFzUm9Bb2hKTjFXdkN0cXgtbTYwNE1oQWc1cVZXSjRhbHpWTWZmLTlSbmRqYWtYR210aGNhcVlCTGdlM183TVBkenphVjdsNkMtVG94bWJhNjBkX0Vuc1lYMG1nQUJ2emF3YndVQ3NHcml5dWcwUjZUU2c?oc=5",
+      "title": "SEV Medspa's First MD Location Opens - Patch",
+      "text": "SEV Medspa's First MD Location Opens &nbsp;&nbsp; Patch",
+      "observed_at": "Wed, 14 Aug 2024 07:00:00 GMT",
+      "spa_name": null,
+      "metadata": {
+        "query": "med spa Potomac Maryland OR DMV aesthetics"
+      }
+    },
+    {
+      "source": "news_rss",
+      "source_url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5jSGdnSzZnMlZxclhBOEN4elhSZVotTk5jTnlRSkt3OE1RV0hxS0N6MGVsSjdSZU9hdlRfS2N2aGhVRjBPcWJrQUVILTVKdklJQ0F4bGhwUlk2LUdWVFcyZUh0clpzVFdNUVJsNTQzUmo5clk5WjN4b0JhdzQ?oc=5",
+      "title": "A Guide to the Best Spas Around DC - Washingtonian",
+      "text": "A Guide to the Best Spas Around DC &nbsp;&nbsp; Washingtonian",
+      "observed_at": "Thu, 04 May 2023 07:00:00 GMT",
+      "spa_name": null,
+      "metadata": {
+        "query": "med spa Potomac Maryland OR DMV aesthetics"
+      }
+    },
+    {
+      "source": "news_rss",
+      "source_url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE10Y0gwWTlvUzd5SWh1V0o0b1pKcmNXeTFMb0t5QU0zQnNhNWd4VU15bFhxejFFZE9tQnVqeUpBZHpNZ25ROTI1ZHdlcVpCQURseFhVUUZXWlBLOE0zLUFNeXAtczQ?oc=5",
+      "title": "The Top Spots for Facials and Massages in the DMV - Modern Luxury",
+      "text": "The Top Spots for Facials and Massages in the DMV &nbsp;&nbsp; Modern Luxury",
+      "observed_at": "Fri, 26 Jul 2024 07:00:00 GMT",
+      "spa_name": null,
+      "metadata": {
+        "query": "med spa Potomac Maryland OR DMV aesthetics"
+      }
+    }
+  ],
+  "collected_at": "2026-06-08T15:37:48.115455+00:00"
+}

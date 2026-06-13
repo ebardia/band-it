@@ -635,6 +635,7 @@ Cats may **cross-check** by comparing return packets; owner still decides.
 | **Band It** (landing, agents, workflows) | Implementation substrate in this repo; **consumer product pivots** to Adopt A Cat Bot on new domain |
 | [Work Smarter med spa demo](./signal-processing/worksmarter-medspa/worksmarter-medspa-discovery.md) | **First neighborhood hypothesis** — e.g. cat mission “digital consent paths for affluent DMV med-spa clients, no physical, no paid social” |
 | [Agent workflow composition](./agent-workflow-composition.md) | Optional: roam = workflow run; domestication = human node |
+| [Cat Bot intelligence gathering](./cat-bot-intelligence-gathering.md) | Agent Factory extension — trait bots, Finding/dead mouse, VetDesk reference; maps signal scanner → territory patrol |
 | `AiHelpCache` (FAQ → cache → AI) | Precedent for **tiered answer path** (§10.5) |
 
 The med-spa work validated the **problem** (path dependency toward contact hunting). Cat Bot is the **general product** response.
@@ -745,3 +746,4 @@ Source: founder email to friend (lightly edited).
 | 2026-06-08 | §5.3–5.4: value on top of public review/community sources; anti-cannibalization vs capture stack; §12.0 API rationale and source matrix by cat type |
 | 2026-06-10 | §13: **Publish Cat** type + link to guest-post design; §17 v3 guest post route |
 | 2026-06-10 | §13: **Social Cat** campaign copilot + link to social-cat design |
+| 2026-06-11 | §15: link to [Cat Bot intelligence gathering](./cat-bot-intelligence-gathering.md) — Agent Factory trait pattern |

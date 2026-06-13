@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { trpc } from '@/lib/trpc'
 import { Heading, Text, Stack, Button, Alert, Spinner } from '@/components/ui'
+import { SITE_LOGO, SITE_LOGO_ALT } from '@/components/landing/landingCatBotCopy'
 
 function UnsubscribeContent() {
   const searchParams = useSearchParams()
@@ -40,11 +41,11 @@ function UnsubscribeContent() {
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
         <div className="mb-6">
           <Image
-            src="/logo.png"
-            alt="BAND IT Logo"
-            width={120}
-            height={120}
-            className="mx-auto"
+            src={SITE_LOGO}
+            alt={SITE_LOGO_ALT}
+            width={1536}
+            height={1024}
+            className="mx-auto w-32 h-auto"
           />
         </div>
 

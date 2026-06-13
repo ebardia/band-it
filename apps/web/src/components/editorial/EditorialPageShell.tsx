@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
+import { CatBotMastheadTitle } from '@/components/landing/CatBotMastheadTitle'
 import { DailyMastheadTitle } from '@/components/newspaper/DailyMastheadTitle'
 import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
 
@@ -24,6 +25,8 @@ type Props = {
   mastheadActionLabel?: string
   mastheadAriaLabel?: string
   mastheadBrand?: string
+  /** Use slanted Cat Bot / Adoption Agency masthead (landing style). */
+  mastheadVariant?: 'catbot' | 'neon'
 }
 
 /**
@@ -37,21 +40,25 @@ export function EditorialPageShell({
   mastheadActionLabel,
   mastheadAriaLabel,
   mastheadBrand,
+  mastheadVariant = 'neon',
 }: Props) {
   const useCustomMasthead =
-    mastheadArcLabel && mastheadActionLabel && mastheadAriaLabel
+    mastheadVariant === 'catbot' ||
+    (mastheadArcLabel && mastheadActionLabel && mastheadAriaLabel)
 
   return (
     <EditorialSurface>
       <div className="np-shell np-landing-page">
         <header className="np-landing-masthead">
-          {useCustomMasthead ? (
+          {mastheadVariant === 'catbot' ? (
+            <CatBotMastheadTitle />
+          ) : useCustomMasthead ? (
             <>
               {mastheadBrand ? <p className="np-cat">{mastheadBrand}</p> : null}
               <EditorialNeonMasthead
-                arcLabel={mastheadArcLabel}
-                actionLabel={mastheadActionLabel}
-                ariaLabel={mastheadAriaLabel}
+                arcLabel={mastheadArcLabel!}
+                actionLabel={mastheadActionLabel!}
+                ariaLabel={mastheadAriaLabel!}
               />
             </>
           ) : (

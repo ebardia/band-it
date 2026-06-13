@@ -1,0 +1,26 @@
+{
+  "neighborhood": "Affluent DMV med-spa end clients",
+  "mission": "Map how target personas discover and consent \u2014 not cold contact",
+  "spas": [
+    {
+      "spa_name": "Potomac Aesthetics Med Spa",
+      "website": "",
+      "city": "Potomac",
+      "state": "MD",
+      "zip": "20854",
+      "source_notes": "VaR seed \u2014 replace with live data"
+    }
+  ],
+  "evidence_count": 0,
+  "warnings": [
+    "google_places search 'Potomac Aesthetics Med Spa Potomac MD': HTTP 403 for https://places.googleapis.com/v1/places:searchText: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Places API (New) has not been used in project 376275664723 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/places.googleapis.com/overview?project=376275664723 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\n    \"status\": \"PERMISSION_DENIED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n    "
+  ],
+  "skipped_sources": [
+    "brave",
+    "google_places",
+    "reddit",
+    "yelp"
+  ],
+  "items": [],
+  "collected_at": "2026-06-10T14:31:47.727625+00:00"
+}

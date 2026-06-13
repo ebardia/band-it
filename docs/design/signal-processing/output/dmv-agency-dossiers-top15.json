@@ -1,0 +1,508 @@
+[
+  {
+    "agency_name": "Auxilium Technology \u2013 Web Design & Local SEO Agency in Gaithersburg, Rockville, MD, USA",
+    "website": "https://auxiliumtechnology.com/",
+    "score": 93,
+    "why_flagged": "Flagged: H01 (new business); H02 (chiropract|law firm|plumb|small business); H03 (content on site)",
+    "evidence_links": [
+      "https://auxiliumtechnology.com/",
+      "https://auxiliumtechnology.com/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "new business"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "chiropract|law firm|plumb|small business"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H05",
+        "name": "Referral-forward unsophistication",
+        "evidence": "referrals"
+      },
+      {
+        "id": "H06",
+        "name": "Taking new clients",
+        "evidence": "new clients/hiring"
+      },
+      {
+        "id": "H07",
+        "name": "Vertical package or GHL",
+        "evidence": "ghl/white-label"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "KME.digital",
+    "website": "https://kme.digital/",
+    "score": 90,
+    "why_flagged": "Flagged: H01 (business development); H02 (legal|nonprofit); H03 (content on site)",
+    "evidence_links": [
+      "https://kme.digital/",
+      "https://kme.digital/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "business development"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "legal|nonprofit"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H04",
+        "name": "Directory badge",
+        "evidence": "directory"
+      },
+      {
+        "id": "H06",
+        "name": "Taking new clients",
+        "evidence": "new clients/hiring"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "Brandefined",
+    "website": "https://brandefined.com",
+    "score": 80,
+    "why_flagged": "Flagged: H01 (new business); H02 (legal|small business|smb); H03 (content on site)",
+    "evidence_links": [
+      "https://brandefined.com",
+      "https://brandefined.com/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "new business"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "legal|small business|smb"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H06",
+        "name": "Taking new clients",
+        "evidence": "new clients/hiring"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in local SMB + DMV metro"
+  },
+  {
+    "agency_name": "Dreamscape Marketing",
+    "website": "https://www.dreamscapemarketing.com/",
+    "score": 80,
+    "why_flagged": "Flagged: H01 (business development); H02 (dental|small business); H03 (content on site)",
+    "evidence_links": [
+      "https://www.dreamscapemarketing.com/",
+      "https://www.dreamscapemarketing.com/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "business development"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "dental|small business"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H06",
+        "name": "Taking new clients",
+        "evidence": "new clients/hiring"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "Apollo Marketing",
+    "website": "https://apollollc.com/",
+    "score": 80,
+    "why_flagged": "Flagged: H01 (new business); H02 (chiropract|contractor|hvac|law firm|legal|restaurant); H03 (content on site)",
+    "evidence_links": [
+      "https://apollollc.com/",
+      "https://apollollc.com/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "new business"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "chiropract|contractor|hvac|law firm|legal|restaurant"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H06",
+        "name": "Taking new clients",
+        "evidence": "new clients/hiring"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "BluShark Digital LLC",
+    "website": "https://blusharkdigital.com/?utm_source=GMBlisting&utm_medium=organic",
+    "score": 78,
+    "why_flagged": "Flagged: H02 (law firm|legal); H03 (content on site); H04 (directory)",
+    "evidence_links": [
+      "https://blusharkdigital.com/?utm_source=GMBlisting&utm_medium=organic"
+    ],
+    "signals": [
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "law firm|legal"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H04",
+        "name": "Directory badge",
+        "evidence": "directory"
+      },
+      {
+        "id": "H05",
+        "name": "Referral-forward unsophistication",
+        "evidence": "referrals"
+      },
+      {
+        "id": "H06",
+        "name": "Taking new clients",
+        "evidence": "new clients/hiring"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "LUD Marketing LLC",
+    "website": "https://ludmarketingllc.com",
+    "score": 77,
+    "why_flagged": "Flagged: H01 (client acquisition); H02 (home services|legal|nonprofit|small business); H03 (content on site)",
+    "evidence_links": [
+      "https://ludmarketingllc.com",
+      "https://ludmarketingllc.com/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "client acquisition"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "home services|legal|nonprofit|small business"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H07",
+        "name": "Vertical package or GHL",
+        "evidence": "ghl/white-label"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in law home services coaches MD DC VA + DMV metro"
+  },
+  {
+    "agency_name": "Herbst Marketing",
+    "website": "https://herbstmarketing.com/",
+    "score": 72,
+    "why_flagged": "Flagged: H01 (growth marketing); H02 (hvac|plumb); H03 (content on site)",
+    "evidence_links": [
+      "https://herbstmarketing.com/",
+      "https://herbstmarketing.com/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "growth marketing"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "hvac|plumb"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "TESSA Marketing & Technology",
+    "website": "https://tessa.tech/?utm_campaign=gmb",
+    "score": 72,
+    "why_flagged": "Flagged: H01 (business development); H02 (contractor|dental|home services|legal); H03 (content on site)",
+    "evidence_links": [
+      "https://tessa.tech/?utm_campaign=gmb",
+      "https://tessa.tech/?utm_campaign=gmb/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "business development"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "contractor|dental|home services|legal"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "Hit Me SEO",
+    "website": "https://www.hitmeseo.net/",
+    "score": 72,
+    "why_flagged": "Flagged: H01 (client acquisition); H02 (home services|legal|small business); H03 (content on site)",
+    "evidence_links": [
+      "https://www.hitmeseo.net/",
+      "https://www.hitmeseo.net/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "client acquisition"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "home services|legal|small business"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "Buarich - Web Design & Digital Marketing Agency",
+    "website": "https://www.buarich.com/",
+    "score": 72,
+    "why_flagged": "Flagged: H01 (client acquisition); H02 (home services|hvac); H03 (content on site)",
+    "evidence_links": [
+      "https://www.buarich.com/",
+      "https://www.buarich.com/careers"
+    ],
+    "signals": [
+      {
+        "id": "H01",
+        "name": "BD or growth hiring",
+        "evidence": "client acquisition"
+      },
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "home services|hvac"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "Social Driver",
+    "website": "https://socialdriver.com",
+    "score": 70,
+    "why_flagged": "Flagged: H02 (smb); H03 (content on site); H04 (directory)",
+    "evidence_links": [
+      "https://socialdriver.com",
+      "https://clutch.co/profile/social-driver"
+    ],
+    "signals": [
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "smb"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H04",
+        "name": "Directory badge",
+        "evidence": "directory"
+      },
+      {
+        "id": "H06",
+        "name": "Taking new clients",
+        "evidence": "new clients/hiring"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in associations nonprofits SMB + DMV metro"
+  },
+  {
+    "agency_name": "Level Agency",
+    "website": "https://www.level.agency/",
+    "score": 70,
+    "why_flagged": "Flagged: H02 (home services|small business); H03 (content on site); H04 (directory)",
+    "evidence_links": [
+      "https://www.level.agency/"
+    ],
+    "signals": [
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "home services|small business"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H04",
+        "name": "Directory badge",
+        "evidence": "directory"
+      },
+      {
+        "id": "H06",
+        "name": "Taking new clients",
+        "evidence": "new clients/hiring"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in their vertical + DMV metro"
+  },
+  {
+    "agency_name": "Harpoon Marketing",
+    "website": "https://harpoonmarketing.com",
+    "score": 67,
+    "why_flagged": "Flagged: H02 (retail|smb); H03 (content on site); H04 (directory)",
+    "evidence_links": [
+      "https://harpoonmarketing.com"
+    ],
+    "signals": [
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "retail|smb"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H04",
+        "name": "Directory badge",
+        "evidence": "directory"
+      },
+      {
+        "id": "H07",
+        "name": "Vertical package or GHL",
+        "evidence": "ghl/white-label"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in SMB growth + DMV metro"
+  },
+  {
+    "agency_name": "Work Smarter Digital",
+    "website": "https://worksmarterdigital.com",
+    "score": 67,
+    "why_flagged": "Flagged: H02 (contractor|home services|legal|med spa|small business|smb); H03 (content on site); H04 (directory)",
+    "evidence_links": [
+      "https://worksmarterdigital.com"
+    ],
+    "signals": [
+      {
+        "id": "H02",
+        "name": "SMB vertical portfolio",
+        "evidence": "contractor|home services|legal|med spa|small business|smb"
+      },
+      {
+        "id": "H03",
+        "name": "Own marketing activity",
+        "evidence": "content on site"
+      },
+      {
+        "id": "H04",
+        "name": "Directory badge",
+        "evidence": "directory"
+      },
+      {
+        "id": "H07",
+        "name": "Vertical package or GHL",
+        "evidence": "ghl/white-label"
+      }
+    ],
+    "pitch_hook": "Everything in why_flagged was assembled from public sources \u2014 the same pipeline we sell you for your SMB prospects.",
+    "sample_mouse_placeholder": "TODO: one dead mouse in local SMB med spa agencies + DMV metro"
+  }
+]

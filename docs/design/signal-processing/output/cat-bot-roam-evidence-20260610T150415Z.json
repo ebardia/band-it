@@ -1,0 +1,26 @@
+{
+  "neighborhood": "Affluent DMV med-spa end clients",
+  "mission": "Map how target personas discover and consent \u2014 not cold contact",
+  "spas": [
+    {
+      "spa_name": "Potomac Aesthetics Med Spa",
+      "website": "",
+      "city": "Potomac",
+      "state": "MD",
+      "zip": "20854",
+      "source_notes": "VaR seed \u2014 replace with live data"
+    }
+  ],
+  "evidence_count": 0,
+  "warnings": [
+    "yelp: skipped (set YELP_API_KEY)"
+  ],
+  "skipped_sources": [
+    "brave",
+    "google_places",
+    "reddit",
+    "yelp"
+  ],
+  "items": [],
+  "collected_at": "2026-06-10T15:04:15.877715+00:00"
+}

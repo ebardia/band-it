@@ -1,0 +1,27 @@
+agency_name,website,domain,city,state,reject_reason
+Donnelly Marketing Group,https://donnellymarketing.com,donnellymarketing.com,Maryland,MD,geography: outside allowed DMV counties
+ElectricSage,https://electricsage.com,electricsage.com,Leonardtown,MD,geography: outside allowed DMV counties
+Harpoon Marketing,https://harpoonmarketing.com,harpoonmarketing.com,Maryland,MD,geography: outside allowed DMV counties
+Juice Box Ops,https://juiceboxops.com,juiceboxops.com,Maryland,MD,geography: outside allowed DMV counties
+Services America,https://servicesamerica.com,servicesamerica.com,DMV,VA,geography: outside allowed DMV counties
+LUD Marketing LLC,https://ludmarketingllc.com,ludmarketingllc.com,Baltimore,MD,geography: Baltimore excluded
+Social Driver,https://socialdriver.com,socialdriver.com,Washington,DC,geography: HQ appears Seattle
+Bluetext,https://bluetext.com,bluetext.com,Washington,DC,size: headcount 40 outside 2-20 (directory_estimate)
+Mambo Media,https://mambomedia.com,mambomedia.com,Washington,DC,geography: HQ appears New York
+The Cyphers Agency,https://thecyphersagency.com,thecyphersagency.com,Tysons,MD,geography: Baltimore excluded
+Eberly & Collard Public Relations,https://eberlycollard.com,eberlycollard.com,Falls Church,VA,geography: HQ appears New York
+Thrive Internet Marketing,https://thriveagency.com,thriveagency.com,Arlington,VA,geography: HQ appears Seattle
+Silverback Strategies,https://silverbackstrategies.com,silverbackstrategies.com,Alexandria,VA,size: headcount 25 outside 2-20 (directory_estimate)
+Marketbridge,https://marketbridge.com,marketbridge.com,Bethesda,MD,geography: HQ appears Boston
+PBJ Marketing,https://pbjmarketing.com,pbjmarketing.com,Washington,DC,geography: HQ appears New York
+Digital Firefly Marketing,https://digitalfireflymarketing.com,digitalfireflymarketing.com,Gaithersburg,MD,geography: HQ appears New York
+"Auxilium Technology – Web Design & Local SEO Agency in Gaithersburg, Rockville, MD, USA",https://auxiliumtechnology.com/,auxiliumtechnology.com,MD,USA,client_type: no local SMB portfolio signals
+Dreamscape Marketing,https://www.dreamscapemarketing.com/,dreamscapemarketing.com,MD,USA,client_type: no local SMB portfolio signals
+BluShark Digital LLC,https://blusharkdigital.com/?utm_source=GMBlisting&utm_medium=organic,blusharkdigital.com,DC,USA,geography: HQ appears Atlanta
+Hit Me SEO,https://www.hitmeseo.net/,hitmeseo.net,MD,USA,client_type: no local SMB portfolio signals
+Buarich - Web Design & Digital Marketing Agency,https://www.buarich.com/,buarich.com,VA,USA,client_type: no local SMB portfolio signals
+Level Agency,https://www.level.agency/,level.agency,MD,USA,geography: HQ appears Pittsburgh
+Black Digital,http://blackdigitalgroup.com/,blackdigitalgroup.com,DC,USA,geography: HQ appears New York
+Verbsz Marketing,https://www.verbszmarketing.com/,verbszmarketing.com,VA,USA,geography: HQ appears Seattle
+Plush Marketing Agency,https://plushmarketingagency.com/,plushmarketingagency.com,MD,MD,geography: Baltimore excluded
+Climb Digital Agency,http://www.climbdigitalagency.com/,climbdigitalagency.com,VA,USA,client_type: no local SMB portfolio signals
