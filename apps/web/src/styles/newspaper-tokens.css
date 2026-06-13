@@ -3275,6 +3275,14 @@
   }
 }
 
+.np-catbot-masthead-image {
+  width: min(100%, 44rem);
+  height: auto;
+  display: block;
+  margin: 0 auto -0.25rem;
+}
+
+/* Legacy arc masthead (unused — kept for reference if text-only fallback returns) */
 .np-catbot-masthead-arc-slant {
   transform: rotate(-11deg);
   transform-origin: 50% 100%;
