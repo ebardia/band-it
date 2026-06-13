@@ -5,6 +5,7 @@ Reusable **signal → exclude → verify → rank → act** patterns for Band It
 | Path | Purpose |
 |------|---------|
 | [../cat-bot-intelligence-gathering.md](../cat-bot-intelligence-gathering.md) | **Cat Bot pattern** — seven traits, dead mouse, VetDesk reference, Agent Factory mapping |
+| [dmv-marketing-agency-cat-bot-discovery.md](./dmv-marketing-agency-cat-bot-discovery.md) | **50 DMV marketing agencies** — Cat Bot adoption prospects (meta-pitch demo) |
 | [band-it-outbound-discovery.md](./band-it-outbound-discovery.md) | Dogfood use case: find 50 DC-metro SMBs to call for Band It |
 | [band-it-outbound-signals.csv](./band-it-outbound-signals.csv) | Signal registry (fit / hunt / exclude / backlog) for agent build |
 | [worksmarter-medspa/](./worksmarter-medspa/) | Work Smarter med spa demo — reseller → end-client vertical |
@@ -48,6 +49,20 @@ Aligns with [platform doc §6.5](../adopt-a-cat-bot-platform.md#65-build-sequenc
 |-------|---------|---------------------|
 | **Med spa Market Cat** | `run_cat_bot_roam_v0.py` | Google Places (New), Yelp Fusion, news RSS; Reddit when approved |
 | **Big Band reseller outreach** | `run_reseller_dossier_v0.py` (planned) | Homepage fetch, Clutch, news — **not** Places/Yelp-first |
+| **Cat Bot agency adoption** | `run_dmv_agency_discovery_v0.py` | Places census + seed CSV + homepage signals → top 50 agencies |
+
+## Run DMV agency discovery (v0)
+
+Cat Bot adoption prospects — [dmv-marketing-agency-cat-bot-discovery.md](./dmv-marketing-agency-cat-bot-discovery.md)
+
+```bash
+python docs/design/signal-processing/scripts/run_dmv_agency_discovery_v0.py \
+  --input docs/design/signal-processing/dmv-marketing-agencies-seed.csv \
+  --output docs/design/signal-processing/output/dmv-agency-targets.csv \
+  --fetch-web --top 50
+```
+
+Add `--census-places` to merge Google Places results (requires `GOOGLE_PLACES_API_KEY`).
 
 ## API credentials (v0 lab)
 

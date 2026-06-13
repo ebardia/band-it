@@ -1,0 +1,83 @@
+{
+  "territory": {
+    "name": "i95-south-alex-fredericksburg",
+    "include_baltimore": false,
+    "states": ["VA"],
+    "dc": false,
+    "md_counties": [],
+    "va_counties": [
+      "Prince William",
+      "Stafford",
+      "Spotsylvania",
+      "Fredericksburg",
+      "Fairfax"
+    ],
+    "exclude_cities": ["alexandria", "arlington"],
+    "zip_prefixes": {
+      "201": ["Prince William", "VA"],
+      "220": ["Fairfax", "VA"],
+      "221": ["Fairfax", "VA"],
+      "22191": ["Prince William", "VA"],
+      "22192": ["Prince William", "VA"],
+      "22193": ["Prince William", "VA"],
+      "224": ["Fredericksburg", "VA"],
+      "225": ["Stafford", "VA"]
+    },
+    "location_cities": [
+      "springfield",
+      "lorton",
+      "woodbridge",
+      "dale city",
+      "dumfries",
+      "quantico",
+      "triangle",
+      "lake ridge",
+      "stafford",
+      "fredericksburg",
+      "spotsylvania",
+      "manassas",
+      "gainesville",
+      "montclair",
+      "dumfries"
+    ]
+  },
+  "size": {
+    "min_headcount": 2,
+    "max_headcount": 20,
+    "unverified_score_cap": 50
+  },
+  "score_weights": {
+    "H06": 30,
+    "H01": 15,
+    "H02_per_vertical": 5,
+    "H02_cap": 15,
+    "H03b": 10,
+    "H04": 10,
+    "H05": 5,
+    "H07": 15
+  },
+  "blog_recency_days": 60,
+  "cache_ttl_days": 7,
+  "user_agent": "AdoptACatBot-AgencyDiscovery/1.0 (+https://adoptacatbot.com; research bot)",
+  "census": {
+    "places_max_per_query": 8,
+    "seed_csv": "",
+    "places_localities": [
+      "Springfield VA",
+      "Lorton VA",
+      "Woodbridge VA",
+      "Dale City VA",
+      "Manassas VA",
+      "Dumfries VA",
+      "Stafford VA",
+      "Fredericksburg VA",
+      "Spotsylvania VA"
+    ]
+  },
+  "signal_max_prevalence": 0.8,
+  "tavily": {
+    "enabled": true,
+    "env_key": "TAVILY_API_KEY",
+    "note": "Required for H06 Indeed/job-board verification; without it only /careers pages are checked"
+  }
+}

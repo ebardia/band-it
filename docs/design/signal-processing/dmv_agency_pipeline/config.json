@@ -1,0 +1,49 @@
+{
+  "territory": {
+    "include_baltimore": false,
+    "states": ["DC", "MD", "VA"],
+    "md_counties": [
+      "Montgomery",
+      "Prince George's",
+      "Frederick",
+      "Howard",
+      "Anne Arundel"
+    ],
+    "va_counties": [
+      "Arlington",
+      "Alexandria",
+      "Fairfax",
+      "Loudoun",
+      "Prince William"
+    ],
+    "dc": true
+  },
+  "size": {
+    "min_headcount": 2,
+    "max_headcount": 20,
+    "unverified_score_cap": 50
+  },
+  "score_weights": {
+    "H06": 30,
+    "H01": 15,
+    "H02_per_vertical": 5,
+    "H02_cap": 15,
+    "H03b": 10,
+    "H04": 10,
+    "H05": 5,
+    "H07": 15
+  },
+  "blog_recency_days": 60,
+  "cache_ttl_days": 7,
+  "user_agent": "AdoptACatBot-AgencyDiscovery/1.0 (+https://adoptacatbot.com; research bot)",
+  "census": {
+    "places_max_per_query": 8,
+    "seed_csv": "../dmv-marketing-agencies-seed.csv"
+  },
+  "signal_max_prevalence": 0.8,
+  "tavily": {
+    "enabled": true,
+    "env_key": "TAVILY_API_KEY",
+    "note": "Required for H06 Indeed/job-board verification; without it only /careers pages are checked"
+  }
+}

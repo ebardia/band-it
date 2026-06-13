@@ -1,8 +1,13 @@
 'use client'
 
 import { useId } from 'react'
+import {
+  MASTHEAD_ACTION_LABEL,
+  MASTHEAD_ARC_LABEL,
+  MASTHEAD_ARIA_LABEL,
+} from '@/components/landing/landingCatBotCopy'
 
-/** Slanted, curved “Adopt A Cat” (neon arc) + neon “BOT”. */
+/** Slanted, curved “Cat Bot” (neon arc) + neon “Adoption Agency”. */
 const HAT_ARC_PATH = 'M 12 70 Q 280 18 548 70'
 
 export function CatBotMastheadTitle() {
@@ -11,7 +16,7 @@ export function CatBotMastheadTitle() {
   const neonId = `np-catbot-neon-${uid}`
 
   return (
-    <div className="np-catbot-masthead-brand" aria-label="Adopt A Cat Bot">
+    <div className="np-catbot-masthead-brand" aria-label={MASTHEAD_ARIA_LABEL}>
       <div className="np-catbot-masthead-arc-slant">
         <svg
           className="np-catbot-masthead-arc"
@@ -52,13 +57,13 @@ export function CatBotMastheadTitle() {
           </defs>
           <text className="np-catbot-masthead-arc-text" filter={`url(#${neonId})`}>
             <textPath href={`#${arcId}`} startOffset="50%" textAnchor="middle">
-              Adopt A Cat
+              {MASTHEAD_ARC_LABEL}
             </textPath>
           </text>
         </svg>
       </div>
       <p className="np-catbot-masthead-bot" aria-hidden>
-        BOT
+        {MASTHEAD_ACTION_LABEL}
       </p>
     </div>
   )

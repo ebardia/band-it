@@ -1,0 +1,23 @@
+signal_id,signal_name,signal_role,category,cat_trait,description,phase,points
+F01,DMV metro footprint,fit,geography,territory,"HQ or service area DC MD VA (DMV metro)",v0,0
+F02,Local SMB clientele,fit,icp,whiskers,"Portfolio or copy targets restaurants clinics contractors dental legal home services retail SMB",v0,0
+F03,Scramble zone scale,fit,size,territory,"~3-15 employees (seed estimate or team-page count heuristic)",v0,0
+F04,Digital marketing agency,fit,offer,territory,"Digital marketing SEO PPC social web — not staffing-only or pure ISV",v0,0
+H01,BD or growth hiring,hunt,growth,whiskers,"Careers page or seed: business development account executive growth marketing sales",v0,20
+H02,SMB vertical portfolio,hunt,icp,whiskers,"Case studies in >=2 local SMB verticals (dental legal home services restaurant med spa)",v0,15
+H03,Own marketing activity,hunt,hunger,whiskers,"Agency blog news insights or seed note: active content in last 90 days",v0,12
+H04,Directory badge,hunt,credibility,night_vision,"HubSpot Clutch UpCity DesignRush Expertise badge or profile link on site",v0,10
+H05,Referral-forward unsophistication,hunt,fit,whiskers,"Referrals word-of-mouth relationship-driven — no outbound stack language (positive for Cat Bot)",v0,8
+H06,Taking new clients,hunt,hunger,whiskers,"Accepting new clients now hiring growing team language",v0,8
+H07,Vertical package or GHL,hunt,offer,curiosity,"GHL white-label local vertical package niche focus page",v0,5
+T01,Portfolio client loss,stalk,timing,stalking,"Flagship client logo removed from portfolio (manual or diff v1)",v1,10
+T02,Stale BD repost,stalk,timing,stalking,"Same BD job open >60 days or reposted (manual v0)",v1,8
+T03,Award or best-of window,stalk,timing,night_vision,"WBJ fastest growing best-of DC list placement (seed)",v1,5
+N01,AMA-DC or Ad Club,night,community,night_vision,"Member roster event list (manual seed column)",v1,5
+N02,Fresh LLC filing,night,registry,night_vision,"VA SCC MD DLCP new marketing-services LLC (manual v2)",v2,5
+X01,Enterprise or gov primary,exclude,icp,,"Fortune 500 federal government contracting primary ICP",v0,-30
+X02,National scale 75+,exclude,size,,"Large national agency 75+ employees enterprise-only copy",v0,-30
+X03,Staffing or recruiting,exclude,type,,"Staffing temp recruiting firm not marketing agency",v0,-30
+X04,PR branding only,exclude,offer,,"Pure PR branding no digital marketing performance offer",v0,-30
+X05,Dev shop only,exclude,offer,,"Web or app dev shop no marketing services",v0,-30
+X06,AI outbound competitor,exclude,type,,"Sells AI SDR outbound automation as core product",v0,-30

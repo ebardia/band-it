@@ -11,10 +11,7 @@ import { WAITING_ROOM_IMAGE } from '@/components/newspaper/newspaperPlaceholders
 const WAITING_ROOM_SHELL = {
   kicker: 'Agency entrance',
   editionLabel: 'The List',
-  mastheadBrand: 'Adopt A Cat Bot',
-  mastheadArcLabel: 'Cat Bot Adoption',
-  mastheadActionLabel: 'Agency',
-  mastheadAriaLabel: 'Cat Bot Adoption Agency',
+  mastheadVariant: 'catbot' as const,
 } as const
 
 export default function WaitingRoomPage() {

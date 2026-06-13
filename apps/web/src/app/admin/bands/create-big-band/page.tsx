@@ -8,7 +8,7 @@ import { trpc } from '@/lib/trpc'
 import { AGENCY_PRODUCTS } from '@band-it/shared'
 import { useToast, Loading } from '@/components/ui'
 import { EditorialSurface } from '@/components/editorial/EditorialSurface'
-import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
+import { CatBotMastheadTitle } from '@/components/landing/CatBotMastheadTitle'
 import {
   EditorialAddressFields,
   EditorialChecklist,
@@ -250,12 +250,7 @@ export default function CreateBigBandPage() {
     <EditorialSurface>
       <div className="np-shell np-landing-page np-profile-form-shell">
         <header className="np-landing-masthead np-register-masthead">
-          <p className="np-cat">Adopt A Cat Bot</p>
-          <EditorialNeonMasthead
-            arcLabel="Cat Bot Adoption"
-            actionLabel="Agency"
-            ariaLabel="Cat Bot Adoption Agency"
-          />
+          <CatBotMastheadTitle />
           <p className="np-register-tagline">
             Create a reseller agency and assign its founder.
           </p>

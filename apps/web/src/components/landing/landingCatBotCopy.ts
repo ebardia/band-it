@@ -10,6 +10,11 @@ export const LEAD_DEK =
 
 export const MASTHEAD_TAGLINE = 'Wild Cats; Wild Jobs'
 
+/** Slanted arc + neon action line (CatBotMastheadTitle and matching editorial pages). */
+export const MASTHEAD_ARC_LABEL = 'Cat Bot'
+export const MASTHEAD_ACTION_LABEL = 'Adoption Agency'
+export const MASTHEAD_ARIA_LABEL = 'Cat Bot Adoption Agency'
+
 export const RAIL_META_LINE = 'Adopt · Domesticate · Roam · Represent'
 
 export const HOW_KICKER = 'How it works'

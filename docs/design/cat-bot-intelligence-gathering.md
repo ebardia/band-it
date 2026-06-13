@@ -184,6 +184,7 @@ Aligns with [signal-processing build sequencing](./signal-processing/README.md#b
 | [adopt-a-cat-bot.md](./adopt-a-cat-bot.md) | Consumer product — roam, domesticate, certify |
 | [signal-processing/README.md](./signal-processing/README.md) | Scripts, APIs, vertical folders |
 | [band-it-outbound-discovery.md](./signal-processing/band-it-outbound-discovery.md) | Dogfood SMB outbound — same signal playbook |
+| [dmv-marketing-agency-cat-bot-discovery.md](./signal-processing/dmv-marketing-agency-cat-bot-discovery.md) | Cat Bot **adoption agency** prospects — DMV marketing shops |
 
 ---
 

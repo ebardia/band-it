@@ -3313,9 +3313,9 @@
 
 .np-catbot-masthead-bot {
   font-family: var(--np-condensed);
-  font-size: clamp(2.85rem, 11.5vw, 4.85rem);
+  font-size: clamp(2.15rem, 8.5vw, 3.65rem);
   font-weight: 700;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-align: center;
   line-height: 1;
