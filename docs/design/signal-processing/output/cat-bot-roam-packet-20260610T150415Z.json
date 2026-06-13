@@ -1,0 +1,56 @@
+{
+  "roam_id": "7d1cd3ff-b303-4ee5-84d2-03dc9c056391",
+  "cat_id": "lab-v0",
+  "neighborhood": "Affluent DMV med-spa end clients",
+  "mission": "Map how target personas discover and consent \u2014 not cold contact",
+  "completed_at": "2026-06-10T15:04:15.878424+00:00",
+  "synthesis_mode": "heuristic",
+  "owner_disclosure": {
+    "owner_name": "Work Smarter Digital",
+    "owner_mission": "Digital consent paths for affluent DMV med-spa clients",
+    "bias_statement": "This cat is owned by Work Smarter Digital and may favor CRM and consent-native paths."
+  },
+  "angle_1": {
+    "thesis": "Review platforms surface experience themes (service quality, wait times, results).",
+    "evidence": [],
+    "confidence": "low"
+  },
+  "angle_2": {
+    "thesis": "Community threads emphasize questions, skepticism, and rejected outreach patterns.",
+    "evidence": [],
+    "confidence": "low",
+    "contradicts_angle_1": "Reviews optimize for outcomes; forums optimize for trust and process."
+  },
+  "angle_3": {
+    "thesis": "News and secondary web sources add reputation and local context.",
+    "evidence": [],
+    "confidence": "low",
+    "lens": "Regional press and discovered forum/blog pages"
+  },
+  "stuck_trap": "Buy contact lists or cold-DM affluent zip residents from review scrapes.",
+  "recommendation": {
+    "ranked_paths": [
+      "Consent-native discovery (user-initiated search and spa-owned nurture)",
+      "Community-informed FAQ and objection handling on owned channels",
+      "Partnership with local trust anchors (studios, physicians) \u2014 verify manually"
+    ],
+    "human_decision_needed": "Which path matches Potomac Skin Care brand and legal boundaries?"
+  },
+  "do_not_do": [
+    "Scrape login-walled neighborhoods (Nextdoor, private Facebook groups)",
+    "Treat review snippets as opted-in marketing contacts"
+  ],
+  "proposed_memory_items": [],
+  "collection_stats": {
+    "evidence_count": 0,
+    "skipped_sources": [
+      "brave",
+      "google_places",
+      "reddit",
+      "yelp"
+    ],
+    "warnings": [
+      "yelp: skipped (set YELP_API_KEY)"
+    ]
+  }
+}

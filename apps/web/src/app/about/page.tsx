@@ -13,6 +13,7 @@ import {
   Flex,
   Card,
 } from "@/components/ui"
+import { SITE_LOGO, SITE_LOGO_ALT } from '@/components/landing/landingCatBotCopy'
 
 const useCases = [
   {
@@ -432,10 +433,11 @@ export default function AboutPage() {
           <div className="text-center">
             <Stack spacing="md" className="items-center">
               <Image
-                src="/logo.png"
-                alt="BAND IT Logo"
-                width={200}
-                height={200}
+                src={SITE_LOGO}
+                alt={SITE_LOGO_ALT}
+                width={1536}
+                height={1024}
+                className="w-48 h-auto"
                 priority
               />
               <Heading level={1}>About BAND IT</Heading>

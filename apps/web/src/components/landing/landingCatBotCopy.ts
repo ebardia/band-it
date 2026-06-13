@@ -17,6 +17,10 @@ export const MASTHEAD_ARIA_LABEL = 'Cat Bot Adoption Agency'
 
 export const MASTHEAD_IMAGE = '/cat-bot-masthead.png'
 
+/** Site-wide wordmark (same art as masthead). */
+export const SITE_LOGO = '/logo.png'
+export const SITE_LOGO_ALT = MASTHEAD_ARIA_LABEL
+
 export const RAIL_META_LINE = 'Adopt · Domesticate · Roam · Represent'
 
 export const HOW_KICKER = 'How it works'

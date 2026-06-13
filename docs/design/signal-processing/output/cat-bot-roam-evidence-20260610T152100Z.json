@@ -1,0 +1,51 @@
+{
+  "neighborhood": "Affluent DMV med-spa end clients",
+  "mission": "Map how target personas discover and consent \u2014 not cold contact",
+  "spas": [
+    {
+      "spa_name": "Potomac Aesthetics Med Spa",
+      "website": "",
+      "city": "Potomac",
+      "state": "MD",
+      "zip": "20854",
+      "source_notes": "VaR seed \u2014 replace with live data"
+    }
+  ],
+  "evidence_count": 2,
+  "warnings": [
+    "yelp reviews fqe_z_mnVW0wW0dXVkZ1iA: HTTP 404 for https://api.yelp.com/v3/businesses/fqe_z_mnVW0wW0dXVkZ1iA/reviews: {\"error\": {\"code\": \"NOT_FOUND\", \"description\": \"Resource could not be found.\"}}"
+  ],
+  "skipped_sources": [
+    "brave",
+    "reddit"
+  ],
+  "items": [
+    {
+      "source": "google_places",
+      "source_url": "https://maps.google.com/?cid=17348723480379350807&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "title": "Google aggregate \u2014 Potomac Medical Aesthetics: Dr. Peter S. Petropoulos, MD",
+      "text": "Rating 4.9 from 189 reviews.",
+      "observed_at": "2026-06-10T15:20:59.511021+00:00",
+      "spa_name": "Potomac Aesthetics Med Spa",
+      "metadata": {
+        "rating": 4.9,
+        "review_count": 189,
+        "place_id": "ChIJwdbHTPvMt4kRF199ghYMw_A"
+      }
+    },
+    {
+      "source": "yelp",
+      "source_url": "https://www.yelp.com/biz/potomac-medical-aesthetics-potomac?adjust_creative=LrnHVZ69wdHHyLz0KgXCMA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=LrnHVZ69wdHHyLz0KgXCMA",
+      "title": "Yelp aggregate \u2014 Potomac Medical Aesthetics",
+      "text": "Rating 4.9 from 35 reviews.",
+      "observed_at": "2026-06-10T15:21:00.442838+00:00",
+      "spa_name": "Potomac Aesthetics Med Spa",
+      "metadata": {
+        "business_id": "fqe_z_mnVW0wW0dXVkZ1iA",
+        "rating": 4.9,
+        "review_count": 35
+      }
+    }
+  ],
+  "collected_at": "2026-06-10T15:21:00.660497+00:00"
+}

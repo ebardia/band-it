@@ -1,0 +1,37 @@
+{
+  "neighborhood": "Affluent DMV med-spa end clients",
+  "mission": "Map how target personas discover and consent \u2014 not cold contact",
+  "spas": [
+    {
+      "spa_name": "Potomac Aesthetics Med Spa",
+      "website": "",
+      "city": "Potomac",
+      "state": "MD",
+      "zip": "20854",
+      "source_notes": "VaR seed \u2014 replace with live data"
+    }
+  ],
+  "evidence_count": 1,
+  "warnings": [],
+  "skipped_sources": [
+    "brave",
+    "reddit",
+    "yelp"
+  ],
+  "items": [
+    {
+      "source": "google_places",
+      "source_url": "https://maps.google.com/?cid=17348723480379350807&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "title": "Google aggregate \u2014 Potomac Medical Aesthetics: Dr. Peter S. Petropoulos, MD",
+      "text": "Rating 4.9 from 189 reviews.",
+      "observed_at": "2026-06-10T15:02:02.871148+00:00",
+      "spa_name": "Potomac Aesthetics Med Spa",
+      "metadata": {
+        "rating": 4.9,
+        "review_count": 189,
+        "place_id": "ChIJwdbHTPvMt4kRF199ghYMw_A"
+      }
+    }
+  ],
+  "collected_at": "2026-06-10T15:02:02.871773+00:00"
+}

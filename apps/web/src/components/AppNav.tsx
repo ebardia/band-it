@@ -9,6 +9,7 @@ import { useHelp } from '@/components/help/HelpContext'
 import { FeedbackButton } from '@/components/feedback'
 import { trpc } from '@/lib/trpc'
 import { theme } from '@band-it/shared'
+import { SITE_LOGO, SITE_LOGO_ALT } from '@/components/landing/landingCatBotCopy'
 
 export function AppNav() {
   const router = useRouter()
@@ -64,10 +65,10 @@ export function AppNav() {
         {/* Logo */}
         <button onClick={() => handleNavClick('/daily')} className="flex-shrink-0">
           <Image
-            src="/logo.png"
-            alt="BAND IT Logo"
-            width={120}
-            height={120}
+            src={SITE_LOGO}
+            alt={SITE_LOGO_ALT}
+            width={1536}
+            height={1024}
             className="w-24 h-auto md:w-[150px]"
             priority
           />

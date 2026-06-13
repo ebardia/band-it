@@ -1,0 +1,89 @@
+{
+  "roam_id": "3a30adff-aaaa-4ea6-bb4f-a4e287ede258",
+  "cat_id": "lab-v0",
+  "neighborhood": "Affluent DMV med-spa end clients",
+  "mission": "Map how target personas discover and consent \u2014 not cold contact",
+  "completed_at": "2026-06-08T15:37:48.483516+00:00",
+  "synthesis_mode": "heuristic",
+  "owner_disclosure": {
+    "owner_name": "Work Smarter Digital",
+    "owner_mission": "Digital consent paths for affluent DMV med-spa clients",
+    "bias_statement": "This cat is owned by Work Smarter Digital and may favor CRM and consent-native paths."
+  },
+  "angle_1": {
+    "thesis": "Review platforms surface experience themes (service quality, wait times, results).",
+    "evidence": [],
+    "confidence": "low"
+  },
+  "angle_2": {
+    "thesis": "Community threads emphasize questions, skepticism, and rejected outreach patterns.",
+    "evidence": [],
+    "confidence": "low",
+    "contradicts_angle_1": "Reviews optimize for outcomes; forums optimize for trust and process."
+  },
+  "angle_3": {
+    "thesis": "News and secondary web sources add reputation and local context.",
+    "evidence": [
+      {
+        "source_url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQTjdTX2Ita3FaUVY4a0lsMjQ3VWlaRjhRVkQ4WElWRk5nZFdObHpvaktEWkZfOG10cmVWUThrLTRwWHJ5RlVqNzFkdFVfdkRKMEdfb1NWME1yQ0FqcmQ1ZXB6RHdNMGdsYXRadThHRzYzbE5Uc1FyVlJtd1A3S2tteXN3?oc=5",
+        "quote_or_summary": "Empowered Women: The Rise of Moksha Aesthetics &nbsp;&nbsp; Modern Luxury",
+        "observed_at": "Thu, 28 No",
+        "source": "news_rss",
+        "title": "Empowered Women: The Rise of Moksha Aesthetics - Modern Luxury"
+      },
+      {
+        "source_url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxQSHV5SU53NHgydW5pVHdINXFzUm9Bb2hKTjFXdkN0cXgtbTYwNE1oQWc1cVZXSjRhbHpWTWZmLTlSbmRqYWtYR210aGNhcVlCTGdlM183TVBkenphVjdsNkMtVG94bWJhNjBkX0Vuc1lYMG1nQUJ2emF3YndVQ3NHcml5dWcwUjZUU2c?oc=5",
+        "quote_or_summary": "SEV Medspa's First MD Location Opens &nbsp;&nbsp; Patch",
+        "observed_at": "Wed, 14 Au",
+        "source": "news_rss",
+        "title": "SEV Medspa's First MD Location Opens - Patch"
+      },
+      {
+        "source_url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5jSGdnSzZnMlZxclhBOEN4elhSZVotTk5jTnlRSkt3OE1RV0hxS0N6MGVsSjdSZU9hdlRfS2N2aGhVRjBPcWJrQUVILTVKdklJQ0F4bGhwUlk2LUdWVFcyZUh0clpzVFdNUVJsNTQzUmo5clk5WjN4b0JhdzQ?oc=5",
+        "quote_or_summary": "A Guide to the Best Spas Around DC &nbsp;&nbsp; Washingtonian",
+        "observed_at": "Thu, 04 Ma",
+        "source": "news_rss",
+        "title": "A Guide to the Best Spas Around DC - Washingtonian"
+      },
+      {
+        "source_url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE10Y0gwWTlvUzd5SWh1V0o0b1pKcmNXeTFMb0t5QU0zQnNhNWd4VU15bFhxejFFZE9tQnVqeUpBZHpNZ25ROTI1ZHdlcVpCQURseFhVUUZXWlBLOE0zLUFNeXAtczQ?oc=5",
+        "quote_or_summary": "The Top Spots for Facials and Massages in the DMV &nbsp;&nbsp; Modern Luxury",
+        "observed_at": "Fri, 26 Ju",
+        "source": "news_rss",
+        "title": "The Top Spots for Facials and Massages in the DMV - Modern Luxury"
+      }
+    ],
+    "confidence": "medium",
+    "lens": "Regional press and discovered forum/blog pages"
+  },
+  "stuck_trap": "Buy contact lists or cold-DM affluent zip residents from review scrapes.",
+  "recommendation": {
+    "ranked_paths": [
+      "Consent-native discovery (user-initiated search and spa-owned nurture)",
+      "Community-informed FAQ and objection handling on owned channels",
+      "Partnership with local trust anchors (studios, physicians) \u2014 verify manually"
+    ],
+    "human_decision_needed": "Which path matches Potomac Skin Care brand and legal boundaries?"
+  },
+  "do_not_do": [
+    "Scrape login-walled neighborhoods (Nextdoor, private Facebook groups)",
+    "Treat review snippets as opted-in marketing contacts"
+  ],
+  "proposed_memory_items": [],
+  "collection_stats": {
+    "evidence_count": 4,
+    "skipped_sources": [
+      "brave",
+      "google_places",
+      "reddit",
+      "yelp"
+    ],
+    "warnings": [
+      "reddit: skipped (set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET)",
+      "google_places: skipped (set GOOGLE_PLACES_API_KEY)",
+      "yelp: skipped (set YELP_API_KEY)",
+      "brave: skipped (set BRAVE_SEARCH_API_KEY)",
+      "synthesis fallback: HTTP 400 for https://api.anthropic.com/v1/messages: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011Cbr3NVxHCQiTr7qigCS4X\"}"
+    ]
+  }
+}
