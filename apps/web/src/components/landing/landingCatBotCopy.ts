@@ -174,3 +174,18 @@ export const RAIL_BLOCKS = [
 ] as const
 
 export const CTA_LABEL = 'Adopt a cat \u2192'
+
+export const MANIFESTO_HEADLINE = 'Seven instincts. One dead mouse.'
+
+export const MANIFESTO_DEK =
+  'A longer essay on why we build intelligence cats around stalking, territory patrol, whiskers, curiosity, night vision, reporting home, and clowder coordination \u2014 not another dashboard pretending to be strategy.'
+
+export const MANIFESTO_PARAGRAPHS = [
+  'Everyone has met the chatbot that digs one hole deeper. You hint at a direction and it elaborates the rut. Dashboards do the same at scale: breadth without resolution, alerts on every blip, no memory of what you already rejected. Cat Bot Adoption Agency exists because niche B2B work needs a different posture \u2014 patient, territorial, skeptical \u2014 and because the deliverable should be a vetted catch with evidence, not a pane of charts.',
+  'Stalking comes first. A cat watches before it pounces. Our bots monitor named accounts and fixed sources for weeks, holding fire until a real pattern emerges. Territory patrol is the beat itself: the same routes on a schedule \u2014 pricing pages, job boards, leadership bios, license records \u2014 flagging deltas instead of dumping raw feeds. You define the neighborhood; the cat learns what normal looks like there.',
+  'Whiskers sense what firmographics miss: a receptionist listing that names the incumbent stack, a tone shift in a press release, a hiring slowdown that precedes a budget freeze. Curiosity is what happens when something new appears \u2014 an unknown competitor, a regional consolidator, a forum thread that does not fit the map. The cat spawns a side investigation, cites its sources, and adds the entity to the graph for the rest of the clowder.',
+  'Night vision is for the low-light sources mainstream platforms skip: niche forums, regulatory filings, regional press, broker listings, archived pages. This is where vertical SaaS buyers actually leave traces \u2014 too small for intent data, too offline for Bombora. The wedge is persistent observation at a resolution big platforms cannot produce.',
+  'Reports home is the product contract. The cat roams alone, then brings you the dead mouse: one finding, linked and explained, with the trap it almost fell into named out loud. You review the return packet, keep the good memory, discard the bad, and certify what may speak on your behalf. Domestication is curated memory \u2014 not manual model training. Owner named, mission stated, bias disclosed.',
+  'Clowder coordination keeps the fleet honest. Not a hive mind \u2014 a roster of specialists with collar tags: a pricing cat, a hiring cat, a funding cat, mostly alone, sharing scent markers in a common graph. A serious team rarely needs one cat doing everything. It needs loose coordination across narrow beats until someone gets a pounce moment no intent platform can manufacture.',
+  'That is the longer case for cats over dashboards: adopt a wild specialist, domesticate it for one lane, let it patrol with these seven instincts, certify what earns your tag, and represent your goals transparently when it speaks in public. Monkeys and cats do not get along; noisy alerts and cats do not either. We are building for teams that would rather receive three dead mice than three hundred rows.',
+] as const

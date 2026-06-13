@@ -6,6 +6,7 @@ import {
   MASTHEAD_ARC_LABEL,
   MASTHEAD_ARIA_LABEL,
 } from '@/components/landing/landingCatBotCopy'
+import { SteampunkMastheadCat } from '@/components/landing/SteampunkMastheadCat'
 
 /** Slanted, curved “Cat Bot” (neon arc) + neon “Adoption Agency”. */
 const HAT_ARC_PATH = 'M 12 70 Q 280 18 548 70'
@@ -18,12 +19,14 @@ export function CatBotMastheadTitle() {
   return (
     <div className="np-catbot-masthead-brand" aria-label={MASTHEAD_ARIA_LABEL}>
       <div className="np-catbot-masthead-arc-slant">
-        <svg
-          className="np-catbot-masthead-arc"
-          viewBox="0 0 560 82"
-          role="img"
-          aria-hidden
-        >
+        <div className="np-catbot-masthead-arc-wrap">
+          <SteampunkMastheadCat className="np-catbot-masthead-cat" />
+          <svg
+            className="np-catbot-masthead-arc"
+            viewBox="0 0 560 82"
+            role="img"
+            aria-hidden
+          >
           <defs>
             <path id={arcId} d={HAT_ARC_PATH} fill="none" />
             <filter
@@ -61,6 +64,7 @@ export function CatBotMastheadTitle() {
             </textPath>
           </text>
         </svg>
+        </div>
       </div>
       <p className="np-catbot-masthead-bot" aria-hidden>
         {MASTHEAD_ACTION_LABEL}

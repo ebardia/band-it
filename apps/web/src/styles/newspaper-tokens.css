@@ -3282,6 +3282,29 @@
   margin: 0 auto -0.45rem;
 }
 
+.np-catbot-masthead-arc-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.np-catbot-masthead-cat {
+  position: absolute;
+  left: clamp(0.15rem, 2.5vw, 0.85rem);
+  top: clamp(-0.85rem, -2.5vw, -0.35rem);
+  width: clamp(2.35rem, 7.5vw, 3.75rem);
+  height: auto;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 0 rgba(255, 221, 0, 0.35));
+}
+
+@media (min-width: 640px) {
+  .np-catbot-masthead-cat {
+    width: clamp(2.75rem, 6vw, 4.15rem);
+    top: clamp(-1rem, -2vw, -0.5rem);
+  }
+}
+
 .np-catbot-masthead-arc {
   width: 100%;
   height: auto;
@@ -3292,30 +3315,30 @@
 
 .np-catbot-masthead-arc-text {
   font-family: var(--np-condensed);
-  font-size: 42px;
+  font-size: 52px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   fill: var(--np-ink);
 }
 
 @media (min-width: 640px) {
   .np-catbot-masthead-arc-text {
-    font-size: 52px;
+    font-size: 66px;
   }
 }
 
 @media (min-width: 1024px) {
   .np-catbot-masthead-arc-text {
-    font-size: 58px;
+    font-size: 78px;
   }
 }
 
 .np-catbot-masthead-bot {
   font-family: var(--np-condensed);
-  font-size: clamp(2.15rem, 8.5vw, 3.65rem);
+  font-size: clamp(1.25rem, 4.25vw, 2.1rem);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   text-align: center;
   line-height: 1;
