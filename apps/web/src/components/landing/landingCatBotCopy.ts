@@ -109,49 +109,54 @@ export const CAT_BEHAVIORS = [
 export const CAT_TYPES_KICKER = 'The litter'
 export const CAT_TYPES_HEADING = 'One clowder, loose coordination'
 
-export const CAT_TYPES_USE_CASE_KICKER = 'Use case · VetDesk'
+export const CAT_TYPES_USE_CASE_KICKER = 'Use case · Beacon Digital'
 export const CAT_TYPES_USE_CASE =
-  'VetDesk sells practice-management software to independent veterinary clinics — fifteen people, ~$8k ACV, ~30,000 target clinics, sales-led. They have ZoomInfo, maybe Apollo, maybe 6sense. Intent data barely registers: six-person clinics do not generate enough traffic for Bombora topics, and firmographics go stale. The niche sits below the resolution of mainstream BI. That is the wedge.'
+  'Beacon Digital is a ten-person agency selling SEO, paid search, and websites to local SMBs across the DMV — ~$2.5k/month retainers, a few thousand qualified businesses in their metro, referral- and Clutch-led. They have Apollo, maybe ZoomInfo. Intent data barely registers: a five-person HVAC shop or a two-chair dental office does not generate enough traffic for Bombora topics, and firmographics go stale the week a new owner takes over. The niche sits below the resolution of mainstream BI. That is the wedge.'
 
 export const CAT_TYPES_INTRO =
   'A serious team rarely needs one cat doing everything. It needs a clowder — each with a collar tag and a narrow beat — patrolling a named slice of the real TAM until someone gets a pounce moment no intent platform can produce.'
 
 export const CAT_TYPES = [
   {
+    name: 'Stalking Cat',
+    text:
+      'Picks the high-potential accounts that are not ready yet and watches them, quietly, for months — the agency that just lost a flagship client, the business whose lease is ending, the practice mid-ownership-transfer. No noise until the moment changes, then a single alert. No human tracks 300 maybes for a year; a cat does.',
+  },
+  {
     name: 'Territory Cat',
     text:
-      'Patrols ~2,000 named clinics weekly — website, Google Business, Yelp, state vet-board licenses. Not searching; noticing deltas: new associate on the team page, hours changed, \u201cnow accepting new patients,\u201d a second location.',
+      'Patrols ~2,000 named local SMBs weekly — website, Google Business Profile, reviews, social pages. Not searching; noticing deltas: a new location, \u201cnow hiring,\u201d a refreshed logo, a site that still says \u201ccopyright 2021,\u201d or a slip off page one for the money keyword.',
   },
   {
     name: 'Whisker Cat',
     text:
-      'Watches weak composite signals: a receptionist job mentioning Cornerstone (current stack), an owner license renewal lapse (retirement \u2192 sale \u2192 re-evaluation window), reviews citing long hold times (operational pain).',
+      'Watches weak composite signals: a job listing for an in-house marketer (DIY about to break), a long-dormant Facebook page that suddenly went active, a Groupon blast (margin pain), reviews complaining \u201chard to find them online,\u201d a competitor newly outranking them.',
   },
   {
     name: 'Night Vision Cat',
     text:
-      'Reads what platforms barely index: state vet-board minutes, practice-brokerage listings, Chamber announcements, VIN and vet subreddit threads complaining about specific software.',
+      'Reads what platforms barely index: county business-license and build-out permits, Chamber of Commerce new-member notices, grand-opening announcements, BBB filings, and local subreddit and Facebook-group threads naming a business by name.',
   },
   {
     name: 'Curiosity Cat',
     text:
-      'When any cat finds an unknown — a new clinic, a regional consolidator buying practices — it spawns a one-off investigation and adds the entity to the graph for the rest of the clowder.',
+      'When any cat finds an unknown — a new franchise unit opening, a local shop that just got acquired or took on funding — it spawns a one-off investigation and adds the entity to the graph for the rest of the clowder.',
   },
 ] as const
 
 export const EXAMPLE_KICKER = 'The gift wrapped catch'
-export const EXAMPLE_HEADING = 'What VetDesk\u2019s salesperson actually gets'
+export const EXAMPLE_HEADING = 'What Beacon Digital\u2019s owner actually gets'
 
 export const EXAMPLE_PARAGRAPHS = [
-  'Forget the dashboard. Once a week, VetDesk\u2019s rep opens three to five findings — each a vetted catch with links, not a CSV export pretending to be strategy.',
-  'Existing platforms sell breadth at low resolution. Cat bots sell persistent, named-account observation at a resolution where big platforms have no data at all. The market is every vertical SaaS company whose buyers are too small or too offline to show up in intent data — vets, dental, HVAC, funeral homes, marinas.',
-  'When the pattern lines up, the cat pounces. That is the moment worth a human phone call — not the hundredth row in a signal table.',
+  'Not a dashboard. Once a week, Beacon\u2019s owner opens three to five findings — each a vetted catch with links, not a scraped list pretending to be strategy.',
+  'Existing tools sell breadth at low resolution. Cat bots sell persistent, named-account observation at a resolution where big platforms have no data at all. The market is every agency whose ideal clients are local SMBs too small or too offline to show up in intent data — dentists, HVAC, med spas, restaurants, law firms, home services.',
+  'When the pattern lines up, the cat pounces: a business with a clear, fresh reason to need marketing right now. That is the moment worth a human phone call — not the hundredth row in an export.',
 ] as const
 
-export const EXAMPLE_DEAD_MOUSE = {
+export const EXAMPLE_CATCH = {
   label: 'Sample catch · pounce moment',
   text:
-    'Maple Creek Animal Hospital (Boise) — practice listed with a broker in March; license transferred to Dr. Sarah Kim on May 28; she posted two front-desk job listings yesterday mentioning \u201ctransitioning systems.\u201d New owner, actively re-evaluating software, ~30-day window. Evidence: three links.',
+    'Cedar & Co. Family Dental (Fairfax, VA) — filed a county build-out permit for a second location in April; posted an office-manager listing last week mentioning \u201chelp us grow new-patient volume\u201d; their Google Business Profile sits at 4.8 stars but hasn\u2019t posted in six months and just slipped off page one for \u201cFairfax dentist.\u201d A growing practice with budget, a weak online presence, and a reason to act now — roughly a 30-day window. Evidence: three links.',
 } as const
 
 export const HIRE_KICKER = 'Classified'
