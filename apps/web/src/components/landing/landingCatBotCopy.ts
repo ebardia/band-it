@@ -125,17 +125,17 @@ export const CAT_TYPES = [
   {
     name: 'Territory Cat',
     text:
-      'Patrols ~2,000 named local SMBs weekly — website, Google Business Profile, reviews, social pages. Not searching; noticing deltas: a new location, \u201cnow hiring,\u201d a refreshed logo, a site that still says \u201ccopyright 2021,\u201d or a slip off page one for the money keyword.',
+      'Patrols ~2,000 named local SMBs weekly — website, Google Business Profile, reviews, and search position. Not searching; noticing deltas: a new location, \u201cnow hiring,\u201d a refreshed logo, a site that still says \u201ccopyright 2021,\u201d or a slip off page one for the money keyword.',
   },
   {
     name: 'Whisker Cat',
     text:
-      'Watches weak composite signals: a job listing for an in-house marketer (DIY about to break), a long-dormant Facebook page that suddenly went active, a Groupon blast (margin pain), reviews complaining \u201chard to find them online,\u201d a competitor newly outranking them.',
+      'Watches weak composite signals: a job listing for an in-house marketer (DIY about to break), a Google Business Profile that went from no posts to suddenly active, a fresh county permit, a review-velocity spike, a competitor newly outranking them.',
   },
   {
     name: 'Night Vision Cat',
     text:
-      'Reads what platforms barely index: county business-license and build-out permits, Chamber of Commerce new-member notices, grand-opening announcements, BBB filings, and local subreddit and Facebook-group threads naming a business by name.',
+      'Reads what platforms barely index: county business-license and build-out permits, Chamber of Commerce new-member notices, grand-opening announcements, BBB filings, and local subreddit threads naming a business by name.',
   },
   {
     name: 'Curiosity Cat',
