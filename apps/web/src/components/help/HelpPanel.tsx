@@ -23,6 +23,9 @@ const SOURCE_LABELS: Record<string, string> = {
   RATE_LIMITED: 'Limit Reached',
 }
 
+// Adopt A Cat Bot marketing routes — the Band It Help Center must not leak here.
+const CAT_BOT_ROUTES = new Set(['/', '/manifesto'])
+
 export function HelpPanel() {
   const { isOpen, close } = useHelp()
   const [question, setQuestion] = useState('')
@@ -166,6 +169,9 @@ export function HelpPanel() {
       })
     }
   }
+
+  // Keep Band It and Adopt A Cat Bot cleanly separated: no Help Center on Cat Bot pages.
+  if (pathname && CAT_BOT_ROUTES.has(pathname)) return null
 
   return (
     <>

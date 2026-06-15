@@ -151,7 +151,7 @@ export function LandingCatBotPage() {
                     </figure>
                   </div>
                   <ol className="np-landing-how-row np-landing-how-row--pair">
-                    {HOW_STEPS.slice(3, 5).map((step) => (
+                    {HOW_STEPS.slice(3).map((step) => (
                       <HowStepCard key={step.num} step={step} />
                     ))}
                   </ol>

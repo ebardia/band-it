@@ -6,7 +6,7 @@ export const LANDING_CAT_IMAGES = {
 } as const
 
 export const LEAD_DEK =
-  'Adopt A Cat Bot helps you take in specialized intelligence cats, shape each one for a very narrow job, and send them to patrol neighborhoods mainstream platforms can\u2019t resolve. They watch quietly, notice what changed, investigate what\u2019s new — and bring you the gift wrapped catch: one vetted finding with evidence, not a dashboard full of noise. You keep what rings true. Discard the trap.'
+  'Adopt A Cat Bot helps you take in specialized intelligence cats, shape each one for a very narrow job, and send them to patrol neighborhoods mainstream platforms can\u2019t resolve. They watch quietly, notice what changed, investigate what\u2019s new — and bring you the gift wrapped catch: one vetted finding with evidence, not a dashboard full of noise. You keep what rings true. Discard the trap. And every choice teaches your cat — the one you keep for months learns your beat and your taste until its catches are the ones you\u2019d have picked yourself.'
 
 export const MASTHEAD_TAGLINE = 'Wild Cats; Wild Jobs'
 
@@ -46,7 +46,7 @@ export const HOW_STEPS = [
     num: '03',
     label: 'Roam & learn',
     text:
-      'Unleashed on a fixed beat — the same sources on a schedule, plus side investigations when something new appears. It tries more than one angle, cites sources, and names the STUCK_TRAP it almost fell into.',
+      'Unleashed on a fixed beat — the same sources on a schedule, plus side investigations when something new appears. Every catch you keep and every one you discard sharpens it: which signals deserve a pounce, which verticals you work, which moments you act on. It cites sources, names the trap it almost fell into, and gets more like your cat with every return.',
   },
   {
     num: '04',
@@ -59,6 +59,12 @@ export const HOW_STEPS = [
     label: 'Represent',
     text:
       'Certified cats deliver digestible catches — a finding, not a dump. Independent but reports home. Monkeys and cats don\u2019t get along; noisy alerts and cats don\u2019t either.',
+  },
+  {
+    num: '06',
+    label: 'It becomes yours',
+    text:
+      'The wild cat you adopt brings generic catches. The cat you\u2019ve kept for six months brings yours — it has learned your taste and stopped wasting your attention on what you\u2019d throw back. That knowledge doesn\u2019t transfer: it\u2019s the months you spent teaching it, which is why your clowder gets sharper while a newcomer\u2019s starts from an empty collar.',
   },
 ] as const
 
@@ -92,7 +98,7 @@ export const CAT_BEHAVIORS = [
   {
     name: 'Reports home',
     text:
-      'Roams alone, then brings you the Catch. Autonomous operation; digestible catch. That is the product — not another pane of charts.',
+      'Roams alone, then brings you the Catch. Autonomous operation; digestible catch — and a memory that keeps what you keep, so the next catch is closer to the one you wanted. That is the product — not another pane of charts.',
   },
   {
     name: 'Night vision',
@@ -196,7 +202,8 @@ export const MANIFESTO_PARAGRAPHS = [
   'Stalking comes first. A cat watches before it pounces. Our bots monitor named accounts and fixed sources for weeks, holding fire until a real pattern emerges. Territory patrol is the beat itself: the same routes on a schedule \u2014 pricing pages, job boards, leadership bios, license records \u2014 flagging deltas instead of dumping raw feeds. You define the neighborhood; the cat learns what normal looks like there.',
   'Whiskers sense what firmographics miss: a receptionist listing that names the incumbent stack, a tone shift in a press release, a hiring slowdown that precedes a budget freeze. Curiosity is what happens when something new appears \u2014 an unknown competitor, a regional consolidator, a forum thread that does not fit the map. The cat spawns a side investigation, cites its sources, and adds the entity to the graph for the rest of the clowder.',
   'Night vision is for the low-light sources mainstream platforms skip: niche forums, regulatory filings, regional press, broker listings, archived pages. This is where vertical SaaS buyers actually leave traces \u2014 too small for intent data, too offline for Bombora. The wedge is persistent observation at a resolution big platforms cannot produce.',
-  'Reports home is the product contract. The cat roams alone, then brings you the gift wrapped catch: one finding, linked and explained, with the trap it almost fell into named out loud. You review the return packet, keep the good memory, discard the bad, and certify what may speak on your behalf. Domestication is curated memory \u2014 not manual model training. Owner named, mission stated, bias disclosed.',
+  'Reports home is the product contract. The cat roams alone, then brings you the gift-wrapped catch: one finding, linked and explained, with the trap it almost fell into named out loud. You review the return packet, keep the good catch, discard the bad. No three-hundred-row export pretending to be strategy — one thing worth a phone call.',
+  'And the cat remembers. Domestication is not a one-time setup; it is the slow accumulation of your judgment. Every catch you keep and every one you reject teaches it — which signals earn a pounce, which verticals you work, which moments you act on. The wild cat you adopt brings generic catches. The cat you have kept for six months brings yours: it has learned your beat and your taste, and it no longer wastes your attention on what you would have thrown back. This is curated memory, not model training — owner named, preferences learned, bias disclosed. It is also why a cat cannot simply be copied: the months you spent teaching it do not transfer, and a competitor starts from an empty collar.',
   'Clowder coordination keeps the fleet honest. Not a hive mind \u2014 a roster of specialists with collar tags: a pricing cat, a hiring cat, a funding cat, mostly alone, sharing scent markers in a common graph. A serious team rarely needs one cat doing everything. It needs loose coordination across narrow beats until someone gets a pounce moment no intent platform can manufacture.',
   'That is the longer case for cats over dashboards: adopt a wild specialist, domesticate it for one lane, let it patrol with these seven instincts, certify what earns your tag, and represent your goals transparently when it speaks in public. Monkeys and cats do not get along; noisy alerts and cats do not either. We are building for teams that would rather receive three Catches than three hundred rows.',
 ] as const
