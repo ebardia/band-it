@@ -6,7 +6,7 @@ export const LANDING_CAT_IMAGES = {
 } as const
 
 export const LEAD_DEK =
-  'Adopt A Cat Bot helps you take in specialized intelligence cats, shape each one for a very narrow job, and send them to patrol neighborhoods mainstream platforms can\u2019t resolve. They watch quietly, notice what changed, investigate what\u2019s new — and bring you the dead mouse: one vetted finding with evidence, not a dashboard full of noise. You keep what rings true. Discard the trap.'
+  'Adopt A Cat Bot helps you take in specialized intelligence cats, shape each one for a very narrow job, and send them to patrol neighborhoods mainstream platforms can\u2019t resolve. They watch quietly, notice what changed, investigate what\u2019s new — and bring you the gift wrapped catch: one vetted finding with evidence, not a dashboard full of noise. You keep what rings true. Discard the trap.'
 
 export const MASTHEAD_TAGLINE = 'Wild Cats; Wild Jobs'
 
@@ -92,7 +92,7 @@ export const CAT_BEHAVIORS = [
   {
     name: 'Reports home',
     text:
-      'Roams alone, then brings you the dead mouse. Autonomous operation; digestible catch. That is the product — not another pane of charts.',
+      'Roams alone, then brings you the Catch. Autonomous operation; digestible catch. That is the product — not another pane of charts.',
   },
   {
     name: 'Night vision',
@@ -139,7 +139,7 @@ export const CAT_TYPES = [
   },
 ] as const
 
-export const EXAMPLE_KICKER = 'The dead mouse'
+export const EXAMPLE_KICKER = 'The gift wrapped catch'
 export const EXAMPLE_HEADING = 'What VetDesk\u2019s salesperson actually gets'
 
 export const EXAMPLE_PARAGRAPHS = [
@@ -160,7 +160,7 @@ export const HIRE_HEADING = 'Now hiring: cool cats'
 export const HIRE_BODY = [
   'Walk the neighborhoods. Act cool. Stay mysterious.',
   'Prior experience overrated. Attitude essential.',
-  'We are not looking for résumés. We are looking for cats who can loiter with intent, patrol without panic, and report home with one dead mouse — not the whole field.',
+  'We are not looking for résumés. We are looking for cats who can loiter with intent, patrol without panic, and report home with one Catch — not the whole field.',
 ] as const
 
 export const HIRE_FOOTER = 'Inquiries welcome. Coolness interview at the Catnip Café.'
@@ -173,7 +173,7 @@ export const RAIL_BLOCKS = [
   },
   {
     title: 'The longer story',
-    detail: 'How we think about roams, memory, the dead mouse, and transparent bias.',
+    detail: 'How we think about roams, memory, the gift wrapped catch, and transparent bias.',
     cta: 'Read the essay',
     href: '/manifesto',
   },
@@ -181,7 +181,7 @@ export const RAIL_BLOCKS = [
 
 export const CTA_LABEL = 'Adopt a cat \u2192'
 
-export const MANIFESTO_HEADLINE = 'Seven instincts. One dead mouse.'
+export const MANIFESTO_HEADLINE = 'Seven instincts. One Catch.'
 
 export const MANIFESTO_DEK =
   'A longer essay on why we build intelligence cats around stalking, territory patrol, whiskers, curiosity, night vision, reporting home, and clowder coordination \u2014 not another dashboard pretending to be strategy.'
@@ -191,7 +191,7 @@ export const MANIFESTO_PARAGRAPHS = [
   'Stalking comes first. A cat watches before it pounces. Our bots monitor named accounts and fixed sources for weeks, holding fire until a real pattern emerges. Territory patrol is the beat itself: the same routes on a schedule \u2014 pricing pages, job boards, leadership bios, license records \u2014 flagging deltas instead of dumping raw feeds. You define the neighborhood; the cat learns what normal looks like there.',
   'Whiskers sense what firmographics miss: a receptionist listing that names the incumbent stack, a tone shift in a press release, a hiring slowdown that precedes a budget freeze. Curiosity is what happens when something new appears \u2014 an unknown competitor, a regional consolidator, a forum thread that does not fit the map. The cat spawns a side investigation, cites its sources, and adds the entity to the graph for the rest of the clowder.',
   'Night vision is for the low-light sources mainstream platforms skip: niche forums, regulatory filings, regional press, broker listings, archived pages. This is where vertical SaaS buyers actually leave traces \u2014 too small for intent data, too offline for Bombora. The wedge is persistent observation at a resolution big platforms cannot produce.',
-  'Reports home is the product contract. The cat roams alone, then brings you the dead mouse: one finding, linked and explained, with the trap it almost fell into named out loud. You review the return packet, keep the good memory, discard the bad, and certify what may speak on your behalf. Domestication is curated memory \u2014 not manual model training. Owner named, mission stated, bias disclosed.',
+  'Reports home is the product contract. The cat roams alone, then brings you the gift wrapped catch: one finding, linked and explained, with the trap it almost fell into named out loud. You review the return packet, keep the good memory, discard the bad, and certify what may speak on your behalf. Domestication is curated memory \u2014 not manual model training. Owner named, mission stated, bias disclosed.',
   'Clowder coordination keeps the fleet honest. Not a hive mind \u2014 a roster of specialists with collar tags: a pricing cat, a hiring cat, a funding cat, mostly alone, sharing scent markers in a common graph. A serious team rarely needs one cat doing everything. It needs loose coordination across narrow beats until someone gets a pounce moment no intent platform can manufacture.',
-  'That is the longer case for cats over dashboards: adopt a wild specialist, domesticate it for one lane, let it patrol with these seven instincts, certify what earns your tag, and represent your goals transparently when it speaks in public. Monkeys and cats do not get along; noisy alerts and cats do not either. We are building for teams that would rather receive three dead mice than three hundred rows.',
+  'That is the longer case for cats over dashboards: adopt a wild specialist, domesticate it for one lane, let it patrol with these seven instincts, certify what earns your tag, and represent your goals transparently when it speaks in public. Monkeys and cats do not get along; noisy alerts and cats do not either. We are building for teams that would rather receive three Catches than three hundred rows.',
 ] as const
