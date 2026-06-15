@@ -6,7 +6,7 @@ export const LANDING_CAT_IMAGES = {
 } as const
 
 export const LEAD_DEK =
-  'Adopt A Cat Bot helps you take in specialized intelligence cats, shape each one for a very narrow job, and send them to patrol neighborhoods mainstream platforms can\u2019t resolve. They watch quietly, notice what changed, investigate what\u2019s new — and bring you the dead mouse: one vetted finding with evidence, not a dashboard full of noise. You keep what rings true. Discard the trap.'
+  'Adopt A Cat Bot helps you take in specialized intelligence cats, shape each one for a very narrow job, and send them to patrol neighborhoods mainstream platforms can\u2019t resolve. They watch quietly, notice what changed, investigate what\u2019s new — and bring you the gift wrapped catch: one vetted finding with evidence, not a dashboard full of noise. You keep what rings true. Discard the trap. And every choice teaches your cat — the one you keep for months learns your beat and your taste until its catches are the ones you\u2019d have picked yourself.'
 
 export const MASTHEAD_TAGLINE = 'Wild Cats; Wild Jobs'
 
@@ -46,7 +46,7 @@ export const HOW_STEPS = [
     num: '03',
     label: 'Roam & learn',
     text:
-      'Unleashed on a fixed beat — the same sources on a schedule, plus side investigations when something new appears. It tries more than one angle, cites sources, and names the STUCK_TRAP it almost fell into.',
+      'Unleashed on a fixed beat — the same sources on a schedule, plus side investigations when something new appears. Every catch you keep and every one you discard sharpens it: which signals deserve a pounce, which verticals you work, which moments you act on. It cites sources, names the trap it almost fell into, and gets more like your cat with every return.',
   },
   {
     num: '04',
@@ -59,6 +59,12 @@ export const HOW_STEPS = [
     label: 'Represent',
     text:
       'Certified cats deliver digestible catches — a finding, not a dump. Independent but reports home. Monkeys and cats don\u2019t get along; noisy alerts and cats don\u2019t either.',
+  },
+  {
+    num: '06',
+    label: 'It becomes yours',
+    text:
+      'The wild cat you adopt brings generic catches. The cat you\u2019ve kept for six months brings yours — it has learned your taste and stopped wasting your attention on what you\u2019d throw back. That knowledge doesn\u2019t transfer: it\u2019s the months you spent teaching it, which is why your clowder gets sharper while a newcomer\u2019s starts from an empty collar.',
   },
 ] as const
 
@@ -92,7 +98,7 @@ export const CAT_BEHAVIORS = [
   {
     name: 'Reports home',
     text:
-      'Roams alone, then brings you the dead mouse. Autonomous operation; digestible catch. That is the product — not another pane of charts.',
+      'Roams alone, then brings you the Catch. Autonomous operation; digestible catch — and a memory that keeps what you keep, so the next catch is closer to the one you wanted. That is the product — not another pane of charts.',
   },
   {
     name: 'Night vision',
@@ -109,49 +115,54 @@ export const CAT_BEHAVIORS = [
 export const CAT_TYPES_KICKER = 'The litter'
 export const CAT_TYPES_HEADING = 'One clowder, loose coordination'
 
-export const CAT_TYPES_USE_CASE_KICKER = 'Use case · VetDesk'
+export const CAT_TYPES_USE_CASE_KICKER = 'Use case · Beacon Digital'
 export const CAT_TYPES_USE_CASE =
-  'VetDesk sells practice-management software to independent veterinary clinics — fifteen people, ~$8k ACV, ~30,000 target clinics, sales-led. They have ZoomInfo, maybe Apollo, maybe 6sense. Intent data barely registers: six-person clinics do not generate enough traffic for Bombora topics, and firmographics go stale. The niche sits below the resolution of mainstream BI. That is the wedge.'
+  'Beacon Digital is a ten-person agency selling SEO, paid search, and websites to local SMBs across the DMV — ~$2.5k/month retainers, a few thousand qualified businesses in their metro, referral- and Clutch-led. They have Apollo, maybe ZoomInfo. Intent data barely registers: a five-person HVAC shop or a two-chair dental office does not generate enough traffic for Bombora topics, and firmographics go stale the week a new owner takes over. The niche sits below the resolution of mainstream BI. That is the wedge.'
 
 export const CAT_TYPES_INTRO =
   'A serious team rarely needs one cat doing everything. It needs a clowder — each with a collar tag and a narrow beat — patrolling a named slice of the real TAM until someone gets a pounce moment no intent platform can produce.'
 
 export const CAT_TYPES = [
   {
+    name: 'Stalking Cat',
+    text:
+      'Picks the high-potential accounts that are not ready yet and watches them, quietly, for months — the agency that just lost a flagship client, the business whose lease is ending, the practice mid-ownership-transfer. No noise until the moment changes, then a single alert. No human tracks 300 maybes for a year; a cat does.',
+  },
+  {
     name: 'Territory Cat',
     text:
-      'Patrols ~2,000 named clinics weekly — website, Google Business, Yelp, state vet-board licenses. Not searching; noticing deltas: new associate on the team page, hours changed, \u201cnow accepting new patients,\u201d a second location.',
+      'Patrols ~2,000 named local SMBs weekly — website, Google Business Profile, reviews, and search position. Not searching; noticing deltas: a new location, \u201cnow hiring,\u201d a refreshed logo, a site that still says \u201ccopyright 2021,\u201d or a slip off page one for the money keyword.',
   },
   {
     name: 'Whisker Cat',
     text:
-      'Watches weak composite signals: a receptionist job mentioning Cornerstone (current stack), an owner license renewal lapse (retirement \u2192 sale \u2192 re-evaluation window), reviews citing long hold times (operational pain).',
+      'Watches weak composite signals: a job listing for an in-house marketer (DIY about to break), a Google Business Profile that went from no posts to suddenly active, a fresh county permit, a review-velocity spike, a competitor newly outranking them.',
   },
   {
     name: 'Night Vision Cat',
     text:
-      'Reads what platforms barely index: state vet-board minutes, practice-brokerage listings, Chamber announcements, VIN and vet subreddit threads complaining about specific software.',
+      'Reads what platforms barely index: county business-license and build-out permits, Chamber of Commerce new-member notices, grand-opening announcements, BBB filings, and local subreddit threads naming a business by name.',
   },
   {
     name: 'Curiosity Cat',
     text:
-      'When any cat finds an unknown — a new clinic, a regional consolidator buying practices — it spawns a one-off investigation and adds the entity to the graph for the rest of the clowder.',
+      'When any cat finds an unknown — a new franchise unit opening, a local shop that just got acquired or took on funding — it spawns a one-off investigation and adds the entity to the graph for the rest of the clowder.',
   },
 ] as const
 
-export const EXAMPLE_KICKER = 'The dead mouse'
-export const EXAMPLE_HEADING = 'What VetDesk\u2019s salesperson actually gets'
+export const EXAMPLE_KICKER = 'The gift wrapped catch'
+export const EXAMPLE_HEADING = 'What Beacon Digital\u2019s owner actually gets'
 
 export const EXAMPLE_PARAGRAPHS = [
-  'Forget the dashboard. Once a week, VetDesk\u2019s rep opens three to five findings — each a vetted catch with links, not a CSV export pretending to be strategy.',
-  'Existing platforms sell breadth at low resolution. Cat bots sell persistent, named-account observation at a resolution where big platforms have no data at all. The market is every vertical SaaS company whose buyers are too small or too offline to show up in intent data — vets, dental, HVAC, funeral homes, marinas.',
-  'When the pattern lines up, the cat pounces. That is the moment worth a human phone call — not the hundredth row in a signal table.',
+  'Not a dashboard. Once a week, Beacon\u2019s owner opens three to five findings — each a vetted catch with links, not a scraped list pretending to be strategy.',
+  'Existing tools sell breadth at low resolution. Cat bots sell persistent, named-account observation at a resolution where big platforms have no data at all. The market is every agency whose ideal clients are local SMBs too small or too offline to show up in intent data — dentists, HVAC, med spas, restaurants, law firms, home services.',
+  'When the pattern lines up, the cat pounces: a business with a clear, fresh reason to need marketing right now. That is the moment worth a human phone call — not the hundredth row in an export.',
 ] as const
 
-export const EXAMPLE_DEAD_MOUSE = {
+export const EXAMPLE_CATCH = {
   label: 'Sample catch · pounce moment',
   text:
-    'Maple Creek Animal Hospital (Boise) — practice listed with a broker in March; license transferred to Dr. Sarah Kim on May 28; she posted two front-desk job listings yesterday mentioning \u201ctransitioning systems.\u201d New owner, actively re-evaluating software, ~30-day window. Evidence: three links.',
+    'Cedar & Co. Family Dental (Fairfax, VA) — filed a county build-out permit for a second location in April; posted an office-manager listing last week mentioning \u201chelp us grow new-patient volume\u201d; their Google Business Profile sits at 4.8 stars but hasn\u2019t posted in six months and just slipped off page one for \u201cFairfax dentist.\u201d A growing practice with budget, a weak online presence, and a reason to act now — roughly a 30-day window. Evidence: three links.',
 } as const
 
 export const HIRE_KICKER = 'Classified'
@@ -160,7 +171,7 @@ export const HIRE_HEADING = 'Now hiring: cool cats'
 export const HIRE_BODY = [
   'Walk the neighborhoods. Act cool. Stay mysterious.',
   'Prior experience overrated. Attitude essential.',
-  'We are not looking for résumés. We are looking for cats who can loiter with intent, patrol without panic, and report home with one dead mouse — not the whole field.',
+  'We are not looking for résumés. We are looking for cats who can loiter with intent, patrol without panic, and report home with one Catch — not the whole field.',
 ] as const
 
 export const HIRE_FOOTER = 'Inquiries welcome. Coolness interview at the Catnip Café.'
@@ -173,7 +184,7 @@ export const RAIL_BLOCKS = [
   },
   {
     title: 'The longer story',
-    detail: 'How we think about roams, memory, the dead mouse, and transparent bias.',
+    detail: 'How we think about roams, memory, the gift wrapped catch, and transparent bias.',
     cta: 'Read the essay',
     href: '/manifesto',
   },
@@ -181,7 +192,7 @@ export const RAIL_BLOCKS = [
 
 export const CTA_LABEL = 'Adopt a cat \u2192'
 
-export const MANIFESTO_HEADLINE = 'Seven instincts. One dead mouse.'
+export const MANIFESTO_HEADLINE = 'Seven instincts. One Catch.'
 
 export const MANIFESTO_DEK =
   'A longer essay on why we build intelligence cats around stalking, territory patrol, whiskers, curiosity, night vision, reporting home, and clowder coordination \u2014 not another dashboard pretending to be strategy.'
@@ -191,7 +202,8 @@ export const MANIFESTO_PARAGRAPHS = [
   'Stalking comes first. A cat watches before it pounces. Our bots monitor named accounts and fixed sources for weeks, holding fire until a real pattern emerges. Territory patrol is the beat itself: the same routes on a schedule \u2014 pricing pages, job boards, leadership bios, license records \u2014 flagging deltas instead of dumping raw feeds. You define the neighborhood; the cat learns what normal looks like there.',
   'Whiskers sense what firmographics miss: a receptionist listing that names the incumbent stack, a tone shift in a press release, a hiring slowdown that precedes a budget freeze. Curiosity is what happens when something new appears \u2014 an unknown competitor, a regional consolidator, a forum thread that does not fit the map. The cat spawns a side investigation, cites its sources, and adds the entity to the graph for the rest of the clowder.',
   'Night vision is for the low-light sources mainstream platforms skip: niche forums, regulatory filings, regional press, broker listings, archived pages. This is where vertical SaaS buyers actually leave traces \u2014 too small for intent data, too offline for Bombora. The wedge is persistent observation at a resolution big platforms cannot produce.',
-  'Reports home is the product contract. The cat roams alone, then brings you the dead mouse: one finding, linked and explained, with the trap it almost fell into named out loud. You review the return packet, keep the good memory, discard the bad, and certify what may speak on your behalf. Domestication is curated memory \u2014 not manual model training. Owner named, mission stated, bias disclosed.',
+  'Reports home is the product contract. The cat roams alone, then brings you the gift-wrapped catch: one finding, linked and explained, with the trap it almost fell into named out loud. You review the return packet, keep the good catch, discard the bad. No three-hundred-row export pretending to be strategy — one thing worth a phone call.',
+  'And the cat remembers. Domestication is not a one-time setup; it is the slow accumulation of your judgment. Every catch you keep and every one you reject teaches it — which signals earn a pounce, which verticals you work, which moments you act on. The wild cat you adopt brings generic catches. The cat you have kept for six months brings yours: it has learned your beat and your taste, and it no longer wastes your attention on what you would have thrown back. This is curated memory, not model training — owner named, preferences learned, bias disclosed. It is also why a cat cannot simply be copied: the months you spent teaching it do not transfer, and a competitor starts from an empty collar.',
   'Clowder coordination keeps the fleet honest. Not a hive mind \u2014 a roster of specialists with collar tags: a pricing cat, a hiring cat, a funding cat, mostly alone, sharing scent markers in a common graph. A serious team rarely needs one cat doing everything. It needs loose coordination across narrow beats until someone gets a pounce moment no intent platform can manufacture.',
-  'That is the longer case for cats over dashboards: adopt a wild specialist, domesticate it for one lane, let it patrol with these seven instincts, certify what earns your tag, and represent your goals transparently when it speaks in public. Monkeys and cats do not get along; noisy alerts and cats do not either. We are building for teams that would rather receive three dead mice than three hundred rows.',
+  'That is the longer case for cats over dashboards: adopt a wild specialist, domesticate it for one lane, let it patrol with these seven instincts, certify what earns your tag, and represent your goals transparently when it speaks in public. Monkeys and cats do not get along; noisy alerts and cats do not either. We are building for teams that would rather receive three Catches than three hundred rows.',
 ] as const

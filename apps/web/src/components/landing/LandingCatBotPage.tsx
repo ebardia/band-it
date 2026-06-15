@@ -18,7 +18,7 @@ import {
   CAT_TYPES_USE_CASE,
   CAT_TYPES_USE_CASE_KICKER,
   CTA_LABEL,
-  EXAMPLE_DEAD_MOUSE,
+  EXAMPLE_CATCH,
   EXAMPLE_HEADING,
   EXAMPLE_KICKER,
   EXAMPLE_PARAGRAPHS,
@@ -151,7 +151,7 @@ export function LandingCatBotPage() {
                     </figure>
                   </div>
                   <ol className="np-landing-how-row np-landing-how-row--pair">
-                    {HOW_STEPS.slice(3, 5).map((step) => (
+                    {HOW_STEPS.slice(3).map((step) => (
                       <HowStepCard key={step.num} step={step} />
                     ))}
                   </ol>
@@ -208,9 +208,9 @@ export function LandingCatBotPage() {
                     {EXAMPLE_HEADING}
                   </h2>
                   <div className="np-landing-briefing-columns np-landing-briefing-columns--stacked">
-                    <blockquote className="np-landing-dead-mouse">
-                      <p className="np-landing-section-kicker">{EXAMPLE_DEAD_MOUSE.label}</p>
-                      <p className="np-landing-paragraph">{EXAMPLE_DEAD_MOUSE.text}</p>
+                    <blockquote className="np-landing-catch">
+                      <p className="np-landing-section-kicker">{EXAMPLE_CATCH.label}</p>
+                      <p className="np-landing-paragraph">{EXAMPLE_CATCH.text}</p>
                     </blockquote>
                     {EXAMPLE_PARAGRAPHS.map((paragraph, index) => (
                       <p
