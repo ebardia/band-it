@@ -753,6 +753,71 @@
   text-underline-offset: 3px;
 }
 
+.np-manifesto-subdek {
+  font-family: var(--np-body);
+  font-size: clamp(0.95rem, 1.8vw, 1.02rem);
+  line-height: 1.55;
+  font-style: italic;
+  color: var(--np-muted);
+  margin: 0 0 1.5rem;
+  max-width: 38rem;
+  text-align: left;
+}
+
+.np-manifesto-body {
+  max-width: 42rem;
+  margin-top: 0.5rem;
+}
+
+.np-manifesto-section {
+  margin-top: 2rem;
+}
+
+.np-manifesto-section:first-child {
+  margin-top: 0;
+}
+
+.np-manifesto-section-title {
+  margin-top: 0;
+  margin-bottom: 0.85rem;
+}
+
+.np-manifesto-refs {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--np-line-soft);
+}
+
+.np-manifesto-ref-list {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.35rem;
+  list-style: decimal;
+}
+
+.np-manifesto-ref-list li {
+  margin-bottom: 0.65rem;
+  font-family: var(--np-body);
+  font-size: clamp(0.92rem, 1.75vw, 0.98rem);
+  line-height: 1.55;
+  color: var(--np-ink);
+}
+
+.np-manifesto-ref-link {
+  color: var(--np-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.np-manifesto-ref-link:hover {
+  color: var(--np-accent);
+}
+
+.np-manifesto-sources-note {
+  font-size: clamp(0.9rem, 1.7vw, 0.95rem);
+  color: var(--np-muted);
+  font-style: italic;
+}
+
 .np-landing-intro {
   margin: 0.25rem 0 1.5rem;
 }
