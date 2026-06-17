@@ -11,10 +11,8 @@ import { AuthEditionIllustration } from '@/components/newspaper/AuthEditionIllus
 import { EditorialNeonMasthead } from '@/components/newspaper/EditorialNeonMasthead'
 import { REGISTER_CLERK_IMAGE } from '@/components/newspaper/newspaperPlaceholders'
 
-// Current version of community guidelines - increment when guidelines change
-const COMMUNITY_GUIDELINES_VERSION = 1
 // Current version of Terms of Service & Privacy Policy - increment when they change
-const TOS_VERSION = 1
+const TOS_VERSION = 3
 
 /** Survives full page navigations so register still sends token after verify-email prep */
 const PENDING_INVITE_TOKEN_KEY = 'bandIt_pendingInviteToken'
@@ -68,7 +66,6 @@ function RegisterContent() {
     password: '',
   })
   const [showPassword, setShowPassword] = useState(false)
-  const [guidelinesAccepted, setGuidelinesAccepted] = useState(false)
   const [tosAccepted, setTosAccepted] = useState(false)
 
   const registerMutation = trpc.auth.register.useMutation({
@@ -112,10 +109,6 @@ function RegisterContent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!guidelinesAccepted) {
-      showToast('Please accept the community guidelines to continue', 'error')
-      return
-    }
     if (!tosAccepted) {
       showToast('Please accept the Terms of Service and Privacy Policy to continue', 'error')
       return
@@ -129,7 +122,6 @@ function RegisterContent() {
     registerMutation.mutate({
       ...formData,
       inviteToken: inviteFromUrl || storedToken || undefined,
-      guidelinesVersion: COMMUNITY_GUIDELINES_VERSION,
       tosVersion: TOS_VERSION,
     })
   }
@@ -265,21 +257,6 @@ function RegisterContent() {
                   <label className="np-consent-row">
                     <input
                       type="checkbox"
-                      checked={guidelinesAccepted}
-                      onChange={(e) => setGuidelinesAccepted(e.target.checked)}
-                    />
-                    <span>
-                      I have read and agree to follow the{' '}
-                      <a href="/community-guidelines" target="_blank" rel="noopener noreferrer" className="np-consent-link">
-                        community guidelines
-                      </a>
-                      .
-                    </span>
-                  </label>
-
-                  <label className="np-consent-row">
-                    <input
-                      type="checkbox"
                       checked={tosAccepted}
                       onChange={(e) => setTosAccepted(e.target.checked)}
                     />
@@ -300,7 +277,7 @@ function RegisterContent() {
                 <button
                   type="submit"
                   className="np-profile-btn np-profile-btn-primary np-register-submit"
-                  disabled={registerMutation.isPending || !guidelinesAccepted || !tosAccepted}
+                  disabled={registerMutation.isPending || !tosAccepted}
                 >
                   {registerMutation.isPending ? 'Setting the type…' : 'Sign the register'}
                 </button>

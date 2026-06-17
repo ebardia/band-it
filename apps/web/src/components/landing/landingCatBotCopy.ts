@@ -184,26 +184,132 @@ export const RAIL_BLOCKS = [
   },
   {
     title: 'The longer story',
-    detail: 'How we think about roams, memory, the gift wrapped catch, and transparent bias.',
-    cta: 'Read the essay',
+    detail:
+      'The Last Scarce Thing — why execution work commoditizes and creative grounded in real facts does not.',
+    cta: 'Read the white paper',
     href: '/manifesto',
   },
 ] as const
 
 export const CTA_LABEL = 'Adopt a cat \u2192'
 
-export const MANIFESTO_HEADLINE = 'Seven instincts. One Catch.'
+export const MANIFESTO_HEADLINE = 'The Last Scarce Thing'
 
 export const MANIFESTO_DEK =
-  'A longer essay on why we build intelligence cats around stalking, territory patrol, whiskers, curiosity, night vision, reporting home, and clowder coordination \u2014 not another dashboard pretending to be strategy.'
+  'Why the AI era makes a marketing agency\u2019s creativity more valuable \u2014 not less \u2014 and how to feed it'
 
-export const MANIFESTO_PARAGRAPHS = [
-  'Everyone has met the chatbot that digs one hole deeper. You hint at a direction and it elaborates the rut. Dashboards do the same at scale: breadth without resolution, alerts on every blip, no memory of what you already rejected. Cat Bot Adoption Agency exists because niche B2B work needs a different posture \u2014 patient, territorial, skeptical \u2014 and because the deliverable should be a vetted catch with evidence, not a pane of charts.',
-  'Stalking comes first. A cat watches before it pounces. Our bots monitor named accounts and fixed sources for weeks, holding fire until a real pattern emerges. Territory patrol is the beat itself: the same routes on a schedule \u2014 pricing pages, job boards, leadership bios, license records \u2014 flagging deltas instead of dumping raw feeds. You define the neighborhood; the cat learns what normal looks like there.',
-  'Whiskers sense what firmographics miss: a receptionist listing that names the incumbent stack, a tone shift in a press release, a hiring slowdown that precedes a budget freeze. Curiosity is what happens when something new appears \u2014 an unknown competitor, a regional consolidator, a forum thread that does not fit the map. The cat spawns a side investigation, cites its sources, and adds the entity to the graph for the rest of the clowder.',
-  'Night vision is for the low-light sources mainstream platforms skip: niche forums, regulatory filings, regional press, broker listings, archived pages. This is where vertical SaaS buyers actually leave traces \u2014 too small for intent data, too offline for Bombora. The wedge is persistent observation at a resolution big platforms cannot produce.',
-  'Reports home is the product contract. The cat roams alone, then brings you the gift-wrapped catch: one finding, linked and explained, with the trap it almost fell into named out loud. You review the return packet, keep the good catch, discard the bad. No three-hundred-row export pretending to be strategy — one thing worth a phone call.',
-  'And the cat remembers. Domestication is not a one-time setup; it is the slow accumulation of your judgment. Every catch you keep and every one you reject teaches it — which signals earn a pounce, which verticals you work, which moments you act on. The wild cat you adopt brings generic catches. The cat you have kept for six months brings yours: it has learned your beat and your taste, and it no longer wastes your attention on what you would have thrown back. This is curated memory, not model training — owner named, preferences learned, bias disclosed. It is also why a cat cannot simply be copied: the months you spent teaching it do not transfer, and a competitor starts from an empty collar.',
-  'Clowder coordination keeps the fleet honest. Not a hive mind \u2014 a roster of specialists with collar tags: a pricing cat, a hiring cat, a funding cat, mostly alone, sharing scent markers in a common graph. A serious team rarely needs one cat doing everything. It needs loose coordination across narrow beats until someone gets a pounce moment no intent platform can manufacture.',
-  'That is the longer case for cats over dashboards: adopt a wild specialist, domesticate it for one lane, let it patrol with these seven instincts, certify what earns your tag, and represent your goals transparently when it speaks in public. Monkeys and cats do not get along; noisy alerts and cats do not either. We are building for teams that would rather receive three Catches than three hundred rows.',
+export const MANIFESTO_SUBDEK =
+  'A white paper for agencies that build, rank, run, and tell stories for local businesses.'
+
+export const MANIFESTO_SUMMARY_KICKER = 'In one paragraph'
+
+export const MANIFESTO_SUMMARY =
+  'The execution services that built the digital agency business \u2014 SEO, paid search, web development, social posting \u2014 are commoditizing fast, and in some cases the demand beneath them is shrinking at the same time. The reflex answer, \u201cuse more AI tools,\u201d only accelerates the race to the bottom, because the same tools let your clients self-serve the work. The durable advantage left is the one thing AI cannot manufacture on its own: creative grounded in true, specific, current facts about a particular business. Generic creative is now cheap. Creative built on a real, timely, human detail about a real company is not \u2014 and never will be, because a model with no access to that detail can only be generic. This paper makes the case, then describes a system of autonomous research agents \u2014 \u201ccat bots\u201d \u2014 that forage exactly that raw material, so an agency\u2019s scarce creative talent is spent on the part only humans can do.'
+
+export type ManifestoSection = {
+  title: string
+  paragraphs: readonly string[]
+}
+
+export const MANIFESTO_SECTIONS: readonly ManifestoSection[] = [
+  {
+    title: 'Part I \u2014 What is actually happening to execution agencies',
+    paragraphs: [
+      'It is tempting to read the AI moment as \u201ceveryone gets faster.\u201d For agencies whose offering is the production of SEO, PPC, web, and social work, the reality is sharper and less comfortable, and it comes from two directions at once.',
+      'The work is being automated. Industry analysis through 2026 now treats technical SEO, content production, and paid-media management as bottlenecks that AI removes rather than skills an agency rents out: automated technical audits, content-gap analysis, internal linking, and SERP monitoring on the organic side; AI-assisted testing, dynamic creative optimization, and smart bidding on the paid side [3]. The same commentary makes the threat explicit from the client\u2019s chair \u2014 the right AI tools now let a small team do the work that once required a large agency [5]. That cuts both ways: it is also what lets a business do the work without an agency at all.',
+      'The demand beneath the work is contracting. This is the part most \u201ctop AI tools for 2026\u201d articles miss. Google\u2019s AI Overviews are absorbing the clicks that SEO and PPC were sold to capture. Analysis of the shift reports click-through-rate declines of up to 60% on informational queries that surface an AI Overview \u2014 across both organic and paid results \u2014 and notes that AI Overviews are beginning to occupy the same screen real estate that paid ads used to own [1]. An agency selling \u201cwe will get you ranking\u201d is now selling a result worth measurably less than it was a year ago.',
+      'The basis of competition is being repriced. The most credible voices in the space are converging on a successor discipline \u2014 Generative Engine Optimization (GEO) \u2014 where the goal shifts from ranking in a list of links to being cited inside an AI-generated answer [1]. The forecast is that pure-play SEO contracts while dedicated GEO and hybrid budgets emerge, with total spend across the two ultimately higher than pure SEO ever was [1]. Notably, at least one established firm now ranks agencies not by award counts and client logos but by their measurable readiness for AI search and their competitive citation footprint across Google AI Overviews, ChatGPT, Perplexity, and Gemini [2] \u2014 a sign that the yardstick itself is being rebuilt.',
+      'The industry\u2019s own consolation \u2014 and why it is thin for execution shops. Almost every serious source lands in the same place: AI augments rather than replaces, and humans keep strategy, creativity, and relationships while machines absorb the data-heavy tasks [6]. That is true. But notice what it quietly concedes: the safe ground is precisely the high-level creative and strategic work \u2014 and an agency that sells only the execution of commoditizing services is the one with the least of that ground to retreat to. The comfort applies most to the storytellers and least to the production shops. The strategic question for an execution-led agency is therefore not \u201cwhich AI tools do we adopt,\u201d but \u201cwhat do we sell that does not deflate.\u201d',
+    ],
+  },
+  {
+    title: 'Part II \u2014 The last scarce thing',
+    paragraphs: [
+      'Here is the distinction that resolves it.',
+      'Generic creative is now abundant. \u201cWrite a clever ad for an HVAC company\u201d is a solved problem; the output is fluent, instant, and nearly free. If that is the product, the price goes to zero.',
+      'Creative grounded in a specific, true, current fact is scarce \u2014 and stays scarce. The angle that makes a campaign work is almost never generic. It depends on knowing something real and particular: that this dental practice just opened a second location aimed at young families; that this pest-control company\u2019s new owner came up through the restaurant trade and obsesses over spotless kitchens; that this nonprofit just won a grant tied to one specific cause. These are not style \u2014 they are facts about the world, current and local and verifiable. And a language model with no access to them can only produce something generic, no matter how good its prose.',
+      'This reframes the entire value chain. The bottleneck on great, resonant marketing was never the writing. It was the research \u2014 the slow, unglamorous archaeology of finding the true, specific, human detail worth building a story around. That research does not scale by hand, and it is exactly the part that pure-AI creative cannot do, because the model does not know the business and cannot go and find out.',
+      'So the durable advantage is not \u201chumans are more creative than AI.\u201d That is a contested frontier moving quickly, and a thesis built on it expires. The durable advantage is narrower and far more defensible: AI cannot be creative about a specific business it knows nothing true or current about \u2014 and supplying that knowing is a job in itself.',
+    ],
+  },
+  {
+    title: 'Part III \u2014 Cat bots: the foraging layer',
+    paragraphs: [
+      'A cat bot is an autonomous research agent that behaves like a cat: it does not run a one-time search and dump a list. It lives in a territory, watches the same businesses over time, notices what changed, and brings back one vetted thing at a time \u2014 a catch \u2014 rather than a dashboard of noise.',
+      'A working set of cats \u2014 a clowder \u2014 divides the hunt into distinct instincts, each tuned to a different kind of public, legitimately readable signal:',
+      'Timing instincts \u2014 when is a business in play? A Territory cat patrols a fixed set of local businesses on a schedule and notices deltas: a new location, a hiring post, a refreshed (or rotting) website, a slip in search position. A Stalking cat watches high-potential targets that are not ready yet \u2014 a lease ending, an ownership transition, a business that just lost or won something \u2014 and stays silent until the moment turns.',
+      'Fit instincts \u2014 is this the right kind of prospect? A Whisker cat reads weak composite signals that only matter in combination. A Night Vision cat reads what mainstream tools never index: county business-license and build-out permits, chamber-of-commerce new-member notices, grand-opening announcements, local press \u2014 public records that sit below the resolution of national data providers.',
+      'Texture instinct \u2014 what is the human story here? This is the one that matters most for a creative agency, and it is a different species of signal from the rest. Once a business is a target, a Curiosity cat forages the human, specific, story-fertile details \u2014 the owner who is a veteran, the shop that has been family-run for three generations, the founder who coaches little league, the review that says \u201cthe tech remembered my kid\u2019s name.\u201d These live in reviews, About pages, founder posts, and local human-interest coverage \u2014 all openly readable \u2014 and they are the raw material of an angle, not a sales trigger.',
+      'Two design commitments matter and are worth stating plainly to anyone evaluating this:',
+      'First, the cats only read what they are legitimately allowed to read \u2014 public records, official platform data, and the open web. They do not scrape closed or login-walled sources. The value comes from watching public information persistently and locally, not from doing anything a business could not look up itself given infinite time.',
+      'Second, every catch carries its evidence. A catch is not an assertion; it is a finding with the links that support it. If the cat cannot show its source, it does not bring the catch.',
+      'The result is a deliverable no list-builder produces. Every lead tool on the market hands you a name and, at best, a trigger. A cat hands you a name, a reason it is the right moment, and a true human detail to build a story on.',
+    ],
+  },
+  {
+    title: 'Part IV \u2014 Cats forage, humans cook',
+    paragraphs: [
+      'The division of labor is the whole point, and it is the opposite of \u201cAI replaces the creative team.\u201d',
+      'Consider the HVAC company whose owner is a veteran and mentions his dogs on every service call. A cat can find that fact \u2014 it is sitting in a handful of reviews and a Facebook post. But the leap from that fact to a campaign about a man you would trust in your home because he is the kind of person animals trust \u2014 that is authored, not retrieved. The fact is findable; the angle is human.',
+      'This very document is the proof. The facts underneath a \u201ccat bot\u201d are mundane and machine-accessible: software agents that monitor public records and surface one lead at a time. Any competitor could state that. The cat-bringing-you-a-catch metaphor, the idea of adopting and taming an agent, the emotional world around it \u2014 none of that is in the facts. It was imposed on the facts by someone with taste. That move, performed on behalf of a client\u2019s business, is precisely what an agency sells, and precisely what does not commoditize.',
+      'So: the cats forage the true, specific, local ingredients; your creatives cook them into something that moves people. The cat does the part that is genuinely hard at scale and impossible for disconnected AI \u2014 knowing the real, current particular. Your team does the part that is genuinely scarce \u2014 turning a particular into a story. Neither makes the result alone.',
+      'A caution that belongs in the open, because it is what earns a creative team\u2019s trust: the cat has no taste. It does not know what will land with a particular audience, and it does not pretend to. It is not a creative; it is the best researcher a creative ever had.',
+    ],
+  },
+  {
+    title: 'Part V \u2014 It becomes your cat',
+    paragraphs: [
+      'A cat is not static. Every catch your team keeps and every one you wave off teaches it. Tell it the owner-origin-story angle is the one you turn into wins and the discount-promo angle is noise, and it reweights \u2014 over weeks it learns your verticals, your territory, and the kinds of story seeds your creatives actually use.',
+      'This is the difference between a tool and an asset. The cat you adopt is wild and generic; it brings serviceable, undifferentiated catches. The cat you have kept and taught for six months brings yours \u2014 it has learned your taste and stopped wasting your attention on what you would throw back. That accumulated knowledge does not transfer. It is the months your team spent teaching it, which is why your clowder gets sharper over time while anyone starting fresh starts from an empty collar.',
+      'There is a second layer available to agencies that want it. The same cats that find your prospects can find prospects for your clients \u2014 the public, trackable demand signals in a client\u2019s own market (new construction that means new HVAC and pest-control demand, property sales that mean new customers, local events that drive demand by neighborhood). Delivered as a market-intelligence layer inside your existing service, it is something national competitors cannot easily match, because it depends on knowing a local trade the way you do \u2014 and it makes your relationship with the client deeper and harder to leave.',
+    ],
+  },
+  {
+    title: 'Part VI \u2014 What engaging looks like',
+    paragraphs: [
+      'The honest way to evaluate this is not a demo of features; it is a test of catches. Point one cat at a defined territory for a short window and judge it on a single question: did it bring back true, specific, story-fertile findings your team did not already have, and could not easily have dug up by hand? If the catches are not useful, nothing has been lost. If they are, the relationship is simple to extend \u2014 and it compounds, because the cat learns your taste the whole time.',
+      'The strategic frame to keep in view: in a market where the execution work is getting cheaper to produce and the clicks it buys are getting fewer, the scarce and rising asset is the grounded, specific, human truth that great creative is built on. The cats supply that truth. Your people do the irreplaceable thing with it.',
+    ],
+  },
 ] as const
+
+export type ManifestoReference = {
+  label: string
+  href: string
+}
+
+export const MANIFESTO_REFERENCES: readonly ManifestoReference[] = [
+  {
+    label:
+      'Zeo, State of AI & Digital Marketing \u2014 2026 Predictions.',
+    href: 'https://zeo.org/resources/e-books/state-of-ai-digital-marketing',
+  },
+  {
+    label:
+      'Onely, Top Digital Marketing Agencies in 2026: Evaluated by AI Search Readiness, Technical Depth, and Measurable Visibility Impact.',
+    href: 'https://onely.com/blog/best-digital-marketing-agencies',
+  },
+  {
+    label:
+      'eakwire, Top AI Digital Marketing Agencies \u2014 SEO, PPC & Social Media.',
+    href: 'https://eakwire.com/top-ai-digital-marketing-agencies-for-seo-ppc-social-media',
+  },
+  {
+    label:
+      'ALM Corp, Digital Marketing Statistics 2026: Key SEO, PPC, Social Media, Email, AI Search, and Conversion Benchmarks.',
+    href: 'https://almcorp.com/blog/digital-marketing-statistics-2026',
+  },
+  {
+    label:
+      'amquesteducation, AI in Digital Marketing: 2026 Guide to Tools & Future.',
+    href: 'https://amquesteducation.com/blog/ai-in-digital-marketing',
+  },
+  {
+    label:
+      'engagecoders, AI Lead Generation for SEO and PPC in 2026.',
+    href: 'https://engagecoders.com/how-ai-is-revolutionizing-lead-generation-for-seo-and-ppc-in-2026',
+  },
+] as const
+
+export const MANIFESTO_SOURCES_NOTE =
+  'Note on sources: the references above are industry and trade analyses, useful for establishing direction and current sentiment. For a formal or investor-facing version of this paper, these should be supplemented with primary research \u2014 e.g., agency-economics reporting (SoDA Digital Outlook, Promethean Research), platform-level CTR studies, and labor-economics work on task automation exposure.'

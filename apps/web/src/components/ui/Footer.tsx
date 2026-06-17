@@ -10,12 +10,6 @@ export function Footer() {
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-3 md:gap-5 text-xs md:text-sm">
             <Link
-              href="/community-guidelines"
-              className="text-gray-500 hover:text-gray-700 hover:underline"
-            >
-              Community Guidelines
-            </Link>
-            <Link
               href="/terms"
               className="text-gray-500 hover:text-gray-700 hover:underline"
             >

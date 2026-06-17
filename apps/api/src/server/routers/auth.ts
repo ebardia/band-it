@@ -23,7 +23,7 @@ export const authRouter = router({
           .min(2, 'Name must be at least 2 characters')
           .max(100, 'Name must be less than 100 characters'),
         inviteToken: z.string().optional(), // Optional token from band invite email
-        guidelinesVersion: z.number().int().positive(), // Required: version of community guidelines accepted
+        guidelinesVersion: z.number().int().positive().optional(),
         tosVersion: z.number().int().positive(), // Required: version of ToS/Privacy Policy accepted
       })
     )
