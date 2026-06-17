@@ -12,10 +12,18 @@ import {
 export default function PrivacyPage() {
   const router = useRouter()
 
+  const handleClose = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+      return
+    }
+    router.push('/')
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-50">
       <button
-        onClick={() => router.back()}
+        onClick={handleClose}
         className="fixed top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors"
         aria-label="Close"
       >
